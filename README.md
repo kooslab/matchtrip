@@ -2,6 +2,13 @@
 
 A modern, full-stack SvelteKit boilerplate with Drizzle ORM, PostgreSQL, TailwindCSS, authentication and more ready to go.
 
+## Questions? Want to contribute? Need help? Found a bug?
+
+- Open an issue on GitHub if you found a bug
+- Submit a PR if you have a fix or a feature you want to add
+- Start a discussion for general questions or feedback
+- Ask for help in the discussions section
+
 ## Tech Stack
 
 - 🚀 **[SvelteKit 2.0+](https://svelte.dev/docs/kit)** - Latest version
