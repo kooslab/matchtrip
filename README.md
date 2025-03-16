@@ -97,11 +97,11 @@ This boilerplate can be deployed to any platform that supports SvelteKit applica
 - Vercel
 - Netlify
 - Cloudflare Pages
-- Self-hosted with Node.js or Bun
+- Railway
+- Fly.io
+- Self-hosted with Node.js or Bun on e.g. AWS, Azure, etc.
 
-## Acknowledgements
+## Contributing
 
-- [SvelteKit](https://svelte.dev/docs/kit/introduction)
-- [Drizzle ORM](https://orm.drizzle.team/)
-- [TailwindCSS](https://tailwindcss.com/)
-- [better-auth](https://better-auth.com/)
+Contributions are welcome! Please open an issue or submit a pull request.
+
