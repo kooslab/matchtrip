@@ -8,7 +8,8 @@
 	let error = $state('');
 	let isLoading = $state(false);
 
-	async function handleSubmit() {
+	async function handleSubmit(event: Event) {
+		event.preventDefault();
 		isLoading = true;
 		try {
 			const result = await signUp.email({
@@ -30,8 +31,8 @@
 
 <div
 	class="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-green-50 px-4 py-12">
-	<img src="/logo.jpg" alt="MatchTrip Logo" class="mb-8 h-24 w-auto object-contain shadow" />
-	<form class="flex w-full max-w-xs flex-col gap-4" on:submit|preventDefault={handleSubmit}>
+	<img src="/logo.jpg" alt="MatchTrip Logo" class="mb-8 h-48 w-auto object-contain shadow" />
+	<form class="flex w-full max-w-xs flex-col gap-4" onsubmit={handleSubmit}>
 		<h2 class="mb-2 text-center text-2xl font-bold text-gray-800">여행자 회원가입</h2>
 		<input
 			type="email"

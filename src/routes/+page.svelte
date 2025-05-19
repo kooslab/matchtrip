@@ -1,6 +1,6 @@
 <div
 	class="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-green-50 px-4 py-12">
-	<img src="/logo.jpg" alt="MatchTrip Logo" class="mb-8 h-24 w-auto object-contain shadow" />
+	<img src="/logo.jpg" alt="MatchTrip Logo" class="mb-18 h-48 w-auto object-contain shadow" />
 	<h1 class="mb-4 text-center text-3xl font-extrabold text-gray-800">
 		여행의 새로운 만남, 매치트립
 	</h1>
