@@ -15,7 +15,10 @@ export const auth = betterAuth({
 		passwordRegex: /^(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,20}$/,
 		passwordRegexError: '비밀번호는 8~20자, 숫자 1개 이상, 특수문자 1개 이상을 포함해야 합니다.'
 	},
-	rateLimit: { storage: 'database' },
+	rateLimit: {
+		storage: 'database',
+		modelName: 'rate_limits'
+	},
 	user: { modelName: 'users' },
 	session: { modelName: 'sessions' },
 	account: { modelName: 'accounts' },
