@@ -15,6 +15,21 @@ export const users = pgTable('users', {
 	updatedAt: timestamp('updated_at').notNull()
 });
 
+// User agreements table to track consent
+export const userAgreements = pgTable('user_agreements', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	userId: uuid('user_id')
+		.notNull()
+		.references(() => users.id, { onDelete: 'cascade' }),
+	termsAgreed: boolean('terms_agreed').notNull().default(false),
+	privacyAgreed: boolean('privacy_agreed').notNull().default(false),
+	marketingAgreed: boolean('marketing_agreed').notNull().default(false),
+	termsAgreedAt: timestamp('terms_agreed_at'),
+	privacyAgreedAt: timestamp('privacy_agreed_at'),
+	marketingAgreedAt: timestamp('marketing_agreed_at'),
+	updatedAt: timestamp('updated_at').notNull()
+});
+
 export const sessions = pgTable('sessions', {
 	id: uuid('id').primaryKey().defaultRandom(),
 	expiresAt: timestamp('expires_at').notNull(),

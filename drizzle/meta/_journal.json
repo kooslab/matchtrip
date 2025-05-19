@@ -22,6 +22,13 @@
       "when": 1747639609607,
       "tag": "0002_uneven_callisto",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1747645977624,
+      "tag": "0003_chief_jean_grey",
+      "breakpoints": true
     }
   ]
 }

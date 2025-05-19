@@ -1,24 +1,118 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import Button from '$lib/components/Button.svelte';
+	import PasswordInputs, { type PasswordInputsType } from '$lib/components/PasswordInputs.svelte';
+	import TermsAgreement, { type TermsAgreementType } from '$lib/components/TermsAgreement.svelte';
+
 	let email = $state('');
 	let password = $state('');
+	let confirmPassword = $state('');
 	let error = $state('');
 	let isLoading = $state(false);
-	let showPassword = $state(false);
+	let termsComponent: TermsAgreementType;
+	let passwordValidationRef: PasswordInputsType;
+	let passwordValidRef = $state(false);
+	let termsValid = $state(false);
 
-	function togglePassword() {
-		showPassword = !showPassword;
+	// Computed values for form validation
+	let isEmailValid = $derived(email && email.includes('@') && email.includes('.'));
+	let isFormValid = $derived(
+		isEmailValid &&
+			password &&
+			confirmPassword &&
+			password === confirmPassword &&
+			passwordValidRef &&
+			termsValid
+	);
+
+	// Add event listeners for password changes
+	onMount(() => {
+		const handlePasswordChange = (e: CustomEvent) => {
+			password = e.detail;
+		};
+
+		const handleConfirmPasswordChange = (e: CustomEvent) => {
+			confirmPassword = e.detail;
+		};
+
+		document.addEventListener('passwordChange', handlePasswordChange as EventListener);
+		document.addEventListener(
+			'confirmPasswordChange',
+			handleConfirmPasswordChange as EventListener
+		);
+
+		return () => {
+			document.removeEventListener('passwordChange', handlePasswordChange as EventListener);
+			document.removeEventListener(
+				'confirmPasswordChange',
+				handleConfirmPasswordChange as EventListener
+			);
+		};
+	});
+
+	function checkPasswordValidity() {
+		if (passwordValidationRef) {
+			passwordValidRef = passwordValidationRef.validatePassword();
+		}
 	}
+
+	function checkTermsValidity() {
+		if (termsComponent) {
+			termsValid = termsComponent.validateTerms();
+		}
+	}
+
+	// Effect to check password validity when password or confirmPassword changes
+	$effect(() => {
+		if (password || confirmPassword) {
+			checkPasswordValidity();
+		}
+	});
+
+	// Effect to check terms validity when termsComponent changes
+	$effect(() => {
+		if (termsComponent) {
+			checkTermsValidity();
+		}
+	});
 
 	async function handleSubmit(event: Event) {
 		event.preventDefault();
+
+		// Double-check validation before submission
+		if (!isFormValid) {
+			if (password !== confirmPassword) {
+				error = '비밀번호가 일치하지 않습니다.';
+			} else if (!termsValid) {
+				error = '필수 약관에 동의해주세요.';
+			} else if (!passwordValidRef) {
+				error = '비밀번호가 유효하지 않습니다.';
+			} else if (!isEmailValid) {
+				error = '이메일이 유효하지 않습니다.';
+			} else {
+				error = '모든 필수 항목을 입력해주세요.';
+			}
+			return;
+		}
+
 		isLoading = true;
 		error = '';
 		try {
+			// Get agreement states from the terms component
+			const { termsAgreed, privacyAgreed, marketingAgreed } = termsComponent.getAgreementState();
+
 			const res = await fetch('/api/signup', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ email, password, name: email, role: 'guide' })
+				body: JSON.stringify({
+					email,
+					password,
+					name: email,
+					role: 'guide',
+					termsAgreed,
+					privacyAgreed,
+					marketingAgreed
+				})
 			});
 			const data = await res.json();
 			if (!data.success) {
@@ -39,73 +133,32 @@
 	<img src="/logo.jpg" alt="MatchTrip Logo" class="mb-8 h-48 w-auto object-contain shadow" />
 	<h2 class="mb-1 text-center text-2xl font-bold text-gray-800">가이드 회원가입</h2>
 	<p class="mb-6 text-center text-sm text-gray-500">여행 가이드로 새로운 여정을 시작하세요!</p>
+
 	<form class="flex w-full max-w-xs flex-col gap-4" onsubmit={handleSubmit}>
+		<!-- Email Input -->
 		<label class="flex flex-col gap-1">
 			<span class="text-sm font-medium text-gray-700">이메일</span>
 			<input
 				type="email"
-				placeholder="Email"
+				placeholder="이메일"
 				class="rounded-md border border-gray-300 p-2 transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
 				bind:value={email}
 				disabled={isLoading}
 				required />
 		</label>
-		<label class="flex flex-col gap-1">
-			<span class="text-sm font-medium text-gray-700">비밀번호</span>
-			<div class="relative">
-				<input
-					type={showPassword ? 'text' : 'password'}
-					placeholder="Password"
-					class="w-full rounded-md border border-gray-300 p-2 pr-10 transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-					bind:value={password}
-					disabled={isLoading}
-					required />
-				<button
-					type="button"
-					tabindex="-1"
-					class="absolute top-1/2 right-2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
-					onclick={togglePassword}
-					aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 보기'}>
-					{#if showPassword}
-						<!-- Eye Off Icon -->
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="h-5 w-5"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-							><path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10 0-1.657.403-3.22 1.125-4.575m1.875-2.25A9.956 9.956 0 0112 3c5.523 0 10 4.477 10 10 0 1.657-.403 3.22-1.125 4.575m-1.875 2.25A9.956 9.956 0 0112 21c-5.523 0-10-4.477-10-10 0-1.657.403-3.22 1.125-4.575" /><path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-					{:else}
-						<!-- Eye Icon -->
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="h-5 w-5"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-							><path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-					{/if}
-				</button>
-			</div>
-		</label>
-		<Button type="submit" loading={isLoading} loadingText="회원가입 중..." class="mt-2 w-full"
-			>회원가입</Button>
+
+		<!-- Password Inputs Component -->
+		<PasswordInputs {password} {confirmPassword} {isLoading} bind:this={passwordValidationRef} />
+
+		<!-- Terms Agreement Component -->
+		<TermsAgreement bind:this={termsComponent} {isLoading} on:change={checkTermsValidity} />
+
+		<Button
+			type="submit"
+			loading={isLoading}
+			loadingText="회원가입 중..."
+			class="mt-4 w-full"
+			disabled={!isFormValid || isLoading}>회원가입</Button>
 		{#if error}
 			<p class="mt-2 text-center text-sm text-red-500">{error}</p>
 		{/if}

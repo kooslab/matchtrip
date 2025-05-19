@@ -7,7 +7,14 @@ export const auth = betterAuth({
 	advanced: {
 		generateId: false
 	},
-	emailAndPassword: { enabled: true, autoSignIn: true },
+	emailAndPassword: {
+		enabled: true,
+		autoSignIn: true,
+		minPasswordLength: 8,
+		maxPasswordLength: 20,
+		passwordRegex: /^(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,20}$/,
+		passwordRegexError: '비밀번호는 8~20자, 숫자 1개 이상, 특수문자 1개 이상을 포함해야 합니다.'
+	},
 	rateLimit: { storage: 'database' },
 	user: { modelName: 'users' },
 	session: { modelName: 'sessions' },
