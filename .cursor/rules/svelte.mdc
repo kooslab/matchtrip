@@ -10,6 +10,9 @@ globs: **/*.svelte, src/**/*.ts, src/**/*.js
 
 # Svelte Best Practices
 
+## syntax
+- never use on:click or on:submit, use onclick and onsubmit. This is svelte 5 way
+
 ## Component Structure
 - Keep components small and focused
 - Use proper TypeScript integration

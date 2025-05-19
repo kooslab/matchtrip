@@ -1,13 +1,10 @@
 <script lang="ts">
-	import { signUp } from '$lib/authClient';
-	import { goto } from '$app/navigation';
 	import Button from '$lib/components/Button.svelte';
-
 	let email = $state('');
 	let password = $state('');
 	let error = $state('');
 	let isLoading = $state(false);
-	let showPassword = false;
+	let showPassword = $state(false);
 
 	function togglePassword() {
 		showPassword = !showPassword;
@@ -16,18 +13,21 @@
 	async function handleSubmit(event: Event) {
 		event.preventDefault();
 		isLoading = true;
+		error = '';
 		try {
-			const result = await signUp.email({
-				email,
-				password,
-				name: email,
-				role: 'guide'
+			const res = await fetch('/api/signup', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ email, password, name: email, role: 'guide' })
 			});
-			if (result.error) {
-				error = result.error.message ?? '알 수 없는 오류가 발생했습니다.';
+			const data = await res.json();
+			if (!data.success) {
+				error = data.error || '알 수 없는 오류가 발생했습니다.';
 			} else {
-				goto('/app');
+				window.location.href = '/app';
 			}
+		} catch (e) {
+			error = '서버 오류가 발생했습니다.';
 		} finally {
 			isLoading = false;
 		}
