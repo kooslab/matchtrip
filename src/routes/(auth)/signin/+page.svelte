@@ -18,7 +18,7 @@
 				callbackURL: '/app'
 			});
 			if (result.error) {
-				error = result.error.message ?? 'An unknown error occurred';
+				error = result.error.message ?? '알 수 없는 오류가 발생했습니다.';
 			} else {
 				goto(result.data.url ?? '/app');
 			}
@@ -28,25 +28,31 @@
 	}
 </script>
 
-<form class="mx-auto mt-10 flex max-w-md flex-col gap-4 bg-white p-6 rounded-lg shadow-md" on:submit|preventDefault={handleSubmit}>
-	<h2 class="text-xl font-semibold text-gray-800 mb-2">Login</h2>
-	<input
-		type="email"
-		placeholder="Email"
-		class="rounded-md border border-gray-300 p-2"
-		bind:value={email}
-		disabled={isLoading} />
-	<input
-		type="password"
-		placeholder="Password"
-		class="rounded-md border border-gray-300 p-2"
-		bind:value={password}
-		disabled={isLoading} />
-	<Button type="submit" loading={isLoading} loadingText="Logging in...">Login</Button>
-	<p class="mt-4 text-sm text-gray-500">
-		Don't have an account? <a href="/signup" class="text-blue-500">Sign Up</a>
-	</p>
-	{#if error}
-		<p class="mt-4 text-sm text-red-500">{error}</p>
-	{/if}
-</form>
+<div
+	class="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-green-50 px-4 py-12">
+	<img src="/logo.jpg" alt="MatchTrip Logo" class="mb-8 h-24 w-auto object-contain shadow" />
+	<form class="flex w-full max-w-xs flex-col gap-4" on:submit|preventDefault={handleSubmit}>
+		<h2 class="mb-2 text-center text-2xl font-bold text-gray-800">로그인</h2>
+		<input
+			type="email"
+			placeholder="Email"
+			class="rounded-md border border-gray-300 p-2 transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+			bind:value={email}
+			disabled={isLoading} />
+		<input
+			type="password"
+			placeholder="Password"
+			class="rounded-md border border-gray-300 p-2 transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+			bind:value={password}
+			disabled={isLoading} />
+		<Button type="submit" loading={isLoading} loadingText="로그인 중..." class="mt-2 w-full"
+			>로그인</Button>
+		{#if error}
+			<p class="mt-2 text-center text-sm text-red-500">{error}</p>
+		{/if}
+		<p class="mt-6 text-center text-sm text-gray-500">
+			계정이 없으신가요?
+			<a href="/signup" class="ml-1 text-blue-500 hover:underline">회원가입</a>
+		</p>
+	</form>
+</div>
