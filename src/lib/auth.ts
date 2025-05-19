@@ -21,5 +21,10 @@ export const auth = betterAuth({
 	user: { modelName: 'users' },
 	session: { modelName: 'sessions' },
 	account: { modelName: 'accounts' },
-	verification: { modelName: 'verifications' }
+	verification: { modelName: 'verifications' },
+	trustedOrigins: [
+		'https://matchtrip-johnny-ilmo-koos-projects.vercel.app',
+		// Add any other domains you might deploy to
+		'http://localhost:5173' // For local development
+	]
 });
