@@ -1,50 +1,20 @@
 <script lang="ts">
-	import { signUp } from '$lib/authClient';
-	import { goto } from '$app/navigation';
 	import Button from '$lib/components/Button.svelte';
-
-	let email = $state('');
-	let password = $state('');
-	let error = $state('');
-	let isLoading = $state(false);
-
-	async function handleSubmit() {
-		isLoading = true;
-		try {
-			const result = await signUp.email({
-				email,
-				password,
-				name: email
-			});
-			if (result.error) {
-				error = result.error.message ?? 'An unknown error occurred';
-			} else {
-				goto('/app');
-			}
-		} finally {
-			isLoading = false;
-		}
-	}
+	// No form logic here, just navigation
 </script>
 
-<form class="mx-auto mt-10 flex max-w-md flex-col gap-4" onsubmit={handleSubmit}>
-	<input
-		type="email"
-		placeholder="Email"
-		class="rounded-md border border-gray-300 p-2"
-		bind:value={email}
-		disabled={isLoading} />
-	<input
-		type="password"
-		placeholder="Password"
-		class="rounded-md border border-gray-300 p-2"
-		bind:value={password}
-		disabled={isLoading} />
-	<Button type="submit" loading={isLoading} loadingText="회원가입 중...">회원가입</Button>
-	<p class="mt-4 text-sm text-gray-500">
-		이미 계정이 있으신가요? <a href="/signin" class="text-blue-500">로그인</a>
+<div class="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4 py-8">
+	<h1 class="mb-8 text-2xl font-bold text-gray-800">Sign up as...</h1>
+	<div class="flex w-full max-w-xs flex-col gap-4">
+		<a href="/signup/traveler">
+			<Button class="w-full bg-blue-500 hover:bg-blue-600">Traveler</Button>
+		</a>
+		<a href="/signup/guide">
+			<Button class="w-full bg-green-500 hover:bg-green-600">Guide</Button>
+		</a>
+	</div>
+	<p class="mt-8 text-sm text-gray-500">
+		Already have an account?
+		<a href="/signin" class="text-blue-500">Login</a>
 	</p>
-	{#if error}
-		<p class="mt-4 text-sm text-red-500">{error}</p>
-	{/if}
-</form>
+</div>

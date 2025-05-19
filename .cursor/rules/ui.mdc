@@ -1,6 +1,6 @@
 ---
 description: 
-globs: 
+globs: *svelte
 alwaysApply: false
 ---
 # LLMs Documentation

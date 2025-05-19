@@ -1,4 +1,8 @@
-import { pgTable, uuid, text, timestamp, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, boolean, pgEnum } from 'drizzle-orm/pg-core';
+
+// Define the enum for user roles
+export const userRoleEnum = pgEnum('user_role', ['traveler', 'guide', 'admin']);
+export type UserRole = (typeof userRoleEnum.enumValues)[number];
 
 export const users = pgTable('users', {
 	id: uuid('id').primaryKey().defaultRandom(),
@@ -6,6 +10,7 @@ export const users = pgTable('users', {
 	email: text('email').notNull().unique(),
 	emailVerified: boolean('email_verified').notNull(),
 	image: text('image'),
+	role: userRoleEnum('role').notNull().default('traveler'),
 	createdAt: timestamp('created_at').notNull(),
 	updatedAt: timestamp('updated_at').notNull()
 });
