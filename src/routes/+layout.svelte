@@ -1,5 +1,7 @@
 <script lang="ts">
 	import '../app.css';
+	import Footer from '$lib/components/Footer.svelte';
+
 	let isOpen = false;
 	function openMenu() {
 		isOpen = true;
@@ -77,6 +79,7 @@
 	</ul>
 </nav>
 
-<div class="pt-16 md:pt-20">
+<div class="flex min-h-screen flex-col pt-16 md:pt-20">
 	<slot />
+	<Footer />
 </div>
