@@ -5,6 +5,7 @@
 	import TermsAgreement, { type TermsAgreementType } from '$lib/components/TermsAgreement.svelte';
 
 	let email = $state('');
+	let name = $state('');
 	let password = $state('');
 	let confirmPassword = $state('');
 	let error = $state('');
@@ -16,8 +17,10 @@
 
 	// Computed values for form validation
 	let isEmailValid = $derived(email && email.includes('@') && email.includes('.'));
+	let isNameValid = $derived(name && name.trim().length > 0);
 	let isFormValid = $derived(
 		isEmailValid &&
+			isNameValid &&
 			password &&
 			confirmPassword &&
 			password === confirmPassword &&
@@ -89,6 +92,8 @@
 				error = '비밀번호가 유효하지 않습니다.';
 			} else if (!isEmailValid) {
 				error = '이메일이 유효하지 않습니다.';
+			} else if (!isNameValid) {
+				error = '이름을 입력해주세요.';
 			} else {
 				error = '모든 필수 항목을 입력해주세요.';
 			}
@@ -107,7 +112,7 @@
 				body: JSON.stringify({
 					email,
 					password,
-					name: email,
+					name,
 					role: 'guide',
 					termsAgreed,
 					privacyAgreed,
@@ -135,6 +140,18 @@
 	<p class="mb-6 text-center text-sm text-gray-500">여행 가이드로 새로운 여정을 시작하세요!</p>
 
 	<form class="flex w-full max-w-xs flex-col gap-4" onsubmit={handleSubmit}>
+		<!-- Name Input -->
+		<label class="flex flex-col gap-1">
+			<span class="text-sm font-medium text-gray-700">이름</span>
+			<input
+				type="text"
+				placeholder="이름"
+				class="rounded-md border border-gray-300 p-2 transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+				bind:value={name}
+				disabled={isLoading}
+				required />
+		</label>
+
 		<!-- Email Input -->
 		<label class="flex flex-col gap-1">
 			<span class="text-sm font-medium text-gray-700">이메일</span>

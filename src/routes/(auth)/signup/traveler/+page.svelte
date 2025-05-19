@@ -5,6 +5,7 @@
 	import TermsAgreement, { type TermsAgreementType } from '$lib/components/TermsAgreement.svelte';
 
 	let email = $state('');
+	let name = $state('');
 	let password = $state('');
 	let confirmPassword = $state('');
 	let error = $state('');
@@ -16,8 +17,10 @@
 
 	// Computed values for form validation
 	let isEmailValid = $derived(email && email.includes('@') && email.includes('.'));
+	let isNameValid = $derived(name && name.trim().length > 0);
 	let isFormValid = $derived(
 		isEmailValid &&
+			isNameValid &&
 			password &&
 			confirmPassword &&
 			password === confirmPassword &&
@@ -92,6 +95,8 @@
 				error = '비밀번호가 유효하지 않습니다.';
 			} else if (!isEmailValid) {
 				error = '이메일이 유효하지 않습니다.';
+			} else if (!isNameValid) {
+				error = '이름을 입력해주세요.';
 			} else {
 				error = '모든 필수 항목을 입력해주세요.';
 			}
@@ -110,7 +115,7 @@
 				body: JSON.stringify({
 					email,
 					password,
-					name: email,
+					name,
 					role: 'traveler',
 					termsAgreed,
 					privacyAgreed,
@@ -136,6 +141,18 @@
 	<img src="/logo.jpg" alt="MatchTrip Logo" class="mb-8 h-48 w-auto object-contain shadow" />
 	<form class="flex w-full max-w-xs flex-col gap-4" onsubmit={handleSubmit}>
 		<h2 class="mb-2 text-center text-2xl font-bold text-gray-800">여행자 회원가입</h2>
+
+		<!-- Name Input -->
+		<label class="flex flex-col gap-1">
+			<span class="text-sm font-medium text-gray-700">이름</span>
+			<input
+				type="text"
+				placeholder="이름"
+				class="rounded-md border border-gray-300 p-2 transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+				bind:value={name}
+				disabled={isLoading}
+				required />
+		</label>
 
 		<!-- Email Input -->
 		<label class="flex flex-col gap-1">

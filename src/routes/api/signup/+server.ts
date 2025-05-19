@@ -40,7 +40,8 @@ export async function POST({ request }) {
 		// await db.users.update({ email }, { role });
 
 		if (result.error) {
-			console.log('Signup error:', result.error);
+			console.log('result', result);
+			console.error('Signup error:', result.error);
 			return json({ success: false, error: result.error.message }, { status: 400 });
 		}
 
