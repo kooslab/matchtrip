@@ -1,16 +1,8 @@
 import { json } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { users, userAgreements, accounts } from '$lib/server/db/schema';
+import { users, userAgreements } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { auth } from '$lib/auth';
-import crypto from 'crypto';
-
-// Helper function to hash password
-function hashPassword(password: string): string {
-	const salt = crypto.randomBytes(16).toString('hex');
-	const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
-	return `${salt}:${hash}`;
-}
 
 export async function POST({ request }) {
 	const {
@@ -41,59 +33,40 @@ export async function POST({ request }) {
 	}
 
 	try {
-		// First check if user already exists
-		const existingUser = await db.select().from(users).where(eq(users.email, email));
+		// Use auth.api directly with the correct method name
+		const result = await auth.api.signUpEmail({
+			body: {
+				email,
+				password,
+				name
+			}
+		});
 
-		if (existingUser.length > 0) {
-			return json(
-				{
-					success: false,
-					error: '이미 등록된 이메일입니다.'
-				},
-				{ status: 400 }
-			);
+		// If we get here, signup was successful and we have a user
+		if (result && result.user && result.user.id) {
+			// Update the user's role after signup
+			await db.update(users).set({ role }).where(eq(users.id, result.user.id));
+
+			// Create user agreements record
+			const now = new Date();
+			await db.insert(userAgreements).values({
+				userId: result.user.id,
+				termsAgreed,
+				privacyAgreed,
+				marketingAgreed,
+				termsAgreedAt: termsAgreed ? now : null,
+				privacyAgreedAt: privacyAgreed ? now : null,
+				marketingAgreedAt: marketingAgreed ? now : null,
+				updatedAt: now
+			});
+
+			// Optionally, fetch the updated user
+			const [updatedUser] = await db.select().from(users).where(eq(users.id, result.user.id));
+
+			return json({ success: true, user: updatedUser });
 		}
 
-		// Create a new user directly
-		const now = new Date();
-		const passwordHash = hashPassword(password);
-
-		// Insert the user
-		const [createdUser] = await db
-			.insert(users)
-			.values({
-				email,
-				name,
-				emailVerified: false,
-				role,
-				createdAt: now,
-				updatedAt: now
-			})
-			.returning();
-
-		// Create the account record with password
-		await db.insert(accounts).values({
-			userId: createdUser.id,
-			providerId: 'email',
-			accountId: email,
-			password: passwordHash,
-			createdAt: now,
-			updatedAt: now
-		});
-
-		// Create user agreements record
-		await db.insert(userAgreements).values({
-			userId: createdUser.id,
-			termsAgreed,
-			privacyAgreed,
-			marketingAgreed,
-			termsAgreedAt: termsAgreed ? now : null,
-			privacyAgreedAt: privacyAgreed ? now : null,
-			marketingAgreedAt: marketingAgreed ? now : null,
-			updatedAt: now
-		});
-
-		return json({ success: true, user: createdUser });
+		return json({ success: true, user: result.user });
 	} catch (e) {
 		console.error('Signup exception:', e);
 		const message = e instanceof Error ? e.message : 'Unknown error';
