@@ -1,4 +1,14 @@
-import { pgTable, uuid, text, timestamp, boolean, pgEnum, integer } from 'drizzle-orm/pg-core';
+import {
+	pgTable,
+	uuid,
+	text,
+	timestamp,
+	boolean,
+	pgEnum,
+	integer,
+	serial,
+	varchar
+} from 'drizzle-orm/pg-core';
 
 // Define the enum for user roles
 export const userRoleEnum = pgEnum('user_role', ['traveler', 'guide', 'admin']);
@@ -78,4 +88,12 @@ export const rateLimits = pgTable('rate_limits', {
 	expiresAt: timestamp('expires_at').notNull(),
 	createdAt: timestamp('created_at').notNull(),
 	updatedAt: timestamp('updated_at').notNull()
+});
+
+export const destinations = pgTable('destinations', {
+	id: serial('id').primaryKey(),
+	city: varchar('city', { length: 50 }).notNull(),
+	country: varchar('country', { length: 50 }).notNull(),
+	created_at: timestamp('created_at').defaultNow().notNull(),
+	updated_at: timestamp('updated_at').defaultNow().notNull()
 });
