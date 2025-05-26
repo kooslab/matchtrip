@@ -6,14 +6,122 @@
 	let showDropdown = false;
 	let debounceTimeout: ReturnType<typeof setTimeout>;
 	let calendarOpen = false;
-
 	import { DateRangePicker } from 'bits-ui';
 	import CalendarBlank from 'phosphor-svelte/lib/CalendarBlank';
 	import CaretLeft from 'phosphor-svelte/lib/CaretLeft';
 	import CaretRight from 'phosphor-svelte/lib/CaretRight';
+	import { goto } from '$app/navigation';
+
 	let dateRange = { start: undefined, end: undefined };
 	let people = 1;
 	let tourType = '';
+
+	// Modal state
+	let showComingSoonModal = false;
+
+	function openComingSoonModal() {
+		showComingSoonModal = true;
+	}
+
+	function closeComingSoonModal() {
+		showComingSoonModal = false;
+	}
+
+	// Carousel state
+	let currentSlide = 0;
+	let startX = 0;
+	let isDragging = false;
+
+	const slides = [
+		{
+			title: '검색',
+			description: '여행지,\n날짜,\n인원수를\n입력하세요',
+			bgColor: 'bg-pink-100'
+		},
+		{
+			title: '트립AI 추천',
+			description: 'AI가 여행\n스케줄을\n만들어줘요',
+			bgColor: 'bg-blue-100'
+		},
+		{
+			title: '여행제안',
+			description: '현지\n여행전문가\n들이 제안을\n해요',
+			bgColor: 'bg-green-100'
+		},
+		{
+			title: '여행 채팅',
+			description: '나에게\n맞는\n여행전문가\n를 채팅하세요',
+			bgColor: 'bg-yellow-100'
+		},
+		{
+			title: '안전결제',
+			description: '안전결제로\n안전하게\n결제하고\n예약을\n완료합니다',
+			bgColor: 'bg-purple-100'
+		},
+		{
+			title: '여행 및 리뷰',
+			description: '여행전문가와\n함께\n프라이빗한\n여행을 즐기고\n리뷰도\n남겨보세요.',
+			bgColor: 'bg-orange-100'
+		}
+	];
+
+	function nextSlide() {
+		currentSlide = (currentSlide + 1) % slides.length;
+	}
+
+	function prevSlide() {
+		currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+	}
+
+	function goToSlide(index: number) {
+		currentSlide = index;
+	}
+
+	function handleTouchStart(e: TouchEvent) {
+		startX = e.touches[0].clientX;
+		isDragging = true;
+	}
+
+	function handleTouchEnd(e: TouchEvent) {
+		if (!isDragging) return;
+
+		const endX = e.changedTouches[0].clientX;
+		const diffX = startX - endX;
+
+		// Minimum swipe distance
+		if (Math.abs(diffX) > 50) {
+			if (diffX > 0) {
+				nextSlide();
+			} else {
+				prevSlide();
+			}
+		}
+
+		isDragging = false;
+	}
+
+	function handleMouseDown(e: MouseEvent) {
+		startX = e.clientX;
+		isDragging = true;
+	}
+
+	function handleMouseUp(e: MouseEvent) {
+		if (!isDragging) return;
+
+		const endX = e.clientX;
+		const diffX = startX - endX;
+
+		// Minimum swipe distance
+		if (Math.abs(diffX) > 50) {
+			if (diffX > 0) {
+				nextSlide();
+			} else {
+				prevSlide();
+			}
+		}
+
+		isDragging = false;
+	}
 
 	async function fetchResults(q: string) {
 		if (!q) {
@@ -43,7 +151,8 @@
 
 	function handleSearch(event: Event) {
 		event.preventDefault();
-		// handle search logic here
+		// Navigate to trip creation page
+		goto('/create-trip');
 	}
 </script>
 
@@ -262,6 +371,309 @@
 		<div class="mx-auto mt-2 w-1/2 border-t"></div>
 	</section>
 
+	<!-- Onboarding Section -->
+	<section class="border-b bg-gray-50 px-4 py-12">
+		<div class="mx-auto max-w-4xl">
+			<div class="mb-8 text-center">
+				<h2 class="mb-4 text-3xl font-bold text-gray-900">Match Trip 사용방법</h2>
+				<p class="text-lg text-gray-600">간단한 단계로 완벽한 여행을 계획하세요</p>
+			</div>
+
+			<!-- Carousel Container -->
+			<div class="relative overflow-hidden">
+				<!-- Mobile Screen Carousel -->
+				<div
+					class="flex cursor-grab transition-transform duration-300 ease-in-out active:cursor-grabbing"
+					style="transform: translateX(-{currentSlide * 100}%)"
+					ontouchstart={handleTouchStart}
+					ontouchend={handleTouchEnd}
+					onmousedown={handleMouseDown}
+					onmouseup={handleMouseUp}>
+					{#each slides as slide, index}
+						<div class="flex w-full flex-shrink-0 justify-center">
+							<div class="flex flex-col items-center">
+								<div
+									class="mb-4 h-96 w-56 rounded-3xl border-4 border-gray-800 bg-white p-4 shadow-xl">
+									<div class="mb-4 h-6 w-full rounded-full bg-gray-900"></div>
+									<div class="space-y-4">
+										<div class="text-center">
+											<h3 class="text-lg font-bold text-gray-900">{slide.title}</h3>
+											<p class="mt-2 text-sm whitespace-pre-line text-gray-600">
+												{slide.description}
+											</p>
+										</div>
+										<div class="mx-auto h-32 w-32 rounded-lg {slide.bgColor}"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					{/each}
+				</div>
+
+				<!-- Navigation Arrows -->
+				<button
+					class="absolute top-1/2 left-4 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-lg transition-colors hover:bg-gray-50"
+					onclick={prevSlide}
+					disabled={currentSlide === 0}>
+					<svg class="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M15 19l-7-7 7-7" />
+					</svg>
+				</button>
+
+				<button
+					class="absolute top-1/2 right-4 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-lg transition-colors hover:bg-gray-50"
+					onclick={nextSlide}
+					disabled={currentSlide === slides.length - 1}>
+					<svg class="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M9 5l7 7-7 7" />
+					</svg>
+				</button>
+			</div>
+
+			<!-- Dots Indicator -->
+			<div class="mt-8 text-center">
+				<p class="mb-4 text-lg font-semibold text-gray-700">
+					총 {slides.length}개 컷 (좌우로 스와이핑)
+				</p>
+				<div class="flex justify-center space-x-2">
+					{#each slides as _, index}
+						<button
+							class="h-3 w-3 rounded-full transition-colors {currentSlide === index
+								? 'bg-pink-500'
+								: 'bg-gray-300'}"
+							onclick={() => goToSlide(index)}
+							aria-label="슬라이드 {index + 1}로 이동">
+						</button>
+					{/each}
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- Recommended Destinations Section -->
+	<section class="border-b bg-white px-4 py-12">
+		<div class="mx-auto max-w-6xl">
+			<div class="mb-8 text-center">
+				<h2 class="mb-4 text-3xl font-bold text-gray-900">Match Trip 서비스 지역</h2>
+				<p class="text-lg text-gray-600">전 세계 인기 여행지에서 현지 전문가와 함께하세요</p>
+			</div>
+
+			<!-- Destinations Grid - 4x2 Gallery -->
+			<div class="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+				<!-- Paris Card -->
+				<div
+					class="group relative overflow-hidden rounded-xl bg-gray-100 shadow-lg transition-transform hover:scale-105">
+					<div
+						class="flex aspect-square items-center justify-center bg-gradient-to-br from-pink-200 to-purple-300">
+						<div class="text-center">
+							<div class="mb-2 text-6xl">🗼</div>
+							<p class="text-sm text-gray-600">(사진)</p>
+						</div>
+					</div>
+					<div
+						class="bg-opacity-20 group-hover:bg-opacity-30 absolute inset-0 bg-black transition-all">
+					</div>
+					<div
+						class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black to-transparent p-6">
+						<h3 class="text-2xl font-bold text-white">파리</h3>
+						<p class="text-gray-200">(사진)</p>
+					</div>
+				</div>
+
+				<!-- Prague Card -->
+				<div
+					class="group relative overflow-hidden rounded-xl bg-gray-100 shadow-lg transition-transform hover:scale-105">
+					<div
+						class="flex aspect-square items-center justify-center bg-gradient-to-br from-blue-200 to-indigo-300">
+						<div class="text-center">
+							<div class="mb-2 text-6xl">🏰</div>
+							<p class="text-sm text-gray-600">(사진)</p>
+						</div>
+					</div>
+					<div
+						class="bg-opacity-20 group-hover:bg-opacity-30 absolute inset-0 bg-black transition-all">
+					</div>
+					<div
+						class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black to-transparent p-6">
+						<h3 class="text-2xl font-bold text-white">프라하</h3>
+						<p class="text-gray-200">(사진)</p>
+					</div>
+				</div>
+
+				<!-- Berlin Card -->
+				<div
+					class="group relative overflow-hidden rounded-xl bg-gray-100 shadow-lg transition-transform hover:scale-105">
+					<div
+						class="flex aspect-square items-center justify-center bg-gradient-to-br from-green-200 to-teal-300">
+						<div class="text-center">
+							<div class="mb-2 text-6xl">🏛️</div>
+							<p class="text-sm text-gray-600">(사진)</p>
+						</div>
+					</div>
+					<div
+						class="bg-opacity-20 group-hover:bg-opacity-30 absolute inset-0 bg-black transition-all">
+					</div>
+					<div
+						class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black to-transparent p-6">
+						<h3 class="text-2xl font-bold text-white">베를린</h3>
+						<p class="text-gray-200">(사진)</p>
+					</div>
+				</div>
+
+				<!-- Frankfurt Card -->
+				<div
+					class="group relative overflow-hidden rounded-xl bg-gray-100 shadow-lg transition-transform hover:scale-105">
+					<div
+						class="flex aspect-square items-center justify-center bg-gradient-to-br from-orange-200 to-red-300">
+						<div class="text-center">
+							<div class="mb-2 text-6xl">🏙️</div>
+							<p class="text-sm text-gray-600">(사진)</p>
+						</div>
+					</div>
+					<div
+						class="bg-opacity-20 group-hover:bg-opacity-30 absolute inset-0 bg-black transition-all">
+					</div>
+					<div
+						class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black to-transparent p-6">
+						<h3 class="text-2xl font-bold text-white">프랑크푸르트</h3>
+						<p class="text-gray-200">(사진)</p>
+					</div>
+				</div>
+
+				<!-- Rome Card -->
+				<div
+					class="group relative cursor-pointer overflow-hidden rounded-xl bg-gray-100 shadow-lg transition-transform hover:scale-105"
+					onclick={openComingSoonModal}>
+					<div
+						class="flex aspect-square items-center justify-center bg-gradient-to-br from-red-200 to-orange-300">
+						<div class="text-center">
+							<div class="mb-2 text-6xl">🏛️</div>
+							<p class="text-sm text-gray-600">(오픈 예정)</p>
+						</div>
+					</div>
+					<div
+						class="bg-opacity-20 group-hover:bg-opacity-30 absolute inset-0 bg-black transition-all">
+					</div>
+					<div
+						class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black to-transparent p-6">
+						<h3 class="text-2xl font-bold text-white">로마</h3>
+						<p class="text-gray-200">(오픈 예정)</p>
+					</div>
+				</div>
+
+				<!-- Florence Card -->
+				<div
+					class="group relative cursor-pointer overflow-hidden rounded-xl bg-gray-100 shadow-lg transition-transform hover:scale-105"
+					onclick={openComingSoonModal}>
+					<div
+						class="flex aspect-square items-center justify-center bg-gradient-to-br from-purple-200 to-pink-300">
+						<div class="text-center">
+							<div class="mb-2 text-6xl">🎨</div>
+							<p class="text-sm text-gray-600">(오픈 예정)</p>
+						</div>
+					</div>
+					<div
+						class="bg-opacity-20 group-hover:bg-opacity-30 absolute inset-0 bg-black transition-all">
+					</div>
+					<div
+						class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black to-transparent p-6">
+						<h3 class="text-2xl font-bold text-white">피렌체</h3>
+						<p class="text-gray-200">(오픈 예정)</p>
+					</div>
+				</div>
+
+				<!-- Madrid Card -->
+				<div
+					class="group relative cursor-pointer overflow-hidden rounded-xl bg-gray-100 shadow-lg transition-transform hover:scale-105"
+					onclick={openComingSoonModal}>
+					<div
+						class="flex aspect-square items-center justify-center bg-gradient-to-br from-yellow-200 to-orange-300">
+						<div class="text-center">
+							<div class="mb-2 text-6xl">🏰</div>
+							<p class="text-sm text-gray-600">(오픈 예정)</p>
+						</div>
+					</div>
+					<div
+						class="bg-opacity-20 group-hover:bg-opacity-30 absolute inset-0 bg-black transition-all">
+					</div>
+					<div
+						class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black to-transparent p-6">
+						<h3 class="text-2xl font-bold text-white">마드리드</h3>
+						<p class="text-gray-200">(오픈 예정)</p>
+					</div>
+				</div>
+
+				<!-- Barcelona Card -->
+				<div
+					class="group relative cursor-pointer overflow-hidden rounded-xl bg-gray-100 shadow-lg transition-transform hover:scale-105"
+					onclick={openComingSoonModal}>
+					<div
+						class="flex aspect-square items-center justify-center bg-gradient-to-br from-blue-200 to-teal-300">
+						<div class="text-center">
+							<div class="mb-2 text-6xl">🏖️</div>
+							<p class="text-sm text-gray-600">(오픈 예정)</p>
+						</div>
+					</div>
+					<div
+						class="bg-opacity-20 group-hover:bg-opacity-30 absolute inset-0 bg-black transition-all">
+					</div>
+					<div
+						class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black to-transparent p-6">
+						<h3 class="text-2xl font-bold text-white">바르셀로나</h3>
+						<p class="text-gray-200">(오픈 예정)</p>
+					</div>
+				</div>
+			</div>
+
+			<!-- Service Areas Arrow -->
+			<div class="mt-8 flex justify-end">
+				<div class="flex items-center text-gray-600">
+					<span class="mr-2 text-lg font-medium">서비스 지역</span>
+					<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M17 8l4 4m0 0l-4 4m4-4H3" />
+					</svg>
+				</div>
+			</div>
+		</div>
+	</section>
+
 	<!-- Footer -->
 	<footer class="py-4 text-center text-sm text-gray-600">푸터</footer>
 </div>
+
+<!-- Coming Soon Modal -->
+{#if showComingSoonModal}
+	<div
+		class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black"
+		onclick={closeComingSoonModal}>
+		<div
+			class="mx-4 max-w-md rounded-lg bg-white p-6 shadow-xl"
+			onclick={(e) => e.stopPropagation()}>
+			<div class="text-center">
+				<div class="mb-4 text-4xl">🚀</div>
+				<h3 class="mb-2 text-xl font-bold text-gray-900">해당 서비스 지역은</h3>
+				<h3 class="mb-4 text-xl font-bold text-gray-900">곧 오픈 예정입니다.</h3>
+				<p class="mb-6 text-gray-600">
+					더 많은 여행지에서 현지 전문가와 함께할 수 있도록 준비 중입니다.
+				</p>
+				<button
+					class="rounded-lg bg-pink-500 px-6 py-2 text-white transition-colors hover:bg-pink-600"
+					onclick={closeComingSoonModal}>
+					확인
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
