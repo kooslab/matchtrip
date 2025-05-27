@@ -4,6 +4,7 @@
 	import CaretLeft from 'phosphor-svelte/lib/CaretLeft';
 	import CaretRight from 'phosphor-svelte/lib/CaretRight';
 	import { goto } from '$app/navigation';
+	import { invalidate } from '$app/navigation';
 	import { useSession } from '$lib/authClient';
 
 	// Authentication check
@@ -106,9 +107,10 @@
 
 			const data = await response.json();
 
-			if (data.success) {
+			if (response.ok && data.trip) {
 				alert('여행 전문가 제안 요청이 성공적으로 등록되었습니다!');
-				// Redirect to my-trips page
+				// Invalidate trips cache and redirect to my-trips page
+				await invalidate('app:trips');
 				goto('/my-trips');
 			} else {
 				// Handle authentication errors specifically

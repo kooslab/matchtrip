@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { useSession } from '$lib/authClient';
-	import { onMount } from 'svelte';
+	import { invalidate } from '$app/navigation';
+
+	// Get data from server load function
+	let { data } = $props();
 
 	// Authentication check
 	const session = useSession();
@@ -13,68 +16,34 @@
 		}
 	});
 
-	// Trips state
-	let trips: any[] = $state([]);
-	let loading = $state(true);
-	let error = $state('');
+	// Get trips from server data
+	let trips = $derived(data.trips || []);
+	let serverError = $derived(data.error);
 
-	// Fetch user's trips
-	async function fetchTrips() {
-		if (!$session.data) return;
+	// Loading state for detail navigation
+	let navigatingTripId = $state<string | null>(null);
 
+	// Refresh state
+	let refreshing = $state(false);
+
+	// Refresh trips data
+	async function refreshTrips() {
 		try {
-			loading = true;
-			console.log('Fetching trips...');
-			const response = await fetch('/api/trips', {
-				credentials: 'include'
-			});
-			console.log('Response status:', response.status);
-
-			if (!response.ok) {
-				console.error('Response not ok:', response.status, response.statusText);
-				error = `서버 오류: ${response.status} ${response.statusText}`;
-				return;
-			}
-
-			const responseText = await response.text();
-			console.log('Raw response:', responseText);
-
-			let data;
-			try {
-				data = JSON.parse(responseText);
-				console.log('Parsed response data:', data);
-			} catch (parseError) {
-				console.error('JSON parse error:', parseError);
-				console.error('Response was:', responseText.substring(0, 500));
-				error = '서버에서 잘못된 응답을 받았습니다.';
-				return;
-			}
-
-			if (data.success) {
-				trips = data.trips || [];
-			} else {
-				error = data.error || '여행 목록을 불러오는데 실패했습니다.';
-			}
-		} catch (err) {
-			console.error('Error fetching trips:', err);
-			error = `서버 오류가 발생했습니다: ${err instanceof Error ? err.message : String(err)}`;
+			refreshing = true;
+			// Invalidate the current page data to force a refresh
+			await invalidate('app:trips');
+		} catch (error) {
+			console.error('Error refreshing trips:', error);
 		} finally {
-			loading = false;
+			refreshing = false;
 		}
 	}
 
-	// Fetch trips when component mounts and user is authenticated
-	$effect(() => {
-		if ($session.data && !$session.isPending) {
-			fetchTrips();
-		}
-	});
-
-	function formatDate(dateString: string) {
-		const date = new Date(dateString);
-		const year = date.getFullYear();
-		const month = String(date.getMonth() + 1).padStart(2, '0');
-		const day = String(date.getDate()).padStart(2, '0');
+	function formatDate(date: string | Date) {
+		const dateObj = typeof date === 'string' ? new Date(date) : date;
+		const year = dateObj.getFullYear();
+		const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+		const day = String(dateObj.getDate()).padStart(2, '0');
 		return `${year}.${month}.${day}`;
 	}
 
@@ -103,6 +72,15 @@
 	function goToCreateTrip() {
 		goto('/create-trip');
 	}
+
+	async function goToTripDetails(tripId: string) {
+		navigatingTripId = tripId;
+		try {
+			await goto(`/my-trips/details?tripId=${tripId}`);
+		} finally {
+			navigatingTripId = null;
+		}
+	}
 </script>
 
 {#if $session.isPending}
@@ -118,7 +96,22 @@
 		<!-- Header -->
 		<div class="border-b border-gray-200 bg-white px-4 py-4">
 			<div class="flex items-center justify-between">
-				<h1 class="text-xl font-bold text-gray-900">나의 여행</h1>
+				<div class="flex items-center gap-3">
+					<h1 class="text-xl font-bold text-gray-900">나의 여행</h1>
+					<button
+						onclick={refreshTrips}
+						disabled={refreshing}
+						class="rounded-lg border border-gray-300 px-3 py-1 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+						title="새로고침">
+						{#if refreshing}
+							<div
+								class="h-4 w-4 animate-spin rounded-full border border-gray-400 border-t-transparent">
+							</div>
+						{:else}
+							🔄
+						{/if}
+					</button>
+				</div>
 				<button
 					class="rounded-lg bg-pink-500 px-4 py-2 text-sm font-medium text-white hover:bg-pink-600"
 					onclick={goToCreateTrip}>
@@ -129,19 +122,19 @@
 
 		<!-- Content -->
 		<div class="flex-1 px-4 py-6">
-			{#if loading}
+			{#if refreshing}
 				<div class="flex items-center justify-center py-12">
 					<div
 						class="h-8 w-8 animate-spin rounded-full border-2 border-pink-500 border-t-transparent">
 					</div>
 					<span class="ml-2 text-gray-600">여행 목록을 불러오는 중...</span>
 				</div>
-			{:else if error}
+			{:else if serverError}
 				<div class="rounded-lg border border-red-200 bg-red-50 p-4">
-					<p class="text-red-800">{error}</p>
+					<p class="text-red-800">{serverError}</p>
 					<button
 						class="mt-2 text-sm text-red-600 underline hover:text-red-800"
-						onclick={fetchTrips}>
+						onclick={refreshTrips}>
 						다시 시도
 					</button>
 				</div>
@@ -192,9 +185,17 @@
 
 								<div class="ml-4 flex flex-col gap-2">
 									<button
-										onclick={() => goto(`/my-trips/details?tripId=${trip.id}`)}
-										class="rounded bg-gray-100 px-3 py-1 text-sm text-gray-700 hover:bg-gray-200">
-										상세보기
+										onclick={() => goToTripDetails(trip.id)}
+										disabled={navigatingTripId === trip.id}
+										class="flex items-center justify-center gap-1 rounded bg-gray-100 px-3 py-1 text-sm text-gray-700 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50">
+										{#if navigatingTripId === trip.id}
+											<div
+												class="h-3 w-3 animate-spin rounded-full border border-gray-500 border-t-transparent">
+											</div>
+											<span>로딩중...</span>
+										{:else}
+											상세보기
+										{/if}
 									</button>
 									{#if trip.status === 'draft'}
 										<button

@@ -5,7 +5,6 @@ import { redirect, type Handle } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
-import { getCachedUser, setCachedUser } from '$lib/server/cache';
 
 const betterAuthHandler = (async ({ event, resolve }) => {
 	return svelteKitHandler({ event, resolve, auth });
@@ -21,29 +20,20 @@ const authorizationHandler = (async ({ event, resolve }) => {
 	// If user is logged in, fetch their full user data including role
 	if (session?.user?.id) {
 		try {
-			// Try cache first
-			let user = getCachedUser(session.user.id);
-
-			if (!user) {
-				// Cache miss, fetch from database
-				user = await db.query.users.findFirst({
-					where: eq(users.id, session.user.id),
-					columns: {
-						id: true,
-						role: true,
-						name: true,
-						email: true
-					}
-				});
-
-				if (user) {
-					setCachedUser(session.user.id, user);
+			// Fetch user from database
+			const user = await db.query.users.findFirst({
+				where: eq(users.id, session.user.id),
+				columns: {
+					id: true,
+					role: true,
+					name: true,
+					email: true
 				}
-			}
+			});
 
 			if (user) {
 				event.locals.user = user;
-				console.log('Hooks - User cached in locals:', user.email, 'Role:', user.role);
+				console.log('Hooks - User loaded in locals:', user.email, 'Role:', user.role);
 			}
 		} catch (error) {
 			console.error('Hooks - Failed to fetch user:', error);

@@ -4,64 +4,45 @@ import { trips, destinations, offers } from '$lib/server/db/schema';
 import { eq, desc, count } from 'drizzle-orm';
 import { auth } from '$lib/auth';
 
-export async function POST({ request }) {
+export async function POST({ request, locals }) {
 	try {
-		// Check authentication first
-		const session = await auth.api.getSession({ headers: request.headers });
+		const session = locals.session;
 
-		if (!session) {
-			return json({ success: false, error: '인증되지 않은 요청입니다.' }, { status: 401 });
+		if (!session?.user?.id) {
+			return json({ error: 'Unauthorized' }, { status: 401 });
 		}
 
-		const body = await request.json();
-		const {
-			destination,
-			adultsCount,
-			childrenCount,
-			startDate,
-			endDate,
-			travelMethod,
-			customRequest
-		} = body;
+		const tripData = await request.json();
 
-		// Validate required fields
-		if (!destination || !startDate || !endDate) {
-			return json({ success: false, error: 'Missing required fields' }, { status: 400 });
-		}
-
-		// Find destination ID by city name
-		const destinationRecord = await db
-			.select()
-			.from(destinations)
-			.where(eq(destinations.city, destination))
-			.limit(1);
-
-		if (destinationRecord.length === 0) {
-			return json({ success: false, error: 'Destination not found' }, { status: 400 });
-		}
-
-		const destinationId = destinationRecord[0].id;
-
-		// Create the trip
-		const newTrip = await db
-			.insert(trips)
+		// Insert destination first
+		const [destination] = await db
+			.insert(destinations)
 			.values({
-				userId: session.user.id,
-				destinationId,
-				adultsCount: adultsCount || 1,
-				childrenCount: childrenCount || 0,
-				startDate: new Date(startDate),
-				endDate: new Date(endDate),
-				travelMethod: travelMethod || null,
-				customRequest: customRequest || null,
-				status: 'submitted' // Set to submitted when expert proposal is requested
+				city: tripData.destination.city,
+				country: tripData.destination.country
 			})
 			.returning();
 
-		return json({ success: true, trip: newTrip[0] });
+		// Insert trip
+		const [trip] = await db
+			.insert(trips)
+			.values({
+				userId: session.user.id,
+				destinationId: destination.id,
+				startDate: new Date(tripData.startDate),
+				endDate: new Date(tripData.endDate),
+				adultsCount: tripData.adultsCount,
+				childrenCount: tripData.childrenCount,
+				travelMethod: tripData.travelMethod,
+				customRequest: tripData.customRequest,
+				status: 'submitted'
+			})
+			.returning();
+
+		return json({ trip, destination });
 	} catch (error) {
 		console.error('Error creating trip:', error);
-		return json({ success: false, error: 'Internal server error' }, { status: 500 });
+		return json({ error: 'Failed to create trip' }, { status: 500 });
 	}
 }
 
