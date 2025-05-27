@@ -43,6 +43,13 @@
       "when": 1748310781225,
       "tag": "0005_lucky_wendigo",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1748317552444,
+      "tag": "0006_silky_sentinels",
+      "breakpoints": true
     }
   ]
 }

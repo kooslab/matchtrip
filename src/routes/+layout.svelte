@@ -1,6 +1,13 @@
 <script lang="ts">
 	import '../app.css';
 	import Footer from '$lib/components/Footer.svelte';
+	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
+
+	export let data;
+
+	$: user = data?.user;
+	$: isLoggedIn = !!user;
 
 	let isOpen = false;
 	function openMenu() {
@@ -8,6 +15,26 @@
 	}
 	function closeMenu() {
 		isOpen = false;
+	}
+
+	async function handleLogout() {
+		try {
+			const response = await fetch('/api/auth/sign-out', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (response.ok) {
+				closeMenu();
+				goto('/');
+				// Force a page reload to clear any cached data
+				window.location.reload();
+			}
+		} catch (error) {
+			console.error('Logout error:', error);
+		}
 	}
 </script>
 
@@ -53,36 +80,80 @@
 					class="block py-2 font-medium text-gray-800 hover:text-blue-600"
 					onclick={closeMenu}>홈</a>
 			</li>
-			<li>
-				<a
-					href="/my-trips"
-					class="block py-2 font-medium text-gray-800 hover:text-blue-600"
-					onclick={closeMenu}>나의 여행</a>
-			</li>
-			<li>
-				<a
-					href="/signin"
-					class="block py-2 font-medium text-gray-800 hover:text-blue-600"
-					onclick={closeMenu}>로그인</a>
-			</li>
-			<li>
-				<a
-					href="/signup"
-					class="block py-2 font-medium text-gray-800 hover:text-blue-600"
-					onclick={closeMenu}>회원가입</a>
-			</li>
+
+			{#if isLoggedIn}
+				<!-- Logged in menu items -->
+				<li>
+					<a
+						href="/my-trips"
+						class="block py-2 font-medium text-gray-800 hover:text-blue-600"
+						onclick={closeMenu}>나의 여행</a>
+				</li>
+				<li>
+					<a
+						href="/app"
+						class="block py-2 font-medium text-gray-800 hover:text-blue-600"
+						onclick={closeMenu}>대시보드</a>
+				</li>
+				<li>
+					<div class="my-2 border-t border-gray-200"></div>
+				</li>
+				<li>
+					<div class="px-2 py-1 text-sm text-gray-500">
+						안녕하세요, {user?.name || '사용자'}님
+					</div>
+				</li>
+				<li>
+					<button
+						onclick={handleLogout}
+						class="block w-full py-2 text-left font-medium text-red-600 hover:text-red-700">
+						로그아웃
+					</button>
+				</li>
+			{:else}
+				<!-- Not logged in menu items -->
+				<li>
+					<a
+						href="/signin"
+						class="block py-2 font-medium text-gray-800 hover:text-blue-600"
+						onclick={closeMenu}>로그인</a>
+				</li>
+				<li>
+					<a
+						href="/signup"
+						class="block py-2 font-medium text-gray-800 hover:text-blue-600"
+						onclick={closeMenu}>회원가입</a>
+				</li>
+			{/if}
 		</ul>
 	</div>
 </nav>
 
-<!-- Desktop Navbar (optional, simple) -->
+<!-- Desktop Navbar -->
 <nav class="hidden items-center justify-between bg-white/90 px-8 py-4 shadow md:flex">
 	<a href="/" class="text-lg font-bold text-blue-600">MatchTrip</a>
-	<ul class="flex gap-6">
+	<ul class="flex items-center gap-6">
 		<li><a href="/" class="font-medium text-gray-800 hover:text-blue-600">홈</a></li>
-		<li><a href="/my-trips" class="font-medium text-gray-800 hover:text-blue-600">나의 여행</a></li>
-		<li><a href="/signin" class="font-medium text-gray-800 hover:text-blue-600">로그인</a></li>
-		<li><a href="/signup" class="font-medium text-gray-800 hover:text-blue-600">회원가입</a></li>
+
+		{#if isLoggedIn}
+			<!-- Logged in desktop menu -->
+			<li>
+				<a href="/my-trips" class="font-medium text-gray-800 hover:text-blue-600">나의 여행</a>
+			</li>
+			<li><a href="/app" class="font-medium text-gray-800 hover:text-blue-600">대시보드</a></li>
+			<li>
+				<div class="flex items-center gap-4">
+					<span class="text-sm text-gray-600">안녕하세요, {user?.name || '사용자'}님</span>
+					<button onclick={handleLogout} class="font-medium text-red-600 hover:text-red-700">
+						로그아웃
+					</button>
+				</div>
+			</li>
+		{:else}
+			<!-- Not logged in desktop menu -->
+			<li><a href="/signin" class="font-medium text-gray-800 hover:text-blue-600">로그인</a></li>
+			<li><a href="/signup" class="font-medium text-gray-800 hover:text-blue-600">회원가입</a></li>
+		{/if}
 	</ul>
 </nav>
 

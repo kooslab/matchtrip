@@ -7,7 +7,9 @@ import {
 	pgEnum,
 	integer,
 	serial,
-	varchar
+	varchar,
+	date,
+	jsonb
 } from 'drizzle-orm/pg-core';
 
 // Define the enum for user roles
@@ -21,6 +23,8 @@ export const users = pgTable('users', {
 	emailVerified: boolean('email_verified').notNull(),
 	image: text('image'),
 	role: userRoleEnum('role').notNull().default('traveler'),
+	phone: text('phone'),
+	birthDate: date('birth_date'),
 	createdAt: timestamp('created_at').notNull(),
 	updatedAt: timestamp('updated_at').notNull()
 });
@@ -38,6 +42,66 @@ export const userAgreements = pgTable('user_agreements', {
 	privacyAgreedAt: timestamp('privacy_agreed_at'),
 	marketingAgreedAt: timestamp('marketing_agreed_at'),
 	updatedAt: timestamp('updated_at').notNull()
+});
+
+// Guide profiles table for additional guide information
+export const guideProfiles = pgTable('guide_profiles', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	userId: uuid('user_id')
+		.notNull()
+		.references(() => users.id, { onDelete: 'cascade' })
+		.unique(),
+	currentLocation: text('current_location'),
+	guideAreas: text('guide_areas'),
+	activityAreas: jsonb('activity_areas').$type<string[]>(),
+	experience: text('experience'),
+	languages: jsonb('languages').$type<string[]>(),
+	certifications: text('certifications'),
+	introduction: text('introduction'),
+	profileImageUrl: text('profile_image_url'),
+	idDocumentUrl: text('id_document_url'),
+	certificationUrls: jsonb('certification_urls').$type<string[]>(),
+	isVerified: boolean('is_verified').notNull().default(false),
+	verifiedAt: timestamp('verified_at'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Traveler profiles table for additional traveler information
+export const travelerProfiles = pgTable('traveler_profiles', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	userId: uuid('user_id')
+		.notNull()
+		.references(() => users.id, { onDelete: 'cascade' })
+		.unique(),
+	nationality: text('nationality'),
+	travelStyle: text('travel_style'),
+	budgetRange: text('budget_range'),
+	preferredLanguages: jsonb('preferred_languages').$type<string[]>(),
+	travelFrequency: text('travel_frequency'),
+	interests: jsonb('interests').$type<string[]>(),
+	dietaryRestrictions: jsonb('dietary_restrictions').$type<string[]>(),
+	accessibilityNeeds: text('accessibility_needs'),
+	emergencyContact: text('emergency_contact'),
+	emergencyPhone: text('emergency_phone'),
+	profileImageUrl: text('profile_image_url'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// File uploads table to track all uploaded files
+export const fileUploads = pgTable('file_uploads', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	userId: uuid('user_id')
+		.notNull()
+		.references(() => users.id, { onDelete: 'cascade' }),
+	filename: text('filename').notNull(),
+	originalName: text('original_name').notNull(),
+	fileType: text('file_type').notNull(),
+	fileSize: integer('file_size').notNull(),
+	uploadType: text('upload_type').notNull(), // 'profile', 'id', 'certification', etc.
+	url: text('url').notNull(),
+	createdAt: timestamp('created_at').defaultNow().notNull()
 });
 
 export const sessions = pgTable('sessions', {
