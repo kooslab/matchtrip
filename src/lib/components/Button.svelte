@@ -8,13 +8,14 @@
 		class?: string;
 		href?: string;
 		onclick?: (event: Event) => void;
+		type?: string;
 	}
 
 	let {
 		loading = false,
 		loadingText = 'Loading...',
 		class: className = '',
-		onclick,
+		onclick = undefined,
 		...props
 	} = $props();
 

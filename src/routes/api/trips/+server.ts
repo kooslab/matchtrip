@@ -74,7 +74,7 @@ export async function GET({ request }) {
 			return json({ success: false, error: '인증되지 않은 요청입니다.' }, { status: 401 });
 		}
 
-		// Fetch user's trips with destination information and offer counts
+		// Fetch user's trips with destination information (simplified query)
 		const userTrips = await db
 			.select({
 				id: trips.id,
@@ -93,17 +93,29 @@ export async function GET({ request }) {
 					id: destinations.id,
 					city: destinations.city,
 					country: destinations.country
-				},
-				offerCount: count(offers.id)
+				}
 			})
 			.from(trips)
 			.leftJoin(destinations, eq(trips.destinationId, destinations.id))
-			.leftJoin(offers, eq(offers.tripId, trips.id))
 			.where(eq(trips.userId, session.user.id))
-			.groupBy(trips.id, destinations.id)
 			.orderBy(desc(trips.createdAt));
 
-		return json({ success: true, trips: userTrips });
+		// Add offer count separately for each trip
+		const tripsWithOfferCount = await Promise.all(
+			userTrips.map(async (trip) => {
+				const offerCountResult = await db
+					.select({ count: count(offers.id) })
+					.from(offers)
+					.where(eq(offers.tripId, trip.id));
+
+				return {
+					...trip,
+					offerCount: offerCountResult[0]?.count || 0
+				};
+			})
+		);
+
+		return json({ success: true, trips: tripsWithOfferCount });
 	} catch (error) {
 		console.error('Error fetching trips:', error);
 		return json({ success: false, error: 'Internal server error' }, { status: 500 });

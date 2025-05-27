@@ -1,7 +1,7 @@
 import { preloadData } from '$app/navigation';
 
 // Common routes that users frequently visit
-const COMMON_ROUTES = ['/my-trips', '/trips', '/my-offers', '/app'];
+const COMMON_ROUTES = ['/my-trips', '/trips', '/my-offers'];
 
 export function preloadCommonRoutes() {
 	// Preload common routes after a short delay

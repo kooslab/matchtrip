@@ -24,8 +24,31 @@
 
 		try {
 			loading = true;
-			const response = await fetch('/api/trips');
-			const data = await response.json();
+			console.log('Fetching trips...');
+			const response = await fetch('/api/trips', {
+				credentials: 'include'
+			});
+			console.log('Response status:', response.status);
+
+			if (!response.ok) {
+				console.error('Response not ok:', response.status, response.statusText);
+				error = `서버 오류: ${response.status} ${response.statusText}`;
+				return;
+			}
+
+			const responseText = await response.text();
+			console.log('Raw response:', responseText);
+
+			let data;
+			try {
+				data = JSON.parse(responseText);
+				console.log('Parsed response data:', data);
+			} catch (parseError) {
+				console.error('JSON parse error:', parseError);
+				console.error('Response was:', responseText.substring(0, 500));
+				error = '서버에서 잘못된 응답을 받았습니다.';
+				return;
+			}
 
 			if (data.success) {
 				trips = data.trips || [];
@@ -34,7 +57,7 @@
 			}
 		} catch (err) {
 			console.error('Error fetching trips:', err);
-			error = '서버 오류가 발생했습니다.';
+			error = `서버 오류가 발생했습니다: ${err instanceof Error ? err.message : String(err)}`;
 		} finally {
 			loading = false;
 		}

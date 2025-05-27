@@ -28,9 +28,23 @@
 				console.error('signIn error', result.error);
 				error = result.error.message ?? '알 수 없는 오류가 발생했습니다.';
 			} else {
-				// 로그인 성공 - 모든 데이터 무효화하고 이동
+				// 로그인 성공 - 모든 데이터 무효화하고 역할에 따라 이동
 				await invalidateAll();
-				goto('/app');
+
+				// Get user role from the result or make a quick API call
+				try {
+					const response = await fetch('/api/user/role');
+					const data = await response.json();
+
+					if (data.role === 'guide') {
+						goto('/trips');
+					} else {
+						goto('/my-trips');
+					}
+				} catch {
+					// Fallback to home if role check fails
+					goto('/');
+				}
 			}
 		} finally {
 			isLoading = false;

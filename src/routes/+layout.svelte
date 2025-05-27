@@ -138,12 +138,7 @@
 							onclick={() => closeMenu()}>나의 제안</NavigationLink>
 					</li>
 				{/if}
-				<li>
-					<NavigationLink
-						href="/app"
-						class="block py-2 font-medium text-gray-800 hover:text-blue-600"
-						onclick={() => closeMenu()}>대시보드</NavigationLink>
-				</li>
+
 				<li>
 					<div class="my-2 border-t border-gray-200"></div>
 				</li>
@@ -206,10 +201,7 @@
 						>나의 제안</NavigationLink>
 				</li>
 			{/if}
-			<li>
-				<NavigationLink href="/app" class="font-medium text-gray-800 hover:text-blue-600"
-					>대시보드</NavigationLink>
-			</li>
+
 			<li>
 				<div class="flex items-center gap-4">
 					<span class="text-sm text-gray-600">안녕하세요, {user?.name || '사용자'}님</span>

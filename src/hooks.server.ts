@@ -50,21 +50,29 @@ const authorizationHandler = (async ({ event, resolve }) => {
 		}
 	}
 
-	// Handle auth route redirects
-	if (routeId?.startsWith('/(auth)') && session) {
-		redirect(302, '/app');
+	// Handle auth route redirects - redirect to role-based pages
+	if (routeId?.startsWith('/(auth)') && session && event.locals.user) {
+		if (event.locals.user.role === 'guide') {
+			redirect(302, '/trips');
+		} else {
+			redirect(302, '/my-trips');
+		}
 	}
 
-	// Handle protected routes that require authentication
-	if (routeId?.includes('/my-trips') && !session?.user) {
+	// Handle protected routes that require authentication (exclude API routes)
+	if (routeId?.includes('/my-trips') && !routeId?.startsWith('/api') && !session?.user) {
 		redirect(302, '/signin');
 	}
 
-	// Handle protected routes that require specific roles (guide-only routes)
+	// Handle protected routes that require specific roles (guide-only routes, exclude API routes)
 	const guideOnlyRoutes = ['/trips', '/offers', '/my-offers'];
 	const isGuideOnlyRoute = guideOnlyRoutes.some((route) => routeId?.includes(route));
 
-	if (isGuideOnlyRoute && (!event.locals.user || event.locals.user.role !== 'guide')) {
+	if (
+		isGuideOnlyRoute &&
+		!routeId?.startsWith('/api') &&
+		(!event.locals.user || event.locals.user.role !== 'guide')
+	) {
 		console.log('Hooks - Access denied to guide-only route. User role:', event.locals.user?.role);
 		redirect(302, '/');
 	}
