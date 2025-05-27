@@ -55,6 +55,12 @@
 			</li>
 			<li>
 				<a
+					href="/my-trips"
+					class="block py-2 font-medium text-gray-800 hover:text-blue-600"
+					onclick={closeMenu}>나의 여행</a>
+			</li>
+			<li>
+				<a
 					href="/signin"
 					class="block py-2 font-medium text-gray-800 hover:text-blue-600"
 					onclick={closeMenu}>로그인</a>
@@ -74,6 +80,7 @@
 	<a href="/" class="text-lg font-bold text-blue-600">MatchTrip</a>
 	<ul class="flex gap-6">
 		<li><a href="/" class="font-medium text-gray-800 hover:text-blue-600">홈</a></li>
+		<li><a href="/my-trips" class="font-medium text-gray-800 hover:text-blue-600">나의 여행</a></li>
 		<li><a href="/signin" class="font-medium text-gray-800 hover:text-blue-600">로그인</a></li>
 		<li><a href="/signup" class="font-medium text-gray-800 hover:text-blue-600">회원가입</a></li>
 	</ul>
