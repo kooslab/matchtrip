@@ -5,14 +5,25 @@ import { ilike, or } from 'drizzle-orm';
 
 export async function GET({ url }) {
 	const q = url.searchParams.get('q')?.trim();
-	if (!q) return json({ results: [] });
+	console.log('Destinations API called with query:', q);
 
-	// Case-insensitive partial match for city or country
-	const results = await db
-		.select()
-		.from(destinations)
-		.where(or(ilike(destinations.city, `%${q}%`), ilike(destinations.country, `%${q}%`)))
-		.limit(10);
+	if (!q) {
+		console.log('No query provided, returning empty results');
+		return json({ results: [] });
+	}
 
-	return json({ results });
+	try {
+		// Case-insensitive partial match for city or country
+		const results = await db
+			.select()
+			.from(destinations)
+			.where(or(ilike(destinations.city, `%${q}%`), ilike(destinations.country, `%${q}%`)))
+			.limit(10);
+
+		console.log('Database query results:', results);
+		return json({ results });
+	} catch (error) {
+		console.error('Error querying destinations:', error);
+		return json({ results: [], error: 'Database error' }, { status: 500 });
+	}
 }

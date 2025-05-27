@@ -36,6 +36,13 @@
       "when": 1747648099672,
       "tag": "0004_dark_reavers",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1748310781225,
+      "tag": "0005_lucky_wendigo",
+      "breakpoints": true
     }
   ]
 }

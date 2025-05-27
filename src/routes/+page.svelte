@@ -648,9 +648,6 @@
 			</div>
 		</div>
 	</section>
-
-	<!-- Footer -->
-	<footer class="py-4 text-center text-sm text-gray-600">푸터</footer>
 </div>
 
 <!-- Coming Soon Modal -->
