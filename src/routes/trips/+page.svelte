@@ -4,6 +4,9 @@
 
 	let trips = $derived(data.trips);
 
+	// Loading state for proposal navigation
+	let navigatingTripId = $state<string | null>(null);
+
 	function formatDate(date: Date | string) {
 		const dateObj = typeof date === 'string' ? new Date(date) : date;
 		return dateObj.toLocaleDateString('ko-KR', {
@@ -31,6 +34,15 @@
 		};
 
 		return methodMap[method] || method;
+	}
+
+	async function goToOffer(tripId: string) {
+		navigatingTripId = tripId;
+		try {
+			await goto(`/offers?tripId=${tripId}`);
+		} finally {
+			navigatingTripId = null;
+		}
 	}
 </script>
 
@@ -117,9 +129,17 @@
 									</span>
 								{:else}
 									<button
-										onclick={() => goto(`/offers?tripId=${trip.id}`)}
-										class="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none">
-										제안하기
+										onclick={() => goToOffer(trip.id)}
+										disabled={navigatingTripId === trip.id}
+										class="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50">
+										{#if navigatingTripId === trip.id}
+											<div
+												class="mr-1 h-3 w-3 animate-spin rounded-full border border-white border-t-transparent">
+											</div>
+											로딩중...
+										{:else}
+											제안하기
+										{/if}
 									</button>
 								{/if}
 							</div>
