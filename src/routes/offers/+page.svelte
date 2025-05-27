@@ -2,21 +2,11 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { useSession } from '$lib/authClient';
-	import { userRole } from '$lib/stores/userRole';
 	import { onMount } from 'svelte';
 	import Editor from '@tinymce/tinymce-svelte';
 
-	// Authentication and role check
+	// Authentication is now handled server-side in +page.server.ts
 	const session = useSession();
-
-	// Check if user is authenticated and is a guide
-	$effect(() => {
-		if (!$session.isPending && !$session.data) {
-			goto('/signin');
-		} else if (!$session.isPending && $session.data && $userRole !== 'guide') {
-			goto('/'); // Redirect non-guides to home
-		}
-	});
 
 	// Get trip ID from URL params
 	let tripId = $derived($page.url.searchParams.get('tripId'));
