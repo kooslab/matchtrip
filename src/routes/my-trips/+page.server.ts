@@ -1,23 +1,13 @@
-import { redirect } from '@sveltejs/kit';
-import { auth } from '$lib/auth';
-
-export const load = async ({ request, locals }) => {
-	// Try to get session from locals first, fallback to direct auth call
-	let session = locals.session;
+export const load = async ({ locals }) => {
+	// Session is guaranteed to exist here due to auth guard in hooks.server.ts
+	const session = locals.session;
 
 	console.log('My-trips page - Session from locals:', !!session);
 
-	// If no session in locals, get it directly
-	if (!session) {
-		console.log('My-trips page - No session in locals, getting directly from auth');
-		session = await auth.api.getSession({ headers: request.headers });
-	}
+	// You can now use the session for any data fetching if needed
+	// For example: fetch user's trips using session.user.id
 
-	// Redirect if not logged in
-	if (!session?.user) {
-		console.log('My-trips page - No session, redirecting to signin');
-		throw redirect(302, '/signin');
-	}
-
-	return {};
+	return {
+		session
+	};
 };

@@ -1,8 +1,11 @@
 <script lang="ts">
 	import '../app.css';
 	import Footer from '$lib/components/Footer.svelte';
+	import NavigationLink from '$lib/components/NavigationLink.svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { navigating } from '$app/stores';
+	import { preloadCommonRoutes } from '$lib/utils/preloader';
 
 	let { data } = $props();
 
@@ -10,6 +13,13 @@
 	let userRole = $derived(data?.userRole);
 	let isLoggedIn = $derived(!!user);
 	let isGuide = $derived(userRole === 'guide');
+
+	// Preload common routes for logged in users
+	$effect(() => {
+		if (isLoggedIn) {
+			preloadCommonRoutes();
+		}
+	});
 
 	let isOpen = $state(false);
 	function openMenu() {
@@ -39,6 +49,13 @@
 		}
 	}
 </script>
+
+<!-- Global Loading Bar -->
+{#if $navigating}
+	<div class="fixed top-0 left-0 z-50 h-1 w-full bg-gray-200">
+		<div class="h-full animate-pulse bg-gradient-to-r from-blue-500 to-pink-500"></div>
+	</div>
+{/if}
 
 <!-- Mobile Navbar -->
 <nav class="fixed top-0 left-0 z-40 w-full bg-white shadow md:hidden">
@@ -91,39 +108,41 @@
 		</div>
 		<ul class="flex flex-col gap-2 px-6 py-6">
 			<li>
-				<a
+				<NavigationLink
 					href="/"
 					class="block py-2 font-medium text-gray-800 hover:text-blue-600"
-					onclick={() => closeMenu()}>홈</a>
+					onclick={() => closeMenu()}>홈</NavigationLink>
 			</li>
 
 			{#if isLoggedIn}
 				<!-- Logged in menu items -->
-				<li>
-					<a
-						href="/my-trips"
-						class="block py-2 font-medium text-gray-800 hover:text-blue-600"
-						onclick={() => closeMenu()}>나의 여행</a>
-				</li>
+				{#if !isGuide}
+					<li>
+						<NavigationLink
+							href="/my-trips"
+							class="block py-2 font-medium text-gray-800 hover:text-blue-600"
+							onclick={() => closeMenu()}>나의 여행</NavigationLink>
+					</li>
+				{/if}
 				{#if isGuide}
 					<li>
-						<a
+						<NavigationLink
 							href="/trips"
 							class="block py-2 font-medium text-gray-800 hover:text-blue-600"
-							onclick={() => closeMenu()}>여행찾기</a>
+							onclick={() => closeMenu()}>여행찾기</NavigationLink>
 					</li>
 					<li>
-						<a
+						<NavigationLink
 							href="/my-offers"
 							class="block py-2 font-medium text-gray-800 hover:text-blue-600"
-							onclick={() => closeMenu()}>나의 제안</a>
+							onclick={() => closeMenu()}>나의 제안</NavigationLink>
 					</li>
 				{/if}
 				<li>
-					<a
+					<NavigationLink
 						href="/app"
 						class="block py-2 font-medium text-gray-800 hover:text-blue-600"
-						onclick={() => closeMenu()}>대시보드</a>
+						onclick={() => closeMenu()}>대시보드</NavigationLink>
 				</li>
 				<li>
 					<div class="my-2 border-t border-gray-200"></div>
@@ -144,16 +163,16 @@
 			{:else}
 				<!-- Not logged in menu items -->
 				<li>
-					<a
+					<NavigationLink
 						href="/signin"
 						class="block py-2 font-medium text-gray-800 hover:text-blue-600"
-						onclick={() => closeMenu()}>로그인</a>
+						onclick={() => closeMenu()}>로그인</NavigationLink>
 				</li>
 				<li>
-					<a
+					<NavigationLink
 						href="/signup"
 						class="block py-2 font-medium text-gray-800 hover:text-blue-600"
-						onclick={closeMenu}>회원가입</a>
+						onclick={closeMenu}>회원가입</NavigationLink>
 				</li>
 			{/if}
 		</ul>
@@ -164,22 +183,33 @@
 <nav class="hidden items-center justify-between bg-white/90 px-8 py-4 shadow md:flex">
 	<a href="/" class="text-lg font-bold text-blue-600">MatchTrip</a>
 	<ul class="flex items-center gap-6">
-		<li><a href="/" class="font-medium text-gray-800 hover:text-blue-600">홈</a></li>
+		<li>
+			<NavigationLink href="/" class="font-medium text-gray-800 hover:text-blue-600"
+				>홈</NavigationLink>
+		</li>
 
 		{#if isLoggedIn}
 			<!-- Logged in desktop menu -->
-			<li>
-				<a href="/my-trips" class="font-medium text-gray-800 hover:text-blue-600">나의 여행</a>
-			</li>
-			{#if isGuide}
+			{#if !isGuide}
 				<li>
-					<a href="/trips" class="font-medium text-gray-800 hover:text-blue-600">여행찾기</a>
-				</li>
-				<li>
-					<a href="/my-offers" class="font-medium text-gray-800 hover:text-blue-600">나의 제안</a>
+					<NavigationLink href="/my-trips" class="font-medium text-gray-800 hover:text-blue-600"
+						>나의 여행</NavigationLink>
 				</li>
 			{/if}
-			<li><a href="/app" class="font-medium text-gray-800 hover:text-blue-600">대시보드</a></li>
+			{#if isGuide}
+				<li>
+					<NavigationLink href="/trips" class="font-medium text-gray-800 hover:text-blue-600"
+						>여행찾기</NavigationLink>
+				</li>
+				<li>
+					<NavigationLink href="/my-offers" class="font-medium text-gray-800 hover:text-blue-600"
+						>나의 제안</NavigationLink>
+				</li>
+			{/if}
+			<li>
+				<NavigationLink href="/app" class="font-medium text-gray-800 hover:text-blue-600"
+					>대시보드</NavigationLink>
+			</li>
 			<li>
 				<div class="flex items-center gap-4">
 					<span class="text-sm text-gray-600">안녕하세요, {user?.name || '사용자'}님</span>
@@ -190,8 +220,14 @@
 			</li>
 		{:else}
 			<!-- Not logged in desktop menu -->
-			<li><a href="/signin" class="font-medium text-gray-800 hover:text-blue-600">로그인</a></li>
-			<li><a href="/signup" class="font-medium text-gray-800 hover:text-blue-600">회원가입</a></li>
+			<li>
+				<NavigationLink href="/signin" class="font-medium text-gray-800 hover:text-blue-600"
+					>로그인</NavigationLink>
+			</li>
+			<li>
+				<NavigationLink href="/signup" class="font-medium text-gray-800 hover:text-blue-600"
+					>회원가입</NavigationLink>
+			</li>
 		{/if}
 	</ul>
 </nav>
