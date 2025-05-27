@@ -30,7 +30,7 @@
 
 			if (response.ok) {
 				closeMenu();
-				goto('/');
+				goto('/signin');
 				// Force a page reload to clear any cached data
 				window.location.reload();
 			}

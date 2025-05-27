@@ -16,6 +16,7 @@ export const load = async ({ request, locals }) => {
 	// If user is logged in, fetch their role and cache it
 	if (session?.user?.id) {
 		try {
+			console.log('Layout server - Querying database for user:', session.user.id);
 			const user = await db.query.users.findFirst({
 				where: eq(users.id, session.user.id),
 				columns: {
@@ -26,16 +27,24 @@ export const load = async ({ request, locals }) => {
 				}
 			});
 
+			console.log('Layout server - Database query result:', user);
+
 			if (user) {
 				userRole = user.role;
 				fullUser = user;
 				// Cache user data in locals for other server functions to use
 				locals.user = user;
 				locals.session = session;
-				console.log('Layout server - User cached in locals:', user.email, user.role);
+				console.log('Layout server - User cached in locals:', user.email, 'Role:', user.role);
+			} else {
+				console.log('Layout server - No user found in database for ID:', session.user.id);
 			}
 		} catch (error) {
-			console.error('Failed to fetch user role:', error);
+			console.error('Layout server - Failed to fetch user role:', error);
+			console.error(
+				'Layout server - Error details:',
+				error instanceof Error ? error.message : String(error)
+			);
 		}
 	} else {
 		console.log('Layout server - No session found');

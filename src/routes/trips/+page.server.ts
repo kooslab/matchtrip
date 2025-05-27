@@ -10,13 +10,17 @@ export const load = async ({ request, locals }) => {
 	let user = locals.user;
 
 	console.log('Trips page - Session from locals:', !!session, 'User from locals:', !!user);
+	console.log('Trips page - Session user ID:', session?.user?.id);
+	console.log('Trips page - User role from locals:', user?.role);
 
 	// If no session in locals, get it directly
 	if (!session) {
 		console.log('Trips page - No session in locals, getting directly from auth');
 		session = await auth.api.getSession({ headers: request.headers });
+		console.log('Trips page - Session from direct auth:', !!session, 'User ID:', session?.user?.id);
 
 		if (session?.user?.id) {
+			console.log('Trips page - Fetching user from database for ID:', session.user.id);
 			user = await db.query.users.findFirst({
 				where: eq(users.id, session.user.id),
 				columns: {
@@ -26,6 +30,7 @@ export const load = async ({ request, locals }) => {
 					email: true
 				}
 			});
+			console.log('Trips page - User fetched from DB:', user?.email, 'Role:', user?.role);
 		}
 	}
 
@@ -37,9 +42,18 @@ export const load = async ({ request, locals }) => {
 
 	// Only allow guides to access this page
 	if (!user || user.role !== 'guide') {
-		console.log('Trips page - Not a guide, redirecting to home');
+		console.log(
+			'Trips page - Access denied. User exists:',
+			!!user,
+			'User role:',
+			user?.role,
+			'Expected: guide'
+		);
+		console.log('Trips page - Redirecting to home');
 		throw redirect(302, '/');
 	}
+
+	console.log('Trips page - Access granted for guide:', user.email);
 
 	// Fetch trips that are submitted (available for guides to make offers)
 	// Include both trips without offers and trips where current guide has made offers
