@@ -4,18 +4,40 @@ import { eq, and } from 'drizzle-orm';
 import { redirect } from '@sveltejs/kit';
 import { auth } from '$lib/auth';
 
-export const load = async ({ url, locals }) => {
-	// Use cached session and user data from layout
-	const session = locals.session;
-	const user = locals.user;
+export const load = async ({ url, request, locals }) => {
+	// Try to get session from locals first, fallback to direct auth call
+	let session = locals.session;
+	let user = locals.user;
+
+	console.log('Offer detail page - Session from locals:', !!session, 'User from locals:', !!user);
+
+	// If no session in locals, get it directly
+	if (!session) {
+		console.log('Offer detail page - No session in locals, getting directly from auth');
+		session = await auth.api.getSession({ headers: request.headers });
+
+		if (session?.user?.id) {
+			user = await db.query.users.findFirst({
+				where: eq(users.id, session.user.id),
+				columns: {
+					id: true,
+					role: true,
+					name: true,
+					email: true
+				}
+			});
+		}
+	}
 
 	// Redirect if not logged in
 	if (!session?.user) {
+		console.log('Offer detail page - No session, redirecting to signin');
 		throw redirect(302, '/signin');
 	}
 
 	// Only allow guides to access this page
 	if (!user || user.role !== 'guide') {
+		console.log('Offer detail page - Not a guide, redirecting to home');
 		throw redirect(302, '/');
 	}
 
