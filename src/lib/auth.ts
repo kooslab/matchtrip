@@ -24,6 +24,7 @@ export const auth = betterAuth({
 	verification: { modelName: 'verifications' },
 	trustedOrigins: [
 		'https://matchtrip-johnny-ilmo-koos-projects.vercel.app',
+		'https://matchtrip.vercel.app',
 		// Add any other domains you might deploy to
 		'http://localhost:5173' // For local development
 	]
