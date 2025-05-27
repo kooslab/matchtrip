@@ -2,20 +2,18 @@
 	import { goto } from '$app/navigation';
 	import { useSession, signOut } from '$lib/authClient';
 	import Button from '$lib/components/Button.svelte';
-	import { userRole, resetRole } from '$lib/stores/userRole';
+
+	let { data } = $props();
 
 	const session = useSession();
 	let isLoading = $state(false);
 
-	// 콘솔에서 세션 데이터 확인
-	$effect(() => {
-		console.log('Session data:', $session.data);
-		console.log('Current role:', $userRole);
-	});
+	// Get role from layout data
+	let userRole = $derived(data?.userRole);
 
 	// 사용자 역할에 따른 처리
-	let isGuide = $derived($userRole === 'guide');
-	let isTraveler = $derived($userRole === 'traveler');
+	let isGuide = $derived(userRole === 'guide');
+	let isTraveler = $derived(userRole === 'traveler');
 
 	// 세션 로딩 상태
 	let isSessionLoading = $derived($session.isPending || $session.isRefetching);
@@ -26,8 +24,6 @@
 			await signOut({
 				fetchOptions: {
 					onSuccess: () => {
-						// 로그아웃 시 역할 초기화
-						resetRole();
 						goto('/signin', { invalidateAll: true });
 					}
 				}
@@ -123,7 +119,7 @@
 					<p class="mb-2">
 						현재 로그인: <span class="font-bold">{$session.data?.user?.email}</span>
 					</p>
-					<p class="mb-6">역할: <span class="italic">{$userRole}</span></p>
+					<p class="mb-6">역할: <span class="italic">{userRole}</span></p>
 
 					<Button
 						onclick={handleSignOut}

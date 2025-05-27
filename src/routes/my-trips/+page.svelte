@@ -169,6 +169,7 @@
 
 								<div class="ml-4 flex flex-col gap-2">
 									<button
+										onclick={() => goto(`/my-trips/details?tripId=${trip.id}`)}
 										class="rounded bg-gray-100 px-3 py-1 text-sm text-gray-700 hover:bg-gray-200">
 										상세보기
 									</button>
@@ -177,6 +178,11 @@
 											class="rounded bg-pink-100 px-3 py-1 text-sm text-pink-700 hover:bg-pink-200">
 											수정하기
 										</button>
+									{/if}
+									{#if trip.offerCount > 0}
+										<span class="rounded bg-blue-100 px-3 py-1 text-sm text-blue-700">
+											{trip.offerCount}건 제안
+										</span>
 									{/if}
 								</div>
 							</div>

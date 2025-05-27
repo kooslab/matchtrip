@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { signIn } from '$lib/authClient';
 	import { goto } from '$app/navigation';
+	import { invalidateAll } from '$app/navigation';
 	import Button from '$lib/components/Button.svelte';
-	import { setRole } from '$lib/stores/userRole';
 
 	let email = $state('');
 	let password = $state('');
@@ -28,19 +28,9 @@
 				console.error('signIn error', result.error);
 				error = result.error.message ?? '알 수 없는 오류가 발생했습니다.';
 			} else {
-				// 로그인 성공 후 역할 정보 가져오기
-				const userId = result.data.user.id;
-				const roleRes = await fetch(`/api/user/role?userId=${userId}`);
-				const roleData = await roleRes.json();
-				if (roleData.success) {
-					// 스토어에 역할 저장
-					setRole(roleData.role);
-
-					// Only navigate after role has been set
-					goto('/app');
-				} else {
-					error = roleData.error || '역할 정보를 가져오는데 실패했습니다.';
-				}
+				// 로그인 성공 - 모든 데이터 무효화하고 이동
+				await invalidateAll();
+				goto('/app');
 			}
 		} finally {
 			isLoading = false;

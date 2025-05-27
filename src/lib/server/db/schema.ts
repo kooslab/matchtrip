@@ -9,25 +9,34 @@ import {
 	serial,
 	varchar,
 	date,
-	jsonb
+	jsonb,
+	index
 } from 'drizzle-orm/pg-core';
 
 // Define the enum for user roles
 export const userRoleEnum = pgEnum('user_role', ['traveler', 'guide', 'admin']);
 export type UserRole = (typeof userRoleEnum.enumValues)[number];
 
-export const users = pgTable('users', {
-	id: uuid('id').primaryKey().defaultRandom(),
-	name: text('name').notNull(),
-	email: text('email').notNull().unique(),
-	emailVerified: boolean('email_verified').notNull(),
-	image: text('image'),
-	role: userRoleEnum('role').notNull().default('traveler'),
-	phone: text('phone'),
-	birthDate: date('birth_date'),
-	createdAt: timestamp('created_at').notNull(),
-	updatedAt: timestamp('updated_at').notNull()
-});
+export const users = pgTable(
+	'users',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		name: text('name').notNull(),
+		email: text('email').notNull().unique(),
+		emailVerified: boolean('email_verified').notNull(),
+		image: text('image'),
+		role: userRoleEnum('role').notNull().default('traveler'),
+		phone: text('phone'),
+		birthDate: date('birth_date'),
+		createdAt: timestamp('created_at').notNull(),
+		updatedAt: timestamp('updated_at').notNull()
+	},
+	(table) => ({
+		// Add indexes for frequently queried columns
+		roleIdx: index('users_role_idx').on(table.role),
+		emailIdx: index('users_email_idx').on(table.email)
+	})
+);
 
 // User agreements table to track consent
 export const userAgreements = pgTable('user_agreements', {
@@ -154,13 +163,21 @@ export const rateLimits = pgTable('rate_limits', {
 	updatedAt: timestamp('updated_at').notNull()
 });
 
-export const destinations = pgTable('destinations', {
-	id: serial('id').primaryKey(),
-	city: varchar('city', { length: 50 }).notNull(),
-	country: varchar('country', { length: 50 }).notNull(),
-	created_at: timestamp('created_at').defaultNow().notNull(),
-	updated_at: timestamp('updated_at').defaultNow().notNull()
-});
+export const destinations = pgTable(
+	'destinations',
+	{
+		id: serial('id').primaryKey(),
+		city: varchar('city', { length: 50 }).notNull(),
+		country: varchar('country', { length: 50 }).notNull(),
+		created_at: timestamp('created_at').defaultNow().notNull(),
+		updated_at: timestamp('updated_at').defaultNow().notNull()
+	},
+	(table) => ({
+		// Add indexes for search functionality
+		cityIdx: index('destinations_city_idx').on(table.city),
+		countryIdx: index('destinations_country_idx').on(table.country)
+	})
+);
 
 // Define enum for travel methods
 export const travelMethodEnum = pgEnum('travel_method', [
@@ -188,26 +205,35 @@ export const tripStatusEnum = pgEnum('trip_status', [
 ]);
 export type TripStatus = (typeof tripStatusEnum.enumValues)[number];
 
-export const trips = pgTable('trips', {
-	id: uuid('id').primaryKey().defaultRandom(),
-	userId: uuid('user_id')
-		.notNull()
-		.references(() => users.id, { onDelete: 'cascade' }),
-	destinationId: integer('destination_id')
-		.notNull()
-		.references(() => destinations.id, { onDelete: 'restrict' }),
-	adultsCount: integer('adults_count').notNull().default(1),
-	childrenCount: integer('children_count').notNull().default(0),
-	startDate: timestamp('start_date').notNull(),
-	endDate: timestamp('end_date').notNull(),
-	travelMethod: travelMethodEnum('travel_method'),
-	customRequest: text('custom_request'),
-	// Trip status tracking
-	status: tripStatusEnum('status').notNull().default('draft'),
-	statusUpdatedAt: timestamp('status_updated_at').defaultNow().notNull(),
-	createdAt: timestamp('created_at').defaultNow().notNull(),
-	updatedAt: timestamp('updated_at').defaultNow().notNull()
-});
+export const trips = pgTable(
+	'trips',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		userId: uuid('user_id')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
+		destinationId: integer('destination_id')
+			.notNull()
+			.references(() => destinations.id, { onDelete: 'restrict' }),
+		adultsCount: integer('adults_count').notNull().default(1),
+		childrenCount: integer('children_count').notNull().default(0),
+		startDate: timestamp('start_date').notNull(),
+		endDate: timestamp('end_date').notNull(),
+		travelMethod: travelMethodEnum('travel_method'),
+		customRequest: text('custom_request'),
+		// Trip status tracking
+		status: tripStatusEnum('status').notNull().default('draft'),
+		statusUpdatedAt: timestamp('status_updated_at').defaultNow().notNull(),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at').defaultNow().notNull()
+	},
+	(table) => ({
+		// Add indexes for frequently queried columns
+		userIdIdx: index('trips_user_id_idx').on(table.userId),
+		statusIdx: index('trips_status_idx').on(table.status),
+		destinationIdIdx: index('trips_destination_id_idx').on(table.destinationId)
+	})
+);
 
 // Define enum for offer status
 export const offerStatusEnum = pgEnum('offer_status', [
@@ -218,28 +244,39 @@ export const offerStatusEnum = pgEnum('offer_status', [
 ]);
 export type OfferStatus = (typeof offerStatusEnum.enumValues)[number];
 
-export const offers = pgTable('offers', {
-	id: uuid('id').primaryKey().defaultRandom(),
-	tripId: uuid('trip_id')
-		.notNull()
-		.references(() => trips.id, { onDelete: 'cascade' }),
-	guideId: uuid('guide_id')
-		.notNull()
-		.references(() => users.id, { onDelete: 'cascade' }),
-	travelerId: uuid('traveler_id')
-		.notNull()
-		.references(() => users.id, { onDelete: 'cascade' }),
-	title: text('title').notNull(),
-	description: text('description').notNull(),
-	price: integer('price').notNull(), // in cents to avoid decimal issues
-	currency: varchar('currency', { length: 3 }).notNull().default('USD'),
-	duration: integer('duration'), // duration in hours
-	maxParticipants: integer('max_participants'),
-	status: offerStatusEnum('status').notNull().default('pending'),
-	validUntil: timestamp('valid_until'),
-	createdAt: timestamp('created_at').defaultNow().notNull(),
-	updatedAt: timestamp('updated_at').defaultNow().notNull()
-});
+export const offers = pgTable(
+	'offers',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		tripId: uuid('trip_id')
+			.notNull()
+			.references(() => trips.id, { onDelete: 'cascade' }),
+		guideId: uuid('guide_id')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
+		travelerId: uuid('traveler_id')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
+		title: text('title').notNull(),
+		description: text('description').notNull(),
+		price: integer('price').notNull(), // in cents to avoid decimal issues
+		currency: varchar('currency', { length: 3 }).notNull().default('USD'),
+		duration: integer('duration'), // duration in hours
+		maxParticipants: integer('max_participants'),
+		itinerary: text('itinerary'), // rich text itinerary - new field
+		status: offerStatusEnum('status').notNull().default('pending'),
+		validUntil: timestamp('valid_until'),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at').defaultNow().notNull()
+	},
+	(table) => ({
+		// Add indexes for frequently queried columns
+		guideIdIdx: index('offers_guide_id_idx').on(table.guideId),
+		tripIdIdx: index('offers_trip_id_idx').on(table.tripId),
+		statusIdx: index('offers_status_idx').on(table.status),
+		guideStatusIdx: index('offers_guide_status_idx').on(table.guideId, table.status)
+	})
+);
 
 export const tripStatusHistory = pgTable('trip_status_history', {
 	id: uuid('id').primaryKey().defaultRandom(),

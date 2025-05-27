@@ -4,12 +4,14 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 
-	export let data;
+	let { data } = $props();
 
-	$: user = data?.user;
-	$: isLoggedIn = !!user;
+	let user = $derived(data?.user);
+	let userRole = $derived(data?.userRole);
+	let isLoggedIn = $derived(!!user);
+	let isGuide = $derived(userRole === 'guide');
 
-	let isOpen = false;
+	let isOpen = $state(false);
 	function openMenu() {
 		isOpen = true;
 	}
@@ -39,11 +41,15 @@
 </script>
 
 <!-- Mobile Navbar -->
-<nav class="fixed top-0 left-0 z-30 w-full bg-white/90 shadow md:hidden">
+<nav class="fixed top-0 left-0 z-40 w-full bg-white shadow md:hidden">
 	<div class="flex items-center justify-between px-4 py-3">
 		<a href="/" class="text-lg font-bold text-blue-600">MatchTrip</a>
-		<button onclick={openMenu} aria-label="Open menu">
-			<svg class="h-7 w-7 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+		<button
+			type="button"
+			onclick={() => openMenu()}
+			aria-label="Open menu"
+			class="relative z-50 flex h-10 w-10 touch-manipulation items-center justify-center rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+			<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
 				<path
 					stroke-linecap="round"
 					stroke-linejoin="round"
@@ -54,17 +60,27 @@
 	</div>
 	<!-- Sidebar Overlay -->
 	{#if isOpen}
-		<div class="fixed inset-0 z-40 bg-black/30" onclick={closeMenu}></div>
+		<div class="fixed inset-0 z-40 bg-black/30" onclick={() => closeMenu()}></div>
 	{/if}
 	<!-- Sidebar -->
 	<div
-		class="fixed top-0 left-0 z-50 h-full w-64 transform bg-white shadow-lg transition-transform duration-200 ease-in-out"
-		class:translate-x-0={isOpen}
-		class:-translate-x-full={!isOpen}>
+		class="fixed top-0 left-0 z-50 h-full w-64 bg-white shadow-lg transition-transform duration-200 ease-in-out {isOpen
+			? 'translate-x-0'
+			: '-translate-x-full'}"
+		style="transform: {isOpen ? 'translateX(0)' : 'translateX(-100%)'}">
 		<div class="flex items-center justify-between border-b px-4 py-4">
 			<span class="text-lg font-bold text-blue-600">MatchTrip</span>
-			<button onclick={closeMenu} aria-label="Close menu">
-				<svg class="h-7 w-7 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+			<button
+				type="button"
+				onclick={() => closeMenu()}
+				aria-label="Close menu"
+				class="flex h-10 w-10 touch-manipulation items-center justify-center rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+				<svg
+					class="h-6 w-6"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+					aria-hidden="true">
 					<path
 						stroke-linecap="round"
 						stroke-linejoin="round"
@@ -78,7 +94,7 @@
 				<a
 					href="/"
 					class="block py-2 font-medium text-gray-800 hover:text-blue-600"
-					onclick={closeMenu}>홈</a>
+					onclick={() => closeMenu()}>홈</a>
 			</li>
 
 			{#if isLoggedIn}
@@ -87,13 +103,27 @@
 					<a
 						href="/my-trips"
 						class="block py-2 font-medium text-gray-800 hover:text-blue-600"
-						onclick={closeMenu}>나의 여행</a>
+						onclick={() => closeMenu()}>나의 여행</a>
 				</li>
+				{#if isGuide}
+					<li>
+						<a
+							href="/trips"
+							class="block py-2 font-medium text-gray-800 hover:text-blue-600"
+							onclick={() => closeMenu()}>여행찾기</a>
+					</li>
+					<li>
+						<a
+							href="/my-offers"
+							class="block py-2 font-medium text-gray-800 hover:text-blue-600"
+							onclick={() => closeMenu()}>나의 제안</a>
+					</li>
+				{/if}
 				<li>
 					<a
 						href="/app"
 						class="block py-2 font-medium text-gray-800 hover:text-blue-600"
-						onclick={closeMenu}>대시보드</a>
+						onclick={() => closeMenu()}>대시보드</a>
 				</li>
 				<li>
 					<div class="my-2 border-t border-gray-200"></div>
@@ -105,7 +135,8 @@
 				</li>
 				<li>
 					<button
-						onclick={handleLogout}
+						type="button"
+						onclick={() => handleLogout()}
 						class="block w-full py-2 text-left font-medium text-red-600 hover:text-red-700">
 						로그아웃
 					</button>
@@ -116,7 +147,7 @@
 					<a
 						href="/signin"
 						class="block py-2 font-medium text-gray-800 hover:text-blue-600"
-						onclick={closeMenu}>로그인</a>
+						onclick={() => closeMenu()}>로그인</a>
 				</li>
 				<li>
 					<a
@@ -140,6 +171,14 @@
 			<li>
 				<a href="/my-trips" class="font-medium text-gray-800 hover:text-blue-600">나의 여행</a>
 			</li>
+			{#if isGuide}
+				<li>
+					<a href="/trips" class="font-medium text-gray-800 hover:text-blue-600">여행찾기</a>
+				</li>
+				<li>
+					<a href="/my-offers" class="font-medium text-gray-800 hover:text-blue-600">나의 제안</a>
+				</li>
+			{/if}
 			<li><a href="/app" class="font-medium text-gray-800 hover:text-blue-600">대시보드</a></li>
 			<li>
 				<div class="flex items-center gap-4">

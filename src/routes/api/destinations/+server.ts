@@ -5,10 +5,8 @@ import { ilike, or } from 'drizzle-orm';
 
 export async function GET({ url }) {
 	const q = url.searchParams.get('q')?.trim();
-	console.log('Destinations API called with query:', q);
 
 	if (!q) {
-		console.log('No query provided, returning empty results');
 		return json({ results: [] });
 	}
 
@@ -20,7 +18,6 @@ export async function GET({ url }) {
 			.where(or(ilike(destinations.city, `%${q}%`), ilike(destinations.country, `%${q}%`)))
 			.limit(10);
 
-		console.log('Database query results:', results);
 		return json({ results });
 	} catch (error) {
 		console.error('Error querying destinations:', error);

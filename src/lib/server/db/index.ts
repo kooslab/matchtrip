@@ -14,7 +14,14 @@ try {
 }
 
 if (!databaseUrl) throw new Error('DATABASE_URL is not set');
-const client = postgres(databaseUrl);
+
+// Configure postgres client with connection pooling for better performance
+const client = postgres(databaseUrl, {
+	max: 10, // Maximum number of connections in the pool
+	idle_timeout: 20, // Close idle connections after 20 seconds
+	connect_timeout: 10, // Connection timeout in seconds
+	prepare: false // Disable prepared statements for better compatibility
+});
 
 export const db = drizzle(client, {
 	schema

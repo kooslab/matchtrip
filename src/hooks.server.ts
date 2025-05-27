@@ -11,18 +11,8 @@ const authorizationHandler = (async ({ event, resolve }) => {
 	const routeId = event.route.id;
 	const session = await auth.api.getSession({ headers: event.request.headers });
 
-	// Check if routeId exists before using startsWith
-	if (routeId?.startsWith('/app') && !session) {
-		console.log('user tried to access: ', routeId);
-		console.log('No Session');
-		console.log('redirecting to /signin');
-		redirect(302, '/signin');
-	}
-
+	// Only handle auth route redirects in hooks, let page server functions handle protection
 	if (routeId?.startsWith('/(auth)') && session) {
-		console.log('Session');
-		console.log('user tried to access: ', routeId);
-		console.log('redirecting to /app');
 		redirect(302, '/app');
 	}
 

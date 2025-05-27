@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { trips, destinations } from '$lib/server/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { trips, destinations, offers } from '$lib/server/db/schema';
+import { eq, desc, count } from 'drizzle-orm';
 import { auth } from '$lib/auth';
 
 export async function POST({ request }) {
@@ -74,7 +74,7 @@ export async function GET({ request }) {
 			return json({ success: false, error: '인증되지 않은 요청입니다.' }, { status: 401 });
 		}
 
-		// Fetch user's trips with destination information
+		// Fetch user's trips with destination information and offer counts
 		const userTrips = await db
 			.select({
 				id: trips.id,
@@ -93,11 +93,14 @@ export async function GET({ request }) {
 					id: destinations.id,
 					city: destinations.city,
 					country: destinations.country
-				}
+				},
+				offerCount: count(offers.id)
 			})
 			.from(trips)
 			.leftJoin(destinations, eq(trips.destinationId, destinations.id))
+			.leftJoin(offers, eq(offers.tripId, trips.id))
 			.where(eq(trips.userId, session.user.id))
+			.groupBy(trips.id, destinations.id)
 			.orderBy(desc(trips.createdAt));
 
 		return json({ success: true, trips: userTrips });
