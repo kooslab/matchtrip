@@ -29,6 +29,7 @@
 			document.addEventListener('click', handleClickOutside);
 			return () => {
 				document.removeEventListener('click', handleClickOutside);
+				clearTimeout(debounceTimeout);
 			};
 		}
 	});
@@ -46,7 +47,7 @@
 	// Form submission state
 	let isSubmitting = $state(false);
 
-	let selectedCity = $state('');
+	let selectedCity = $state<any>(undefined);
 
 	function goBack() {
 		goto('/');
@@ -171,8 +172,8 @@
 
 	function handleDestinationInput(e: Event) {
 		const target = e.target as HTMLInputElement;
-		tripForm.update((f) => ({ ...f, search: target.value }));
-		selectedCity = '';
+		tripForm.update((f) => ({ ...f, search: target.value, selectedCity: undefined }));
+		selectedCity = undefined;
 		clearTimeout(debounceTimeout);
 
 		if (!target.value.trim()) {
@@ -181,18 +182,18 @@
 			return;
 		}
 
-		debounceTimeout = setTimeout(() => fetchResults(target.value), 50);
+		debounceTimeout = setTimeout(() => fetchResults(target.value), 300);
 	}
 
-	function handleDestinationSelect(city: string) {
-		tripForm.update((f) => ({ ...f, search: city }));
-		selectedCity = city;
+	function handleDestinationSelect(cityObj: any) {
+		tripForm.update((f) => ({ ...f, search: cityObj.city, selectedCity: cityObj }));
+		selectedCity = cityObj;
 		showDropdown = false;
 	}
 
 	function resetCitySelection() {
-		tripForm.update((f) => ({ ...f, search: '' }));
-		selectedCity = '';
+		tripForm.update((f) => ({ ...f, search: '', selectedCity: undefined }));
+		selectedCity = undefined;
 		results = [];
 		showDropdown = false;
 	}
@@ -242,9 +243,10 @@
 							}}
 							placeholder="여행지를 입력하세요"
 							autocomplete="off"
-							readonly={selectedCity === $tripForm.search} />
+							readonly={$tripForm.selectedCity &&
+								$tripForm.selectedCity.city === $tripForm.search} />
 
-						{#if selectedCity === $tripForm.search && $tripForm.search}
+						{#if $tripForm.selectedCity && $tripForm.selectedCity.city === $tripForm.search}
 							<button
 								type="button"
 								class="absolute top-2 right-2 text-xs text-pink-500 underline"
@@ -263,8 +265,7 @@
 										onmousedown={(e) => {
 											e.preventDefault();
 											e.stopPropagation();
-											console.log('Mousedown on:', dest.city);
-											handleDestinationSelect(dest.city);
+											handleDestinationSelect(dest);
 										}}>
 										<span>{dest.city}</span>
 										<span class="text-gray-400">{dest.country}</span>

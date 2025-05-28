@@ -5,6 +5,7 @@
 	let loading = $state(false);
 	let showDropdown = $state(false);
 	let debounceTimeout: ReturnType<typeof setTimeout>;
+	let fetchController: AbortController | null = null;
 	let calendarOpen = $state(false);
 	let selectedCity = $state<any>(undefined);
 	import { DateRangePicker } from 'bits-ui';
@@ -122,6 +123,14 @@
 		isDragging = false;
 	}
 
+	function handleInput(e: Event) {
+		const target = e.target as HTMLInputElement;
+		tripForm.update((f) => ({ ...f, search: target.value }));
+		selectedCity = undefined;
+		clearTimeout(debounceTimeout);
+		debounceTimeout = setTimeout(() => fetchResults(target.value), 300);
+	}
+
 	async function fetchResults(q: string) {
 		if (!q) {
 			results = [];
@@ -129,19 +138,27 @@
 			return;
 		}
 		loading = true;
-		const res = await fetch(`/api/destinations?q=${encodeURIComponent(q)}`);
-		const data = await res.json();
-		results = data.results;
-		showDropdown = results.length > 0;
-		loading = false;
-	}
 
-	function handleInput(e: Event) {
-		const target = e.target as HTMLInputElement;
-		tripForm.update((f) => ({ ...f, search: target.value }));
-		selectedCity = undefined;
-		clearTimeout(debounceTimeout);
-		debounceTimeout = setTimeout(() => fetchResults(target.value), 80);
+		// Abort previous fetch if it exists
+		if (fetchController) {
+			fetchController.abort();
+		}
+		fetchController = new AbortController();
+
+		try {
+			const res = await fetch(`/api/destinations?q=${encodeURIComponent(q)}`, {
+				signal: fetchController.signal
+			});
+			const data = await res.json();
+			results = data.results;
+			showDropdown = results.length > 0;
+		} catch (err) {
+			if (err.name !== 'AbortError') {
+				console.error(err);
+			}
+		} finally {
+			loading = false;
+		}
 	}
 
 	function handleSelect(cityObj: any) {
@@ -206,6 +223,13 @@
 				}
 			});
 		}
+	});
+
+	$effect(() => {
+		return () => {
+			clearTimeout(debounceTimeout);
+			if (fetchController) fetchController.abort();
+		};
 	});
 </script>
 
