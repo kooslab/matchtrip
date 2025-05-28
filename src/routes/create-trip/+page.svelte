@@ -6,6 +6,7 @@
 	import { goto } from '$app/navigation';
 	import { invalidate } from '$app/navigation';
 	import { useSession } from '$lib/authClient';
+	import { tripForm } from '$lib/stores/tripForm';
 
 	// Authentication check
 	const session = useSession();
@@ -32,12 +33,8 @@
 		}
 	});
 
-	let destination = $state('');
-	let dateRange = $state({ start: undefined, end: undefined });
-	let adults = 2;
-	let children = 0;
-	let tourMethod = '';
-	let additionalRequests = '';
+	let children = $state(0);
+	let additionalRequests = $state('');
 	let calendarOpen = $state(false);
 
 	// Destination search state
@@ -67,7 +64,12 @@
 		}
 
 		// Validate form data
-		if (!destination || !dateRange.start || !dateRange.end || !adults) {
+		if (
+			!$tripForm.search ||
+			!$tripForm.dateRange.start ||
+			!$tripForm.dateRange.end ||
+			!$tripForm.people
+		) {
 			alert('필수 항목을 모두 입력해주세요.');
 			return;
 		}
@@ -75,7 +77,7 @@
 		// Set loading state
 		isSubmitting = true;
 
-		// Map tourMethod to database enum values
+		// Map tourType to database enum values
 		const travelMethodMap: Record<string, string> = {
 			도보: 'walking',
 			자동차: 'driving',
@@ -93,14 +95,16 @@
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
-					destination,
-					adultsCount: adults,
+					destination: $tripForm.search,
+					adultsCount: $tripForm.people,
 					childrenCount: children,
-					startDate: dateRange.start
-						? new Date((dateRange.start as any).toString()).toISOString()
+					startDate: $tripForm.dateRange.start
+						? new Date(($tripForm.dateRange.start as any).toString()).toISOString()
 						: '',
-					endDate: dateRange.end ? new Date((dateRange.end as any).toString()).toISOString() : '',
-					travelMethod: travelMethodMap[tourMethod] || null,
+					endDate: $tripForm.dateRange.end
+						? new Date(($tripForm.dateRange.end as any).toString()).toISOString()
+						: '',
+					travelMethod: travelMethodMap[$tripForm.tourType] || null,
 					customRequest: additionalRequests || null
 				})
 			});
@@ -163,26 +167,26 @@
 
 	function handleDestinationInput(e: Event) {
 		const target = e.target as HTMLInputElement;
-		destination = target.value;
+		tripForm.update((f) => ({ ...f, search: target.value }));
 		clearTimeout(debounceTimeout);
 
 		// Hide dropdown immediately if input is empty
-		if (!destination.trim()) {
+		if (!target.value.trim()) {
 			results = [];
 			showDropdown = false;
 			console.log('Input empty, hiding dropdown');
 			return;
 		}
 
-		console.log('Input changed to:', destination);
-		debounceTimeout = setTimeout(() => fetchResults(destination), 50);
+		console.log('Input changed to:', target.value);
+		debounceTimeout = setTimeout(() => fetchResults(target.value), 50);
 	}
 
 	function handleDestinationSelect(city: string) {
 		console.log('Selecting destination:', city);
-		destination = city;
+		tripForm.update((f) => ({ ...f, search: city }));
 		showDropdown = false;
-		console.log('Destination set to:', destination);
+		console.log('Destination set to:', city);
 	}
 
 	function handleClickOutside(e: Event) {
@@ -214,13 +218,14 @@
 			<form class="space-y-6">
 				<!-- Destination -->
 				<div class="space-y-2">
-					<label class="block text-sm font-medium text-gray-700">
+					<label for="destination" class="block text-sm font-medium text-gray-700">
 						여행지<span class="text-red-500">*</span>
 					</label>
 					<div class="destination-search relative">
 						<input
+							id="destination"
 							class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-2 focus:ring-pink-200 focus:outline-none"
-							value={destination}
+							value={$tripForm.search}
 							oninput={handleDestinationInput}
 							onfocus={() => {
 								console.log('Input focused. Results length:', results.length);
@@ -236,8 +241,9 @@
 							<ul
 								class="absolute right-0 left-0 z-50 mt-1 max-h-60 overflow-auto rounded-lg border bg-white shadow-lg">
 								{#each results as dest}
-									<li
-										class="flex cursor-pointer justify-between px-4 py-3 text-base text-gray-700 hover:bg-pink-50"
+									<button
+										type="button"
+										class="flex w-full cursor-pointer justify-between px-4 py-3 text-base text-gray-700 hover:bg-pink-50"
 										onmousedown={(e) => {
 											e.preventDefault();
 											e.stopPropagation();
@@ -246,7 +252,7 @@
 										}}>
 										<span>{dest.city}</span>
 										<span class="text-gray-400">{dest.country}</span>
-									</li>
+									</button>
 								{/each}
 							</ul>
 						{/if}
@@ -255,15 +261,13 @@
 
 				<!-- Date Range -->
 				<div class="space-y-2">
-					<label class="block text-sm font-medium text-gray-700">
+					<label for="dateRange" class="block text-sm font-medium text-gray-700">
 						날짜<span class="text-red-500">*</span>
 					</label>
 					<div class="relative">
 						<DateRangePicker.Root
-							value={dateRange}
-							onValueChange={(newValue) => {
-								dateRange = newValue as any;
-							}}
+							value={$tripForm.dateRange}
+							onValueChange={(val) => tripForm.update((f) => ({ ...f, dateRange: val }))}
 							open={calendarOpen}
 							onOpenChange={(open) => {
 								calendarOpen = open;
@@ -388,7 +392,7 @@
 
 				<!-- People Count -->
 				<div class="space-y-2">
-					<label class="block text-sm font-medium text-gray-700">
+					<label for="people" class="block text-sm font-medium text-gray-700">
 						인원<span class="text-red-500">*</span>
 					</label>
 					<div class="space-y-3">
@@ -400,17 +404,15 @@
 								<button
 									type="button"
 									class="flex h-8 w-8 items-center justify-center rounded bg-gray-100 text-lg hover:bg-gray-200"
-									onclick={() => {
-										adults = Math.max(1, adults - 1);
-									}}
-									disabled={adults <= 1}>-</button>
-								<span class="w-8 text-center text-base">{adults}</span>
+									onclick={() =>
+										tripForm.update((f) => ({ ...f, people: Math.max(1, f.people - 1) }))}
+									disabled={$tripForm.people <= 1}>-</button>
+								<span class="w-8 text-center text-base">{$tripForm.people}</span>
 								<button
 									type="button"
 									class="flex h-8 w-8 items-center justify-center rounded bg-gray-100 text-lg hover:bg-gray-200"
-									onclick={() => {
-										adults = adults + 1;
-									}}>+</button>
+									onclick={() => tripForm.update((f) => ({ ...f, people: f.people + 1 }))}
+									>+</button>
 							</div>
 						</div>
 
@@ -440,12 +442,18 @@
 
 				<!-- Tour Method -->
 				<div class="space-y-2">
-					<label class="block text-sm font-medium text-gray-700">
+					<label for="tourType" class="block text-sm font-medium text-gray-700">
 						투어방법<span class="text-red-500">*</span>
 					</label>
 					<select
+						id="tourType"
 						class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base focus:ring-2 focus:ring-pink-200 focus:outline-none"
-						bind:value={tourMethod}>
+						value={$tripForm.tourType}
+						onchange={(e) =>
+							tripForm.update((f) => ({
+								...f,
+								tourType: (e.target as HTMLSelectElement).value
+							}))}>
 						<option value="" disabled selected>여행 방법을 선택하세요</option>
 						<option value="도보">도보</option>
 						<option value="자동차">자동차</option>
@@ -457,10 +465,11 @@
 
 				<!-- Additional Requests -->
 				<div class="space-y-2">
-					<label class="block text-sm font-medium text-gray-700">
+					<label for="additionalRequests" class="block text-sm font-medium text-gray-700">
 						기타 요청사항<span class="text-red-500">*</span>
 					</label>
 					<textarea
+						id="additionalRequests"
 						class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-2 focus:ring-pink-200 focus:outline-none"
 						rows="4"
 						bind:value={additionalRequests}

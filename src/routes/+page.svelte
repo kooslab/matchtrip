@@ -1,23 +1,24 @@
 <script lang="ts">
 	let menuOpen = false;
-	let search = '';
-	let results: any[] = [];
-	let loading = false;
-	let showDropdown = false;
+	// let search = '';
+	let results: any[] = $state([]);
+	let loading = $state(false);
+	let showDropdown = $state(false);
 	let debounceTimeout: ReturnType<typeof setTimeout>;
-	let calendarOpen = false;
+	let calendarOpen = $state(false);
 	import { DateRangePicker } from 'bits-ui';
 	import CalendarBlank from 'phosphor-svelte/lib/CalendarBlank';
 	import CaretLeft from 'phosphor-svelte/lib/CaretLeft';
 	import CaretRight from 'phosphor-svelte/lib/CaretRight';
 	import { goto } from '$app/navigation';
+	import { Plus, FilePlus } from 'phosphor-svelte';
+	import { tripForm } from '$lib/stores/tripForm';
 
-	let dateRange = { start: undefined, end: undefined };
-	let people = 1;
-	let tourType = '';
+	// Use $tripForm for reactivity
+	let { search, dateRange, people, tourType } = $state($tripForm);
 
 	// Modal state
-	let showComingSoonModal = false;
+	let showComingSoonModal = $state(false);
 
 	function openComingSoonModal() {
 		showComingSoonModal = true;
@@ -28,9 +29,9 @@
 	}
 
 	// Carousel state
-	let currentSlide = 0;
-	let startX = 0;
-	let isDragging = false;
+	let currentSlide = $state(0);
+	let startX = $state(0);
+	let isDragging = $state(false);
 
 	const slides = [
 		{
@@ -139,14 +140,26 @@
 
 	function handleInput(e: Event) {
 		const target = e.target as HTMLInputElement;
-		search = target.value;
+		tripForm.update((f) => ({ ...f, search: target.value }));
 		clearTimeout(debounceTimeout);
-		debounceTimeout = setTimeout(() => fetchResults(search), 200);
+		debounceTimeout = setTimeout(() => fetchResults(target.value), 200);
 	}
 
 	function handleSelect(city: string) {
-		search = city;
+		tripForm.update((f) => ({ ...f, search: city }));
 		showDropdown = false;
+	}
+
+	function handlePeopleChange(val: number) {
+		tripForm.update((f) => ({ ...f, people: val }));
+	}
+
+	function handleDateRangeChange(val: any) {
+		tripForm.update((f) => ({ ...f, dateRange: val }));
+	}
+
+	function handleTourTypeChange(val: string) {
+		tripForm.update((f) => ({ ...f, tourType: val }));
 	}
 
 	function handleSearch(event: Event) {
@@ -158,9 +171,9 @@
 
 <div class="flex min-h-screen flex-col bg-white">
 	<!-- Header -->
-	<header class="relative flex items-center justify-center border-b px-4 py-3">
+	<!-- <header class="relative flex items-center justify-center border-b px-4 py-3">
 		<span class="rounded bg-gray-100 px-4 py-2 text-xl font-semibold">매치트립 로고</span>
-	</header>
+	</header> -->
 
 	<!-- Search Bar -->
 	<section class="px-4 py-3">
@@ -200,10 +213,11 @@
 
 			<!-- Row 2: Date Range Picker -->
 			<div class="flex w-full flex-col gap-1">
-				<label class="mb-1 text-sm font-medium text-gray-700">여행 날짜</label>
+				<!-- <label class="mb-1 text-sm font-medium text-gray-700">여행 날짜</label> -->
 				<div class="relative min-w-0 flex-1">
 					<DateRangePicker.Root
 						bind:value={dateRange}
+						onValueChange={handleDateRangeChange}
 						bind:open={calendarOpen}
 						weekdayFormat="short"
 						fixedWeeks={true}
@@ -311,7 +325,8 @@
 						class="w-12 border-none text-center text-sm focus:ring-0"
 						type="number"
 						min="1"
-						bind:value={people}
+						value={people}
+						onchange={(e) => handlePeopleChange(Number((e.target as HTMLInputElement).value))}
 						placeholder="인원수"
 						readonly />
 					<button
@@ -327,7 +342,8 @@
 				<div class="flex-1">
 					<select
 						class="w-full rounded border-none bg-gray-50 py-2 text-center text-sm focus:ring-0"
-						bind:value={tourType}>
+						value={tourType}
+						onchange={(e) => handleTourTypeChange((e.target as HTMLSelectElement).value)}>
 						<option value="" disabled selected>여행 방법</option>
 						<option value="도보">도보</option>
 						<option value="자동차">자동차</option>
@@ -340,15 +356,7 @@
 					type="submit"
 					class="flex shrink-0 items-center justify-center rounded-full bg-pink-500 p-2 text-white"
 					style="min-width: 40px; min-height: 40px;">
-					<svg
-						class="h-5 w-5"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						viewBox="0 0 24 24">
-						<circle cx="11" cy="11" r="8" />
-						<line x1="21" y1="21" x2="16.65" y2="16.65" />
-					</svg>
+					<Plus size={20} />
 				</button>
 			</div>
 		</form>
