@@ -6,6 +6,7 @@
 	let showDropdown = $state(false);
 	let debounceTimeout: ReturnType<typeof setTimeout>;
 	let calendarOpen = $state(false);
+	let selectedCity = $state<any>(undefined);
 	import { DateRangePicker } from 'bits-ui';
 	import CalendarBlank from 'phosphor-svelte/lib/CalendarBlank';
 	import CaretLeft from 'phosphor-svelte/lib/CaretLeft';
@@ -13,9 +14,6 @@
 	import { goto } from '$app/navigation';
 	import { Plus, FilePlus } from 'phosphor-svelte';
 	import { tripForm } from '$lib/stores/tripForm';
-
-	// Use $tripForm for reactivity
-	let { search, dateRange, people, tourType } = $state($tripForm);
 
 	// Modal state
 	let showComingSoonModal = $state(false);
@@ -141,12 +139,21 @@
 	function handleInput(e: Event) {
 		const target = e.target as HTMLInputElement;
 		tripForm.update((f) => ({ ...f, search: target.value }));
+		selectedCity = undefined;
 		clearTimeout(debounceTimeout);
-		debounceTimeout = setTimeout(() => fetchResults(target.value), 200);
+		debounceTimeout = setTimeout(() => fetchResults(target.value), 80);
 	}
 
-	function handleSelect(city: string) {
-		tripForm.update((f) => ({ ...f, search: city }));
+	function handleSelect(cityObj: any) {
+		tripForm.update((f) => ({ ...f, search: cityObj.city, selectedCity: cityObj }));
+		selectedCity = cityObj;
+		showDropdown = false;
+	}
+
+	function resetCitySelection() {
+		tripForm.update((f) => ({ ...f, search: '', selectedCity: undefined }));
+		selectedCity = undefined;
+		results = [];
 		showDropdown = false;
 	}
 
@@ -164,9 +171,42 @@
 
 	function handleSearch(event: Event) {
 		event.preventDefault();
-		// Navigate to trip creation page
+		if (!$tripForm.selectedCity || $tripForm.selectedCity.city !== $tripForm.search) {
+			alert('목록에서 여행지를 선택해주세요.');
+			return;
+		}
 		goto('/create-trip');
 	}
+
+	function handleBlur() {
+		if (!$tripForm.selectedCity || $tripForm.selectedCity.city !== $tripForm.search) {
+			tripForm.update((f) => ({ ...f, search: '', selectedCity: undefined }));
+			selectedCity = undefined;
+		}
+	}
+
+	function handleKeydown(e: KeyboardEvent) {
+		if (e.key === 'Enter') {
+			if (!$tripForm.selectedCity || $tripForm.selectedCity.city !== $tripForm.search) {
+				e.preventDefault();
+				tripForm.update((f) => ({ ...f, search: '', selectedCity: undefined }));
+				selectedCity = undefined;
+			}
+		}
+	}
+
+	// On page load, if search is prefilled, fetch results and set selectedCity
+	$effect(() => {
+		if ($tripForm.search && !$tripForm.selectedCity) {
+			fetchResults($tripForm.search).then(() => {
+				const match = results.find((dest) => dest.city === $tripForm.search);
+				if (match) {
+					tripForm.update((f) => ({ ...f, selectedCity: match }));
+					selectedCity = match;
+				}
+			});
+		}
+	});
 </script>
 
 <div class="flex min-h-screen flex-col bg-white">
@@ -188,19 +228,34 @@
 						<input
 							class="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-pink-200 focus:outline-none"
 							placeholder="여행지"
-							value={search}
+							value={$tripForm.search}
 							oninput={handleInput}
 							onfocus={() => {
 								if (results.length) showDropdown = true;
 							}}
-							autocomplete="off" />
+							onblur={handleBlur}
+							onkeydown={handleKeydown}
+							autocomplete="off"
+							readonly={$tripForm.selectedCity &&
+								$tripForm.selectedCity.city === $tripForm.search} />
+						{#if $tripForm.selectedCity && $tripForm.selectedCity.city === $tripForm.search}
+							<button
+								type="button"
+								class="absolute top-2 right-2 text-xs text-pink-500 underline"
+								onclick={resetCitySelection}>
+								변경
+							</button>
+						{/if}
 						{#if showDropdown}
 							<ul
 								class="absolute right-0 left-0 z-10 mt-1 max-h-60 overflow-auto rounded-xl border bg-white shadow-lg">
+								{#if loading}
+									<li class="p-2 text-center text-sm text-gray-400">검색 중...</li>
+								{/if}
 								{#each results as dest}
 									<li
 										class="flex cursor-pointer justify-between px-4 py-2 text-sm text-gray-700 hover:bg-pink-50"
-										onclick={() => handleSelect(dest.city)}>
+										onmousedown={() => handleSelect(dest)}>
 										<span>{dest.city}</span>
 										<span class="text-gray-400">{dest.country}</span>
 									</li>
@@ -216,7 +271,7 @@
 				<!-- <label class="mb-1 text-sm font-medium text-gray-700">여행 날짜</label> -->
 				<div class="relative min-w-0 flex-1">
 					<DateRangePicker.Root
-						bind:value={dateRange}
+						bind:value={$tripForm.dateRange}
 						onValueChange={handleDateRangeChange}
 						bind:open={calendarOpen}
 						weekdayFormat="short"
@@ -318,22 +373,26 @@
 						type="button"
 						class="flex h-8 w-8 items-center justify-center rounded bg-gray-100 p-2 text-lg"
 						onclick={() => {
-							people = Math.max(1, people - 1);
+							tripForm.update((f) => ({ ...f, people: Math.max(1, f.people - 1) }));
 						}}
 						aria-label="인원수 감소">-</button>
 					<input
 						class="w-12 border-none text-center text-sm focus:ring-0"
 						type="number"
 						min="1"
-						value={people}
-						onchange={(e) => handlePeopleChange(Number((e.target as HTMLInputElement).value))}
+						value={$tripForm.people}
+						onchange={(e) =>
+							tripForm.update((f) => ({
+								...f,
+								people: Number((e.target as HTMLInputElement).value)
+							}))}
 						placeholder="인원수"
 						readonly />
 					<button
 						type="button"
 						class="flex h-8 w-8 items-center justify-center rounded bg-gray-100 p-2 text-lg"
 						onclick={() => {
-							people = people + 1;
+							tripForm.update((f) => ({ ...f, people: f.people + 1 }));
 						}}
 						aria-label="인원수 증가">+</button>
 				</div>
@@ -342,8 +401,9 @@
 				<div class="flex-1">
 					<select
 						class="w-full rounded border-none bg-gray-50 py-2 text-center text-sm focus:ring-0"
-						value={tourType}
-						onchange={(e) => handleTourTypeChange((e.target as HTMLSelectElement).value)}>
+						value={$tripForm.tourType}
+						onchange={(e) =>
+							tripForm.update((f) => ({ ...f, tourType: (e.target as HTMLSelectElement).value }))}>
 						<option value="" disabled selected>여행 방법</option>
 						<option value="도보">도보</option>
 						<option value="자동차">자동차</option>

@@ -46,6 +46,8 @@
 	// Form submission state
 	let isSubmitting = $state(false);
 
+	let selectedCity = $state('');
+
 	function goBack() {
 		goto('/');
 	}
@@ -65,7 +67,10 @@
 
 		// Validate form data
 		if (
-			!$tripForm.search ||
+			!$tripForm.selectedCity ||
+			!$tripForm.selectedCity.id ||
+			!$tripForm.selectedCity.city ||
+			!$tripForm.selectedCity.country ||
 			!$tripForm.dateRange.start ||
 			!$tripForm.dateRange.end ||
 			!$tripForm.people
@@ -74,10 +79,8 @@
 			return;
 		}
 
-		// Set loading state
 		isSubmitting = true;
 
-		// Map tourType to database enum values
 		const travelMethodMap: Record<string, string> = {
 			도보: 'walking',
 			자동차: 'driving',
@@ -95,7 +98,11 @@
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
-					destination: $tripForm.search,
+					destination: {
+						id: $tripForm.selectedCity.id,
+						city: $tripForm.selectedCity.city,
+						country: $tripForm.selectedCity.country
+					},
 					adultsCount: $tripForm.people,
 					childrenCount: children,
 					startDate: $tripForm.dateRange.start
@@ -113,11 +120,9 @@
 
 			if (response.ok && data.trip) {
 				alert('여행 전문가 제안 요청이 성공적으로 등록되었습니다!');
-				// Invalidate trips cache and redirect to my-trips page
 				await invalidate('app:trips');
 				goto('/my-trips');
 			} else {
-				// Handle authentication errors specifically
 				if (response.status === 401) {
 					alert('로그인이 필요합니다.');
 					goto('/signin');
@@ -129,7 +134,6 @@
 			console.error('Error creating trip:', error);
 			alert('서버 오류가 발생했습니다. 다시 시도해주세요.');
 		} finally {
-			// Reset loading state
 			isSubmitting = false;
 		}
 	}
@@ -168,25 +172,29 @@
 	function handleDestinationInput(e: Event) {
 		const target = e.target as HTMLInputElement;
 		tripForm.update((f) => ({ ...f, search: target.value }));
+		selectedCity = '';
 		clearTimeout(debounceTimeout);
 
-		// Hide dropdown immediately if input is empty
 		if (!target.value.trim()) {
 			results = [];
 			showDropdown = false;
-			console.log('Input empty, hiding dropdown');
 			return;
 		}
 
-		console.log('Input changed to:', target.value);
 		debounceTimeout = setTimeout(() => fetchResults(target.value), 50);
 	}
 
 	function handleDestinationSelect(city: string) {
-		console.log('Selecting destination:', city);
 		tripForm.update((f) => ({ ...f, search: city }));
+		selectedCity = city;
 		showDropdown = false;
-		console.log('Destination set to:', city);
+	}
+
+	function resetCitySelection() {
+		tripForm.update((f) => ({ ...f, search: '' }));
+		selectedCity = '';
+		results = [];
+		showDropdown = false;
 	}
 
 	function handleClickOutside(e: Event) {
@@ -228,14 +236,22 @@
 							value={$tripForm.search}
 							oninput={handleDestinationInput}
 							onfocus={() => {
-								console.log('Input focused. Results length:', results.length);
 								if (results.length) {
 									showDropdown = true;
-									console.log('Setting showDropdown to true');
 								}
 							}}
 							placeholder="여행지를 입력하세요"
-							autocomplete="off" />
+							autocomplete="off"
+							readonly={selectedCity === $tripForm.search} />
+
+						{#if selectedCity === $tripForm.search && $tripForm.search}
+							<button
+								type="button"
+								class="absolute top-2 right-2 text-xs text-pink-500 underline"
+								onclick={resetCitySelection}>
+								변경
+							</button>
+						{/if}
 
 						{#if showDropdown}
 							<ul
