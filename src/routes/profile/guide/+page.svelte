@@ -3,9 +3,7 @@
 	export let data: { userName: string; userRole: string; guideProfile: any };
 
 	console.log('data', data);
-	// ... existing code ...
-	// Import necessary Svelte and Tiptap components
-	// Placeholder: import Tiptap editor for Svelte 5 (to be implemented)
+
 	// Import any auth/user context to determine if the user is the guide
 	type GuideProfile = { introduction: any };
 	let isGuide = data.userRole === 'guide';
@@ -86,9 +84,7 @@
 		// For now, return a placeholder image URL
 		return 'https://placehold.co/600x400/png';
 	}
-	// For preview: convert Tiptap JSON to HTML (basic, for demo)
 	function renderBioPreview(json: any) {
-		// This is a simple example. For production, use Tiptap's HTML renderer or a safe HTML renderer.
 		if (!json || !json.content) return '';
 		return json.content
 			.map((block: any) => {
