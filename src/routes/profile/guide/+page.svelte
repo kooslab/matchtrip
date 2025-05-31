@@ -1,6 +1,8 @@
 <script lang="ts">
-	import TiptapEditor from '$lib/components/TiptapEditor.svelte';
+	import Editor from '@tinymce/tinymce-svelte';
 	export let data: { userName: string; userRole: string; guideProfile: any };
+
+	console.log('data', data);
 	// ... existing code ...
 	// Import necessary Svelte and Tiptap components
 	// Placeholder: import Tiptap editor for Svelte 5 (to be implemented)
@@ -11,16 +13,70 @@
 		? { introduction: data.guideProfile.introduction }
 		: null;
 	let editMode = false;
-	let editorContent: any = profile?.introduction || '';
+	let bio = profile?.introduction || '';
 
-	function handleSave() {
-		// TODO: Save editorContent as JSON to backend
-		profile = { introduction: editorContent };
-		editMode = false;
+	let isMobile = false;
+	let saving = false;
+	let saveError = '';
+
+	// TinyMCE config (copy from /offers)
+	const editorConfig = {
+		height: isMobile ? 300 : 400,
+		menubar: false,
+		mobile: {
+			theme: 'silver',
+			plugins: ['lists', 'autolink', 'link'],
+			toolbar_mode: 'wrap'
+		},
+		plugins: ['lists', 'autolink', 'link', 'preview', 'visualblocks', 'wordcount'],
+		toolbar_mode: 'wrap',
+		toolbar: isMobile
+			? [
+					'undo redo | bold italic underline',
+					'bullist numlist | outdent indent',
+					'link | removeformat | preview'
+				].join(' | ')
+			: 'undo redo | blocks | bold italic underline | bullist numlist outdent indent | link removeformat | preview',
+		content_style:
+			'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; line-height: 1.6; padding: 8px; }',
+		branding: false,
+		resize: false,
+		statusbar: false,
+		toolbar_sticky: false,
+		setup: (editor: any) => {
+			editor.on('init', () => {
+				if (isMobile) {
+					editor.getBody().style.fontSize = '16px';
+					editor.getBody().style.minHeight = '200px';
+				}
+			});
+		}
+	};
+
+	async function handleSave() {
+		saving = true;
+		saveError = '';
+		try {
+			const res = await fetch('/api/profile/guide', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ introduction: bio })
+			});
+			const data = await res.json();
+			if (data.success) {
+				profile = { introduction: bio };
+				editMode = false;
+			} else {
+				saveError = data.error || 'Failed to save.';
+			}
+		} catch (err) {
+			saveError = 'Server error.';
+		} finally {
+			saving = false;
+		}
 	}
 	function handleEdit() {
 		editMode = true;
-		editorContent = profile?.introduction || '';
 	}
 	function handleCancel() {
 		editMode = false;
@@ -62,10 +118,7 @@
 			<div class="mb-4">
 				<span class="font-semibold">Bio:</span>
 				{#if profile && profile.introduction}
-					<div class="prose prose-neutral mt-2 max-w-none">
-						<!-- Render the introduction as HTML using Tiptap's output, or fallback to plain text -->
-						<!-- You may want to use a Tiptap renderer here in the future -->
-					</div>
+					<div class="prose prose-neutral mt-2 max-w-none">{@html bio}</div>
 				{:else}
 					<div class="text-gray-400">No guide bio available.</div>
 				{/if}
@@ -79,50 +132,18 @@
 			<div class="mb-8 rounded-2xl bg-white p-8 shadow-lg">
 				<h2 class="mb-4 text-center text-2xl font-bold">Edit Your Guide Bio</h2>
 				<div class="mb-4">
-					<div class="block-based-editor">
-						<TiptapEditor
-							content={editorContent}
-							editable={true}
-							onImageUpload={handleImageUpload}
-							on:update={(e) => (editorContent = e.detail)} />
-					</div>
+					<Editor
+						apiKey={import.meta.env.VITE_TINYMCE_API_KEY || 'no-api-key'}
+						conf={editorConfig}
+						bind:value={bio} />
 				</div>
 				<div class="flex justify-end gap-2">
-					<button class="btn btn-primary" onclick={handleSave}>Save</button>
+					<button class="btn btn-primary" onclick={handleSave} disabled={saving}
+						>{saving ? 'Saving...' : 'Save'}</button>
 					<button class="btn btn-secondary" onclick={handleCancel}>Cancel</button>
 				</div>
+				{#if saveError}<div class="mt-2 text-red-500">{saveError}</div>{/if}
 			</div>
 		{/if}
 	</div>
 </div>
-
-<style>
-	.block-based-editor {
-		border: 1px solid #e5e7eb; /* Tailwind gray-200 */
-		border-radius: 0.75rem;
-		min-height: 200px;
-		padding: 1rem;
-		background: #fff;
-		outline: none;
-		font-size: 1.1rem;
-		transition: border 0.2s;
-	}
-	.block-based-editor:focus-within {
-		border-color: #2563eb; /* Tailwind blue-600 */
-		box-shadow: 0 0 0 2px #2563eb22;
-	}
-	/* Ensure cursor is visible and blinking */
-	.block-based-editor [contenteditable='true']:focus {
-		caret-color: #2563eb;
-		animation: blink-caret 1s step-end infinite;
-	}
-	@keyframes blink-caret {
-		0%,
-		100% {
-			border-right-color: #2563eb;
-		}
-		50% {
-			border-right-color: transparent;
-		}
-	}
-</style>
