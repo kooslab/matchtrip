@@ -563,18 +563,13 @@
 				<!-- Paris Card -->
 				<div
 					class="group relative overflow-hidden rounded-xl bg-gray-100 shadow-lg transition-transform hover:scale-105">
+					<img
+						src="https://source.unsplash.com/featured/?paris"
+						alt="Paris"
+						class="aspect-square w-full bg-gray-200 object-cover object-center" />
+					<div class="absolute inset-0 bg-black/30 transition-all group-hover:bg-black/40"></div>
 					<div
-						class="flex aspect-square items-center justify-center bg-gradient-to-br from-pink-200 to-purple-300">
-						<div class="text-center">
-							<div class="mb-2 text-6xl">🗼</div>
-							<p class="text-sm text-gray-600">(사진)</p>
-						</div>
-					</div>
-					<div
-						class="bg-opacity-20 group-hover:bg-opacity-30 absolute inset-0 bg-black transition-all">
-					</div>
-					<div
-						class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black to-transparent p-6">
+						class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/70 to-transparent p-6">
 						<h3 class="text-2xl font-bold text-white">파리</h3>
 						<p class="text-gray-200">(사진)</p>
 					</div>
@@ -583,18 +578,13 @@
 				<!-- Prague Card -->
 				<div
 					class="group relative overflow-hidden rounded-xl bg-gray-100 shadow-lg transition-transform hover:scale-105">
+					<img
+						src="https://source.unsplash.com/featured/?prague"
+						alt="Prague"
+						class="aspect-square w-full bg-gray-200 object-cover object-center" />
+					<div class="absolute inset-0 bg-black/30 transition-all group-hover:bg-black/40"></div>
 					<div
-						class="flex aspect-square items-center justify-center bg-gradient-to-br from-blue-200 to-indigo-300">
-						<div class="text-center">
-							<div class="mb-2 text-6xl">🏰</div>
-							<p class="text-sm text-gray-600">(사진)</p>
-						</div>
-					</div>
-					<div
-						class="bg-opacity-20 group-hover:bg-opacity-30 absolute inset-0 bg-black transition-all">
-					</div>
-					<div
-						class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black to-transparent p-6">
+						class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/70 to-transparent p-6">
 						<h3 class="text-2xl font-bold text-white">프라하</h3>
 						<p class="text-gray-200">(사진)</p>
 					</div>
@@ -603,18 +593,13 @@
 				<!-- Berlin Card -->
 				<div
 					class="group relative overflow-hidden rounded-xl bg-gray-100 shadow-lg transition-transform hover:scale-105">
+					<img
+						src="https://source.unsplash.com/featured/?berlin"
+						alt="Berlin"
+						class="aspect-square w-full bg-gray-200 object-cover object-center" />
+					<div class="absolute inset-0 bg-black/30 transition-all group-hover:bg-black/40"></div>
 					<div
-						class="flex aspect-square items-center justify-center bg-gradient-to-br from-green-200 to-teal-300">
-						<div class="text-center">
-							<div class="mb-2 text-6xl">🏛️</div>
-							<p class="text-sm text-gray-600">(사진)</p>
-						</div>
-					</div>
-					<div
-						class="bg-opacity-20 group-hover:bg-opacity-30 absolute inset-0 bg-black transition-all">
-					</div>
-					<div
-						class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black to-transparent p-6">
+						class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/70 to-transparent p-6">
 						<h3 class="text-2xl font-bold text-white">베를린</h3>
 						<p class="text-gray-200">(사진)</p>
 					</div>
@@ -623,18 +608,13 @@
 				<!-- Frankfurt Card -->
 				<div
 					class="group relative overflow-hidden rounded-xl bg-gray-100 shadow-lg transition-transform hover:scale-105">
+					<img
+						src="https://source.unsplash.com/featured/?frankfurt"
+						alt="Frankfurt"
+						class="aspect-square w-full bg-gray-200 object-cover object-center" />
+					<div class="absolute inset-0 bg-black/30 transition-all group-hover:bg-black/40"></div>
 					<div
-						class="flex aspect-square items-center justify-center bg-gradient-to-br from-orange-200 to-red-300">
-						<div class="text-center">
-							<div class="mb-2 text-6xl">🏙️</div>
-							<p class="text-sm text-gray-600">(사진)</p>
-						</div>
-					</div>
-					<div
-						class="bg-opacity-20 group-hover:bg-opacity-30 absolute inset-0 bg-black transition-all">
-					</div>
-					<div
-						class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black to-transparent p-6">
+						class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/70 to-transparent p-6">
 						<h3 class="text-2xl font-bold text-white">프랑크푸르트</h3>
 						<p class="text-gray-200">(사진)</p>
 					</div>
@@ -644,18 +624,13 @@
 				<div
 					class="group relative cursor-pointer overflow-hidden rounded-xl bg-gray-100 shadow-lg transition-transform hover:scale-105"
 					onclick={openComingSoonModal}>
+					<img
+						src="https://source.unsplash.com/featured/?rome"
+						alt="Rome"
+						class="aspect-square w-full bg-gray-200 object-cover object-center" />
+					<div class="absolute inset-0 bg-black/30 transition-all group-hover:bg-black/40"></div>
 					<div
-						class="flex aspect-square items-center justify-center bg-gradient-to-br from-red-200 to-orange-300">
-						<div class="text-center">
-							<div class="mb-2 text-6xl">🏛️</div>
-							<p class="text-sm text-gray-600">(오픈 예정)</p>
-						</div>
-					</div>
-					<div
-						class="bg-opacity-20 group-hover:bg-opacity-30 absolute inset-0 bg-black transition-all">
-					</div>
-					<div
-						class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black to-transparent p-6">
+						class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/70 to-transparent p-6">
 						<h3 class="text-2xl font-bold text-white">로마</h3>
 						<p class="text-gray-200">(오픈 예정)</p>
 					</div>
@@ -665,18 +640,13 @@
 				<div
 					class="group relative cursor-pointer overflow-hidden rounded-xl bg-gray-100 shadow-lg transition-transform hover:scale-105"
 					onclick={openComingSoonModal}>
+					<img
+						src="https://source.unsplash.com/featured/?florence"
+						alt="Florence"
+						class="aspect-square w-full bg-gray-200 object-cover object-center" />
+					<div class="absolute inset-0 bg-black/30 transition-all group-hover:bg-black/40"></div>
 					<div
-						class="flex aspect-square items-center justify-center bg-gradient-to-br from-purple-200 to-pink-300">
-						<div class="text-center">
-							<div class="mb-2 text-6xl">🎨</div>
-							<p class="text-sm text-gray-600">(오픈 예정)</p>
-						</div>
-					</div>
-					<div
-						class="bg-opacity-20 group-hover:bg-opacity-30 absolute inset-0 bg-black transition-all">
-					</div>
-					<div
-						class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black to-transparent p-6">
+						class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/70 to-transparent p-6">
 						<h3 class="text-2xl font-bold text-white">피렌체</h3>
 						<p class="text-gray-200">(오픈 예정)</p>
 					</div>
@@ -686,18 +656,13 @@
 				<div
 					class="group relative cursor-pointer overflow-hidden rounded-xl bg-gray-100 shadow-lg transition-transform hover:scale-105"
 					onclick={openComingSoonModal}>
+					<img
+						src="https://source.unsplash.com/featured/?madrid"
+						alt="Madrid"
+						class="aspect-square w-full bg-gray-200 object-cover object-center" />
+					<div class="absolute inset-0 bg-black/30 transition-all group-hover:bg-black/40"></div>
 					<div
-						class="flex aspect-square items-center justify-center bg-gradient-to-br from-yellow-200 to-orange-300">
-						<div class="text-center">
-							<div class="mb-2 text-6xl">🏰</div>
-							<p class="text-sm text-gray-600">(오픈 예정)</p>
-						</div>
-					</div>
-					<div
-						class="bg-opacity-20 group-hover:bg-opacity-30 absolute inset-0 bg-black transition-all">
-					</div>
-					<div
-						class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black to-transparent p-6">
+						class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/70 to-transparent p-6">
 						<h3 class="text-2xl font-bold text-white">마드리드</h3>
 						<p class="text-gray-200">(오픈 예정)</p>
 					</div>
@@ -707,18 +672,13 @@
 				<div
 					class="group relative cursor-pointer overflow-hidden rounded-xl bg-gray-100 shadow-lg transition-transform hover:scale-105"
 					onclick={openComingSoonModal}>
+					<img
+						src="https://source.unsplash.com/featured/?barcelona"
+						alt="Barcelona"
+						class="aspect-square w-full bg-gray-200 object-cover object-center" />
+					<div class="absolute inset-0 bg-black/30 transition-all group-hover:bg-black/40"></div>
 					<div
-						class="flex aspect-square items-center justify-center bg-gradient-to-br from-blue-200 to-teal-300">
-						<div class="text-center">
-							<div class="mb-2 text-6xl">🏖️</div>
-							<p class="text-sm text-gray-600">(오픈 예정)</p>
-						</div>
-					</div>
-					<div
-						class="bg-opacity-20 group-hover:bg-opacity-30 absolute inset-0 bg-black transition-all">
-					</div>
-					<div
-						class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black to-transparent p-6">
+						class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/70 to-transparent p-6">
 						<h3 class="text-2xl font-bold text-white">바르셀로나</h3>
 						<p class="text-gray-200">(오픈 예정)</p>
 					</div>

@@ -137,6 +137,12 @@
 							class="block py-2 font-medium text-gray-800 hover:text-blue-600"
 							onclick={() => closeMenu()}>나의 제안</NavigationLink>
 					</li>
+					<li>
+						<NavigationLink
+							href="/profile/guide"
+							class="block py-2 font-medium text-gray-800 hover:text-blue-600"
+							onclick={() => closeMenu()}>내 프로필</NavigationLink>
+					</li>
 				{/if}
 
 				<li>
@@ -199,6 +205,11 @@
 				<li>
 					<NavigationLink href="/my-offers" class="font-medium text-gray-800 hover:text-blue-600"
 						>나의 제안</NavigationLink>
+				</li>
+				<li>
+					<NavigationLink
+						href="/profile/guide"
+						class="font-medium text-gray-800 hover:text-blue-600">내 프로필</NavigationLink>
 				</li>
 			{/if}
 
