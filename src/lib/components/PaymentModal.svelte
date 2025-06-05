@@ -1,21 +1,21 @@
 <script lang="ts">
 	import { loadTossPayments, ANONYMOUS } from '@tosspayments/tosspayments-sdk';
-	
+
 	interface Props {
 		isOpen: boolean;
 		onClose: () => void;
 		offer: any;
 		trip: any;
 	}
-	
+
 	let { isOpen = $bindable(), onClose, offer, trip }: Props = $props();
-	
+
 	let paymentWidget: any = $state(null);
 	let isLoading = $state(false);
 	let error = $state<string | null>(null);
 	let widgetContainer: HTMLDivElement;
 	let hasInitialized = false;
-	
+
 	// Initialize when modal opens
 	$effect(() => {
 		if (isOpen && !hasInitialized && widgetContainer) {
@@ -25,7 +25,7 @@
 				initializePaymentWidget();
 			}, 500);
 		}
-		
+
 		// Cleanup when modal closes
 		if (!isOpen) {
 			if (paymentWidget) {
@@ -40,56 +40,54 @@
 			error = null;
 		}
 	});
-	
+
 	async function initializePaymentWidget() {
 		try {
 			console.log('Starting payment initialization...');
 			isLoading = true;
 			error = null;
-			
+
 			// Check if elements exist
 			const paymentEl = document.getElementById('payment-method');
 			const agreementEl = document.getElementById('agreement');
-			
+
 			if (!paymentEl || !agreementEl) {
 				console.error('Payment elements not found:', { paymentEl, agreementEl });
 				throw new Error('Payment elements not found in DOM');
 			}
-			
+
 			// Clear any existing content
 			paymentEl.innerHTML = '';
 			agreementEl.innerHTML = '';
-			
+
 			// Initialize Toss Payments
-			const tossPayments = await loadTossPayments(
-				"test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm"
-			);
-			
+			const tossPayments = await loadTossPayments('test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm');
+
 			// Create widgets
 			const widgets = tossPayments.widgets({
 				customerKey: ANONYMOUS
 			});
-			
+
 			// Set payment amount - ensure price is a number
 			const priceValue = typeof offer.price === 'string' ? parseInt(offer.price) : offer.price;
-			
+
 			await widgets.setAmount({
-				currency: "KRW",
-				value: priceValue,
+				currency: 'KRW',
+				value: priceValue
 			});
-			
+
 			// Render payment methods
 			await widgets.renderPaymentMethods({
-				selector: "#payment-method",
-				variantKey: "DEFAULT",
+				selector: '#payment-method',
+				variantKey: 'DEFAULT'
 			});
-			
+
 			// Render agreement
-			await widgets.renderAgreement({ 
-				selector: "#agreement", 
-				variantKey: "AGREEMENT" 
+			await widgets.renderAgreement({
+				selector: '#agreement',
+				variantKey: 'AGREEMENT'
 			});
-			
+
 			paymentWidget = widgets;
 			isLoading = false;
 			console.log('Payment widget initialized successfully!');
@@ -100,31 +98,33 @@
 			paymentWidget = null;
 		}
 	}
-	
-	
+
 	async function handlePayment() {
 		if (!paymentWidget) return;
-		
+
 		try {
 			const orderId = generateOrderId();
 			const orderName = `${trip.destination?.city || '여행'} - ${offer.guide?.name || '가이드'} 투어`;
-			
+
 			// Store order info in session storage for later verification
-			sessionStorage.setItem('pendingPayment', JSON.stringify({
-				offerId: offer.id,
-				tripId: trip.id,
-				amount: offer.price,
-				orderId
-			}));
-			
+			sessionStorage.setItem(
+				'pendingPayment',
+				JSON.stringify({
+					offerId: offer.id,
+					tripId: trip.id,
+					amount: offer.price,
+					orderId
+				})
+			);
+
 			// Request payment
 			await paymentWidget.requestPayment({
 				orderId,
 				orderName,
 				successUrl: `${window.location.origin}/payment/success`,
 				failUrl: `${window.location.origin}/payment/fail`,
-				customerEmail: trip.user?.email || "",
-				customerName: trip.user?.name || "",
+				customerEmail: trip.user?.email || '',
+				customerName: trip.user?.name || ''
 			});
 		} catch (err: any) {
 			console.error('Payment request error:', err);
@@ -135,11 +135,11 @@
 			alert('결제 요청 중 오류가 발생했습니다.');
 		}
 	}
-	
+
 	function generateOrderId() {
 		return `ORDER_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 	}
-	
+
 	// Close modal on escape key
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Escape' && isOpen) {
@@ -199,8 +199,7 @@
 						</div>
 						<div class="mt-3 flex justify-between border-t pt-3">
 							<span class="font-medium text-gray-900">총 금액</span>
-							<span class="text-lg font-bold text-pink-600"
-								>{offer.price.toLocaleString()}원</span>
+							<span class="text-lg font-bold text-pink-600">{offer.price.toLocaleString()}원</span>
 						</div>
 					</div>
 				</div>
@@ -209,7 +208,7 @@
 				<div class="relative">
 					{#if isLoading}
 						<div class="absolute inset-0 z-10 flex items-center justify-center bg-white/90">
-							<div class="text-center">
+							<div class="flex flex-col items-center justify-center text-center">
 								<div
 									class="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-pink-500 border-t-transparent">
 								</div>
@@ -217,13 +216,13 @@
 							</div>
 						</div>
 					{/if}
-					
+
 					{#if error}
 						<div class="mb-4 rounded-lg bg-red-50 p-4 text-red-600">
 							<p>{error}</p>
 						</div>
 					{/if}
-					
+
 					<!-- Payment Widget - Always rendered -->
 					<div class="space-y-4" style="min-height: 300px;">
 						<div id="payment-method" class="w-full" style="min-height: 200px;"></div>
@@ -241,7 +240,7 @@
 					<button
 						onclick={handlePayment}
 						disabled={isLoading || !!error || !paymentWidget}
-						class="flex-1 rounded-lg bg-pink-500 px-4 py-3 font-medium text-white hover:bg-pink-600 disabled:opacity-50 disabled:cursor-not-allowed">
+						class="flex-1 rounded-lg bg-pink-500 px-4 py-3 font-medium text-white hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-50">
 						결제하기
 					</button>
 				</div>

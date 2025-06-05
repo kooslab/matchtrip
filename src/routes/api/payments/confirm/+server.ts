@@ -138,13 +138,14 @@ async function confirmTossPayment(paymentKey: string, orderId: string, amount: n
 		const widgetSecretKey = 'test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6';
 		const encryptedSecretKey = 'Basic ' + Buffer.from(widgetSecretKey + ':').toString('base64');
 
-		const response = await fetch(`https://api.tosspayments.com/v2/payments/${paymentKey}`, {
+		const response = await fetch(`https://api.tosspayments.com/v1/payments/confirm`, {
 			method: 'POST',
 			headers: {
 				Authorization: encryptedSecretKey,
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({
+				paymentKey: paymentKey,
 				orderId: orderId,
 				amount: amount
 			})
