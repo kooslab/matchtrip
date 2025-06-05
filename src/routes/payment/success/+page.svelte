@@ -17,18 +17,23 @@
 		orderId = urlParams.get('orderId') || '';
 		amount = urlParams.get('amount') || '';
 		
+		console.log('Payment success page loaded with:', { paymentKey, orderId, amount });
+		
 		// Get pending payment info from session storage
 		const pendingPaymentStr = sessionStorage.getItem('pendingPayment');
 		if (!pendingPaymentStr) {
+			console.error('No pending payment found in session storage');
 			error = '결제 정보를 찾을 수 없습니다.';
 			isProcessing = false;
 			return;
 		}
 		
 		const pendingPayment = JSON.parse(pendingPaymentStr);
+		console.log('Pending payment from session:', pendingPayment);
 		
 		// Verify amount matches
 		if (parseInt(amount) !== pendingPayment.amount) {
+			console.error('Amount mismatch:', { urlAmount: parseInt(amount), sessionAmount: pendingPayment.amount });
 			error = '결제 금액이 일치하지 않습니다.';
 			isProcessing = false;
 			return;
@@ -50,6 +55,7 @@
 			});
 			
 			const result = await response.json();
+			console.log('Payment confirmation response:', { status: response.status, result });
 			
 			if (response.ok && result.success) {
 				success = true;
@@ -61,6 +67,7 @@
 					goto(`/my-trips/details?tripId=${pendingPayment.tripId}`);
 				}, 3000);
 			} else {
+				console.error('Payment confirmation failed:', result);
 				error = result.error || '결제 확인 중 오류가 발생했습니다.';
 			}
 		} catch (err) {
