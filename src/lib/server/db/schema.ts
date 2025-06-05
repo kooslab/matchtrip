@@ -285,3 +285,49 @@ export const tripStatusHistory = pgTable('trip_status_history', {
 	changedAt: timestamp('changed_at').defaultNow().notNull(),
 	changedBy: uuid('changed_by').references(() => users.id)
 });
+
+// Define enum for payment status
+export const paymentStatusEnum = pgEnum('payment_status', [
+	'pending',
+	'processing',
+	'completed',
+	'failed',
+	'cancelled',
+	'refunded'
+]);
+export type PaymentStatus = (typeof paymentStatusEnum.enumValues)[number];
+
+// Payments table
+export const payments = pgTable(
+	'payments',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		tripId: uuid('trip_id')
+			.notNull()
+			.references(() => trips.id, { onDelete: 'restrict' }),
+		offerId: uuid('offer_id')
+			.notNull()
+			.references(() => offers.id, { onDelete: 'restrict' }),
+		userId: uuid('user_id')
+			.notNull()
+			.references(() => users.id, { onDelete: 'restrict' }),
+		amount: integer('amount').notNull(), // Amount in KRW
+		currency: varchar('currency', { length: 3 }).notNull().default('KRW'),
+		paymentKey: text('payment_key').notNull().unique(), // Toss Payments key
+		orderId: text('order_id').notNull().unique(),
+		status: paymentStatusEnum('status').notNull().default('pending'),
+		paymentMethod: text('payment_method'), // card, transfer, etc.
+		failureReason: text('failure_reason'),
+		paidAt: timestamp('paid_at'),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at').defaultNow().notNull()
+	},
+	(table) => ({
+		// Add indexes for frequently queried columns
+		userIdIdx: index('payments_user_id_idx').on(table.userId),
+		tripIdIdx: index('payments_trip_id_idx').on(table.tripId),
+		offerIdIdx: index('payments_offer_id_idx').on(table.offerId),
+		statusIdx: index('payments_status_idx').on(table.status),
+		paymentKeyIdx: index('payments_payment_key_idx').on(table.paymentKey)
+	})
+);

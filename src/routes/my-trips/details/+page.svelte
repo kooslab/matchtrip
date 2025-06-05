@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import PaymentModal from '$lib/components/PaymentModal.svelte';
 
 	let { data } = $props();
 	let trip = $derived(data.trip);
@@ -8,6 +9,8 @@
 
 	// State for offer actions
 	let processingOfferId = $state<string | null>(null);
+	let showPaymentModal = $state(false);
+	let selectedOffer = $state<any>(null);
 
 	function formatDate(date: Date | string) {
 		const dateObj = typeof date === 'string' ? new Date(date) : date;
@@ -83,6 +86,17 @@
 	async function handleOfferAction(offerId: string, action: 'accept' | 'reject') {
 		if (processingOfferId) return;
 
+		// If accepting, show payment modal
+		if (action === 'accept') {
+			const offer = offers.find(o => o.id === offerId);
+			if (offer) {
+				selectedOffer = offer;
+				showPaymentModal = true;
+			}
+			return;
+		}
+
+		// For reject action, proceed with API call
 		try {
 			processingOfferId = offerId;
 			const response = await fetch('/api/offers/action', {
@@ -235,3 +249,16 @@
 		{/if}
 	</div>
 </div>
+
+<!-- Payment Modal -->
+{#if selectedOffer}
+	<PaymentModal 
+		bind:isOpen={showPaymentModal}
+		onClose={() => {
+			showPaymentModal = false;
+			selectedOffer = null;
+		}}
+		offer={selectedOffer}
+		{trip}
+	/>
+{/if}

@@ -152,9 +152,19 @@
 			{:else}
 				<div class="space-y-4">
 					{#each trips as trip}
-						<div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+						<div 
+							class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+							onclick={() => goToTripDetails(trip.id)}
+							role="button"
+							tabindex="0"
+							onkeydown={(e) => {
+								if (e.key === 'Enter' || e.key === ' ') {
+									e.preventDefault();
+									goToTripDetails(trip.id);
+								}
+							}}>
 							<div class="flex items-start justify-between">
-								<div class="flex-1">
+								<div class="flex-1 pointer-events-none">
 									<div class="mb-2 flex items-center gap-2">
 										<h3 class="text-lg font-medium text-gray-900">
 											{trip.destination?.city || '알 수 없는 목적지'}
@@ -185,7 +195,10 @@
 
 								<div class="ml-4 flex flex-col gap-2">
 									<button
-										onclick={() => goToTripDetails(trip.id)}
+										onclick={(e) => {
+											e.stopPropagation();
+											goToTripDetails(trip.id);
+										}}
 										disabled={navigatingTripId === trip.id}
 										class="flex items-center justify-center gap-1 rounded bg-gray-100 px-3 py-1 text-sm text-gray-700 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50">
 										{#if navigatingTripId === trip.id}
@@ -199,6 +212,7 @@
 									</button>
 									{#if trip.status === 'draft'}
 										<button
+											onclick={(e) => e.stopPropagation()}
 											class="rounded bg-pink-100 px-3 py-1 text-sm text-pink-700 hover:bg-pink-200">
 											수정하기
 										</button>
@@ -211,7 +225,7 @@
 								</div>
 							</div>
 
-							<div class="mt-3 text-xs text-gray-500">
+							<div class="mt-3 text-xs text-gray-500 pointer-events-none">
 								생성일: {formatDate(trip.createdAt)}
 							</div>
 						</div>

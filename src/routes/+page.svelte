@@ -240,18 +240,18 @@
 	</header> -->
 
 	<!-- Search Bar -->
-	<section class="px-4 py-3">
+	<section class="px-4 py-3 md:py-8">
 		<form
-			class="flex flex-col gap-4 rounded-xl border bg-white px-2 py-4 shadow-sm"
+			class="mx-auto flex max-w-4xl flex-col gap-4 rounded-xl border bg-white px-2 py-4 shadow-sm md:px-6 md:py-6 md:shadow-lg"
 			onsubmit={handleSearch}>
 			<!-- Row 1: Destination -->
 			<div class="flex w-full flex-col gap-1">
-				<div class="flex items-center gap-4">
-					<label class="shrink-0 text-sm font-medium text-gray-700">어디로 가고 싶으신가요?</label>
+				<div class="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
+					<label class="shrink-0 text-sm font-medium text-gray-700 md:text-base">어디로 가고 싶으신가요?</label>
 					<div class="relative min-w-0 flex-1">
 						<input
-							class="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-pink-200 focus:outline-none"
-							placeholder="여행지"
+							class="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-pink-200 focus:outline-none md:text-base md:px-4 md:py-3"
+							placeholder="여행지를 검색하세요"
 							value={$tripForm.search}
 							oninput={handleInput}
 							onfocus={() => {
@@ -291,8 +291,8 @@
 			</div>
 
 			<!-- Row 2: Date Range Picker -->
-			<div class="flex w-full flex-col gap-1">
-				<!-- <label class="mb-1 text-sm font-medium text-gray-700">여행 날짜</label> -->
+			<div class="flex w-full flex-col gap-1 md:flex-row md:items-center md:gap-4">
+				<label class="hidden text-sm font-medium text-gray-700 md:block md:shrink-0 md:text-base">여행 날짜</label>
 				<div class="relative min-w-0 flex-1">
 					<DateRangePicker.Root
 						bind:value={$tripForm.dateRange}
@@ -302,7 +302,7 @@
 						fixedWeeks={true}
 						class="w-full">
 						<div
-							class="flex w-full items-center rounded-xl border border-gray-300 bg-white px-2 py-3 text-sm">
+							class="flex w-full items-center rounded-xl border border-gray-300 bg-white px-2 py-3 text-sm md:px-4 md:text-base">
 							{#each ['start', 'end'] as type (type)}
 								<DateRangePicker.Input type={type as 'start' | 'end'}>
 									{#snippet children({ segments })}
@@ -389,10 +389,10 @@
 			</div>
 
 			<!-- Row 3: People and Tour Type -->
-			<div class="flex w-full items-center gap-3">
+			<div class="flex w-full flex-col gap-3 md:flex-row md:items-center">
 				<!-- Number of People with Label -->
-				<div class="flex items-center gap-2">
-					<label class="text-sm font-medium whitespace-nowrap text-gray-700">인원 수</label>
+				<div class="flex items-center gap-2 md:gap-3">
+					<label class="text-sm font-medium whitespace-nowrap text-gray-700 md:text-base">인원 수</label>
 					<button
 						type="button"
 						class="flex h-8 w-8 items-center justify-center rounded bg-gray-100 p-2 text-lg"
@@ -401,7 +401,7 @@
 						}}
 						aria-label="인원수 감소">-</button>
 					<input
-						class="w-12 border-none text-center text-sm focus:ring-0"
+						class="w-12 border-none text-center text-sm focus:ring-0 md:w-16 md:text-base"
 						type="number"
 						min="1"
 						value={$tripForm.people}
@@ -422,9 +422,9 @@
 				</div>
 
 				<!-- Tour Type Dropdown -->
-				<div class="flex-1">
+				<div class="flex-1 md:max-w-xs">
 					<select
-						class="w-full rounded border-none bg-gray-50 py-2 text-center text-sm focus:ring-0"
+						class="w-full rounded border-none bg-gray-50 py-2 text-center text-sm focus:ring-0 md:py-3 md:text-base"
 						value={$tripForm.tourType}
 						onchange={(e) =>
 							tripForm.update((f) => ({ ...f, tourType: (e.target as HTMLSelectElement).value }))}>
@@ -438,34 +438,46 @@
 				<!-- Search Button -->
 				<button
 					type="submit"
-					class="flex shrink-0 items-center justify-center rounded-full bg-pink-500 p-2 text-white"
+					class="flex shrink-0 items-center justify-center rounded-full bg-pink-500 p-2 text-white hover:bg-pink-600 transition-colors md:hidden"
 					style="min-width: 40px; min-height: 40px;">
 					<Plus size={20} />
+				</button>
+				<button
+					type="submit"
+					class="hidden shrink-0 items-center justify-center rounded-lg bg-pink-500 px-8 py-3 text-white hover:bg-pink-600 transition-colors md:flex md:text-base font-medium">
+					여행 계획 시작하기
 				</button>
 			</div>
 		</form>
 	</section>
 
 	<!-- Branding Video Section -->
-	<section class="flex flex-1 items-center justify-center border-t border-b py-12">
-		<span class="text-lg">브랜딩 영상</span>
+	<section class="flex flex-1 items-center justify-center border-t border-b py-12 md:py-20 bg-gray-50">
+		<div class="w-full max-w-4xl px-4">
+			<div class="aspect-video w-full bg-gray-200 rounded-lg flex items-center justify-center">
+				<span class="text-lg md:text-2xl text-gray-600">브랜딩 영상</span>
+			</div>
+		</div>
 	</section>
 
 	<!-- Intro Section -->
-	<section class="border-b px-4 py-8 text-center">
-		<div class="mb-2 text-2xl font-bold text-gray-700">
-			<span class="font-extrabold text-gray-900">Match Trip</span>은
+	<section class="border-b px-4 py-8 text-center md:py-16">
+		<div class="mx-auto max-w-3xl">
+			<div class="mb-2 text-2xl font-bold text-gray-700 md:text-4xl md:mb-4">
+				<span class="font-extrabold text-gray-900">Match Trip</span>은
+			</div>
+			<div class="text-base text-gray-500 md:text-xl">
+				나에게 맞는 현지 여행 전문가를<br class="md:hidden" />
+				<span class="hidden md:inline">나에게 맞는 현지 여행 전문가를 </span>
+				안전하게 연결해주는 공간입니다.
+			</div>
+			<div class="mx-auto mt-2 w-1/2 border-t md:mt-6 md:w-32"></div>
 		</div>
-		<div class="text-base text-gray-500">
-			나에게 맞는 현지 여행 전문가를<br />
-			안전하게 연결해주는 공간입니다.
-		</div>
-		<div class="mx-auto mt-2 w-1/2 border-t"></div>
 	</section>
 
 	<!-- Onboarding Section -->
-	<section class="border-b bg-gray-50 px-4 py-12">
-		<div class="mx-auto max-w-4xl">
+	<section class="border-b bg-gray-50 px-4 py-12 md:py-20">
+		<div class="mx-auto max-w-6xl">
 			<div class="mb-8 text-center">
 				<h2 class="mb-4 text-3xl font-bold text-gray-900">Match Trip 사용방법</h2>
 				<p class="text-lg text-gray-600">간단한 단계로 완벽한 여행을 계획하세요</p>
