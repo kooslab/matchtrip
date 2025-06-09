@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import PaymentModal from '$lib/components/PaymentModal.svelte';
+	import { MessageSquare } from 'lucide-svelte';
 
 	let { data } = $props();
 	let trip = $derived(data.trip);
@@ -81,6 +82,25 @@
 			withdrawn: 'bg-gray-100 text-gray-800'
 		};
 		return colorMap[status] || 'bg-gray-100 text-gray-800';
+	}
+
+	async function startConversation(offerId: string) {
+		try {
+			const response = await fetch('/api/conversations', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ offerId })
+			});
+
+			if (response.ok) {
+				const data = await response.json();
+				goto(`/conversations/${data.conversation.id}`);
+			} else {
+				console.error('Failed to create conversation');
+			}
+		} catch (error) {
+			console.error('Error creating conversation:', error);
+		}
 	}
 
 	async function handleOfferAction(offerId: string, action: 'accept' | 'reject') {
@@ -226,8 +246,14 @@
 								제안일: {formatDate(offer.createdAt)}
 							</span>
 
-							{#if offer.status === 'pending'}
-								<div class="flex gap-2">
+							<div class="flex gap-2">
+								<button
+									onclick={() => startConversation(offer.id)}
+									class="flex items-center gap-1 rounded bg-blue-100 px-3 py-1 text-sm text-blue-700 hover:bg-blue-200">
+									<MessageSquare class="h-3 w-3" />
+									대화하기
+								</button>
+								{#if offer.status === 'pending'}
 									<button
 										onclick={() => handleOfferAction(offer.id, 'reject')}
 										disabled={processingOfferId === offer.id}
@@ -240,8 +266,8 @@
 										class="rounded bg-green-100 px-3 py-1 text-sm text-green-700 hover:bg-green-200 disabled:opacity-50">
 										{processingOfferId === offer.id ? '처리 중...' : '수락'}
 									</button>
-								</div>
-							{/if}
+								{/if}
+							</div>
 						</div>
 					</div>
 				{/each}

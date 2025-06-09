@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { MessageSquare } from 'lucide-svelte';
 	let { data } = $props();
 
 	let offer = $derived(data.offer);
@@ -77,6 +78,25 @@
 		const remainingHours = hours % 24;
 		if (remainingHours === 0) return `${days}일`;
 		return `${days}일 ${remainingHours}시간`;
+	}
+
+	async function startConversation() {
+		try {
+			const response = await fetch('/api/conversations', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ offerId: offer.id })
+			});
+
+			if (response.ok) {
+				const data = await response.json();
+				goto(`/conversations/${data.conversation.id}`);
+			} else {
+				console.error('Failed to create conversation');
+			}
+		} catch (error) {
+			console.error('Error creating conversation:', error);
+		}
 	}
 </script>
 
@@ -247,6 +267,14 @@
 
 			<!-- Action Buttons -->
 			<div class="space-y-3">
+				<!-- Conversation Button -->
+				<button
+					onclick={startConversation}
+					class="w-full flex items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none">
+					<MessageSquare class="h-5 w-5" />
+					대화하기
+				</button>
+
 				{#if offer.status === 'accepted'}
 					<button
 						onclick={() => goto(`/my-trips/details?tripId=${offer.tripId}`)}

@@ -13,6 +13,7 @@
 	let userRole = $derived(data?.userRole);
 	let isLoggedIn = $derived(!!user);
 	let isGuide = $derived(userRole === 'guide');
+	let isTraveler = $derived(userRole === 'traveler');
 
 	// Preload common routes for logged in users
 	$effect(() => {
@@ -142,6 +143,16 @@
 							href="/profile/guide"
 							class="block py-2 font-medium text-gray-800 hover:text-blue-600"
 							onclick={() => closeMenu()}>내 프로필</NavigationLink>
+					</li>
+				{/if}
+
+				<!-- Conversations link for both travelers and guides -->
+				{#if isTraveler || isGuide}
+					<li>
+						<NavigationLink
+							href="/conversations"
+							class="block py-2 font-medium text-gray-800 hover:text-blue-600"
+							onclick={() => closeMenu()}>대화 목록</NavigationLink>
 					</li>
 				{/if}
 

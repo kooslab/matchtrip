@@ -71,6 +71,13 @@
       "when": 1749090990533,
       "tag": "0009_abnormal_thunderball",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1749496582981,
+      "tag": "0010_swift_dagger",
+      "breakpoints": true
     }
   ]
 }

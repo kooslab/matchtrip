@@ -331,3 +331,69 @@ export const payments = pgTable(
 		paymentKeyIdx: index('payments_payment_key_idx').on(table.paymentKey)
 	})
 );
+
+// Define enum for conversation status
+export const conversationStatusEnum = pgEnum('conversation_status', [
+	'active',
+	'archived',
+	'blocked'
+]);
+export type ConversationStatus = (typeof conversationStatusEnum.enumValues)[number];
+
+// Conversations table for chat between travelers and guides
+export const conversations = pgTable(
+	'conversations',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		offerId: uuid('offer_id')
+			.notNull()
+			.references(() => offers.id, { onDelete: 'cascade' })
+			.unique(), // One conversation per offer
+		travelerId: uuid('traveler_id')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
+		guideId: uuid('guide_id')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
+		status: conversationStatusEnum('status').notNull().default('active'),
+		lastMessageAt: timestamp('last_message_at'),
+		travelerLastReadAt: timestamp('traveler_last_read_at'),
+		guideLastReadAt: timestamp('guide_last_read_at'),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at').defaultNow().notNull()
+	},
+	(table) => ({
+		// Add indexes for frequently queried columns
+		offerIdIdx: index('conversations_offer_id_idx').on(table.offerId),
+		travelerIdIdx: index('conversations_traveler_id_idx').on(table.travelerId),
+		guideIdIdx: index('conversations_guide_id_idx').on(table.guideId),
+		statusIdx: index('conversations_status_idx').on(table.status),
+		lastMessageIdx: index('conversations_last_message_idx').on(table.lastMessageAt)
+	})
+);
+
+// Messages table for individual messages in conversations
+export const messages = pgTable(
+	'messages',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		conversationId: uuid('conversation_id')
+			.notNull()
+			.references(() => conversations.id, { onDelete: 'cascade' }),
+		senderId: uuid('sender_id')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
+		content: text('content').notNull(),
+		isEdited: boolean('is_edited').notNull().default(false),
+		editedAt: timestamp('edited_at'),
+		isDeleted: boolean('is_deleted').notNull().default(false),
+		deletedAt: timestamp('deleted_at'),
+		createdAt: timestamp('created_at').defaultNow().notNull()
+	},
+	(table) => ({
+		// Add indexes for frequently queried columns
+		conversationIdIdx: index('messages_conversation_id_idx').on(table.conversationId),
+		senderIdIdx: index('messages_sender_id_idx').on(table.senderId),
+		createdAtIdx: index('messages_created_at_idx').on(table.createdAt)
+	})
+);

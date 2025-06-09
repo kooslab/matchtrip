@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { MessageSquare } from 'lucide-svelte';
 	let { data } = $props();
 
 	let offers = $derived(data.offers);
@@ -57,6 +58,25 @@
 				return '거절됨';
 			default:
 				return status;
+		}
+	}
+
+	async function startConversation(offerId: string) {
+		try {
+			const response = await fetch('/api/conversations', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ offerId })
+			});
+
+			if (response.ok) {
+				const data = await response.json();
+				goto(`/conversations/${data.conversation.id}`);
+			} else {
+				console.error('Failed to create conversation');
+			}
+		} catch (error) {
+			console.error('Error creating conversation:', error);
 		}
 	}
 </script>
@@ -179,9 +199,24 @@
 								{/if}
 
 								<div class="border-t border-gray-100 pt-4">
-									<span class="text-xs text-gray-500">
-										{formatDate(offer.createdAt)} 제안
-									</span>
+									<div class="flex items-center justify-between">
+										<span class="text-xs text-gray-500">
+											{formatDate(offer.createdAt)} 제안
+										</span>
+										<div class="flex gap-2">
+											<button
+												onclick={() => startConversation(offer.id)}
+												class="flex items-center gap-1 rounded-md bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100">
+												<MessageSquare class="h-3 w-3" />
+												대화하기
+											</button>
+											<button
+												onclick={() => goto(`/my-offers/detail?offerId=${offer.id}`)}
+												class="rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-200">
+												상세보기
+											</button>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -255,11 +290,19 @@
 										<span class="text-xs text-gray-500">
 											{formatDate(offer.createdAt)} 제안
 										</span>
-										<button
-											onclick={() => goto(`/my-offers/detail?offerId=${offer.id}`)}
-											class="text-xs text-green-600 hover:text-green-700 hover:underline">
-											제안 상세보기
-										</button>
+										<div class="flex gap-2">
+											<button
+												onclick={() => startConversation(offer.id)}
+												class="flex items-center gap-1 rounded-md bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100">
+												<MessageSquare class="h-3 w-3" />
+												대화하기
+											</button>
+											<button
+												onclick={() => goto(`/my-offers/detail?offerId=${offer.id}`)}
+												class="rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-200">
+												상세보기
+											</button>
+										</div>
 									</div>
 								</div>
 							</div>
@@ -330,9 +373,24 @@
 								{/if}
 
 								<div class="border-t border-gray-100 pt-4">
-									<span class="text-xs text-gray-500">
-										{formatDate(offer.createdAt)} 제안
-									</span>
+									<div class="flex items-center justify-between">
+										<span class="text-xs text-gray-500">
+											{formatDate(offer.createdAt)} 제안
+										</span>
+										<div class="flex gap-2">
+											<button
+												onclick={() => startConversation(offer.id)}
+												class="flex items-center gap-1 rounded-md bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100">
+												<MessageSquare class="h-3 w-3" />
+												대화하기
+											</button>
+											<button
+												onclick={() => goto(`/my-offers/detail?offerId=${offer.id}`)}
+												class="rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-200">
+												상세보기
+											</button>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>

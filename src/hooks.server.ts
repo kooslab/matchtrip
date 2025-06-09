@@ -11,33 +11,45 @@ const betterAuthHandler = (async ({ event, resolve }) => {
 }) satisfies Handle;
 
 const authorizationHandler = (async ({ event, resolve }) => {
-	const routeId = event.route.id;
-	const session = await auth.api.getSession({ headers: event.request.headers });
+	let routeId: string | null = null;
+	let session: any = null;
 
-	// Store session in locals for use in page server functions
-	event.locals.session = session;
+	try {
+		routeId = event.route.id;
+		session = await auth.api.getSession({ headers: event.request.headers });
 
-	// If user is logged in, fetch their full user data including role
-	if (session?.user?.id) {
-		try {
-			// Fetch user from database
-			const user = await db.query.users.findFirst({
-				where: eq(users.id, session.user.id),
-				columns: {
-					id: true,
-					role: true,
-					name: true,
-					email: true
+		// Store session in locals for use in page server functions
+		event.locals.session = session;
+
+		// If user is logged in, fetch their full user data including role
+		if (session?.user?.id) {
+			try {
+				// Fetch user from database
+				const user = await db.query.users.findFirst({
+					where: eq(users.id, session.user.id),
+					columns: {
+						id: true,
+						role: true,
+						name: true,
+						email: true
+					}
+				});
+
+				if (user) {
+					event.locals.user = user;
+					console.log('Hooks - User loaded in locals:', user.email, 'Role:', user.role);
 				}
-			});
-
-			if (user) {
-				event.locals.user = user;
-				console.log('Hooks - User loaded in locals:', user.email, 'Role:', user.role);
+			} catch (error) {
+				console.error('Hooks - Failed to fetch user:', error);
 			}
-		} catch (error) {
-			console.error('Hooks - Failed to fetch user:', error);
 		}
+	} catch (error) {
+		console.error('Hooks - Critical error in session handling:', error);
+		// Continue without session data
+		event.locals.session = undefined;
+		event.locals.user = undefined;
+		// Don't process route protection if we had an error
+		return resolve(event);
 	}
 
 	// Handle auth route redirects - redirect to role-based pages
