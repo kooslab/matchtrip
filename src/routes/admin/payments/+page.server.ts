@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { payments, offers, trips, users, guides } from '$lib/server/db/schema';
+import { payments, offers, trips, users, guideProfiles, destinations } from '$lib/server/db/schema';
 import { desc, eq, sql } from 'drizzle-orm';
 import { redirect } from '@sveltejs/kit';
 
@@ -15,7 +15,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const allPayments = await db
 		.select({
 			id: payments.id,
-			paymentIntent: payments.paymentIntent,
+			paymentKey: payments.paymentKey,
 			amount: payments.amount,
 			status: payments.status,
 			createdAt: payments.createdAt,
@@ -26,7 +26,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			offerStatus: offers.status,
 			// Trip info
 			tripId: trips.id,
-			tripDestination: trips.destination,
+			tripDestination: destinations.city,
 			tripStartDate: trips.startDate,
 			tripEndDate: trips.endDate,
 			// Traveler info
@@ -35,14 +35,15 @@ export const load: PageServerLoad = async ({ locals }) => {
 			// Guide info
 			guideName: sql<string>`guide_user.name`.as('guideName'),
 			guideEmail: sql<string>`guide_user.email`.as('guideEmail'),
-			guideVerified: sql<boolean>`COALESCE(${guides.verified}, false)`.as('guideVerified')
+			guideVerified: sql<boolean>`COALESCE(${guideProfiles.isVerified}, false)`.as('guideVerified')
 		})
 		.from(payments)
 		.leftJoin(offers, eq(payments.offerId, offers.id))
 		.leftJoin(trips, eq(offers.tripId, trips.id))
+		.leftJoin(destinations, eq(trips.destinationId, destinations.id))
 		.leftJoin(users.as('traveler'), eq(trips.userId, sql`traveler.id`))
-		.leftJoin(guides, eq(offers.guideId, guides.id))
-		.leftJoin(users.as('guide_user'), eq(guides.userId, sql`guide_user.id`))
+		.leftJoin(guideProfiles, eq(offers.guideId, guideProfiles.userId))
+		.leftJoin(users.as('guide_user'), eq(offers.guideId, sql`guide_user.id`))
 		.orderBy(desc(payments.createdAt));
 
 	// Calculate statistics
