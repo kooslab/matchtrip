@@ -54,6 +54,7 @@
 	let loading = $state(true);
 	let sending = $state(false);
 	let error = $state('');
+	let warningMessage = $state('');
 	let currentUserId = $derived(data?.session?.user?.id || $page.data.session?.user?.id);
 	let messagesContainer: HTMLDivElement;
 	let editingMessageId = $state<string | null>(null);
@@ -62,9 +63,34 @@
 
 	const conversationId = $page.params.id;
 
+	// Pattern to detect email addresses
+	const emailPattern = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+	
+	// Pattern to detect Korean phone numbers (010-xxxx-xxxx, 010xxxxxxxx, etc.)
+	const phonePattern = /010[-\s]?\d{3,4}[-\s]?\d{4}/g;
+
+	function containsSensitiveInfo(text: string): boolean {
+		return emailPattern.test(text) || phonePattern.test(text);
+	}
+
+	function getSensitiveInfoWarning(text: string): string {
+		const hasEmail = emailPattern.test(text);
+		const hasPhone = phonePattern.test(text);
+		
+		if (hasEmail && hasPhone) {
+			return '이메일과 전화번호는 보안상의 이유로 대화에서 공유할 수 없습니다.';
+		} else if (hasEmail) {
+			return '이메일 주소는 보안상의 이유로 대화에서 공유할 수 없습니다.';
+		} else if (hasPhone) {
+			return '전화번호는 보안상의 이유로 대화에서 공유할 수 없습니다.';
+		}
+		return '';
+	}
+
 	onMount(async () => {
 		console.log('Current user ID:', currentUserId);
 		console.log('Session data:', data?.session);
+		console.log('User role:', data?.session?.user?.role);
 		await loadConversation();
 		// Poll for new messages every 5 seconds
 		pollingInterval = setInterval(loadConversation, 5000);
@@ -90,6 +116,7 @@
 				offer = data.offer || null;
 				console.log('Messages set:', messages);
 				console.log('Conversation set:', conversation);
+				console.log('Conversation status:', conversation?.status);
 				console.log('Offer set:', offer);
 				await tick();
 				scrollToBottom();
@@ -112,12 +139,46 @@
 		}
 	}
 
-	async function sendMessage() {
+	async function sendMessage(event: Event) {
+		event.preventDefault();
 		if (!newMessage.trim() || sending) return;
+
+		// Check for sensitive information
+		if (containsSensitiveInfo(newMessage)) {
+			warningMessage = getSensitiveInfoWarning(newMessage);
+			// Clear warning after 5 seconds
+			setTimeout(() => {
+				warningMessage = '';
+			}, 5000);
+			return;
+		}
 
 		sending = true;
 		const messageContent = newMessage;
 		newMessage = '';
+		warningMessage = ''; // Clear any existing warning
+
+		// Optimistic rendering - add message immediately
+		const optimisticMessage: Message = {
+			id: `temp-${Date.now()}`,
+			content: messageContent,
+			senderId: currentUserId,
+			isEdited: false,
+			editedAt: null,
+			isDeleted: false,
+			createdAt: new Date().toISOString(),
+			sender: {
+				id: currentUserId,
+				name: data?.session?.user?.name || 'You',
+				email: data?.session?.user?.email || '',
+				role: data?.session?.user?.role || 'traveler',
+				image: data?.session?.user?.image || null
+			}
+		};
+		
+		messages = [...messages, optimisticMessage];
+		await tick();
+		scrollToBottom();
 
 		try {
 			const response = await fetch(`/api/conversations/${conversationId}`, {
@@ -128,14 +189,19 @@
 
 			if (response.ok) {
 				const data = await response.json();
-				messages = [...messages, data.message];
-				await tick();
-				scrollToBottom();
+				// Replace optimistic message with real one
+				messages = messages.map(msg => 
+					msg.id === optimisticMessage.id ? data.message : msg
+				);
 			} else {
+				// Remove optimistic message on error
+				messages = messages.filter(msg => msg.id !== optimisticMessage.id);
 				error = '메시지 전송에 실패했습니다.';
 				newMessage = messageContent; // Restore message on error
 			}
 		} catch (err) {
+			// Remove optimistic message on error
+			messages = messages.filter(msg => msg.id !== optimisticMessage.id);
 			error = '메시지 전송에 실패했습니다.';
 			newMessage = messageContent;
 		} finally {
@@ -151,6 +217,16 @@
 
 	async function saveEdit() {
 		if (!editContent.trim() || !editingMessageId) return;
+
+		// Check for sensitive information
+		if (containsSensitiveInfo(editContent)) {
+			warningMessage = getSensitiveInfoWarning(editContent);
+			// Clear warning after 5 seconds
+			setTimeout(() => {
+				warningMessage = '';
+			}, 5000);
+			return;
+		}
 
 		try {
 			const response = await fetch(`/api/conversations/${conversationId}/messages`, {
@@ -236,7 +312,7 @@
 	}
 </script>
 
-<div class="flex h-screen flex-col bg-gray-50">
+<div class="fixed inset-0 flex flex-col bg-gray-50 safe-area-top">
 	<!-- Header -->
 	<div class="border-b bg-white px-4 py-3">
 		<div class="flex items-center gap-4">
@@ -342,8 +418,8 @@
 							<div
 								class={`rounded-lg px-4 py-2 ${
 									message.senderId === currentUserId
-										? 'bg-gray-100 text-gray-900'
-										: 'bg-blue-500 text-white'
+										? 'bg-blue-500 text-white'
+										: 'bg-gray-100 text-gray-900'
 								}`}
 							>
 								<p class="whitespace-pre-wrap text-sm">{message.content}</p>
@@ -372,14 +448,22 @@
 		</div>
 
 		<!-- Input -->
-		{#if conversation.status === 'active'}
-			<div class="border-t bg-white p-4">
-				<form onsubmit={(e) => { e.preventDefault(); sendMessage(); }} class="flex gap-2">
+		{#if conversation && conversation.status === 'active'}
+			<div class="border-t bg-white p-4 safe-area-bottom">
+				{#if warningMessage}
+					<div class="mb-2 rounded-lg bg-red-50 border border-red-200 px-4 py-2">
+						<p class="text-sm text-red-700">{warningMessage}</p>
+					</div>
+				{/if}
+				<form onsubmit={sendMessage} class="flex gap-2">
 					<input
 						type="text"
 						bind:value={newMessage}
 						placeholder="메시지를 입력하세요..."
 						disabled={sending}
+						oninput={() => {
+							if (warningMessage) warningMessage = '';
+						}}
 						class="flex-1 rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
 					/>
 					<button
@@ -391,10 +475,24 @@
 					</button>
 				</form>
 			</div>
+		{:else if conversation}
+			<div class="border-t bg-gray-100 p-4 safe-area-bottom text-center text-sm text-gray-500">
+				이 대화는 종료되었습니다. (상태: {conversation.status})
+			</div>
 		{:else}
-			<div class="border-t bg-gray-100 p-4 text-center text-sm text-gray-500">
-				이 대화는 종료되었습니다.
+			<div class="border-t bg-gray-100 p-4 safe-area-bottom text-center text-sm text-gray-500">
+				대화를 불러오는 중...
 			</div>
 		{/if}
 	{/if}
 </div>
+
+<style>
+	/* Handle safe areas for devices with notches/home indicators */
+	.safe-area-top {
+		padding-top: env(safe-area-inset-top);
+	}
+	.safe-area-bottom {
+		padding-bottom: env(safe-area-inset-bottom);
+	}
+</style>
