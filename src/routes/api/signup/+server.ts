@@ -247,10 +247,20 @@ export async function POST({ request }) {
 			// Fetch the updated user
 			const [updatedUser] = await db.select().from(users).where(eq(users.id, userId));
 
-			return json({ success: true, user: updatedUser });
+			return json({ 
+				success: true, 
+				user: updatedUser,
+				message: '가입이 완료되었습니다. 이메일 인증 링크를 확인해 주세요.',
+				requiresEmailVerification: true
+			});
 		}
 
-		return json({ success: true, user: result.user });
+		return json({ 
+			success: true, 
+			user: result.user,
+			message: '가입이 완료되었습니다. 이메일 인증 링크를 확인해 주세요.',
+			requiresEmailVerification: true
+		});
 	} catch (e) {
 		console.error('Signup exception:', e);
 

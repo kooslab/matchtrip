@@ -39,6 +39,8 @@
 	let passwordValidationRef: PasswordInputsType;
 	let passwordValidRef = $state(false);
 	let termsValid = $state(false);
+	let signupSuccess = $state(false);
+	let userEmail = $state('');
 
 	const travelStyleOptions = [
 		'모험적인 여행',
@@ -285,7 +287,16 @@
 			if (!data.success) {
 				error = data.error || '알 수 없는 오류가 발생했습니다.';
 			} else {
-				window.location.href = '/app';
+				// Check if email verification is required
+				if (data.requiresEmailVerification) {
+					signupSuccess = true;
+					userEmail = email;
+					// Scroll to top to show success message
+					window.scrollTo({ top: 0, behavior: 'smooth' });
+				} else {
+					// If no email verification needed, redirect to app
+					window.location.href = '/app';
+				}
 			}
 		} catch (e) {
 			error = '서버 오류가 발생했습니다.';
@@ -314,18 +325,56 @@
 		<p class="mb-8 text-gray-600">새로운 여행의 시작을 함께해요!</p>
 
 		<!-- Progress indicator -->
-		<div class="mb-8 flex justify-center space-x-2">
-			{#each [1, 2, 3, 4] as step}
-				<div
-					class="h-2 w-8 rounded-full transition-colors duration-200"
-					class:bg-blue-500={currentStep >= step}
-					class:bg-gray-300={currentStep < step}>
-				</div>
-			{/each}
-		</div>
+		{#if !signupSuccess}
+			<div class="mb-8 flex justify-center space-x-2">
+				{#each [1, 2, 3, 4] as step}
+					<div
+						class="h-2 w-8 rounded-full transition-colors duration-200"
+						class:bg-blue-500={currentStep >= step}
+						class:bg-gray-300={currentStep < step}>
+					</div>
+				{/each}
+			</div>
+		{/if}
 	</div>
 
-	<form class="mx-auto max-w-2xl space-y-12" onsubmit={handleSubmit}>
+	<!-- Success Message -->
+	{#if signupSuccess}
+		<div class="mx-auto max-w-2xl">
+			<div class="rounded-lg bg-blue-50 border border-blue-200 p-8 text-center">
+				<div class="mb-4">
+					<div class="mx-auto h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+						<svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+						</svg>
+					</div>
+				</div>
+				<h2 class="mb-2 text-2xl font-bold text-blue-800">회원가입이 완료되었습니다!</h2>
+				<p class="mb-6 text-blue-700">
+					이메일 인증 링크를 <strong>{userEmail}</strong>로 발송했습니다.<br />
+					이메일을 확인하여 인증을 완료해 주세요.
+				</p>
+				<div class="space-y-3">
+					<p class="text-sm text-gray-600">
+						이메일이 도착하지 않았나요? 스팸 폴더를 확인해 주세요.
+					</p>
+					<div class="flex flex-col sm:flex-row gap-3 justify-center">
+						<a
+							href="/verify-email"
+							class="inline-flex items-center justify-center rounded-md bg-blue-600 px-6 py-3 text-white font-medium hover:bg-blue-700 transition">
+							이메일 인증 페이지로 이동
+						</a>
+						<a
+							href="/signin"
+							class="inline-flex items-center justify-center rounded-md bg-gray-100 px-6 py-3 text-gray-700 font-medium hover:bg-gray-200 transition">
+							로그인 페이지로 이동
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	{:else}
+		<form class="mx-auto max-w-2xl space-y-12" onsubmit={handleSubmit}>
 		<!-- Step 1: Basic Information -->
 		<section id="step-1" class="rounded-lg bg-white p-6 shadow-sm">
 			<div class="mb-6 flex items-center gap-3">
@@ -679,4 +728,5 @@
 			<a href="/signin" class="ml-1 text-blue-500 hover:underline">로그인</a>
 		</p>
 	</div>
+	{/if}
 </div>

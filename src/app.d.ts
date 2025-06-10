@@ -9,6 +9,7 @@ declare global {
 				role: string;
 				name: string;
 				email: string;
+				emailVerified: boolean;
 			};
 			session?: any;
 		}

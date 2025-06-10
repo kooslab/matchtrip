@@ -24,7 +24,8 @@ export const load = async ({ request, locals }) => {
 						id: true,
 						role: true,
 						name: true,
-						email: true
+						email: true,
+						emailVerified: true
 					}
 				});
 
@@ -34,7 +35,13 @@ export const load = async ({ request, locals }) => {
 					userRole = user.role;
 					fullUser = user;
 					// Cache user data in locals for other server functions to use
-					locals.user = user;
+					locals.user = {
+						id: user.id,
+						role: user.role,
+						name: user.name,
+						email: user.email,
+						emailVerified: user.emailVerified || false
+					};
 					locals.session = session;
 					console.log('Layout server - User cached in locals:', user.email, 'Role:', user.role);
 				} else {

@@ -11,6 +11,17 @@ const getBaseUrl = () => {
 	return env.PUBLIC_BETTER_AUTH_URL || 'http://localhost:5173';
 };
 
-export const { signIn, signOut, signUp, useSession } = createAuthClient({
+export const authClient = createAuthClient({
 	baseURL: getBaseUrl() // dynamically determine the base URL
 });
+
+export const { 
+	signIn, 
+	signOut, 
+	signUp, 
+	useSession,
+	sendVerificationEmail,
+	verifyEmail,
+	forgetPassword,
+	resetPassword
+} = authClient;

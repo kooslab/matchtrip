@@ -2,13 +2,27 @@
 	import { signIn } from '$lib/authClient';
 	import { goto } from '$app/navigation';
 	import { invalidateAll } from '$app/navigation';
+	import { page } from '$app/stores';
 	import Button from '$lib/components/Button.svelte';
+	import { onMount } from 'svelte';
 
 	let email = $state('');
 	let password = $state('');
 	let error = $state('');
 	let isLoading = $state(false);
 	let showPassword = $state(false);
+	let successMessage = $state('');
+
+	onMount(() => {
+		const verified = $page.url.searchParams.get('verified');
+		const reset = $page.url.searchParams.get('reset');
+		
+		if (verified === 'true') {
+			successMessage = '이메일 인증이 완료되었습니다. 이제 로그인할 수 있습니다.';
+		} else if (reset === 'true') {
+			successMessage = '비밀번호가 성공적으로 변경되었습니다. 새 비밀번호로 로그인해 주세요.';
+		}
+	});
 
 	function togglePassword() {
 		console.log('togglePassword');
@@ -55,6 +69,11 @@
 <div
 	class="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-green-50 px-4 py-12">
 	<img src="/logo.jpg" alt="MatchTrip Logo" class="mb-8 h-48 w-auto object-contain shadow" />
+	{#if successMessage}
+		<div class="mb-4 w-full max-w-xs rounded-md bg-green-50 p-4">
+			<p class="text-sm text-green-800">{successMessage}</p>
+		</div>
+	{/if}
 	<form class="flex w-full max-w-xs flex-col gap-4" onsubmit={handleSubmit}>
 		<input
 			type="email"
@@ -121,6 +140,11 @@
 		{#if error}
 			<p class="mt-2 text-center text-sm text-red-500">{error}</p>
 		{/if}
+		<div class="mt-4 flex items-center justify-between">
+			<a href="/forgot-password" class="text-sm text-blue-500 hover:underline">
+				비밀번호를 잊으셨나요?
+			</a>
+		</div>
 		<p class="mt-6 text-center text-sm text-gray-500">
 			계정이 없으신가요?
 			<a href="/signup" class="ml-1 text-blue-500 hover:underline">회원가입</a>

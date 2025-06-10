@@ -31,13 +31,14 @@ const authorizationHandler = (async ({ event, resolve }) => {
 						id: true,
 						role: true,
 						name: true,
-						email: true
+						email: true,
+						emailVerified: true
 					}
 				});
 
 				if (user) {
 					event.locals.user = user;
-					console.log('Hooks - User loaded in locals:', user.email, 'Role:', user.role);
+					console.log('Hooks - User loaded in locals:', user.email, 'Role:', user.role, 'Verified:', user.emailVerified);
 				}
 			} catch (error) {
 				console.error('Hooks - Failed to fetch user:', error);
@@ -59,6 +60,15 @@ const authorizationHandler = (async ({ event, resolve }) => {
 		} else {
 			redirect(302, '/my-trips');
 		}
+	}
+
+	// Check email verification for protected routes (exclude verify-email and API routes)
+	const unverifiedAllowedRoutes = ['/verify-email', '/api', '/(auth)'];
+	const isUnverifiedAllowed = unverifiedAllowedRoutes.some((route) => routeId?.includes(route));
+	
+	if (session?.user && event.locals.user && !event.locals.user.emailVerified && !isUnverifiedAllowed) {
+		console.log('Hooks - User email not verified, redirecting to verify page');
+		redirect(302, '/verify-email');
 	}
 
 	// Handle protected routes that require authentication (exclude API routes)
