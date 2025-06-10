@@ -59,7 +59,8 @@
 	</div>
 {/if}
 
-<!-- Mobile Navbar -->
+<!-- Mobile Navbar - Don't show on admin pages -->
+{#if !$page.url.pathname.startsWith('/admin')}
 <nav class="fixed top-0 left-0 z-40 w-full bg-white shadow md:hidden">
 	<div class="flex items-center justify-between px-4 py-3">
 		<a href="/" class="text-lg font-bold text-blue-600">MatchTrip</a>
@@ -201,8 +202,10 @@
 		</ul>
 	</div>
 </nav>
+{/if}
 
-<!-- Desktop Navbar -->
+<!-- Desktop Navbar - Don't show on admin pages -->
+{#if !$page.url.pathname.startsWith('/admin')}
 <nav class="hidden items-center justify-between bg-white/90 px-8 py-4 shadow md:flex">
 	<a href="/" class="text-lg font-bold text-blue-600">MatchTrip</a>
 	<ul class="flex items-center gap-6">
@@ -264,8 +267,11 @@
 		{/if}
 	</ul>
 </nav>
+{/if}
 
-<div class="flex min-h-screen flex-col pt-16 md:pt-20">
+<div class="flex min-h-screen flex-col {$page.url.pathname.startsWith('/admin') ? '' : 'pt-16 md:pt-20'}">
 	<slot />
-	<Footer />
+	{#if !$page.url.pathname.startsWith('/admin')}
+		<Footer />
+	{/if}
 </div>

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Plus, Upload, X } from 'lucide-svelte';
+	import { Plus, Upload, X, RefreshCw } from 'lucide-svelte';
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 
@@ -16,6 +16,21 @@
 	let selectedFile = $state<File | null>(null);
 	let saving = $state(false);
 	let uploadingFromDetail = $state(false);
+
+	// Cache management
+	let lastFetchTime = $state(Date.now());
+	const CACHE_DURATION = 30000; // 30 seconds cache
+	let isStale = $derived(() => Date.now() - lastFetchTime > CACHE_DURATION);
+
+	// Pagination
+	let currentPage = $state(1);
+	let itemsPerPage = $state(10);
+	let totalPages = $derived(Math.ceil(data.destinations.length / itemsPerPage));
+	let paginatedDestinations = $derived(() => {
+		const start = (currentPage - 1) * itemsPerPage;
+		const end = start + itemsPerPage;
+		return data.destinations.slice(start, end);
+	});
 
 	// Form data
 	let formData = $state({
@@ -53,24 +68,120 @@
 		showDetailModal = true;
 	}
 
+	async function resizeImage(file: File, maxSizeMB: number = 5): Promise<File> {
+		return new Promise((resolve, reject) => {
+			const reader = new FileReader();
+			reader.readAsDataURL(file);
+			reader.onload = (e) => {
+				const img = new Image();
+				img.src = e.target?.result as string;
+				img.onload = () => {
+					const canvas = document.createElement('canvas');
+					let width = img.width;
+					let height = img.height;
+
+					// Calculate new dimensions while maintaining aspect ratio
+					const maxWidth = 1920; // Max width for destinations
+					const maxHeight = 1080; // Max height for destinations
+					
+					if (width > height) {
+						if (width > maxWidth) {
+							height = (height * maxWidth) / width;
+							width = maxWidth;
+						}
+					} else {
+						if (height > maxHeight) {
+							width = (width * maxHeight) / height;
+							height = maxHeight;
+						}
+					}
+
+					canvas.width = width;
+					canvas.height = height;
+
+					const ctx = canvas.getContext('2d');
+					if (!ctx) {
+						reject(new Error('Failed to get canvas context'));
+						return;
+					}
+
+					ctx.drawImage(img, 0, 0, width, height);
+
+					// Start with high quality
+					let quality = 0.9;
+					
+					const checkAndCompress = () => {
+						canvas.toBlob(
+							(blob) => {
+								if (!blob) {
+									reject(new Error('Failed to compress image'));
+									return;
+								}
+
+								const sizeMB = blob.size / (1024 * 1024);
+								console.log(`Image size: ${sizeMB.toFixed(2)}MB at quality ${quality}`);
+
+								if (sizeMB > maxSizeMB && quality > 0.1) {
+									// Reduce quality and try again
+									quality -= 0.1;
+									checkAndCompress();
+								} else {
+									// Create new file from blob
+									const newFile = new File([blob], file.name, {
+										type: 'image/jpeg',
+										lastModified: Date.now()
+									});
+									resolve(newFile);
+								}
+							},
+							'image/jpeg',
+							quality
+						);
+					};
+
+					checkAndCompress();
+				};
+				img.onerror = () => {
+					reject(new Error('Failed to load image'));
+				};
+			};
+			reader.onerror = () => {
+				reject(new Error('Failed to read file'));
+			};
+		});
+	}
+
 	async function handleImageUpload(event: Event) {
 		const input = event.target as HTMLInputElement;
 		const file = input.files?.[0];
 		if (!file) return;
 
-		selectedFile = file;
-		// Preview
-		const reader = new FileReader();
-		reader.onload = (e) => {
-			imagePreview = e.target?.result as string;
-		};
-		reader.readAsDataURL(file);
+		try {
+			// Show loading state
+			uploadingImage = true;
+			
+			// Resize image if needed
+			const resizedFile = await resizeImage(file, 5); // 5MB max
+			selectedFile = resizedFile;
+			
+			// Preview
+			const reader = new FileReader();
+			reader.onload = (e) => {
+				imagePreview = e.target?.result as string;
+			};
+			reader.readAsDataURL(resizedFile);
+			
+			uploadingImage = false;
+		} catch (error) {
+			console.error('Error processing image:', error);
+			alert('Failed to process image. Please try a different image.');
+			uploadingImage = false;
+		}
 	}
 
 	async function uploadImage() {
 		if (!selectedFile) return;
 
-		uploadingImage = true;
 		const formData = new FormData();
 		formData.append('file', selectedFile);
 		formData.append('type', 'destination');
@@ -82,17 +193,18 @@
 			});
 
 			if (!response.ok) {
-				throw new Error('Upload failed');
+				const errorData = await response.json();
+				throw new Error(errorData.error || 'Upload failed');
 			}
 
 			const result = await response.json();
+			console.log('Upload result:', result);
 			return result.url;
 		} catch (error) {
 			console.error('Upload error:', error);
-			alert('Failed to upload image');
+			const errorMessage = error instanceof Error ? error.message : 'Failed to upload image';
+			alert(`Upload error: ${errorMessage}`);
 			return null;
-		} finally {
-			uploadingImage = false;
 		}
 	}
 
@@ -129,11 +241,34 @@
 				throw new Error(errorData.error || 'Failed to save destination');
 			}
 
-			await invalidateAll();
+			// Get the new/updated destination
+			const savedDestination = await response.json();
 			
-			// Close modal immediately after successful save
+			// Close modal immediately
 			showAddModal = false;
 			showEditModal = false;
+			
+			// Reset form
+			formData = { city: '', country: '', imageUrl: '' };
+			imagePreview = '';
+			selectedFile = null;
+			
+			// Update the list optimistically
+			if (mode === 'add') {
+				data.destinations = [...data.destinations, savedDestination];
+			} else {
+				data.destinations = data.destinations.map(d => 
+					d.id === savedDestination.id ? savedDestination : d
+				);
+			}
+			
+			// Update cache timestamp
+			lastFetchTime = Date.now();
+			
+			// Reload data in background only if cache is stale
+			if (isStale) {
+				invalidateAll();
+			}
 		} catch (error) {
 			console.error('Save error:', error);
 			if (error instanceof Error && error.message.includes('already exists')) {
@@ -156,8 +291,18 @@
 				throw new Error('Failed to delete destination');
 			}
 
-			await invalidateAll();
+			// Update list optimistically
+			data.destinations = data.destinations.filter(d => d.id !== selectedDestination.id);
+			
+			// Update cache timestamp
+			lastFetchTime = Date.now();
+			
 			showDeleteModal = false;
+			
+			// Reload data in background only if cache is stale
+			if (isStale) {
+				invalidateAll();
+			}
 		} catch (error) {
 			console.error('Delete error:', error);
 			alert('Failed to delete destination');
@@ -220,57 +365,79 @@
 	}
 </script>
 
-<div class="p-8 h-full flex flex-col">
-	<div class="mb-8 flex items-center justify-between">
+<div class="h-full flex flex-col overflow-hidden">
+	<div class="px-8 pt-8 pb-4 flex items-center justify-between">
 		<div>
 			<h1 class="text-3xl font-bold text-gray-900">여행지 관리</h1>
 			<p class="mt-2 text-gray-600">여행지를 관리합니다</p>
 		</div>
-		<button
-			onclick={openAddModal}
-			class="flex items-center gap-2 rounded-lg bg-pink-500 px-4 py-2 text-white hover:bg-pink-600"
-		>
-			<Plus class="h-5 w-5" />
-			여행지 추가
-		</button>
+		<div class="flex items-center gap-4">
+			<select
+				bind:value={itemsPerPage}
+				onchange={() => currentPage = 1}
+				class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-pink-500 focus:outline-none focus:ring-1 focus:ring-pink-500"
+			>
+				<option value={10}>10개씩 보기</option>
+				<option value={20}>20개씩 보기</option>
+				<option value={50}>50개씩 보기</option>
+			</select>
+			<button
+				onclick={() => {
+					lastFetchTime = 0; // Force stale
+					invalidateAll();
+					lastFetchTime = Date.now();
+				}}
+				class="flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50"
+				title="데이터 새로고침"
+			>
+				<RefreshCw class="h-4 w-4" />
+			</button>
+			<button
+				onclick={openAddModal}
+				class="flex items-center gap-2 rounded-lg bg-pink-500 px-4 py-2 text-white hover:bg-pink-600"
+			>
+				<Plus class="h-5 w-5" />
+				여행지 추가
+			</button>
+		</div>
 	</div>
 
 	<!-- Destinations Table -->
-	<div class="flex-1 flex flex-col overflow-hidden rounded-lg bg-white shadow">
+	<div class="flex-1 flex flex-col overflow-hidden mx-8 mb-8 rounded-lg bg-white shadow">
 		<div class="flex-1 overflow-auto">
 			<table class="min-w-full divide-y divide-gray-200">
 				<thead class="bg-gray-50 sticky top-0 z-10">
 					<tr>
-						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+						<th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
 							도시
 						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+						<th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
 							국가
 						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+						<th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
 							이미지
 						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+						<th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
 							생성일
 						</th>
-						<th class="relative px-6 py-3 bg-gray-50">
+						<th class="relative px-6 py-2 bg-gray-50">
 							<span class="sr-only">작업</span>
 						</th>
 					</tr>
 				</thead>
 				<tbody class="bg-white divide-y divide-gray-200">
-				{#each data.destinations as destination}
+				{#each paginatedDestinations() as destination}
 					<tr 
 						class="hover:bg-gray-50 cursor-pointer transition-colors"
 						onclick={() => openDetailModal(destination)}
 					>
-						<td class="px-6 py-4 whitespace-nowrap">
+						<td class="px-6 py-2 whitespace-nowrap">
 							<div class="text-sm font-medium text-gray-900">{destination.city}</div>
 						</td>
-						<td class="px-6 py-4 whitespace-nowrap">
+						<td class="px-6 py-2 whitespace-nowrap">
 							<div class="text-sm text-gray-500">{destination.country}</div>
 						</td>
-						<td class="px-6 py-4 whitespace-nowrap">
+						<td class="px-6 py-2 whitespace-nowrap">
 							{#if destination.imageUrl}
 								<div class="h-10 w-10 rounded overflow-hidden bg-gray-100">
 									<img 
@@ -287,10 +454,10 @@
 								</div>
 							{/if}
 						</td>
-						<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+						<td class="px-6 py-2 whitespace-nowrap text-sm text-gray-500">
 							{new Date(destination.created_at).toLocaleDateString('ko-KR')}
 						</td>
-						<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+						<td class="px-6 py-2 whitespace-nowrap text-right text-sm font-medium">
 							<button
 								onclick={(e) => {
 									e.stopPropagation();
@@ -321,6 +488,79 @@
 				</tbody>
 			</table>
 		</div>
+		
+		<!-- Pagination -->
+		{#if totalPages > 1}
+			<div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-2 sm:px-6">
+				<div class="flex flex-1 justify-between sm:hidden">
+					<button
+						onclick={() => currentPage = Math.max(1, currentPage - 1)}
+						disabled={currentPage === 1}
+						class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+					>
+						이전
+					</button>
+					<button
+						onclick={() => currentPage = Math.min(totalPages, currentPage + 1)}
+						disabled={currentPage === totalPages}
+						class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+					>
+						다음
+					</button>
+				</div>
+				<div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+					<div>
+						<p class="text-sm text-gray-700">
+							총 <span class="font-medium">{data.destinations.length}</span>개 중{' '}
+							<span class="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> -{' '}
+							<span class="font-medium">{Math.min(currentPage * itemsPerPage, data.destinations.length)}</span> 표시
+						</p>
+					</div>
+					<div>
+						<nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+							<button
+								onclick={() => currentPage = Math.max(1, currentPage - 1)}
+								disabled={currentPage === 1}
+								class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
+							>
+								<span class="sr-only">이전</span>
+								<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+									<path fill-rule="evenodd" d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd" />
+								</svg>
+							</button>
+							
+							{#each Array(totalPages) as _, i}
+								{#if i + 1 === 1 || i + 1 === totalPages || (i + 1 >= currentPage - 1 && i + 1 <= currentPage + 1)}
+									<button
+										onclick={() => currentPage = i + 1}
+										class={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
+											currentPage === i + 1
+												? 'z-10 bg-pink-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-600'
+												: 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
+										}`}
+									>
+										{i + 1}
+									</button>
+								{:else if i + 1 === currentPage - 2 || i + 1 === currentPage + 2}
+									<span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0">...</span>
+								{/if}
+							{/each}
+							
+							<button
+								onclick={() => currentPage = Math.min(totalPages, currentPage + 1)}
+								disabled={currentPage === totalPages}
+								class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
+							>
+								<span class="sr-only">다음</span>
+								<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+									<path fill-rule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+								</svg>
+							</button>
+						</nav>
+					</div>
+				</div>
+			</div>
+		{/if}
 	</div>
 </div>
 
@@ -420,7 +660,7 @@
 						class="flex-1 rounded-lg bg-pink-500 px-4 py-2 text-white hover:bg-pink-600 disabled:opacity-50 disabled:cursor-not-allowed"
 					>
 						{#if uploadingImage}
-							이미지 업로드 중...
+							이미지 처리 중...
 						{:else if saving}
 							저장 중...
 						{:else}

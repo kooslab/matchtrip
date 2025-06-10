@@ -5,8 +5,14 @@ import { ilike, or, eq } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
 import { auth } from '$lib/auth';
 
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async ({ url, setHeaders }) => {
 	const q = url.searchParams.get('q')?.trim();
+
+	// Set cache headers for better performance
+	setHeaders({
+		'cache-control': 'public, max-age=300, s-maxage=300', // Cache for 5 minutes
+		'cdn-cache-control': 'max-age=300'
+	});
 
 	if (!q) {
 		return json({ results: [] });
@@ -63,7 +69,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			})
 			.returning();
 
-		return json({ destination: newDestination });
+		return json(newDestination);
 	} catch (error: any) {
 		console.error('Error creating destination:', error);
 		

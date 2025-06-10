@@ -44,10 +44,10 @@ export const POST: RequestHandler = async ({ request }) => {
 			return json({ error: 'No file provided' }, { status: 400 });
 		}
 
-		// Validate file size (10MB limit)
-		const maxSize = 10 * 1024 * 1024; // 10MB
+		// Validate file size (5MB limit - should already be resized on client)
+		const maxSize = 5 * 1024 * 1024; // 5MB
 		if (file.size > maxSize) {
-			return json({ error: 'File too large. Maximum size is 10MB.' }, { status: 400 });
+			return json({ error: 'File too large. Maximum size is 5MB.' }, { status: 400 });
 		}
 
 		// Validate file type based on upload type
@@ -81,6 +81,13 @@ export const POST: RequestHandler = async ({ request }) => {
 				const isPublic = type === 'destination';
 				const bucketName = isPublic && R2_PUBLIC_BUCKET_NAME ? R2_PUBLIC_BUCKET_NAME : R2_BUCKET_NAME;
 				
+				console.log('R2 upload config:', {
+					isPublic,
+					bucketName,
+					R2_PUBLIC_BUCKET_NAME,
+					R2_BUCKET_NAME
+				});
+				
 				if (!bucketName) {
 					throw new Error('Bucket name not configured');
 				}
@@ -93,7 +100,9 @@ export const POST: RequestHandler = async ({ request }) => {
 					ContentLength: file.size
 				});
 
+				console.log('Uploading to R2...');
 				await r2Client.send(uploadCommand);
+				console.log('R2 upload successful');
 
 				// Return the public URL
 				let publicUrl: string;

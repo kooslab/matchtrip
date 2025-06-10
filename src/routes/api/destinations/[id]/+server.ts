@@ -52,7 +52,7 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 			return json({ error: 'Destination not found' }, { status: 404 });
 		}
 
-		return json({ destination: updatedDestination });
+		return json(updatedDestination);
 	} catch (error: any) {
 		console.error('Error updating destination:', error);
 		
