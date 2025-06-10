@@ -14,6 +14,7 @@
 	let isLoggedIn = $derived(!!user);
 	let isGuide = $derived(userRole === 'guide');
 	let isTraveler = $derived(userRole === 'traveler');
+	let isAdmin = $derived(userRole === 'admin');
 
 	// Preload common routes for logged in users
 	$effect(() => {
@@ -156,6 +157,16 @@
 					</li>
 				{/if}
 
+				<!-- Admin Dashboard link -->
+				{#if isAdmin}
+					<li>
+						<NavigationLink
+							href="/admin"
+							class="block py-2 font-bold text-red-600 hover:text-red-700"
+							onclick={() => closeMenu()}>관리자 대시보드</NavigationLink>
+					</li>
+				{/if}
+
 				<li>
 					<div class="my-2 border-t border-gray-200"></div>
 				</li>
@@ -221,6 +232,14 @@
 					<NavigationLink
 						href="/profile/guide"
 						class="font-medium text-gray-800 hover:text-blue-600">내 프로필</NavigationLink>
+				</li>
+			{/if}
+
+			<!-- Admin Dashboard link for desktop -->
+			{#if isAdmin}
+				<li>
+					<NavigationLink href="/admin" class="font-bold text-red-600 hover:text-red-700"
+						>관리자 대시보드</NavigationLink>
 				</li>
 			{/if}
 

@@ -27,9 +27,18 @@ if (R2_ACCOUNT_ID && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY) {
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
+		console.log('Upload request received');
+		
 		const formData = await request.formData();
 		const file = formData.get('file') as File;
 		const type = formData.get('type') as string;
+
+		console.log('File details:', {
+			name: file?.name,
+			size: file?.size,
+			type: file?.type,
+			uploadType: type
+		});
 
 		if (!file) {
 			return json({ error: 'No file provided' }, { status: 400 });
