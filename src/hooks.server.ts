@@ -66,16 +66,28 @@ const authorizationHandler = (async ({ event, resolve }) => {
 		redirect(302, '/signin');
 	}
 
-	// Handle protected routes that require specific roles (guide-only routes, exclude API routes)
+	// Handle protected routes that require specific roles (guide-only routes, exclude API routes and admin routes)
 	const guideOnlyRoutes = ['/trips', '/offers', '/my-offers'];
 	const isGuideOnlyRoute = guideOnlyRoutes.some((route) => routeId?.includes(route));
+	const isAdminRoute = routeId?.startsWith('/admin');
 
 	if (
 		isGuideOnlyRoute &&
+		!isAdminRoute &&
 		!routeId?.startsWith('/api') &&
 		(!event.locals.user || event.locals.user.role !== 'guide')
 	) {
 		console.log('Hooks - Access denied to guide-only route. User role:', event.locals.user?.role);
+		redirect(302, '/');
+	}
+
+	// Handle admin-only routes
+	if (
+		isAdminRoute &&
+		!routeId?.startsWith('/api') &&
+		(!event.locals.user || event.locals.user.role !== 'admin')
+	) {
+		console.log('Hooks - Access denied to admin route. User role:', event.locals.user?.role);
 		redirect(302, '/');
 	}
 
