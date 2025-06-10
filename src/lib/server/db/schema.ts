@@ -167,8 +167,9 @@ export const destinations = pgTable(
 	'destinations',
 	{
 		id: serial('id').primaryKey(),
-		city: varchar('city', { length: 50 }).notNull(),
+		city: varchar('city', { length: 50 }).notNull().unique(),
 		country: varchar('country', { length: 50 }).notNull(),
+		imageUrl: text('image_url'),
 		created_at: timestamp('created_at').defaultNow().notNull(),
 		updated_at: timestamp('updated_at').defaultNow().notNull()
 	},

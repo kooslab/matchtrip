@@ -12,11 +12,13 @@ This guide will help you set up Cloudflare R2 storage for handling file uploads 
 
 ## Setup Steps
 
-### 1. Create Cloudflare Account and R2 Bucket
+### 1. Create Cloudflare Account and R2 Buckets
 
 1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com/)
 2. Navigate to R2 Object Storage
-3. Create a new bucket (e.g., `matchtrip-uploads`)
+3. Create two buckets:
+   - **Private bucket**: `matchtrip-uploads` (for sensitive files like ID documents)
+   - **Public bucket**: `matchtrip-public` (for public images like destinations)
 4. Note your Account ID from the R2 dashboard
 
 ### 2. Create API Token
@@ -24,10 +26,27 @@ This guide will help you set up Cloudflare R2 storage for handling file uploads 
 1. Go to "Manage R2 API Tokens"
 2. Create a new API token with:
    - **Permissions**: Object Read & Write
-   - **Bucket**: Your created bucket
+   - **Buckets**: Select both `matchtrip-uploads` and `matchtrip-public`
 3. Save the Access Key ID and Secret Access Key
 
-### 3. Configure Environment Variables
+### 3. Configure Public Bucket Access
+
+1. Go to your `matchtrip-public` bucket settings
+2. Click on "Settings" tab
+3. Under "Public access", click "Allow public access"
+4. Add the following CORS policy:
+```json
+[
+  {
+    "AllowedOrigins": ["*"],
+    "AllowedMethods": ["GET"],
+    "AllowedHeaders": ["*"],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
+### 4. Configure Environment Variables
 
 Add these to your `.env` file:
 
@@ -37,8 +56,9 @@ R2_ACCOUNT_ID=your-account-id-here
 R2_ACCESS_KEY_ID=your-access-key-id-here
 R2_SECRET_ACCESS_KEY=your-secret-access-key-here
 R2_BUCKET_NAME=matchtrip-uploads
-R2_PUBLIC_URL=https://your-custom-domain.com
-# Or use R2 public URL: https://pub-your-account-id.r2.dev
+R2_PUBLIC_BUCKET_NAME=matchtrip-public
+R2_PUBLIC_URL=https://pub-your-account-id.r2.dev
+# Or use custom domain: https://cdn.matchtrip.net
 ```
 
 ### 4. Install Required Dependencies
@@ -73,10 +93,19 @@ const r2Client = new S3Client({
 
 Then uncomment the upload logic in the POST handler.
 
-### 6. Set Up Custom Domain (Optional but Recommended)
+### 6. Set Up Public Bucket Access
+
+For the `matchtrip-public` bucket:
+
+1. Go to Cloudflare Dashboard > R2 > `matchtrip-public`
+2. Click on "Settings" tab
+3. Under "R2.dev subdomain", enable "Allow public access"
+4. Your public URL will be: `https://pub-[your-account-id].r2.dev`
+
+### 7. Set Up Custom Domain (Optional but Recommended)
 
 1. In your R2 bucket settings, go to "Custom Domains"
-2. Add your domain (e.g., `cdn.matchtrip.com`)
+2. Add your domain (e.g., `cdn.matchtrip.net`)
 3. Configure DNS records as instructed
 4. Update `R2_PUBLIC_URL` to use your custom domain
 
@@ -101,11 +130,15 @@ For public read access to uploaded files, you can set bucket policies:
 
 ## File Organization
 
-The upload API organizes files by type:
+The upload API organizes files by type and bucket:
 
+**Private Bucket (`matchtrip-uploads`)**:
 - `profile/` - Profile images
 - `id/` - ID documents and passports
 - `certification/` - Guide certifications
+
+**Public Bucket (`matchtrip-public`)**:
+- `destination/` - Destination images for landing page display
 
 ## Security Considerations
 

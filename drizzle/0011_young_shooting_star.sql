@@ -1,0 +1,1 @@
+ALTER TABLE "destinations" ADD CONSTRAINT "destinations_city_unique" UNIQUE("city");

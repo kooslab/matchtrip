@@ -8,6 +8,7 @@ const R2_ACCOUNT_ID = env.R2_ACCOUNT_ID;
 const R2_ACCESS_KEY_ID = env.R2_ACCESS_KEY_ID;
 const R2_SECRET_ACCESS_KEY = env.R2_SECRET_ACCESS_KEY;
 const R2_BUCKET_NAME = env.R2_BUCKET_NAME;
+const R2_PUBLIC_BUCKET_NAME = env.R2_PUBLIC_BUCKET_NAME;
 const R2_PUBLIC_URL = env.R2_PUBLIC_URL;
 
 let r2Client: S3Client | null = null;
@@ -40,11 +41,17 @@ export const POST: RequestHandler = async ({ request }) => {
 			return json({ error: 'File too large. Maximum size is 10MB.' }, { status: 400 });
 		}
 
-		// Validate file type
-		const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+		// Validate file type based on upload type
+		const imageTypes = ['image/jpeg', 'image/png', 'image/webp'];
+		const documentTypes = ['application/pdf'];
+		const allowedTypes = type === 'destination' ? imageTypes : [...imageTypes, ...documentTypes];
+		
 		if (!allowedTypes.includes(file.type)) {
+			const allowedFormats = type === 'destination' 
+				? 'JPEG, PNG, and WebP' 
+				: 'JPEG, PNG, WebP, and PDF';
 			return json(
-				{ error: 'Invalid file type. Only JPEG, PNG, WebP, and PDF files are allowed.' },
+				{ error: `Invalid file type. Only ${allowedFormats} files are allowed.` },
 				{ status: 400 }
 			);
 		}
@@ -59,10 +66,18 @@ export const POST: RequestHandler = async ({ request }) => {
 		const buffer = await file.arrayBuffer();
 
 		// Upload to R2 if configured, otherwise use mock
-		if (r2Client && R2_BUCKET_NAME) {
+		if (r2Client) {
 			try {
+				// Use public bucket for destination images, private bucket for others
+				const isPublic = type === 'destination';
+				const bucketName = isPublic && R2_PUBLIC_BUCKET_NAME ? R2_PUBLIC_BUCKET_NAME : R2_BUCKET_NAME;
+				
+				if (!bucketName) {
+					throw new Error('Bucket name not configured');
+				}
+
 				const uploadCommand = new PutObjectCommand({
-					Bucket: R2_BUCKET_NAME,
+					Bucket: bucketName,
 					Key: filename,
 					Body: new Uint8Array(buffer),
 					ContentType: file.type,
@@ -72,14 +87,22 @@ export const POST: RequestHandler = async ({ request }) => {
 				await r2Client.send(uploadCommand);
 
 				// Return the public URL
-				const publicUrl = R2_PUBLIC_URL
-					? `${R2_PUBLIC_URL}/${filename}`
-					: `https://pub-${R2_ACCOUNT_ID}.r2.dev/${filename}`;
+				let publicUrl: string;
+				if (isPublic) {
+					// For public bucket, use the R2 public URL
+					publicUrl = R2_PUBLIC_URL
+						? `${R2_PUBLIC_URL}/${filename}`
+						: `https://pub-${R2_ACCOUNT_ID}.r2.dev/${filename}`;
+				} else {
+					// For private bucket, return a placeholder or signed URL logic
+					publicUrl = `https://private-storage/${filename}`;
+				}
 
 				return json({
 					success: true,
 					url: publicUrl,
-					filename: filename
+					filename: filename,
+					isPublic
 				});
 			} catch (uploadError) {
 				console.error('R2 upload error:', uploadError);
