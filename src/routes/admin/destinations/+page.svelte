@@ -136,7 +136,11 @@
 			showEditModal = false;
 		} catch (error) {
 			console.error('Save error:', error);
-			alert(error instanceof Error ? error.message : 'Failed to save destination');
+			if (error instanceof Error && error.message.includes('already exists')) {
+				alert(`${formData.city} 도시는 이미 등록되어 있습니다. 다른 도시명을 입력해주세요.`);
+			} else {
+				alert(error instanceof Error ? error.message : '여행지 저장에 실패했습니다.');
+			}
 		} finally {
 			saving = false;
 		}
@@ -219,15 +223,15 @@
 <div class="p-8 h-full flex flex-col">
 	<div class="mb-8 flex items-center justify-between">
 		<div>
-			<h1 class="text-3xl font-bold text-gray-900">Destinations</h1>
-			<p class="mt-2 text-gray-600">Manage travel destinations</p>
+			<h1 class="text-3xl font-bold text-gray-900">여행지 관리</h1>
+			<p class="mt-2 text-gray-600">여행지를 관리합니다</p>
 		</div>
 		<button
 			onclick={openAddModal}
 			class="flex items-center gap-2 rounded-lg bg-pink-500 px-4 py-2 text-white hover:bg-pink-600"
 		>
 			<Plus class="h-5 w-5" />
-			Add Destination
+			여행지 추가
 		</button>
 	</div>
 
@@ -238,19 +242,19 @@
 				<thead class="bg-gray-50 sticky top-0 z-10">
 					<tr>
 						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
-							City
+							도시
 						</th>
 						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
-							Country
+							국가
 						</th>
 						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
-							Image
+							이미지
 						</th>
 						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
-							Created
+							생성일
 						</th>
 						<th class="relative px-6 py-3 bg-gray-50">
-							<span class="sr-only">Actions</span>
+							<span class="sr-only">작업</span>
 						</th>
 					</tr>
 				</thead>
@@ -284,7 +288,7 @@
 							{/if}
 						</td>
 						<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-							{new Date(destination.created_at).toLocaleDateString()}
+							{new Date(destination.created_at).toLocaleDateString('ko-KR')}
 						</td>
 						<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
 							<button
@@ -294,7 +298,7 @@
 								}}
 								class="text-indigo-600 hover:text-indigo-900 mr-4"
 							>
-								Edit
+								수정
 							</button>
 							<button
 								onclick={(e) => {
@@ -303,14 +307,14 @@
 								}}
 								class="text-red-600 hover:text-red-900"
 							>
-								Delete
+								삭제
 							</button>
 						</td>
 					</tr>
 				{:else}
 					<tr>
 						<td colspan="5" class="px-6 py-12 text-center">
-							<p class="text-gray-500">No destinations found. Add your first destination!</p>
+							<p class="text-gray-500">등록된 여행지가 없습니다. 첫 번째 여행지를 추가해보세요!</p>
 						</td>
 					</tr>
 				{/each}
@@ -331,7 +335,7 @@
 			onclick={(e) => e.stopPropagation()}
 		>
 			<div class="mb-4 flex items-center justify-between">
-				<h2 class="text-xl font-semibold">Add Destination</h2>
+				<h2 class="text-xl font-semibold">여행지 추가</h2>
 				<button
 					onclick={() => (showAddModal = false)}
 					class="rounded-lg p-2 hover:bg-gray-100"
@@ -343,7 +347,7 @@
 			<form onsubmit={(e) => { e.preventDefault(); handleSubmit('add'); }}>
 				<div class="space-y-4">
 					<div>
-						<label class="mb-1 block text-sm font-medium text-gray-700">City</label>
+						<label class="mb-1 block text-sm font-medium text-gray-700">도시</label>
 						<input
 							type="text"
 							bind:value={formData.city}
@@ -353,7 +357,7 @@
 					</div>
 
 					<div>
-						<label class="mb-1 block text-sm font-medium text-gray-700">Country</label>
+						<label class="mb-1 block text-sm font-medium text-gray-700">국가</label>
 						<input
 							type="text"
 							bind:value={formData.country}
@@ -363,7 +367,7 @@
 					</div>
 
 					<div>
-						<label class="mb-1 block text-sm font-medium text-gray-700">Image</label>
+						<label class="mb-1 block text-sm font-medium text-gray-700">이미지</label>
 						{#if imagePreview}
 							<div class="mb-2 rounded-lg bg-gray-100 p-2">
 								<img src={imagePreview} alt="Preview" class="h-32 w-full rounded-lg object-contain" />
@@ -379,7 +383,7 @@
 							>
 								<div class="text-center pointer-events-none">
 									<Upload class="h-8 w-8 text-gray-400 mx-auto mb-1" />
-									<p class="text-xs text-gray-500">Click to upload image</p>
+									<p class="text-xs text-gray-500">이미지를 업로드하려면 클릭하세요</p>
 								</div>
 							</button>
 							<input
@@ -408,7 +412,7 @@
 						disabled={saving || uploadingImage}
 						class="flex-1 rounded-lg border px-4 py-2 hover:bg-gray-50 disabled:opacity-50"
 					>
-						Cancel
+						취소
 					</button>
 					<button
 						type="submit"
@@ -416,11 +420,11 @@
 						class="flex-1 rounded-lg bg-pink-500 px-4 py-2 text-white hover:bg-pink-600 disabled:opacity-50 disabled:cursor-not-allowed"
 					>
 						{#if uploadingImage}
-							Uploading image...
+							이미지 업로드 중...
 						{:else if saving}
-							Saving...
+							저장 중...
 						{:else}
-							Add Destination
+							여행지 추가
 						{/if}
 					</button>
 				</div>
@@ -440,7 +444,7 @@
 			onclick={(e) => e.stopPropagation()}
 		>
 			<div class="mb-4 flex items-center justify-between">
-				<h2 class="text-xl font-semibold">Edit Destination</h2>
+				<h2 class="text-xl font-semibold">여행지 수정</h2>
 				<button
 					onclick={() => (showEditModal = false)}
 					class="rounded-lg p-2 hover:bg-gray-100"
@@ -452,7 +456,7 @@
 			<form onsubmit={(e) => { e.preventDefault(); handleSubmit('edit'); }}>
 				<div class="space-y-4">
 					<div>
-						<label class="mb-1 block text-sm font-medium text-gray-700">City</label>
+						<label class="mb-1 block text-sm font-medium text-gray-700">도시</label>
 						<input
 							type="text"
 							bind:value={formData.city}
@@ -462,7 +466,7 @@
 					</div>
 
 					<div>
-						<label class="mb-1 block text-sm font-medium text-gray-700">Country</label>
+						<label class="mb-1 block text-sm font-medium text-gray-700">국가</label>
 						<input
 							type="text"
 							bind:value={formData.country}
@@ -472,7 +476,7 @@
 					</div>
 
 					<div>
-						<label class="mb-1 block text-sm font-medium text-gray-700">Image</label>
+						<label class="mb-1 block text-sm font-medium text-gray-700">이미지</label>
 						{#if imagePreview}
 							<div class="mb-2 rounded-lg bg-gray-100 p-2">
 								<img src={imagePreview} alt="Preview" class="h-32 w-full rounded-lg object-contain" />
@@ -488,7 +492,7 @@
 							>
 								<div class="text-center pointer-events-none">
 									<Upload class="h-8 w-8 text-gray-400 mx-auto mb-1" />
-									<p class="text-xs text-gray-500">Click to upload image</p>
+									<p class="text-xs text-gray-500">이미지를 업로드하려면 클릭하세요</p>
 								</div>
 							</button>
 							<input
@@ -517,7 +521,7 @@
 						disabled={saving || uploadingImage}
 						class="flex-1 rounded-lg border px-4 py-2 hover:bg-gray-50 disabled:opacity-50"
 					>
-						Cancel
+						취소
 					</button>
 					<button
 						type="submit"
@@ -525,11 +529,11 @@
 						class="flex-1 rounded-lg bg-pink-500 px-4 py-2 text-white hover:bg-pink-600 disabled:opacity-50 disabled:cursor-not-allowed"
 					>
 						{#if uploadingImage}
-							Uploading image...
+							이미지 업로드 중...
 						{:else if saving}
-							Updating...
+							업데이트 중...
 						{:else}
-							Update Destination
+							여행지 업데이트
 						{/if}
 					</button>
 				</div>
@@ -548,10 +552,10 @@
 			class="w-full max-w-md rounded-lg bg-white p-6"
 			onclick={(e) => e.stopPropagation()}
 		>
-			<h2 class="mb-4 text-xl font-semibold">Delete Destination</h2>
+			<h2 class="mb-4 text-xl font-semibold">여행지 삭제</h2>
 			<p class="mb-6 text-gray-600">
-				Are you sure you want to delete <strong>{selectedDestination?.city}</strong>? This action
-				cannot be undone.
+				<strong>{selectedDestination?.city}</strong>를(를) 정말 삭제하시겠습니까? 이 작업은
+				취소할 수 없습니다.
 			</p>
 
 			<div class="flex gap-3">
@@ -559,13 +563,13 @@
 					onclick={() => (showDeleteModal = false)}
 					class="flex-1 rounded-lg border px-4 py-2 hover:bg-gray-50"
 				>
-					Cancel
+					취소
 				</button>
 				<button
 					onclick={handleDelete}
 					class="flex-1 rounded-lg bg-red-500 px-4 py-2 text-white hover:bg-red-600"
 				>
-					Delete
+					삭제
 				</button>
 			</div>
 		</div>
@@ -584,7 +588,7 @@
 		>
 			<!-- Header -->
 			<div class="bg-gray-50 px-6 py-4 flex items-center justify-between">
-				<h2 class="text-xl font-semibold text-gray-900">Destination Details</h2>
+				<h2 class="text-xl font-semibold text-gray-900">여행지 상세 정보</h2>
 				<button
 					onclick={() => (showDetailModal = false)}
 					class="rounded-lg p-2 hover:bg-gray-200"
@@ -614,10 +618,10 @@
 						<div class="text-center">
 							{#if uploadingFromDetail}
 								<div class="h-12 w-12 mx-auto mb-2 animate-spin rounded-full border-4 border-gray-300 border-t-gray-600"></div>
-								<p class="text-gray-500">Uploading...</p>
+								<p class="text-gray-500">업로드 중...</p>
 							{:else}
 								<Upload class="h-12 w-12 text-gray-400 mx-auto mb-2 group-hover:text-gray-500" />
-								<p class="text-gray-500 group-hover:text-gray-600">Click to upload image</p>
+								<p class="text-gray-500 group-hover:text-gray-600">이미지를 업로드하려면 클릭하세요</p>
 							{/if}
 						</div>
 					</button>
@@ -639,15 +643,15 @@
 
 					<div class="border-t pt-4 space-y-2">
 						<div class="flex justify-between">
-							<span class="text-sm text-gray-500">Created:</span>
+							<span class="text-sm text-gray-500">생성일:</span>
 							<span class="text-sm text-gray-900">
-								{new Date(selectedDestination.created_at).toLocaleString()}
+								{new Date(selectedDestination.created_at).toLocaleString('ko-KR')}
 							</span>
 						</div>
 						<div class="flex justify-between">
-							<span class="text-sm text-gray-500">Updated:</span>
+							<span class="text-sm text-gray-500">수정일:</span>
 							<span class="text-sm text-gray-900">
-								{new Date(selectedDestination.updated_at).toLocaleString()}
+								{new Date(selectedDestination.updated_at).toLocaleString('ko-KR')}
 							</span>
 						</div>
 					</div>
@@ -662,13 +666,13 @@
 						}}
 						class="flex-1 rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
 					>
-						Edit Destination
+						여행지 수정
 					</button>
 					<button
 						onclick={() => (showDetailModal = false)}
 						class="flex-1 rounded-lg border px-4 py-2 hover:bg-gray-50"
 					>
-						Close
+						닫기
 					</button>
 				</div>
 			</div>

@@ -3,10 +3,10 @@
 	import { Home, MapPin, Users, Settings, LogOut } from 'lucide-svelte';
 
 	const navigation = [
-		{ name: 'Dashboard', href: '/admin', icon: Home },
-		{ name: 'Destinations', href: '/admin/destinations', icon: MapPin },
-		{ name: 'Users', href: '/admin/users', icon: Users },
-		{ name: 'Settings', href: '/admin/settings', icon: Settings }
+		{ name: '대시보드', href: '/admin', icon: Home },
+		{ name: '여행지 관리', href: '/admin/destinations', icon: MapPin },
+		{ name: '사용자 관리', href: '/admin/users', icon: Users },
+		{ name: '설정', href: '/admin/settings', icon: Settings }
 	];
 </script>
 
@@ -14,7 +14,7 @@
 	<!-- Sidebar -->
 	<div class="w-64 bg-white shadow-md">
 		<div class="p-6">
-			<h2 class="text-2xl font-bold text-gray-800">Admin Panel</h2>
+			<h2 class="text-2xl font-bold text-gray-800">관리자 패널</h2>
 		</div>
 		<nav class="mt-6">
 			{#each navigation as item}
@@ -36,7 +36,7 @@
 				class="flex items-center gap-3 text-gray-700 hover:text-red-600"
 			>
 				<LogOut class="h-5 w-5" />
-				Sign Out
+				로그아웃
 			</a>
 		</div>
 	</div>
