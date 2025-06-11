@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { trips, destinations, users, offers } from '$lib/server/db/schema';
+import { trips, destinations, users, offers, conversations } from '$lib/server/db/schema';
 import { eq, and, ne } from 'drizzle-orm';
 
 export const load = async ({ locals }) => {
@@ -40,13 +40,17 @@ export const load = async ({ locals }) => {
 			// Check if current guide has made an offer
 			hasOffer: offers.id,
 			// Get offer details if exists
+			offerId: offers.id,
 			offerPrice: offers.price,
-			offerStatus: offers.status
+			offerStatus: offers.status,
+			// Get conversation details if exists
+			conversationId: conversations.id
 		})
 		.from(trips)
 		.innerJoin(destinations, eq(trips.destinationId, destinations.id))
 		.innerJoin(users, eq(trips.userId, users.id))
 		.leftJoin(offers, and(eq(offers.tripId, trips.id), eq(offers.guideId, session.user.id)))
+		.leftJoin(conversations, eq(conversations.offerId, offers.id))
 		.where(
 			and(
 				eq(trips.status, 'submitted'),

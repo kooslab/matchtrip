@@ -5,7 +5,14 @@
 	import { tick } from 'svelte';
 	import { Send, ArrowLeft, Edit2, Trash2, Check, X } from 'lucide-svelte';
 	
-	let { data } = $props();
+	let { data = $page.data } = $props();
+	
+	// Debug logging
+	console.log('Conversation component mounted');
+	console.log('Props data:', data);
+	console.log('Page data:', $page.data);
+	console.log('Session from props:', data?.session);
+	console.log('Session from page:', $page.data?.session);
 
 	interface Message {
 		id: string;
@@ -112,11 +119,35 @@
 				const data = await response.json();
 				console.log('Conversation data:', data);
 				conversation = data.conversation;
-				messages = data.messages || [];
 				offer = data.offer || null;
+				
+				// Preserve optimistic messages (temp IDs) while updating real messages
+				const tempMessages = messages.filter(msg => msg.id.startsWith('temp-'));
+				const serverMessages = data.messages || [];
+				
+				// Merge server messages with temp messages, avoiding duplicates
+				const mergedMessages = [...serverMessages];
+				for (const tempMsg of tempMessages) {
+					// Check if this temp message already exists on server (by content and sender)
+					const exists = serverMessages.some(serverMsg => 
+						serverMsg.content === tempMsg.content && 
+						serverMsg.senderId === tempMsg.senderId &&
+						Math.abs(new Date(serverMsg.createdAt).getTime() - new Date(tempMsg.createdAt).getTime()) < 60000 // Within 1 minute
+					);
+					if (!exists) {
+						mergedMessages.push(tempMsg);
+					}
+				}
+				
+				messages = mergedMessages.sort((a, b) => 
+					new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+				);
+				
 				console.log('Messages set:', messages);
 				console.log('Conversation set:', conversation);
 				console.log('Conversation status:', conversation?.status);
+				console.log('Conversation active check:', conversation && conversation.status === 'active');
+				console.log('Should show input:', !!conversation && conversation.status === 'active');
 				console.log('Offer set:', offer);
 				await tick();
 				scrollToBottom();
@@ -364,126 +395,125 @@
 			</div>
 		</div>
 	{:else if conversation}
-		<!-- Messages -->
-		<div
-			bind:this={messagesContainer}
-			class="flex-1 overflow-y-auto px-4 py-4"
-		>
-			{#each messages as message, i}
-				{#if isNewDay(message, i > 0 ? messages[i - 1] : null)}
-					<div class="my-4 text-center">
-						<span class="rounded-full bg-gray-200 px-3 py-1 text-xs text-gray-600">
-							{formatDate(message.createdAt)}
-						</span>
-					</div>
-				{/if}
+		<!-- Main content area with flex to ensure input stays at bottom -->
+		<div class="flex flex-1 flex-col overflow-hidden">
+			<!-- Messages -->
+			<div
+				bind:this={messagesContainer}
+				class="flex-1 overflow-y-auto px-4 py-4"
+			>
+				{#each messages as message, i}
+					{#if isNewDay(message, i > 0 ? messages[i - 1] : null)}
+						<div class="my-4 text-center">
+							<span class="rounded-full bg-gray-200 px-3 py-1 text-xs text-gray-600">
+								{formatDate(message.createdAt)}
+							</span>
+						</div>
+					{/if}
 
-				<div class={`mb-4 flex ${message.senderId === currentUserId ? 'justify-start' : 'justify-end'}`}>
-					<div class={`max-w-[70%]`}>
-						<div class="mb-1 flex items-center gap-2">
-							<span class="text-xs font-medium text-gray-600">
-								{message.sender.name}
-							</span>
-							<span class="text-xs text-gray-500">
-								{formatTime(message.createdAt)}
-							</span>
-							{#if message.isEdited}
-								<span class="text-xs text-gray-400">(수정됨)</span>
+					<div class={`mb-4 flex ${message.senderId === currentUserId ? 'justify-start' : 'justify-end'}`}>
+						<div class={`max-w-[70%]`}>
+							<div class="mb-1 flex items-center gap-2">
+								<span class="text-xs font-medium text-gray-600">
+									{message.sender.name}
+								</span>
+								<span class="text-xs text-gray-500">
+									{formatTime(message.createdAt)}
+								</span>
+								{#if message.isEdited}
+									<span class="text-xs text-gray-400">(수정됨)</span>
+								{/if}
+							</div>
+
+							{#if editingMessageId === message.id}
+								<div class="rounded-lg bg-white p-3 shadow">
+									<textarea
+										bind:value={editContent}
+										class="w-full resize-none rounded border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+										rows="2"
+									></textarea>
+									<div class="mt-2 flex justify-end gap-2">
+										<button
+											onclick={cancelEdit}
+											class="rounded p-1 hover:bg-gray-100"
+										>
+											<X class="h-4 w-4" />
+										</button>
+										<button
+											onclick={saveEdit}
+											class="rounded p-1 hover:bg-gray-100"
+										>
+											<Check class="h-4 w-4" />
+										</button>
+									</div>
+								</div>
+							{:else}
+								<div
+									class={`rounded-lg px-4 py-2 ${
+										message.senderId === currentUserId
+											? 'bg-blue-500 text-white'
+											: 'bg-gray-100 text-gray-900'
+									}`}
+								>
+									<p class="whitespace-pre-wrap text-sm">{message.content}</p>
+								</div>
+
+								{#if message.senderId === currentUserId && !message.isDeleted}
+									<div class="mt-1 flex justify-start gap-1">
+										<button
+											onclick={() => startEdit(message)}
+											class="rounded p-1 hover:bg-gray-100"
+										>
+											<Edit2 class="h-3 w-3 text-gray-500" />
+										</button>
+										<button
+											onclick={() => deleteMessage(message.id)}
+											class="rounded p-1 hover:bg-gray-100"
+										>
+											<Trash2 class="h-3 w-3 text-gray-500" />
+										</button>
+									</div>
+								{/if}
 							{/if}
 						</div>
-
-						{#if editingMessageId === message.id}
-							<div class="rounded-lg bg-white p-3 shadow">
-								<textarea
-									bind:value={editContent}
-									class="w-full resize-none rounded border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-									rows="2"
-								></textarea>
-								<div class="mt-2 flex justify-end gap-2">
-									<button
-										onclick={cancelEdit}
-										class="rounded p-1 hover:bg-gray-100"
-									>
-										<X class="h-4 w-4" />
-									</button>
-									<button
-										onclick={saveEdit}
-										class="rounded p-1 hover:bg-gray-100"
-									>
-										<Check class="h-4 w-4" />
-									</button>
-								</div>
-							</div>
-						{:else}
-							<div
-								class={`rounded-lg px-4 py-2 ${
-									message.senderId === currentUserId
-										? 'bg-blue-500 text-white'
-										: 'bg-gray-100 text-gray-900'
-								}`}
-							>
-								<p class="whitespace-pre-wrap text-sm">{message.content}</p>
-							</div>
-
-							{#if message.senderId === currentUserId && !message.isDeleted}
-								<div class="mt-1 flex justify-start gap-1">
-									<button
-										onclick={() => startEdit(message)}
-										class="rounded p-1 hover:bg-gray-100"
-									>
-										<Edit2 class="h-3 w-3 text-gray-500" />
-									</button>
-									<button
-										onclick={() => deleteMessage(message.id)}
-										class="rounded p-1 hover:bg-gray-100"
-									>
-										<Trash2 class="h-3 w-3 text-gray-500" />
-									</button>
-								</div>
-							{/if}
-						{/if}
 					</div>
+				{/each}
+			</div>
+
+			<!-- Input -->
+			{#if conversation.status === 'active'}
+				<div class="border-t bg-white p-4 safe-area-bottom">
+					{#if warningMessage}
+						<div class="mb-2 rounded-lg bg-red-50 border border-red-200 px-4 py-2">
+							<p class="text-sm text-red-700">{warningMessage}</p>
+						</div>
+					{/if}
+					<form onsubmit={sendMessage} class="flex gap-2">
+						<input
+							type="text"
+							bind:value={newMessage}
+							placeholder="메시지를 입력하세요..."
+							disabled={sending}
+							oninput={() => {
+								if (warningMessage) warningMessage = '';
+							}}
+							class="flex-1 rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+						/>
+						<button
+							type="submit"
+							disabled={!newMessage.trim() || sending}
+							class="rounded-lg bg-blue-500 p-2 text-white hover:bg-blue-600 disabled:opacity-50"
+						>
+							<Send class="h-5 w-5" />
+						</button>
+					</form>
 				</div>
-			{/each}
+			{:else}
+				<div class="border-t bg-gray-100 p-4 safe-area-bottom text-center text-sm text-gray-500">
+					이 대화는 종료되었습니다. (상태: {conversation.status})
+				</div>
+			{/if}
 		</div>
-
-		<!-- Input -->
-		{#if conversation && conversation.status === 'active'}
-			<div class="border-t bg-white p-4 safe-area-bottom">
-				{#if warningMessage}
-					<div class="mb-2 rounded-lg bg-red-50 border border-red-200 px-4 py-2">
-						<p class="text-sm text-red-700">{warningMessage}</p>
-					</div>
-				{/if}
-				<form onsubmit={sendMessage} class="flex gap-2">
-					<input
-						type="text"
-						bind:value={newMessage}
-						placeholder="메시지를 입력하세요..."
-						disabled={sending}
-						oninput={() => {
-							if (warningMessage) warningMessage = '';
-						}}
-						class="flex-1 rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-					/>
-					<button
-						type="submit"
-						disabled={!newMessage.trim() || sending}
-						class="rounded-lg bg-blue-500 p-2 text-white hover:bg-blue-600 disabled:opacity-50"
-					>
-						<Send class="h-5 w-5" />
-					</button>
-				</form>
-			</div>
-		{:else if conversation}
-			<div class="border-t bg-gray-100 p-4 safe-area-bottom text-center text-sm text-gray-500">
-				이 대화는 종료되었습니다. (상태: {conversation.status})
-			</div>
-		{:else}
-			<div class="border-t bg-gray-100 p-4 safe-area-bottom text-center text-sm text-gray-500">
-				대화를 불러오는 중...
-			</div>
-		{/if}
 	{/if}
 </div>
 
