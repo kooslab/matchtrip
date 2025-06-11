@@ -14,21 +14,17 @@ export async function POST({ request, locals }) {
 
 		const tripData = await request.json();
 
-		// Insert destination first
-		const [destination] = await db
-			.insert(destinations)
-			.values({
-				city: tripData.destination.city,
-				country: tripData.destination.country
-			})
-			.returning();
+		// Use the existing destination ID from the search
+		if (!tripData.destination.id) {
+			return json({ error: 'Invalid destination data' }, { status: 400 });
+		}
 
-		// Insert trip
+		// Insert trip with existing destination ID
 		const [trip] = await db
 			.insert(trips)
 			.values({
 				userId: session.user.id,
-				destinationId: destination.id,
+				destinationId: tripData.destination.id,
 				startDate: new Date(tripData.startDate),
 				endDate: new Date(tripData.endDate),
 				adultsCount: tripData.adultsCount,
@@ -39,7 +35,7 @@ export async function POST({ request, locals }) {
 			})
 			.returning();
 
-		return json({ trip, destination });
+		return json({ trip });
 	} catch (error) {
 		console.error('Error creating trip:', error);
 		return json({ error: 'Failed to create trip' }, { status: 500 });

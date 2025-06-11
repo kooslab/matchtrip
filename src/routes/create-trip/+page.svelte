@@ -4,7 +4,6 @@
 	import CaretLeft from 'phosphor-svelte/lib/CaretLeft';
 	import CaretRight from 'phosphor-svelte/lib/CaretRight';
 	import { goto } from '$app/navigation';
-	import { invalidate } from '$app/navigation';
 	import { useSession } from '$lib/authClient';
 	import { tripForm } from '$lib/stores/tripForm';
 
@@ -17,6 +16,7 @@
 			goto('/signin');
 		}
 	});
+
 
 	// Debug dropdown visibility
 	$effect(() => {
@@ -66,15 +66,19 @@
 			return;
 		}
 
+		// Get current form values
+		const formData = $tripForm;
+
 		// Validate form data
 		if (
-			!$tripForm.selectedCity ||
-			!$tripForm.selectedCity.id ||
-			!$tripForm.selectedCity.city ||
-			!$tripForm.selectedCity.country ||
-			!$tripForm.dateRange.start ||
-			!$tripForm.dateRange.end ||
-			!$tripForm.people
+			!formData.selectedCity ||
+			!formData.selectedCity.id ||
+			!formData.selectedCity.city ||
+			!formData.selectedCity.country ||
+			!formData.dateRange.start ||
+			!formData.dateRange.end ||
+			!formData.people ||
+			!formData.tourType
 		) {
 			alert('필수 항목을 모두 입력해주세요.');
 			return;
@@ -93,46 +97,64 @@
 		};
 
 		try {
+			const requestBody = {
+				destination: {
+					id: formData.selectedCity.id,
+					city: formData.selectedCity.city,
+					country: formData.selectedCity.country
+				},
+				adultsCount: formData.people,
+				childrenCount: children,
+				startDate: formData.dateRange.start
+					? (() => {
+						const date = formData.dateRange.start;
+						if (date.year && date.month && date.day) {
+							return new Date(date.year, date.month - 1, date.day).toISOString();
+						}
+						return new Date(date.toString()).toISOString();
+					})()
+					: '',
+				endDate: formData.dateRange.end
+					? (() => {
+						const date = formData.dateRange.end;
+						if (date.year && date.month && date.day) {
+							return new Date(date.year, date.month - 1, date.day).toISOString();
+						}
+						return new Date(date.toString()).toISOString();
+					})()
+					: '',
+				travelMethod: travelMethodMap[formData.tourType] || null,
+				customRequest: additionalRequests || null
+			};
+
+			console.log('Sending trip request:', requestBody);
+
 			const response = await fetch('/api/trips', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({
-					destination: {
-						id: $tripForm.selectedCity.id,
-						city: $tripForm.selectedCity.city,
-						country: $tripForm.selectedCity.country
-					},
-					adultsCount: $tripForm.people,
-					childrenCount: children,
-					startDate: $tripForm.dateRange.start
-						? new Date(($tripForm.dateRange.start as any).toString()).toISOString()
-						: '',
-					endDate: $tripForm.dateRange.end
-						? new Date(($tripForm.dateRange.end as any).toString()).toISOString()
-						: '',
-					travelMethod: travelMethodMap[$tripForm.tourType] || null,
-					customRequest: additionalRequests || null
-				})
+				body: JSON.stringify(requestBody)
 			});
 
 			const data = await response.json();
+			console.log('Response:', response.status, data);
 
 			if (response.ok && data.trip) {
 				alert('여행 전문가 제안 요청이 성공적으로 등록되었습니다!');
-				await invalidate('app:trips');
 				goto('/my-trips');
 			} else {
 				if (response.status === 401) {
 					alert('로그인이 필요합니다.');
 					goto('/signin');
 				} else {
-					alert(`오류가 발생했습니다: ${data.error}`);
+					console.error('Server error:', data);
+					alert(`오류가 발생했습니다: ${data.error || '알 수 없는 오류'}`);
 				}
 			}
 		} catch (error) {
 			console.error('Error creating trip:', error);
+			console.error('Error details:', error.message, error.stack);
 			alert('서버 오류가 발생했습니다. 다시 시도해주세요.');
 		} finally {
 			isSubmitting = false;
@@ -204,6 +226,18 @@
 			console.log('Click outside detected, hiding dropdown');
 			showDropdown = false;
 		}
+	}
+
+	// Helper function to format dates
+	function formatDate(date: any) {
+		if (!date) return '';
+		const d = new Date(date.year, date.month - 1, date.day);
+		const year = d.getFullYear();
+		const month = d.getMonth() + 1;
+		const day = d.getDate();
+		const days = ['일', '월', '화', '수', '목', '금', '토'];
+		const dayOfWeek = days[d.getDay()];
+		return `${year}.${month.toString().padStart(2, '0')}.${day.toString().padStart(2, '0')} (${dayOfWeek})`;
 	}
 </script>
 
@@ -294,61 +328,93 @@
 							fixedWeeks={true}
 							granularity="day"
 							class="w-full">
-							<div
-								class="flex w-full items-center rounded-lg border border-gray-300 bg-white px-3 py-3 text-sm">
-								{#each ['start', 'end'] as type (type)}
-									<div class="flex items-center whitespace-nowrap">
+							{#if !calendarOpen}
+								<!-- Clean button UI when calendar is closed -->
+								<button
+									type="button"
+									onclick={() => calendarOpen = true}
+									class="flex w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-4 py-3 text-base hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-200">
+									<span class="text-gray-700">
+										{#if $tripForm.dateRange.start && $tripForm.dateRange.end}
+											{formatDate($tripForm.dateRange.start)} ~ {formatDate($tripForm.dateRange.end)}
+										{:else}
+											<span class="text-gray-400">여행 날짜를 선택하세요</span>
+										{/if}
+									</span>
+									<CalendarBlank class="size-5 text-gray-400" />
+								</button>
+								<!-- Hidden inputs for date picker functionality -->
+								<div class="hidden">
+									{#each ['start', 'end'] as type (type)}
 										<DateRangePicker.Input type={type as 'start' | 'end'}>
 											{#snippet children({ segments })}
-												{@const yearSegment = segments.find((s) => s.part === 'year')}
-												{@const monthSegment = segments.find((s) => s.part === 'month')}
-												{@const daySegment = segments.find((s) => s.part === 'day')}
-												{@const getKoreanDayOfWeek = () => {
-													if (!yearSegment || !monthSegment || !daySegment) return '';
-													const date = new Date(
-														parseInt(yearSegment.value),
-														parseInt(monthSegment.value) - 1,
-														parseInt(daySegment.value)
-													);
-													const days = ['일', '월', '화', '수', '목', '금', '토'];
-													return days[date.getDay()];
-												}}
-
-												{#if yearSegment}
-													<DateRangePicker.Segment
-														part="year"
-														class="rounded px-0.5 py-1 hover:bg-gray-100 focus:bg-gray-100 focus:text-gray-900 focus-visible:ring-0 focus-visible:ring-offset-0"
-														>{yearSegment.value}</DateRangePicker.Segment>
-													<span class="text-gray-400">.</span>
-												{/if}
-												{#if monthSegment}
-													<DateRangePicker.Segment
-														part="month"
-														class="rounded px-0.5 py-1 hover:bg-gray-100 focus:bg-gray-100 focus:text-gray-900 focus-visible:ring-0 focus-visible:ring-offset-0"
-														>{monthSegment.value}</DateRangePicker.Segment>
-													<span class="text-gray-400">.</span>
-												{/if}
-												{#if daySegment}
-													<DateRangePicker.Segment
-														part="day"
-														class="rounded px-0.5 py-1 hover:bg-gray-100 focus:bg-gray-100 focus:text-gray-900 focus-visible:ring-0 focus-visible:ring-offset-0"
-														>{daySegment.value}</DateRangePicker.Segment>
-												{/if}
-												{#if yearSegment && monthSegment && daySegment}
-													<span class="ml-1 text-xs text-gray-400">({getKoreanDayOfWeek()})</span>
-												{/if}
+												{#each segments as segment}
+													<DateRangePicker.Segment part={segment.part} class="hidden">
+														{segment.value}
+													</DateRangePicker.Segment>
+												{/each}
 											{/snippet}
 										</DateRangePicker.Input>
-									</div>
-									{#if type === 'start'}
-										<div aria-hidden="true" class="px-2 text-gray-400">~</div>
-									{/if}
-								{/each}
-								<DateRangePicker.Trigger
-									class="ml-auto inline-flex size-8 items-center justify-center rounded text-gray-400 transition-all hover:bg-gray-100">
-									<CalendarBlank class="size-5" />
-								</DateRangePicker.Trigger>
-							</div>
+									{/each}
+								</div>
+							{:else}
+								<!-- Full date picker UI when calendar is open -->
+								<div
+									class="flex w-full items-center rounded-lg border border-gray-300 bg-white px-3 py-3 text-sm">
+									{#each ['start', 'end'] as type (type)}
+										<div class="flex items-center whitespace-nowrap">
+											<DateRangePicker.Input type={type as 'start' | 'end'}>
+												{#snippet children({ segments })}
+													{@const yearSegment = segments.find((s) => s.part === 'year')}
+													{@const monthSegment = segments.find((s) => s.part === 'month')}
+													{@const daySegment = segments.find((s) => s.part === 'day')}
+													{@const getKoreanDayOfWeek = () => {
+														if (!yearSegment || !monthSegment || !daySegment) return '';
+														const date = new Date(
+															parseInt(yearSegment.value),
+															parseInt(monthSegment.value) - 1,
+															parseInt(daySegment.value)
+														);
+														const days = ['일', '월', '화', '수', '목', '금', '토'];
+														return days[date.getDay()];
+													}}
+
+													{#if yearSegment}
+														<DateRangePicker.Segment
+															part="year"
+															class="rounded px-0.5 py-1 hover:bg-gray-100 focus:bg-gray-100 focus:text-gray-900 focus-visible:ring-0 focus-visible:ring-offset-0"
+															>{yearSegment.value}</DateRangePicker.Segment>
+														<span class="text-gray-400">.</span>
+													{/if}
+													{#if monthSegment}
+														<DateRangePicker.Segment
+															part="month"
+															class="rounded px-0.5 py-1 hover:bg-gray-100 focus:bg-gray-100 focus:text-gray-900 focus-visible:ring-0 focus-visible:ring-offset-0"
+															>{monthSegment.value}</DateRangePicker.Segment>
+														<span class="text-gray-400">.</span>
+													{/if}
+													{#if daySegment}
+														<DateRangePicker.Segment
+															part="day"
+															class="rounded px-0.5 py-1 hover:bg-gray-100 focus:bg-gray-100 focus:text-gray-900 focus-visible:ring-0 focus-visible:ring-offset-0"
+															>{daySegment.value}</DateRangePicker.Segment>
+													{/if}
+													{#if yearSegment && monthSegment && daySegment}
+														<span class="ml-1 text-xs text-gray-400">({getKoreanDayOfWeek()})</span>
+													{/if}
+												{/snippet}
+											</DateRangePicker.Input>
+										</div>
+										{#if type === 'start'}
+											<div aria-hidden="true" class="px-2 text-gray-400">~</div>
+										{/if}
+									{/each}
+									<DateRangePicker.Trigger
+										class="ml-auto inline-flex size-8 items-center justify-center rounded text-gray-400 transition-all hover:bg-gray-100">
+										<CalendarBlank class="size-5" />
+									</DateRangePicker.Trigger>
+								</div>
+							{/if}
 							<DateRangePicker.Content>
 								<DateRangePicker.Calendar class="mr-6 rounded-lg border bg-white p-4 shadow-lg">
 									{#snippet children({ months, weekdays })}
