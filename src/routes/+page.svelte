@@ -50,20 +50,26 @@
 		tripForm.update((f) => ({ ...f, search: target.value }));
 		selectedCity = undefined;
 		clearTimeout(debounceTimeout);
-		debounceTimeout = setTimeout(() => fetchResults(target.value), 300);
+		// Reduce debounce time and only search if 2+ chars
+		if (target.value.length >= 2) {
+			debounceTimeout = setTimeout(() => fetchResults(target.value), 150);
+		} else {
+			results = [];
+			showDropdown = false;
+		}
 	}
 
 	async function fetchResults(q: string) {
-		if (!q) {
+		if (!q || q.length < 2) {
 			results = [];
 			showDropdown = false;
 			return;
 		}
 
 		// Check cache first
-		const cacheKey = `destinations-${q}`;
+		const cacheKey = `destinations-${q.toLowerCase()}`;
 		const cached = apiCache.get(cacheKey);
-		
+
 		if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
 			results = cached.data.results;
 			showDropdown = results.length > 0;
@@ -86,13 +92,13 @@
 				}
 			});
 			const data = await res.json();
-			
-			// Store in cache
+
+			// Store in cache with lowercase key for better hit rate
 			apiCache.set(cacheKey, {
 				data,
 				timestamp: Date.now()
 			});
-			
+
 			results = data.results;
 			showDropdown = results.length > 0;
 		} catch (err) {
@@ -156,8 +162,10 @@
 	}
 
 	// On page load, if search is prefilled, fetch results and set selectedCity
+	let initialFetchDone = false;
 	$effect(() => {
-		if ($tripForm.search && !$tripForm.selectedCity) {
+		if ($tripForm.search && !$tripForm.selectedCity && !initialFetchDone) {
+			initialFetchDone = true;
 			fetchResults($tripForm.search).then(() => {
 				const match = results.find((dest) => dest.city === $tripForm.search);
 				if (match) {
@@ -187,26 +195,11 @@
 		<div class="mx-auto max-w-4xl text-center">
 			<div class="mb-8 space-y-4">
 				<h1 class="text-4xl font-bold text-white md:text-6xl">Match Trip</h1>
-				<div class="flex flex-wrap justify-center gap-4 text-lg md:text-xl">
-					<div
-						class="flex items-center gap-2 rounded-full bg-white/20 px-4 py-2 shadow-sm backdrop-blur-sm">
-						<span class="text-2xl">🎒</span>
-						<span class="font-medium text-white">완벽한 여행</span>
-					</div>
-					<div
-						class="flex items-center gap-2 rounded-full bg-white/20 px-4 py-2 shadow-sm backdrop-blur-sm">
-						<span class="text-2xl">👨‍🔬</span>
-						<span class="font-medium text-white">현지 전문가</span>
-					</div>
-					<div
-						class="flex items-center gap-2 rounded-full bg-white/20 px-4 py-2 shadow-sm backdrop-blur-sm">
-						<span class="text-2xl">🤝</span>
-						<span class="font-medium text-white">안전한 연결</span>
-					</div>
+				<div
+					class="flex flex-col justify-center gap-2 text-lg text-white/90 md:flex-row md:text-xl">
+					<p>현지 전문가와 함께 하는</p>
+					<p>나만의 특별한 프라이빗 여행</p>
 				</div>
-				<p class="text-lg text-white/90 md:text-xl">
-					나만의 특별한 여행을 현지 전문가와 함께 만들어보세요
-				</p>
 			</div>
 		</div>
 	</section>
@@ -216,8 +209,25 @@
 		<form
 			class="mx-auto flex max-w-2xl flex-col gap-4 rounded-xl border bg-white px-4 py-4 shadow-sm md:flex-row md:items-center md:gap-4 md:px-6 md:py-6 md:shadow-lg"
 			onsubmit={handleSearch}>
-			<label class="shrink-0 text-sm font-medium text-gray-700 md:text-base"
-				>어디로 가고 싶으신가요?</label>
+			<label
+				class="flex shrink-0 items-center gap-2 text-sm font-medium text-gray-700 md:text-base">
+				어디로 가고 싶으신가요?
+				{#if loading}
+					<svg
+						class="h-4 w-4 animate-spin text-blue-600"
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24">
+						<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
+						></circle>
+						<path
+							class="opacity-75"
+							fill="currentColor"
+							d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+						></path>
+					</svg>
+				{/if}
+			</label>
 			<div class="relative min-w-0 flex-1">
 				<input
 					class="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 focus:outline-none md:px-4 md:py-3 md:text-base"
@@ -283,14 +293,14 @@
 							<img
 								src={destination.imageUrl}
 								alt={destination.city}
-								loading={index < 4 ? "eager" : "lazy"}
+								loading={index < 4 ? 'eager' : 'lazy'}
 								decoding="async"
 								class="aspect-square w-full bg-gray-200 object-cover object-center" />
 						{:else}
 							<img
 								src="https://source.unsplash.com/featured/?{destination.city.toLowerCase()}"
 								alt={destination.city}
-								loading={index < 4 ? "eager" : "lazy"}
+								loading={index < 4 ? 'eager' : 'lazy'}
 								decoding="async"
 								class="aspect-square w-full bg-gray-200 object-cover object-center" />
 						{/if}

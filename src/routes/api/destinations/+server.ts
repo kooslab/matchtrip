@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { destinations, users } from '$lib/server/db/schema';
-import { ilike, or, eq } from 'drizzle-orm';
+import { ilike, or, eq, sql } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
 import { auth } from '$lib/auth';
 
@@ -18,12 +18,36 @@ export const GET: RequestHandler = async ({ url, setHeaders }) => {
 		return json({ results: [] });
 	}
 
+	if (q.length < 2) {
+		return json({ results: [] });
+	}
+
 	try {
-		// Case-insensitive partial match for city or country
+		// Use more efficient query with early termination
 		const results = await db
-			.select()
+			.select({
+				id: destinations.id,
+				city: destinations.city,
+				country: destinations.country,
+				imageUrl: destinations.imageUrl
+			})
 			.from(destinations)
-			.where(or(ilike(destinations.city, `%${q}%`), ilike(destinations.country, `%${q}%`)))
+			.where(
+				sql`
+					${destinations.city} ILIKE ${`${q}%`} 
+					OR ${destinations.city} ILIKE ${`%${q}%`}
+					OR ${destinations.country} ILIKE ${`${q}%`}
+				`
+			)
+			.orderBy(
+				sql`
+					CASE 
+						WHEN ${destinations.city} ILIKE ${`${q}%`} THEN 1
+						WHEN ${destinations.country} ILIKE ${`${q}%`} THEN 2
+						ELSE 3
+					END
+				`
+			)
 			.limit(10);
 
 		return json({ results });
