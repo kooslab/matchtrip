@@ -335,6 +335,69 @@
 						{/if}
 					</div>
 				</div>
+				
+				<!-- Reviews Section -->
+				<div class="mt-8 rounded-2xl bg-white p-8 shadow-lg">
+					<h3 class="mb-6 text-xl font-bold">여행자 리뷰</h3>
+					<div class="space-y-4">
+						<!-- Review 1 -->
+						<div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
+							<div class="mb-2 flex items-start justify-between">
+								<div>
+									<p class="font-semibold">김민수</p>
+									<div class="flex items-center gap-1">
+										{#each Array(5) as _, i}
+											<svg class="h-4 w-4 {i < 5 ? 'text-yellow-400 fill-current' : 'text-gray-300'}" viewBox="0 0 20 20">
+												<path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+											</svg>
+										{/each}
+										<span class="ml-1 text-sm text-gray-600">5.0</span>
+									</div>
+								</div>
+								<span class="text-sm text-gray-500">2024년 1월 15일</span>
+							</div>
+							<p class="text-gray-700">정말 최고의 가이드였습니다! 현지 문화와 역사에 대한 깊은 지식을 바탕으로 재미있게 설명해주셔서 시간 가는 줄 몰랐어요. 특히 숨겨진 맛집들을 소개해주신 것이 인상적이었습니다.</p>
+						</div>
+						
+						<!-- Review 2 -->
+						<div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
+							<div class="mb-2 flex items-start justify-between">
+								<div>
+									<p class="font-semibold">이서연</p>
+									<div class="flex items-center gap-1">
+										{#each Array(5) as _, i}
+											<svg class="h-4 w-4 {i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'}" viewBox="0 0 20 20">
+												<path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+											</svg>
+										{/each}
+										<span class="ml-1 text-sm text-gray-600">4.0</span>
+									</div>
+								</div>
+								<span class="text-sm text-gray-500">2024년 1월 10일</span>
+							</div>
+							<p class="text-gray-700">친절하고 세심한 가이드님이었어요. 사진도 잘 찍어주시고 일정 관리도 완벽했습니다. 다만 조금 더 자유시간이 있었으면 좋았을 것 같아요.</p>
+						</div>
+						
+						<!-- Review 3 -->
+						<div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
+							<div class="mb-2 flex items-start justify-between">
+								<div>
+									<p class="font-semibold">박준호</p>
+									<div class="flex items-center gap-1">
+										{#each Array(5) as _, i}
+											<svg class="h-4 w-4 {i < 5 ? 'text-yellow-400 fill-current' : 'text-gray-300'}" viewBox="0 0 20 20">
+												<path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+											</svg>
+										{/each}
+										<span class="ml-1 text-sm text-gray-600">5.0</span>
+									</div>
+								</div>
+								<span class="text-sm text-gray-500">2023년 12월 28일</span>
+							</div>
+							<p class="text-gray-700">가족 여행이었는데 아이들 눈높이에 맞춰서 설명해주시고 배려해주셔서 정말 감사했습니다. 현지인만 아는 특별한 장소들도 많이 보여주셔서 잊지 못할 추억이 되었어요!</p>
+						</div>
+					</div>
+				</div>
 			</div>
 		{:else if isGuide && editMode}
 			<!-- Edit Mode -->
