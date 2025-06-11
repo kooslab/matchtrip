@@ -77,15 +77,19 @@ export const POST: RequestHandler = async ({ request }) => {
 		// Upload to R2 if configured, otherwise use mock
 		if (r2Client) {
 			try {
-				// Use public bucket for destination images, private bucket for others
-				const isPublic = type === 'destination';
+				// Use public bucket for destination and guide profile images, private bucket for others
+				const isPublic = type === 'destination' || type === 'guide-profile';
+				// If marked as public but no public bucket, still use private bucket but generate public URL
 				const bucketName = isPublic && R2_PUBLIC_BUCKET_NAME ? R2_PUBLIC_BUCKET_NAME : R2_BUCKET_NAME;
+				const uploadedToPublicBucket = bucketName === R2_PUBLIC_BUCKET_NAME;
 				
 				console.log('R2 upload config:', {
+					type,
 					isPublic,
 					bucketName,
 					R2_PUBLIC_BUCKET_NAME,
-					R2_BUCKET_NAME
+					R2_BUCKET_NAME,
+					actualBucketUsed: bucketName
 				});
 				
 				if (!bucketName) {
@@ -100,7 +104,7 @@ export const POST: RequestHandler = async ({ request }) => {
 					ContentLength: file.size
 				});
 
-				console.log('Uploading to R2...');
+				console.log('Uploading to R2...', { bucket: bucketName, key: filename });
 				await r2Client.send(uploadCommand);
 				console.log('R2 upload successful');
 
@@ -108,14 +112,26 @@ export const POST: RequestHandler = async ({ request }) => {
 				let publicUrl: string;
 				if (isPublic) {
 					// For public bucket, use the R2 public URL
-					publicUrl = R2_PUBLIC_URL
-						? `${R2_PUBLIC_URL}/${filename}`
-						: `https://pub-${R2_ACCOUNT_ID}.r2.dev/${filename}`;
+					if (R2_PUBLIC_URL) {
+						publicUrl = `${R2_PUBLIC_URL}/${filename}`;
+					} else if (R2_ACCOUNT_ID) {
+						// Fallback to R2 dev URL if public URL not set
+						publicUrl = `https://pub-${R2_ACCOUNT_ID}.r2.dev/${filename}`;
+					} else {
+						// If no R2 config, return a mock URL for development
+						publicUrl = `https://mock-public-storage.example.com/${filename}`;
+					}
 				} else {
 					// For private bucket, return a placeholder or signed URL logic
 					publicUrl = `https://private-storage/${filename}`;
 				}
 
+				console.log('Returning upload response:', {
+					isPublic,
+					publicUrl,
+					bucketName
+				});
+				
 				return json({
 					success: true,
 					url: publicUrl,

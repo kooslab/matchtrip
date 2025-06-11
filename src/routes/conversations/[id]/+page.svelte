@@ -177,6 +177,7 @@
 		// Check for sensitive information
 		if (containsSensitiveInfo(newMessage)) {
 			warningMessage = getSensitiveInfoWarning(newMessage);
+			newMessage = ''; // Clear the input message
 			// Clear warning after 5 seconds
 			setTimeout(() => {
 				warningMessage = '';
@@ -252,6 +253,7 @@
 		// Check for sensitive information
 		if (containsSensitiveInfo(editContent)) {
 			warningMessage = getSensitiveInfoWarning(editContent);
+			editContent = ''; // Clear the edit content
 			// Clear warning after 5 seconds
 			setTimeout(() => {
 				warningMessage = '';
