@@ -3,7 +3,7 @@
 	import CalendarBlank from 'phosphor-svelte/lib/CalendarBlank';
 	import CaretLeft from 'phosphor-svelte/lib/CaretLeft';
 	import CaretRight from 'phosphor-svelte/lib/CaretRight';
-	import { goto } from '$app/navigation';
+	import { goto, invalidate } from '$app/navigation';
 	import { useSession } from '$lib/authClient';
 	import { tripForm } from '$lib/stores/tripForm';
 
@@ -142,6 +142,8 @@
 
 			if (response.ok && data.trip) {
 				alert('여행 전문가 제안 요청이 성공적으로 등록되었습니다!');
+				// Invalidate the trips cache before navigating
+				await invalidate('app:trips');
 				goto('/my-trips');
 			} else {
 				if (response.status === 401) {
