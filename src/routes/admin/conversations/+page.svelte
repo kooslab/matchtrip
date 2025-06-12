@@ -9,7 +9,6 @@
 		Clock,
 		CheckCircle,
 		Eye,
-		Trash2,
 		Filter,
 		Download,
 		MessageCircle,
@@ -115,24 +114,6 @@
 			return 0;
 		}));
 
-	async function handleDelete(conversationId: string) {
-		if (!confirm('정말로 이 대화를 삭제하시겠습니까? 모든 메시지가 삭제됩니다.')) return;
-		
-		try {
-			const response = await fetch(`/api/admin/conversations/${conversationId}`, {
-				method: 'DELETE'
-			});
-			
-			if (response.ok) {
-				window.location.reload();
-			} else {
-				alert('삭제 중 오류가 발생했습니다.');
-			}
-		} catch (error) {
-			console.error('Error deleting conversation:', error);
-			alert('삭제 중 오류가 발생했습니다.');
-		}
-	}
 
 	async function exportData() {
 		try {

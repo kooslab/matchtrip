@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { onMount, onDestroy } from 'svelte';
 	import { tick } from 'svelte';
-	import { Send, ArrowLeft, Edit2, Trash2, Check, X, ExternalLink } from 'lucide-svelte';
+	import { Send, ArrowLeft, ExternalLink } from 'lucide-svelte';
 	import SkeletonLoader from '$lib/components/SkeletonLoader.svelte';
 	
 	let { data = $page.data } = $props();
@@ -65,8 +65,6 @@
 	let warningMessage = $state('');
 	let currentUserId = $derived(data?.session?.user?.id || $page.data.session?.user?.id);
 	let messagesContainer: HTMLDivElement;
-	let editingMessageId = $state<string | null>(null);
-	let editContent = $state('');
 	let pollingInterval: ReturnType<typeof setInterval>;
 
 	const conversationId = $page.params.id;
@@ -242,79 +240,6 @@
 		}
 	}
 
-	async function startEdit(message: Message) {
-		if (message.senderId !== currentUserId || message.isDeleted) return;
-		editingMessageId = message.id;
-		editContent = message.content;
-	}
-
-	async function saveEdit() {
-		if (!editContent.trim() || !editingMessageId) return;
-
-		// Check for sensitive information
-		if (containsSensitiveInfo(editContent)) {
-			warningMessage = getSensitiveInfoWarning(editContent);
-			editContent = ''; // Clear the edit content
-			// Clear warning after 5 seconds
-			setTimeout(() => {
-				warningMessage = '';
-			}, 5000);
-			return;
-		}
-
-		try {
-			const response = await fetch(`/api/conversations/${conversationId}/messages`, {
-				method: 'PATCH',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ 
-					messageId: editingMessageId, 
-					content: editContent 
-				})
-			});
-
-			if (response.ok) {
-				const data = await response.json();
-				messages = messages.map(msg => 
-					msg.id === editingMessageId ? { ...msg, ...data.message } : msg
-				);
-				editingMessageId = null;
-				editContent = '';
-			} else {
-				error = '메시지 수정에 실패했습니다.';
-			}
-		} catch (err) {
-			error = '메시지 수정에 실패했습니다.';
-		}
-	}
-
-	async function deleteMessage(messageId: string) {
-		if (!confirm('메시지를 삭제하시겠습니까?')) return;
-
-		try {
-			const response = await fetch(`/api/conversations/${conversationId}/messages`, {
-				method: 'DELETE',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ messageId })
-			});
-
-			if (response.ok) {
-				const data = await response.json();
-				messages = messages.map(msg => 
-					msg.id === messageId ? { ...msg, ...data.message } : msg
-				);
-			} else {
-				error = '메시지 삭제에 실패했습니다.';
-			}
-		} catch (err) {
-			error = '메시지 삭제에 실패했습니다.';
-		}
-	}
-
-	function cancelEdit() {
-		editingMessageId = null;
-		editContent = '';
-	}
-
 	function scrollToBottom() {
 		if (messagesContainer) {
 			messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -465,56 +390,15 @@
 								{/if}
 							</div>
 
-							{#if editingMessageId === message.id}
-								<div class="rounded-lg bg-white p-3 shadow">
-									<textarea
-										bind:value={editContent}
-										class="w-full resize-none rounded border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-										rows="2"
-									></textarea>
-									<div class="mt-2 flex justify-end gap-2">
-										<button
-											onclick={cancelEdit}
-											class="rounded p-1 hover:bg-gray-100"
-										>
-											<X class="h-4 w-4" />
-										</button>
-										<button
-											onclick={saveEdit}
-											class="rounded p-1 hover:bg-gray-100"
-										>
-											<Check class="h-4 w-4" />
-										</button>
-									</div>
-								</div>
-							{:else}
-								<div
-									class={`rounded-lg px-4 py-2 ${
-										message.senderId === currentUserId
-											? 'bg-blue-500 text-white'
-											: 'bg-gray-100 text-gray-900'
-									}`}
-								>
-									<p class="whitespace-pre-wrap text-sm">{message.content}</p>
-								</div>
-
-								{#if message.senderId === currentUserId && !message.isDeleted}
-									<div class="mt-1 flex justify-start gap-1">
-										<button
-											onclick={() => startEdit(message)}
-											class="rounded p-1 hover:bg-gray-100"
-										>
-											<Edit2 class="h-3 w-3 text-gray-500" />
-										</button>
-										<button
-											onclick={() => deleteMessage(message.id)}
-											class="rounded p-1 hover:bg-gray-100"
-										>
-											<Trash2 class="h-3 w-3 text-gray-500" />
-										</button>
-									</div>
-								{/if}
-							{/if}
+							<div
+								class={`rounded-lg px-4 py-2 ${
+									message.senderId === currentUserId
+										? 'bg-blue-500 text-white'
+										: 'bg-gray-100 text-gray-900'
+								}`}
+							>
+								<p class="whitespace-pre-wrap text-sm">{message.content}</p>
+							</div>
 						</div>
 					</div>
 				{/each}

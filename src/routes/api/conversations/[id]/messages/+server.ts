@@ -4,6 +4,10 @@ import { db } from '$lib/server/db';
 import { messages, conversations } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 
+// Edit and delete functionality has been disabled
+// The endpoints below are commented out but kept for reference
+
+/*
 // PATCH /api/conversations/[id]/messages - Edit a message
 export const PATCH: RequestHandler = async ({ params, request, locals }) => {
 	const session = locals.session;
@@ -118,3 +122,4 @@ export const DELETE: RequestHandler = async ({ params, request, locals }) => {
 		return json({ error: 'Failed to delete message' }, { status: 500 });
 	}
 };
+*/
