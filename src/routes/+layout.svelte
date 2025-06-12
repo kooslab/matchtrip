@@ -126,6 +126,12 @@
 							class="block py-2 font-medium text-gray-800 hover:text-blue-600"
 							onclick={() => closeMenu()}>나의 여행</NavigationLink>
 					</li>
+					<li>
+						<NavigationLink
+							href="/order-history"
+							class="block py-2 font-medium text-gray-800 hover:text-blue-600"
+							onclick={() => closeMenu()}>주문 내역</NavigationLink>
+					</li>
 				{/if}
 				{#if isGuide}
 					<li>
@@ -225,6 +231,10 @@
 				<li>
 					<NavigationLink href="/my-trips" class="font-medium text-gray-800 hover:text-blue-600"
 						>나의 여행</NavigationLink>
+				</li>
+				<li>
+					<NavigationLink href="/order-history" class="font-medium text-gray-800 hover:text-blue-600"
+						>주문 내역</NavigationLink>
 				</li>
 			{/if}
 			{#if isGuide}
