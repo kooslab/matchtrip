@@ -211,7 +211,7 @@
 												대화하기
 											</button>
 											<button
-												onclick={() => goto(`/my-offers/detail?offerId=${offer.id}`)}
+												onclick={() => goto(`/my-offers/${offer.id}`)}
 												class="rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-200">
 												상세보기
 											</button>
@@ -298,7 +298,7 @@
 												대화하기
 											</button>
 											<button
-												onclick={() => goto(`/my-offers/detail?offerId=${offer.id}`)}
+												onclick={() => goto(`/my-offers/${offer.id}`)}
 												class="rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-200">
 												상세보기
 											</button>
@@ -385,7 +385,7 @@
 												대화하기
 											</button>
 											<button
-												onclick={() => goto(`/my-offers/detail?offerId=${offer.id}`)}
+												onclick={() => goto(`/my-offers/${offer.id}`)}
 												class="rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-200">
 												상세보기
 											</button>

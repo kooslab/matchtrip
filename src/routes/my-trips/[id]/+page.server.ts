@@ -4,7 +4,7 @@ import { eq, and } from 'drizzle-orm';
 import { redirect } from '@sveltejs/kit';
 import { auth } from '$lib/auth';
 
-export const load = async ({ url, request, locals }) => {
+export const load = async ({ params, request, locals }) => {
 	// Try to get session from locals first, fallback to direct auth call
 	let session = locals.session;
 
@@ -22,7 +22,7 @@ export const load = async ({ url, request, locals }) => {
 		throw redirect(302, '/signin');
 	}
 
-	const tripId = url.searchParams.get('tripId');
+	const tripId = params.id;
 
 	if (!tripId) {
 		throw redirect(302, '/my-trips');

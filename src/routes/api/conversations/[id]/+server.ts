@@ -79,11 +79,13 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 				title: offers.title,
 				price: offers.price,
 				status: offers.status,
+				tripId: offers.tripId,
 				destination: {
 					city: destinations.city,
 					country: destinations.country
 				},
 				trip: {
+					id: trips.id,
 					startDate: trips.startDate,
 					endDate: trips.endDate
 				}

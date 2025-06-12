@@ -45,11 +45,13 @@
 		title: string;
 		price: number;
 		status: string;
+		tripId: string;
 		destination: {
 			city: string;
 			country: string;
 		};
 		trip: {
+			id: string;
 			startDate: string;
 			endDate: string;
 		};
@@ -269,6 +271,24 @@
 		const prevDate = new Date(prevMsg.createdAt).toDateString();
 		return currentDate !== prevDate;
 	}
+
+	function handleBackButton() {
+		if (offer) {
+			// Check user role to determine redirect
+			const userRole = data?.session?.user?.role;
+			if (userRole === 'traveler') {
+				// Redirect travelers to their trip details page
+				goto(`/my-trips/${offer.tripId}`);
+			} else if (userRole === 'guide') {
+				// Redirect guides to their offer details page
+				goto(`/my-offers/${offer.id}`);
+			} else {
+				history.back();
+			}
+		} else {
+			history.back();
+		}
+	}
 </script>
 
 <div class="fixed inset-0 flex flex-col bg-gray-50 pt-16 md:pt-20">
@@ -276,7 +296,7 @@
 	<div class="border-b bg-white px-4 py-3 safe-area-top">
 		<div class="flex items-center gap-4">
 			<button
-				onclick={() => offer ? goto(`/my-offers/detail?offerId=${offer.id}`) : history.back()}
+				onclick={handleBackButton}
 				class="rounded-lg p-2 hover:bg-gray-100"
 			>
 				<ArrowLeft class="h-5 w-5" />

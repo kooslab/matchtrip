@@ -76,7 +76,7 @@
 	async function goToTripDetails(tripId: string) {
 		navigatingTripId = tripId;
 		try {
-			await goto(`/my-trips/details?tripId=${tripId}`);
+			await goto(`/my-trips/${tripId}`);
 		} finally {
 			navigatingTripId = null;
 		}

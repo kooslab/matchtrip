@@ -46,7 +46,7 @@
 	}
 
 	function goToTripDetails(tripId: string) {
-		goto(`/my-trips/details?tripId=${tripId}`);
+		goto(`/my-trips/${tripId}`);
 	}
 </script>
 

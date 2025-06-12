@@ -3,7 +3,7 @@ import { trips, destinations, users, offers } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { redirect } from '@sveltejs/kit';
 
-export const load = async ({ url, locals }) => {
+export const load = async ({ params, locals }) => {
 	// Session and user are guaranteed to exist and be valid due to auth guard in hooks.server.ts
 	const session = locals.session;
 	const user = locals.user;
@@ -12,7 +12,7 @@ export const load = async ({ url, locals }) => {
 	console.log('Offer detail page - User role:', user?.role);
 	console.log('Offer detail page - Access granted for guide:', user?.email);
 
-	const offerId = url.searchParams.get('offerId');
+	const offerId = params.id;
 
 	if (!offerId) {
 		throw redirect(302, '/my-offers');

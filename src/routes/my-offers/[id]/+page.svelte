@@ -277,7 +277,7 @@
 
 				{#if offer.status === 'accepted'}
 					<button
-						onclick={() => goto(`/my-trips/details?tripId=${offer.tripId}`)}
+						onclick={() => goto(`/my-trips/${offer.tripId}`)}
 						class="w-full rounded-md bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none">
 						여행 관리하기
 					</button>
