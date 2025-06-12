@@ -108,7 +108,7 @@
 
 		// If accepting, show payment modal
 		if (action === 'accept') {
-			const offer = offers.find(o => o.id === offerId);
+			const offer = offers.find((o) => o.id === offerId);
 			if (offer) {
 				selectedOffer = offer;
 				showPaymentModal = true;
@@ -241,7 +241,7 @@
 							</div>
 						{/if}
 
-						<div class="flex items-center justify-between">
+						<div class="flex flex-col items-center justify-start gap-y-2">
 							<span class="text-xs text-gray-500">
 								제안일: {formatDate(offer.createdAt)}
 							</span>
@@ -278,13 +278,12 @@
 
 <!-- Payment Modal -->
 {#if selectedOffer}
-	<PaymentModal 
+	<PaymentModal
 		bind:isOpen={showPaymentModal}
 		onClose={() => {
 			showPaymentModal = false;
 			selectedOffer = null;
 		}}
 		offer={selectedOffer}
-		{trip}
-	/>
+		{trip} />
 {/if}
