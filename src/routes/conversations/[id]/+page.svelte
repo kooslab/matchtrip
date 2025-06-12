@@ -3,7 +3,8 @@
 	import { goto } from '$app/navigation';
 	import { onMount, onDestroy } from 'svelte';
 	import { tick } from 'svelte';
-	import { Send, ArrowLeft, Edit2, Trash2, Check, X } from 'lucide-svelte';
+	import { Send, ArrowLeft, Edit2, Trash2, Check, X, ExternalLink } from 'lucide-svelte';
+	import SkeletonLoader from '$lib/components/SkeletonLoader.svelte';
 	
 	let { data = $page.data } = $props();
 	
@@ -345,44 +346,81 @@
 	}
 </script>
 
-<div class="fixed inset-0 flex flex-col bg-gray-50 safe-area-top">
+<div class="fixed inset-0 flex flex-col bg-gray-50 pt-16 md:pt-20">
 	<!-- Header -->
-	<div class="border-b bg-white px-4 py-3">
+	<div class="border-b bg-white px-4 py-3 safe-area-top">
 		<div class="flex items-center gap-4">
 			<button
-				onclick={() => goto('/conversations')}
+				onclick={() => offer ? goto(`/my-offers/detail?offerId=${offer.id}`) : history.back()}
 				class="rounded-lg p-2 hover:bg-gray-100"
 			>
 				<ArrowLeft class="h-5 w-5" />
 			</button>
 			<div class="flex-1">
-				<h1 class="text-lg font-semibold">대화</h1>
-				{#if offer}
-					<div class="flex items-center gap-2 text-sm text-gray-600">
-						<span>{offer.destination.city}, {offer.destination.country}</span>
-						<span>•</span>
-						<span>{offer.price.toLocaleString('ko-KR')}원</span>
-						<span>•</span>
-						<span class={`font-medium ${
-							offer.status === 'accepted' ? 'text-green-600' : 
-							offer.status === 'rejected' ? 'text-red-600' : 
-							offer.status === 'pending' ? 'text-yellow-600' : 
-							'text-gray-600'
-						}`}>
-							{offer.status === 'accepted' ? '수락됨' : 
-							 offer.status === 'rejected' ? '거절됨' : 
-							 offer.status === 'pending' ? '검토중' : 
-							 offer.status}
-						</span>
+				<div class="flex items-center justify-between">
+					<div>
+						<h1 class="text-lg font-semibold">대화</h1>
+						{#if offer}
+							<div class="text-sm text-gray-600">
+								{offer.destination.city}, {offer.destination.country}
+							</div>
+						{/if}
 					</div>
-				{/if}
+					{#if offer}
+						<div class="flex items-center gap-3 text-sm">
+							<span class="font-medium text-gray-900">{offer.price.toLocaleString('ko-KR')}원</span>
+							<span class={`font-medium px-2 py-1 rounded-full text-xs ${
+								offer.status === 'accepted' ? 'bg-green-100 text-green-700' : 
+								offer.status === 'rejected' ? 'bg-red-100 text-red-700' : 
+								offer.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 
+								'bg-gray-100 text-gray-700'
+							}`}>
+								{offer.status === 'accepted' ? '수락됨' : 
+								 offer.status === 'rejected' ? '거절됨' : 
+								 offer.status === 'pending' ? '검토중' : 
+								 offer.status}
+							</span>
+						</div>
+					{/if}
+				</div>
 			</div>
 		</div>
 	</div>
 
 	{#if loading}
-		<div class="flex flex-1 items-center justify-center">
-			<div class="text-gray-500">로딩 중...</div>
+		<div class="flex flex-1 flex-col">
+			<!-- Messages skeleton -->
+			<div class="flex-1 overflow-y-auto px-4 py-4">
+				<!-- Date separator skeleton -->
+				<div class="my-4 text-center">
+					<div class="inline-block h-6 w-32 rounded-full bg-gray-200 animate-pulse"></div>
+				</div>
+				
+				<!-- Message skeletons -->
+				{#each Array(5) as _, i}
+					<div class={`mb-4 flex ${i % 2 === 0 ? 'justify-start' : 'justify-end'}`}>
+						<div class="max-w-[70%] space-y-2">
+							<!-- Sender name and time skeleton -->
+							<div class="flex items-center gap-2">
+								<div class="h-3 w-16 rounded bg-gray-200 animate-pulse"></div>
+								<div class="h-3 w-12 rounded bg-gray-200 animate-pulse"></div>
+							</div>
+							<!-- Message content skeleton -->
+							<div class={`rounded-lg px-4 py-2 ${i % 2 === 0 ? 'bg-gray-100' : 'bg-blue-100'}`}>
+								<SkeletonLoader rows={Math.floor(Math.random() * 2) + 1} height="h-4" />
+							</div>
+						</div>
+					</div>
+				{/each}
+			</div>
+			
+			<!-- Input skeleton -->
+			<div class="border-t bg-white p-4 mb-2">
+				<div class="flex gap-2">
+					<div class="flex-1 h-10 rounded-lg bg-gray-200 animate-pulse"></div>
+					<div class="w-10 h-10 rounded-lg bg-gray-200 animate-pulse"></div>
+				</div>
+			</div>
 		</div>
 	{:else if error}
 		<div class="flex flex-1 items-center justify-center">
@@ -484,7 +522,7 @@
 
 			<!-- Input -->
 			{#if conversation.status === 'active'}
-				<div class="border-t bg-white p-4 safe-area-bottom">
+				<div class="border-t bg-white p-4 mb-2 safe-area-bottom">
 					{#if warningMessage}
 						<div class="mb-2 rounded-lg bg-red-50 border border-red-200 px-4 py-2">
 							<p class="text-sm text-red-700">{warningMessage}</p>
@@ -511,7 +549,7 @@
 					</form>
 				</div>
 			{:else}
-				<div class="border-t bg-gray-100 p-4 safe-area-bottom text-center text-sm text-gray-500">
+				<div class="border-t bg-gray-100 p-4 mb-2 safe-area-bottom text-center text-sm text-gray-500">
 					이 대화는 종료되었습니다. (상태: {conversation.status})
 				</div>
 			{/if}
