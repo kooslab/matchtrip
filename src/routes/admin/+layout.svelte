@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { preloadData } from '$app/navigation';
+	import { preloadData, invalidateAll, goto } from '$app/navigation';
 	import { Home, MapPin, Users, Settings, LogOut, Plane, FileText, CreditCard, MessageSquare } from 'lucide-svelte';
+	import { resetRole } from '$lib/stores/userRole';
 
 	const navigation = [
 		{ name: '대시보드', href: '/admin', icon: Home },
@@ -74,7 +75,12 @@
 						headers: { 'Content-Type': 'application/json' }
 					});
 					if (response.ok) {
-						window.location.href = '/signin';
+						// Clear user role from localStorage
+						resetRole();
+						// Invalidate all cached data
+						await invalidateAll();
+						// Navigate to signin page
+						await goto('/signin');
 					}
 				}}
 				class="flex items-center gap-3 text-gray-700 hover:text-red-600 w-full text-left"

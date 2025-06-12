@@ -3,9 +3,10 @@
 	import Footer from '$lib/components/Footer.svelte';
 	import NavigationLink from '$lib/components/NavigationLink.svelte';
 	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { navigating } from '$app/stores';
 	import { preloadCommonRoutes } from '$lib/utils/preloader';
+	import { resetRole } from '$lib/stores/userRole';
 
 	let { data } = $props();
 
@@ -42,9 +43,12 @@
 
 			if (response.ok) {
 				closeMenu();
-				goto('/signin');
-				// Force a page reload to clear any cached data
-				window.location.reload();
+				// Clear user role from localStorage
+				resetRole();
+				// Invalidate all cached data before navigating
+				await invalidateAll();
+				// Navigate to signin page
+				await goto('/signin');
 			}
 		} catch (error) {
 			console.error('Logout error:', error);
