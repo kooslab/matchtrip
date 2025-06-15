@@ -1,6 +1,7 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema';
+import * as relations from './relations';
 
 let databaseUrl: string | undefined;
 
@@ -24,5 +25,5 @@ const client = postgres(databaseUrl, {
 });
 
 export const db = drizzle(client, {
-	schema
+	schema: { ...schema, ...relations }
 });

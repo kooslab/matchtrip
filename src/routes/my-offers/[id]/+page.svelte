@@ -1,9 +1,15 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { MessageSquare } from 'lucide-svelte';
+	import { MessageSquare, Star } from 'lucide-svelte';
 	let { data } = $props();
 
 	let offer = $derived(data.offer);
+	let isRequestingReview = $state(false);
+	let reviewRequestMessage = $state('');
+	let reviewRequestError = $state('');
+	let isMarkingCompleted = $state(false);
+	let completionMessage = $state('');
+	let completionError = $state('');
 
 	function formatDate(date: Date | string) {
 		const dateObj = typeof date === 'string' ? new Date(date) : date;
@@ -53,6 +59,14 @@
 				return 'bg-green-100 text-green-800 border-green-200';
 			case 'rejected':
 				return 'bg-red-100 text-red-800 border-red-200';
+			case 'draft':
+				return 'bg-gray-100 text-gray-800 border-gray-200';
+			case 'submitted':
+				return 'bg-blue-100 text-blue-800 border-blue-200';
+			case 'completed':
+				return 'bg-purple-100 text-purple-800 border-purple-200';
+			case 'cancelled':
+				return 'bg-red-100 text-red-800 border-red-200';
 			default:
 				return 'bg-gray-100 text-gray-800 border-gray-200';
 		}
@@ -66,6 +80,14 @@
 				return '수락됨';
 			case 'rejected':
 				return '거절됨';
+			case 'draft':
+				return '임시저장';
+			case 'submitted':
+				return '제출됨';
+			case 'completed':
+				return '완료됨';
+			case 'cancelled':
+				return '취소됨';
 			default:
 				return status;
 		}
@@ -96,6 +118,61 @@
 			}
 		} catch (error) {
 			console.error('Error creating conversation:', error);
+		}
+	}
+
+	async function markTripCompleted() {
+		isMarkingCompleted = true;
+		completionError = '';
+		completionMessage = '';
+
+		try {
+			const response = await fetch(`/api/trips/${offer.tripId}/complete`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' }
+			});
+
+			const data = await response.json();
+
+			if (response.ok) {
+				completionMessage = '여행이 완료 처리되었습니다!';
+				// Reload the page to update the status
+				setTimeout(() => {
+					location.reload();
+				}, 1500);
+			} else {
+				completionError = data.error || '여행 완료 처리 중 오류가 발생했습니다.';
+			}
+		} catch (error) {
+			completionError = '네트워크 오류가 발생했습니다.';
+		} finally {
+			isMarkingCompleted = false;
+		}
+	}
+
+	async function requestReview() {
+		isRequestingReview = true;
+		reviewRequestError = '';
+		reviewRequestMessage = '';
+
+		try {
+			const response = await fetch('/api/reviews/request', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ tripId: offer.tripId })
+			});
+
+			const data = await response.json();
+
+			if (response.ok) {
+				reviewRequestMessage = '리뷰 요청이 성공적으로 전송되었습니다!';
+			} else {
+				reviewRequestError = data.error || '리뷰 요청 중 오류가 발생했습니다.';
+			}
+		} catch (error) {
+			reviewRequestError = '네트워크 오류가 발생했습니다.';
+		} finally {
+			isRequestingReview = false;
 		}
 	}
 </script>
@@ -159,8 +236,12 @@
 						<p class="text-gray-700">🚶 {formatTravelMethod(offer.trip.travelMethod)}</p>
 					</div>
 					<div>
-						<h3 class="mb-2 text-sm font-medium text-gray-900">여행 요청일</h3>
-						<p class="text-gray-700">📝 {formatDate(offer.trip.createdAt)}</p>
+						<h3 class="mb-2 text-sm font-medium text-gray-900">여행 상태</h3>
+						<p class="text-gray-700">
+							<span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium {getStatusColor(offer.trip.status)}">
+								{getStatusText(offer.trip.status)}
+							</span>
+						</p>
 					</div>
 				</div>
 
@@ -265,6 +346,31 @@
 				</div>
 			</div>
 
+			<!-- Status Messages -->
+			{#if completionMessage}
+				<div class="rounded-lg bg-green-50 p-4 text-green-700 text-sm">
+					{completionMessage}
+				</div>
+			{/if}
+			
+			{#if completionError}
+				<div class="rounded-lg bg-red-50 p-4 text-red-700 text-sm">
+					{completionError}
+				</div>
+			{/if}
+
+			{#if reviewRequestMessage}
+				<div class="rounded-lg bg-green-50 p-4 text-green-700 text-sm">
+					{reviewRequestMessage}
+				</div>
+			{/if}
+			
+			{#if reviewRequestError}
+				<div class="rounded-lg bg-red-50 p-4 text-red-700 text-sm">
+					{reviewRequestError}
+				</div>
+			{/if}
+
 			<!-- Action Buttons -->
 			<div class="space-y-3">
 				<!-- Conversation Button -->
@@ -280,6 +386,50 @@
 						onclick={() => goto(`/my-trips/${offer.tripId}`)}
 						class="w-full rounded-md bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none">
 						여행 관리하기
+					</button>
+
+					{#if offer.trip.status === 'accepted'}
+						{#if new Date(offer.trip.endDate) < new Date()}
+							<button
+								onclick={markTripCompleted}
+								disabled={isMarkingCompleted}
+								class="w-full flex items-center justify-center gap-2 rounded-md bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
+								{#if isMarkingCompleted}
+									<span class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+									처리 중...
+								{:else}
+									여행 완료 처리
+								{/if}
+							</button>
+						{:else}
+							<!-- Show during trip for testing -->
+							<button
+								onclick={markTripCompleted}
+								disabled={isMarkingCompleted}
+								class="w-full flex items-center justify-center gap-2 rounded-md bg-orange-600 px-4 py-2 text-white transition-colors hover:bg-orange-700 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
+								{#if isMarkingCompleted}
+									<span class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+									처리 중...
+								{:else}
+									여행 조기 완료 (테스트용)
+								{/if}
+							</button>
+						{/if}
+					{/if}
+				{/if}
+
+				{#if offer.status === 'accepted' && offer.trip.status === 'completed'}
+					<button
+						onclick={requestReview}
+						disabled={isRequestingReview}
+						class="w-full flex items-center justify-center gap-2 rounded-md bg-yellow-600 px-4 py-2 text-white transition-colors hover:bg-yellow-700 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
+						{#if isRequestingReview}
+							<span class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+							요청 중...
+						{:else}
+							<Star class="h-5 w-5" />
+							리뷰 요청하기
+						{/if}
 					</button>
 				{/if}
 

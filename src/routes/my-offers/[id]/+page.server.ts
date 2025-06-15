@@ -65,7 +65,7 @@ export const load = async ({ params, locals }) => {
 		.innerJoin(trips, eq(offers.tripId, trips.id))
 		.innerJoin(destinations, eq(trips.destinationId, destinations.id))
 		.innerJoin(users, eq(trips.userId, users.id))
-		.where(and(eq(offers.id, offerId), eq(offers.guideId, session.user.id)))
+		.where(and(eq(offers.id, offerId), eq(offers.guideId, user?.id || '')))
 		.limit(1);
 
 	if (offerDetails.length === 0) {

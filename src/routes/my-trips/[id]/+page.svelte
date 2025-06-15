@@ -2,11 +2,12 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import PaymentModal from '$lib/components/PaymentModal.svelte';
-	import { MessageSquare } from 'lucide-svelte';
+	import { MessageSquare, Star } from 'lucide-svelte';
 
 	let { data } = $props();
 	let trip = $derived(data.trip);
 	let offers = $derived(data.offers);
+	let acceptedOffer = $derived(offers.find(o => o.status === 'accepted'));
 
 	// State for offer actions
 	let processingOfferId = $state<string | null>(null);
@@ -248,6 +249,11 @@
 
 							<div class="flex gap-2">
 								<button
+									onclick={() => goto(`/guide/${offer.guideId}`)}
+									class="flex items-center gap-1 rounded bg-gray-100 px-3 py-1 text-sm text-gray-700 hover:bg-gray-200">
+									가이드 프로필
+								</button>
+								<button
 									onclick={() => startConversation(offer.id)}
 									class="flex items-center gap-1 rounded bg-blue-100 px-3 py-1 text-sm text-blue-700 hover:bg-blue-200">
 									<MessageSquare class="h-3 w-3" />
@@ -265,6 +271,14 @@
 										disabled={processingOfferId === offer.id}
 										class="rounded bg-green-100 px-3 py-1 text-sm text-green-700 hover:bg-green-200 disabled:opacity-50">
 										{processingOfferId === offer.id ? '처리 중...' : '수락'}
+									</button>
+								{/if}
+								{#if offer.status === 'accepted' && trip.status === 'completed'}
+									<button
+										onclick={() => goto(`/my-trips/${trip.id}/review`)}
+										class="flex items-center gap-1 rounded bg-yellow-100 px-3 py-1 text-sm text-yellow-700 hover:bg-yellow-200">
+										<Star class="h-3 w-3" />
+										리뷰 작성
 									</button>
 								{/if}
 							</div>

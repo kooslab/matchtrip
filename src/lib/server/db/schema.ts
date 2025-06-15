@@ -398,3 +398,39 @@ export const messages = pgTable(
 		createdAtIdx: index('messages_created_at_idx').on(table.createdAt)
 	})
 );
+
+// Reviews table for traveler reviews of guides after trip completion
+export const reviews = pgTable(
+	'reviews',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		tripId: uuid('trip_id')
+			.notNull()
+			.references(() => trips.id, { onDelete: 'cascade' }),
+		offerId: uuid('offer_id')
+			.notNull()
+			.references(() => offers.id, { onDelete: 'cascade' }),
+		guideId: uuid('guide_id')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
+		travelerId: uuid('traveler_id')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
+		rating: integer('rating').notNull(), // 1-5 stars
+		content: text('content').notNull(),
+		reviewToken: text('review_token').unique(), // Unique token for review links
+		reviewRequestedAt: timestamp('review_requested_at'),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at').defaultNow().notNull()
+	},
+	(table) => ({
+		// Add indexes for frequently queried columns
+		guideIdIdx: index('reviews_guide_id_idx').on(table.guideId),
+		tripIdIdx: index('reviews_trip_id_idx').on(table.tripId),
+		travelerIdIdx: index('reviews_traveler_id_idx').on(table.travelerId),
+		ratingIdx: index('reviews_rating_idx').on(table.rating),
+		reviewTokenIdx: index('reviews_review_token_idx').on(table.reviewToken),
+		// Ensure one review per trip
+		uniqueTripReview: index('reviews_trip_traveler_unique').on(table.tripId, table.travelerId)
+	})
+);
