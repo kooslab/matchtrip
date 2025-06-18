@@ -408,11 +408,11 @@
 					<span class="text-sm font-medium text-gray-700">전화번호 *</span>
 					<input
 						type="tel"
-						placeholder="010-1234-5678"
+						placeholder="+49 176 12345678"
 						class="rounded-md border border-gray-300 p-3 transition focus:border-green-400 focus:ring-2 focus:ring-green-100"
 						bind:value={phone}
 						oninput={handlePhoneInput}
-						maxlength="13"
+						maxlength="20"
 						disabled={isLoading}
 						required />
 				</label>

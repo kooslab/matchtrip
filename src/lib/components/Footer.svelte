@@ -25,16 +25,17 @@
 					<span>E-mail : j@agentt.kr</span>
 				</div>
 			</div>
-			
+
 			<!-- Row 2: Address and Phone -->
 			<div class="mb-3 flex flex-col items-center gap-1 md:mb-2">
 				<div class="flex flex-col items-center gap-1 md:flex-row md:gap-4">
-					<span>주소 : 경기도 화성시 메타폴리스로 42 9층</span>
+					<span>경기도 화성시 메타폴리스로 42</span>
+					<span>9층 901호 A13호 (반송동, 디앤씨빌딩)</span>
 					<span class="hidden md:inline">|</span>
 					<span>전화 : 010-8200-4994 (독일 +49 174 4360256)</span>
 				</div>
 			</div>
-			
+
 			<!-- Row 3: Business Registration -->
 			<div class="flex flex-col items-center gap-1">
 				<div class="flex flex-col items-center gap-1 md:flex-row md:gap-4">
