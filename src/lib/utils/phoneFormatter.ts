@@ -1,18 +1,22 @@
 /**
  * Formats a phone number string to German/European format
+ * Automatically adds '+' prefix for international format
  * Supports formats like:
- * - German mobile: +49 176 12345678 or 0176 12345678
- * - German landline: +49 30 12345678 or 030 12345678
+ * - German mobile: +49 176 12345678
+ * - German landline: +49 30 12345678
+ * - Other European countries: +33, +34, +39, etc.
  * @param value - The input phone number string
  * @returns Formatted phone number string
  */
 export function formatPhoneNumber(value: string): string {
-	// Keep + if it exists at the beginning
-	const hasPlus = value.startsWith('+');
+	// If empty, return empty
+	if (!value) return '';
 	
 	// Remove all non-digits except the initial +
 	let digits = value.replace(/[^\d+]/g, '');
-	if (hasPlus && !digits.startsWith('+')) {
+	
+	// If user types only digits (no + at start), automatically add +
+	if (digits && !digits.startsWith('+') && !digits.startsWith('0')) {
 		digits = '+' + digits;
 	}
 
@@ -34,7 +38,7 @@ export function formatPhoneNumber(value: string): string {
 			}
 		}
 	} 
-	// Handle national format (0176...)
+	// Handle national format (0176...) - keep as is for backwards compatibility
 	else if (digits.startsWith('0')) {
 		if (digits.length <= 4) {
 			return digits;
@@ -58,7 +62,9 @@ export function formatPhoneNumber(value: string): string {
 			const countryCode = countryCodeMatch[1];
 			const numberPart = digits.slice(countryCode.length + 1);
 			
-			if (numberPart.length <= 3) {
+			if (numberPart.length === 0) {
+				return `+${countryCode}`;
+			} else if (numberPart.length <= 3) {
 				return `+${countryCode} ${numberPart}`;
 			} else if (numberPart.length <= 6) {
 				return `+${countryCode} ${numberPart.slice(0, 3)} ${numberPart.slice(3)}`;
@@ -68,14 +74,9 @@ export function formatPhoneNumber(value: string): string {
 		}
 		return digits;
 	}
-	// No country code - assume German national format
+	// Should not reach here due to auto-prefix logic above
 	else {
-		if (digits.length === 0) return '';
-		// Add leading 0 for German numbers
-		if (!digits.startsWith('0')) {
-			digits = '0' + digits;
-		}
-		return formatPhoneNumber(digits);
+		return digits;
 	}
 }
 
