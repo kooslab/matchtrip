@@ -1,15 +1,16 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { formatDate, formatDateRange } from '$lib/utils/dateFormatter';
+	import { userTimezone, userLocale } from '$lib/stores/location';
 
 	let { data } = $props();
 	let orders = $derived(data.orders);
 
-	function formatDate(date: Date | string) {
-		const dateObj = typeof date === 'string' ? new Date(date) : date;
-		return dateObj.toLocaleDateString('ko-KR', {
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric'
+	function formatOrderDate(date: Date | string) {
+		return formatDate(date, {
+			locale: $userLocale,
+			timezone: $userTimezone,
+			format: 'long'
 		});
 	}
 
@@ -54,7 +55,7 @@
 										{order.destination?.city || '알 수 없는 도시'}
 									</h3>
 									<p class="text-sm text-gray-500">
-										{formatDate(order.startDate)} ~ {formatDate(order.endDate)}
+										{formatDateRange(order.startDate, order.endDate, { locale: $userLocale, timezone: $userTimezone, format: 'long' })}
 									</p>
 								</div>
 								<div class="hidden sm:block">
@@ -71,7 +72,7 @@
 								{order.payment.amount.toLocaleString()}원
 							</p>
 							<p class="text-xs text-gray-500">
-								{formatDate(order.payment.createdAt)}
+								{formatOrderDate(order.payment.createdAt)}
 							</p>
 						</div>
 					</div>

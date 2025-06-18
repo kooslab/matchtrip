@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { formatDate, formatDateRange } from '$lib/utils/dateFormatter';
+	import { userTimezone, userLocale } from '$lib/stores/location';
+	
 	let { data } = $props();
 
 	let trips = $derived(data.trips);
@@ -7,12 +10,11 @@
 	// Loading state for proposal navigation
 	let navigatingTripId = $state<string | null>(null);
 
-	function formatDate(date: Date | string) {
-		const dateObj = typeof date === 'string' ? new Date(date) : date;
-		return dateObj.toLocaleDateString('ko-KR', {
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric'
+	function formatTripDate(date: Date | string) {
+		return formatDate(date, {
+			locale: $userLocale,
+			timezone: $userTimezone,
+			format: 'long'
 		});
 	}
 
@@ -93,7 +95,7 @@
 
 						<div class="mb-4 space-y-1">
 							<p class="text-sm text-gray-600">
-								📅 {formatDate(trip.startDate)} - {formatDate(trip.endDate)}
+								📅 {formatDateRange(trip.startDate, trip.endDate, { locale: $userLocale, timezone: $userTimezone, format: 'long' })}
 							</p>
 
 							<p class="text-sm text-gray-600">
@@ -120,7 +122,7 @@
 						<div class="border-t border-gray-100 pt-4">
 							<div class="mb-2 flex items-center justify-between">
 								<span class="text-xs text-gray-500">
-									{formatDate(trip.createdAt)} 등록
+									{formatTripDate(trip.createdAt)} 등록
 								</span>
 								{#if trip.hasOffer}
 									<div class="flex items-center gap-2">

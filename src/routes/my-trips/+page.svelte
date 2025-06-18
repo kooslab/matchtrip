@@ -2,6 +2,8 @@
 	import { goto } from '$app/navigation';
 	import { useSession } from '$lib/authClient';
 	import { invalidate } from '$app/navigation';
+	import { formatDate, formatDateRange } from '$lib/utils/dateFormatter';
+	import { userTimezone, userLocale } from '$lib/stores/location';
 
 	// Get data from server load function
 	let { data } = $props();
@@ -39,12 +41,12 @@
 		}
 	}
 
-	function formatDate(date: string | Date) {
-		const dateObj = typeof date === 'string' ? new Date(date) : date;
-		const year = dateObj.getFullYear();
-		const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-		const day = String(dateObj.getDate()).padStart(2, '0');
-		return `${year}.${month}.${day}`;
+	function formatTripDate(date: string | Date) {
+		return formatDate(date, {
+			locale: $userLocale,
+			timezone: $userTimezone,
+			format: 'medium'
+		});
 	}
 
 	function getStatusText(status: string) {
@@ -178,7 +180,7 @@
 									</div>
 
 									<div class="space-y-1 text-sm text-gray-600">
-										<p>📅 {formatDate(trip.startDate)} ~ {formatDate(trip.endDate)}</p>
+										<p>📅 {formatDateRange(trip.startDate, trip.endDate, { locale: $userLocale, timezone: $userTimezone, format: 'medium' })}</p>
 										<p>
 											👥 성인 {trip.adultsCount}명{trip.childrenCount > 0
 												? `, 유아 ${trip.childrenCount}명`
@@ -226,7 +228,7 @@
 							</div>
 
 							<div class="mt-3 text-xs text-gray-500 pointer-events-none">
-								생성일: {formatDate(trip.createdAt)}
+								생성일: {formatTripDate(trip.createdAt)}
 							</div>
 						</div>
 					{/each}

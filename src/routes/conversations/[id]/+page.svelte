@@ -5,6 +5,8 @@
 	import { tick } from 'svelte';
 	import { Send, ArrowLeft, ExternalLink } from 'lucide-svelte';
 	import SkeletonLoader from '$lib/components/SkeletonLoader.svelte';
+	import { formatDate, formatTime, isToday, isYesterday } from '$lib/utils/dateFormatter';
+	import { userTimezone, userLocale } from '$lib/stores/location';
 	
 	let { data = $page.data } = $props();
 	
@@ -248,20 +250,23 @@
 		}
 	}
 
-	function formatTime(dateString: string) {
-		const date = new Date(dateString);
-		return date.toLocaleTimeString('ko-KR', { 
-			hour: '2-digit', 
-			minute: '2-digit' 
+	function formatMessageTime(dateString: string) {
+		return formatTime(dateString, {
+			locale: $userLocale,
+			timezone: $userTimezone
 		});
 	}
 
-	function formatDate(dateString: string) {
-		const date = new Date(dateString);
-		return date.toLocaleDateString('ko-KR', {
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric'
+	function formatMessageDate(dateString: string) {
+		if (isToday(dateString)) {
+			return $userLocale.startsWith('ko') ? '오늘' : 'Today';
+		} else if (isYesterday(dateString)) {
+			return $userLocale.startsWith('ko') ? '어제' : 'Yesterday';
+		}
+		return formatDate(dateString, {
+			locale: $userLocale,
+			timezone: $userTimezone,
+			format: 'long'
 		});
 	}
 
@@ -391,7 +396,7 @@
 					{#if isNewDay(message, i > 0 ? messages[i - 1] : null)}
 						<div class="my-4 text-center">
 							<span class="rounded-full bg-gray-200 px-3 py-1 text-xs text-gray-600">
-								{formatDate(message.createdAt)}
+								{formatMessageDate(message.createdAt)}
 							</span>
 						</div>
 					{/if}
@@ -403,7 +408,7 @@
 									{message.sender.name}
 								</span>
 								<span class="text-xs text-gray-500">
-									{formatTime(message.createdAt)}
+									{formatMessageTime(message.createdAt)}
 								</span>
 								{#if message.isEdited}
 									<span class="text-xs text-gray-400">(수정됨)</span>

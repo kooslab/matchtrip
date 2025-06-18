@@ -4,6 +4,8 @@
 	import { goto } from '$app/navigation';
 	import { Star, MapPin, Calendar, User } from 'lucide-svelte';
 	import { useSession } from '$lib/authClient';
+	import { formatDate, formatDateRange } from '$lib/utils/dateFormatter';
+	import { userTimezone, userLocale } from '$lib/stores/location';
 
 	const session = useSession();
 
@@ -98,13 +100,6 @@
 		}
 	}
 
-	function formatDate(date: string) {
-		return new Date(date).toLocaleDateString('ko-KR', {
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric'
-		});
-	}
 </script>
 
 <div class="min-h-screen bg-gray-50 py-8">
@@ -155,7 +150,7 @@
 							</div>
 							<div class="flex items-center gap-2 text-sm text-gray-600">
 								<Calendar class="h-4 w-4" />
-								<span>{formatDate(reviewData.trip.startDate)} - {formatDate(reviewData.trip.endDate)}</span>
+								<span>{formatDateRange(reviewData.trip.startDate, reviewData.trip.endDate, { locale: $userLocale, timezone: $userTimezone, format: 'long' })}</span>
 							</div>
 						</div>
 					</div>

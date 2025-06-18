@@ -1,17 +1,19 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { MessageSquare } from 'lucide-svelte';
+	import { formatDate, formatDateRange } from '$lib/utils/dateFormatter';
+	import { userTimezone, userLocale } from '$lib/stores/location';
+	
 	let { data } = $props();
 
 	let offers = $derived(data.offers);
 	let totalOffers = $derived(data.totalOffers);
 
-	function formatDate(date: Date | string) {
-		const dateObj = typeof date === 'string' ? new Date(date) : date;
-		return dateObj.toLocaleDateString('ko-KR', {
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric'
+	function formatOfferDate(date: Date | string) {
+		return formatDate(date, {
+			locale: $userLocale,
+			timezone: $userTimezone,
+			format: 'long'
 		});
 	}
 
@@ -169,7 +171,7 @@
 
 								<div class="mb-4 space-y-1">
 									<p class="text-sm text-gray-600">
-										📅 {formatDate(offer.trip.startDate)} - {formatDate(offer.trip.endDate)}
+										📅 {formatDateRange(offer.trip.startDate, offer.trip.endDate, { locale: $userLocale, timezone: $userTimezone, format: 'long' })}
 									</p>
 									<p class="text-sm text-gray-600">
 										👥 성인 {offer.trip.adultsCount}명
@@ -201,7 +203,7 @@
 								<div class="border-t border-gray-100 pt-4">
 									<div class="flex items-center justify-between">
 										<span class="text-xs text-gray-500">
-											{formatDate(offer.createdAt)} 제안
+											{formatOfferDate(offer.createdAt)} 제안
 										</span>
 										<div class="flex gap-2">
 											<button
@@ -256,7 +258,7 @@
 
 								<div class="mb-4 space-y-1">
 									<p class="text-sm text-gray-600">
-										📅 {formatDate(offer.trip.startDate)} - {formatDate(offer.trip.endDate)}
+										📅 {formatDateRange(offer.trip.startDate, offer.trip.endDate, { locale: $userLocale, timezone: $userTimezone, format: 'long' })}
 									</p>
 									<p class="text-sm text-gray-600">
 										👥 성인 {offer.trip.adultsCount}명
@@ -288,7 +290,7 @@
 								<div class="border-t border-gray-100 pt-4">
 									<div class="flex items-center justify-between">
 										<span class="text-xs text-gray-500">
-											{formatDate(offer.createdAt)} 제안
+											{formatOfferDate(offer.createdAt)} 제안
 										</span>
 										<div class="flex gap-2">
 											<button
@@ -343,7 +345,7 @@
 
 								<div class="mb-4 space-y-1">
 									<p class="text-sm text-gray-600">
-										📅 {formatDate(offer.trip.startDate)} - {formatDate(offer.trip.endDate)}
+										📅 {formatDateRange(offer.trip.startDate, offer.trip.endDate, { locale: $userLocale, timezone: $userTimezone, format: 'long' })}
 									</p>
 									<p class="text-sm text-gray-600">
 										👥 성인 {offer.trip.adultsCount}명
@@ -375,7 +377,7 @@
 								<div class="border-t border-gray-100 pt-4">
 									<div class="flex items-center justify-between">
 										<span class="text-xs text-gray-500">
-											{formatDate(offer.createdAt)} 제안
+											{formatOfferDate(offer.createdAt)} 제안
 										</span>
 										<div class="flex gap-2">
 											<button

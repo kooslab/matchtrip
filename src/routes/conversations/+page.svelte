@@ -3,6 +3,8 @@
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { MessageSquare, ChevronRight, Clock } from 'lucide-svelte';
+	import { formatRelativeTime, formatDate } from '$lib/utils/dateFormatter';
+	import { userTimezone, userLocale } from '$lib/stores/location';
 
 	interface Conversation {
 		id: string;
@@ -49,22 +51,9 @@
 		}
 	}
 
-	function formatDate(dateString: string | null) {
-		if (!dateString) return '메시지 없음';
-		
-		const date = new Date(dateString);
-		const now = new Date();
-		const diffMs = now.getTime() - date.getTime();
-		const diffMins = Math.floor(diffMs / 60000);
-		const diffHours = Math.floor(diffMs / 3600000);
-		const diffDays = Math.floor(diffMs / 86400000);
-
-		if (diffMins < 1) return '방금 전';
-		if (diffMins < 60) return `${diffMins}분 전`;
-		if (diffHours < 24) return `${diffHours}시간 전`;
-		if (diffDays < 7) return `${diffDays}일 전`;
-		
-		return date.toLocaleDateString('ko-KR');
+	function formatMessageTime(dateString: string | null) {
+		if (!dateString) return $userLocale.startsWith('ko') ? '메시지 없음' : 'No messages';
+		return formatRelativeTime(dateString, $userLocale);
 	}
 
 	function getOfferStatusText(status: string) {
@@ -161,7 +150,7 @@
 									</span>
 									<span class="flex items-center gap-1">
 										<Clock class="h-3 w-3" />
-										{formatDate(conversation.lastMessageAt)}
+										{formatMessageTime(conversation.lastMessageAt)}
 									</span>
 								</div>
 							</div>
