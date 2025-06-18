@@ -2,6 +2,8 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { env } from '$env/dynamic/private';
+import { dev } from '$app/environment';
+import { devImageStorage } from '$lib/server/devImageStorage';
 
 // Cloudflare R2 configuration
 const R2_ACCOUNT_ID = env.R2_ACCOUNT_ID;
@@ -122,8 +124,8 @@ export const POST: RequestHandler = async ({ request }) => {
 						publicUrl = `https://mock-public-storage.example.com/${filename}`;
 					}
 				} else {
-					// For private bucket, return a placeholder or signed URL logic
-					publicUrl = `https://private-storage/${filename}`;
+					// For private bucket, return our secure image endpoint URL
+					publicUrl = `/api/images/${filename}`;
 				}
 
 				console.log('Returning upload response:', {
@@ -144,15 +146,24 @@ export const POST: RequestHandler = async ({ request }) => {
 			}
 		}
 
-		// Fallback: return a mock URL for development
-		console.warn('R2 not configured or upload failed, using mock URL');
-		const mockUrl = `https://mock-storage.example.com/${filename}`;
-
-		return json({
-			success: true,
-			url: mockUrl,
-			filename: filename
-		});
+		// Fallback: For development without R2
+		console.warn('R2 not configured, using in-memory storage for development');
+		
+		// Store in memory for development
+		if (dev) {
+			devImageStorage.set(filename, { buffer, contentType: file.type });
+			
+			// Return the secure endpoint URL
+			return json({
+				success: true,
+				url: `/api/images/${filename}`,
+				filename: filename,
+				isDevelopment: true
+			});
+		}
+		
+		// If not in dev and no R2, return error
+		return json({ error: 'Image storage not configured' }, { status: 500 });
 	} catch (error) {
 		console.error('Upload error:', error);
 		return json({ error: 'Upload failed' }, { status: 500 });
