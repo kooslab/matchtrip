@@ -6,8 +6,8 @@
 <footer class="mt-auto pt-8 pb-4 text-center text-sm text-gray-500">
 	<div class="mb-4 flex justify-center space-x-4">
 		<a href="/terms" class="hover:text-gray-700 hover:underline">이용약관</a>
-		<a href="/privacy" class="hover:text-gray-700 hover:underline">개인정보처리방침</a>
-		<a href="/sales-policy" class="hover:text-gray-700 hover:underline">판매정책</a>
+		<a href="/terms/privacy" class="hover:text-gray-700 hover:underline">개인정보처리방침</a>
+		<a href="/terms/refund-policy" class="hover:text-gray-700 hover:underline">환불약관</a>
 		<a href="/contact" class="hover:text-gray-700 hover:underline">문의하기</a>
 	</div>
 

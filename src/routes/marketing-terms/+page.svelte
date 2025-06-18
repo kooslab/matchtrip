@@ -69,7 +69,7 @@
 			<p class="text-sm text-gray-500">
 				마케팅 활용 동의와 관련한 더 자세한 내용은 '개인정보 처리방침'을 확인해 주세요.
 			</p>
-			<a href="/privacy" class="text-sm text-blue-500 hover:underline">개인정보 처리방침 보기</a>
+			<a href="/terms/privacy" class="text-sm text-blue-500 hover:underline">개인정보 처리방침 보기</a>
 		</div>
 	</div>
 </div>
