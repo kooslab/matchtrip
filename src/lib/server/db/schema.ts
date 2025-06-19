@@ -281,7 +281,7 @@ export const offers = pgTable(
 
 export const tripStatusHistory = pgTable('trip_status_history', {
 	id: uuid('id').primaryKey().defaultRandom(),
-	tripId: uuid('trip_id').references(() => trips.id),
+	tripId: uuid('trip_id').references(() => trips.id, { onDelete: 'cascade' }),
 	status: tripStatusEnum('status').notNull(),
 	changedAt: timestamp('changed_at').defaultNow().notNull(),
 	changedBy: uuid('changed_by').references(() => users.id)

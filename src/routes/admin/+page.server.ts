@@ -119,13 +119,13 @@ export const load: PageServerLoad = async () => {
 	const paymentCounts = {
 		totalRevenue: 0,
 		pending: 0,
-		succeeded: 0,
+		completed: 0,
 		failed: 0
 	};
 
 	paymentStats.forEach(stat => {
-		if (stat.status === 'succeeded') {
-			paymentCounts.succeeded = stat.totalAmount || 0;
+		if (stat.status === 'completed') {
+			paymentCounts.completed = stat.totalAmount || 0;
 			paymentCounts.totalRevenue = stat.totalAmount || 0;
 		} else if (stat.status === 'pending') {
 			paymentCounts.pending = stat.totalAmount || 0;

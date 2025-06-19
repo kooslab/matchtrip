@@ -1,74 +1,92 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { offers, users, trips, guideProfiles, destinations } from '$lib/server/db/schema';
-import { desc, eq, sql } from 'drizzle-orm';
 import { redirect } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ locals }) => {
+	console.log('[ADMIN OFFERS] Starting load function');
 	// The admin check is already done in +layout.server.ts
 	// We can access the user from parent layout data
 	if (!locals.user || locals.user.role !== 'admin') {
 		throw redirect(302, '/');
 	}
 
-	// Fetch all offers with related data
-	const allOffers = await db
-		.select({
-			id: offers.id,
-			price: offers.price,
-			message: offers.message,
-			status: offers.status,
-			createdAt: offers.createdAt,
-			updatedAt: offers.updatedAt,
+	try {
+		// Use the query API which should handle relations properly
+		const allOffers = await db.query.offers.findMany({
+			orderBy: (offers, { desc }) => [desc(offers.createdAt)],
+			with: {
+				trip: {
+					with: {
+						user: true,
+						destination: true
+					}
+				},
+				guide: {
+					with: {
+						guideProfile: true
+					}
+				},
+				payments: true
+			}
+		});
+
+		// Transform the data to match expected format
+		const transformedOffers = allOffers.map(offer => ({
+			id: offer.id,
+			price: offer.price,
+			message: offer.message,
+			status: offer.status,
+			createdAt: offer.createdAt,
+			updatedAt: offer.updatedAt,
 			// Trip info
-			tripId: trips.id,
-			tripDestination: destinations.city,
-			tripStartDate: trips.startDate,
-			tripEndDate: trips.endDate,
-			tripStatus: trips.status,
-			tripPeople: sql<number>`${trips.adultsCount} + ${trips.childrenCount}`.as('tripPeople'),
+			tripId: offer.tripId,
+			tripDestination: offer.trip?.destination?.city || 'Unknown',
+			tripStartDate: offer.trip?.startDate || null,
+			tripEndDate: offer.trip?.endDate || null,
+			tripStatus: offer.trip?.status || 'unknown',
+			tripPeople: offer.trip?.people || 0,
 			// Traveler info
-			travelerName: sql<string>`traveler.name`.as('travelerName'),
-			travelerEmail: sql<string>`traveler.email`.as('travelerEmail'),
+			travelerName: offer.trip?.user?.name || 'Unknown',
+			travelerEmail: offer.trip?.user?.email || 'Unknown',
 			// Guide info
-			guideName: sql<string>`guide_user.name`.as('guideName'),
-			guideEmail: sql<string>`guide_user.email`.as('guideEmail'),
-			guideVerified: sql<boolean>`COALESCE(${guideProfiles.isVerified}, false)`.as('guideVerified'),
+			guideName: offer.guide?.name || 'Unknown',
+			guideEmail: offer.guide?.email || 'Unknown',
+			guideVerified: offer.guide?.guideProfile?.isVerified || false,
 			// Payment status
-			paymentStatus: sql<string>`
-				CASE 
-					WHEN EXISTS (
-						SELECT 1 FROM payments 
-						WHERE payments.offer_id = ${offers.id} 
-						AND payments.status = 'succeeded'
-					) THEN 'paid'
-					ELSE 'unpaid'
-				END
-			`.as('paymentStatus')
-		})
-		.from(offers)
-		.leftJoin(trips, eq(offers.tripId, trips.id))
-		.leftJoin(destinations, eq(trips.destinationId, destinations.id))
-		.leftJoin(users.as('traveler'), eq(trips.userId, sql`traveler.id`))
-		.leftJoin(guideProfiles, eq(offers.guideId, guideProfiles.userId))
-		.leftJoin(users.as('guide_user'), eq(offers.guideId, sql`guide_user.id`))
-		.orderBy(desc(offers.createdAt));
+			paymentStatus: offer.payments?.some(p => p.status === 'completed') ? 'paid' : 'unpaid'
+		}));
 
-	// Calculate statistics
-	const stats = {
-		total: allOffers.length,
-		pending: allOffers.filter(o => o.status === 'pending').length,
-		accepted: allOffers.filter(o => o.status === 'accepted').length,
-		rejected: allOffers.filter(o => o.status === 'rejected').length,
-		cancelled: allOffers.filter(o => o.status === 'cancelled').length,
-		paid: allOffers.filter(o => o.paymentStatus === 'paid').length,
-		totalRevenue: allOffers
-			.filter(o => o.status === 'accepted' && o.paymentStatus === 'paid')
-			.reduce((sum, o) => sum + (parseFloat(o.price) || 0), 0)
-	};
+		// Calculate statistics
+		const stats = {
+			total: transformedOffers.length,
+			pending: transformedOffers.filter(o => o.status === 'pending').length,
+			accepted: transformedOffers.filter(o => o.status === 'accepted').length,
+			rejected: transformedOffers.filter(o => o.status === 'rejected').length,
+			cancelled: transformedOffers.filter(o => o.status === 'cancelled').length,
+			paid: transformedOffers.filter(o => o.paymentStatus === 'paid').length,
+			totalRevenue: transformedOffers
+				.filter(o => o.status === 'accepted' && o.paymentStatus === 'paid')
+				.reduce((sum, o) => sum + (parseFloat(o.price) || 0), 0)
+		};
 
-	return {
-		offers: allOffers,
-		stats
-	};
+		return {
+			offers: transformedOffers,
+			stats
+		};
+	} catch (error) {
+		console.error('Error loading offers:', error);
+		// Return empty data structure on error
+		return {
+			offers: [],
+			stats: {
+				total: 0,
+				pending: 0,
+				accepted: 0,
+				rejected: 0,
+				cancelled: 0,
+				paid: 0,
+				totalRevenue: 0
+			}
+		};
+	}
 };

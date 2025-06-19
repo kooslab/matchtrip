@@ -6,6 +6,7 @@ import { users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 
 export const load: LayoutServerLoad = async ({ request }) => {
+	console.log('[ADMIN LAYOUT] Starting load function');
 	const session = await auth.api.getSession({
 		headers: request.headers
 	});
@@ -14,6 +15,7 @@ export const load: LayoutServerLoad = async ({ request }) => {
 		throw redirect(303, '/');
 	}
 
+	console.log('[ADMIN LAYOUT] Fetching user from database');
 	// Fetch user with role from database
 	const user = await db.query.users.findFirst({
 		where: eq(users.id, session.user.id),
@@ -29,6 +31,7 @@ export const load: LayoutServerLoad = async ({ request }) => {
 		throw redirect(303, '/');
 	}
 
+	console.log('[ADMIN LAYOUT] Returning user data');
 	return {
 		user
 	};
