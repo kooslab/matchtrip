@@ -31,10 +31,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 		});
 
 		// Transform the data to match expected format
-		const transformedOffers = allOffers.map(offer => ({
+		const transformedOffers = allOffers.map((offer) => ({
 			id: offer.id,
 			price: offer.price,
-			message: offer.message,
 			status: offer.status,
 			createdAt: offer.createdAt,
 			updatedAt: offer.updatedAt,
@@ -44,7 +43,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			tripStartDate: offer.trip?.startDate || null,
 			tripEndDate: offer.trip?.endDate || null,
 			tripStatus: offer.trip?.status || 'unknown',
-			tripPeople: offer.trip?.people || 0,
+			tripPeople: (offer.trip?.adultsCount ?? 0) + (offer.trip?.childrenCount ?? 0),
 			// Traveler info
 			travelerName: offer.trip?.user?.name || 'Unknown',
 			travelerEmail: offer.trip?.user?.email || 'Unknown',
@@ -53,20 +52,22 @@ export const load: PageServerLoad = async ({ locals }) => {
 			guideEmail: offer.guide?.email || 'Unknown',
 			guideVerified: offer.guide?.guideProfile?.isVerified || false,
 			// Payment status
-			paymentStatus: offer.payments?.some(p => p.status === 'completed') ? 'paid' : 'unpaid'
+			paymentStatus: offer.payments?.some((p) => p.status === 'completed') ? 'paid' : 'unpaid'
 		}));
 
 		// Calculate statistics
 		const stats = {
 			total: transformedOffers.length,
-			pending: transformedOffers.filter(o => o.status === 'pending').length,
-			accepted: transformedOffers.filter(o => o.status === 'accepted').length,
-			rejected: transformedOffers.filter(o => o.status === 'rejected').length,
-			cancelled: transformedOffers.filter(o => o.status === 'cancelled').length,
-			paid: transformedOffers.filter(o => o.paymentStatus === 'paid').length,
+			pending: transformedOffers.filter((o) => o.status === 'pending').length,
+			accepted: transformedOffers.filter((o) => o.status === 'accepted').length,
+			rejected: transformedOffers.filter((o) => o.status === 'rejected').length,
+			paid: transformedOffers.filter((o) => o.paymentStatus === 'paid').length,
 			totalRevenue: transformedOffers
-				.filter(o => o.status === 'accepted' && o.paymentStatus === 'paid')
-				.reduce((sum, o) => sum + (parseFloat(o.price) || 0), 0)
+				.filter((o) => o.status === 'accepted' && o.paymentStatus === 'paid')
+				.reduce(
+					(sum, o) => sum + (typeof o.price === 'number' ? o.price : parseFloat(o.price) || 0),
+					0
+				)
 		};
 
 		return {
@@ -83,7 +84,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 				pending: 0,
 				accepted: 0,
 				rejected: 0,
-				cancelled: 0,
 				paid: 0,
 				totalRevenue: 0
 			}
