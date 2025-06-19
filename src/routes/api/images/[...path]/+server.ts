@@ -15,8 +15,8 @@ const R2_BUCKET_NAME = env.R2_BUCKET_NAME;
 const ALLOWED_ORIGINS = [
 	'http://localhost:5173',
 	'http://localhost:5174',
-	'https://matchtrip.com', // Replace with your production domain
-	'https://www.matchtrip.com'
+	'https://matchtrip.net',
+	'https://www.matchtrip.net'
 ];
 
 let r2Client: S3Client | null = null;
