@@ -7,6 +7,8 @@
 	import { navigating } from '$app/stores';
 	import { preloadCommonRoutes } from '$lib/utils/preloader';
 	import { resetRole } from '$lib/stores/userRole';
+	import { signOut } from '$lib/authClient';
+	import { resetAllStores } from '$lib/stores/resetStores';
 
 	let { data } = $props();
 
@@ -34,24 +36,24 @@
 
 	async function handleLogout() {
 		try {
-			const response = await fetch('/api/auth/sign-out', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				}
-			});
-
-			if (response.ok) {
-				closeMenu();
-				// Clear user role from localStorage
-				resetRole();
-				// Invalidate all cached data before navigating
-				await invalidateAll();
-				// Navigate to signin page
-				await goto('/signin');
-			}
+			// Close menu immediately
+			closeMenu();
+			
+			// Reset all client-side stores first
+			resetAllStores();
+			
+			// Sign out using better-auth
+			await signOut();
+			
+			// Invalidate all cached data
+			await invalidateAll();
+			
+			// Navigate to signin page
+			await goto('/signin');
 		} catch (error) {
 			console.error('Logout error:', error);
+			// Even on error, try to navigate away
+			await goto('/signin');
 		}
 	}
 </script>

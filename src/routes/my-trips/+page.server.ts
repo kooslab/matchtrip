@@ -6,10 +6,7 @@ export const load = async ({ locals, depends, setHeaders }) => {
 	// Add dependency for cache invalidation
 	depends('app:trips');
 
-	// Set proper cache headers - SvelteKit will handle the caching
-	setHeaders({
-		'cache-control': 'private, max-age=300, stale-while-revalidate=60'
-	});
+	// No cache headers for user-specific data to prevent showing stale data
 
 	// Session is guaranteed to exist here due to auth guard in hooks.server.ts
 	const session = locals.session;

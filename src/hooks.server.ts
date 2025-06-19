@@ -18,8 +18,14 @@ const authorizationHandler = (async ({ event, resolve }) => {
 		routeId = event.route.id;
 		session = await auth.api.getSession({ headers: event.request.headers });
 
+		// Clean up locals first to ensure no stale data
+		event.locals.session = undefined;
+		event.locals.user = undefined;
+		
 		// Store session in locals for use in page server functions
-		event.locals.session = session;
+		if (session) {
+			event.locals.session = session;
+		}
 
 		// If user is logged in, fetch their full user data including role
 		if (session?.user?.id) {
@@ -46,7 +52,7 @@ const authorizationHandler = (async ({ event, resolve }) => {
 		}
 	} catch (error) {
 		console.error('Hooks - Critical error in session handling:', error);
-		// Continue without session data
+		// Clean up session data on error
 		event.locals.session = undefined;
 		event.locals.user = undefined;
 		// Don't process route protection if we had an error

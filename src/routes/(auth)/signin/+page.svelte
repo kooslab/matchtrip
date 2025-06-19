@@ -5,6 +5,7 @@
 	import { page } from '$app/stores';
 	import Button from '$lib/components/Button.svelte';
 	import { onMount } from 'svelte';
+	import { resetAllStores } from '$lib/stores/resetStores';
 
 	let email = $state('');
 	let password = $state('');
@@ -42,8 +43,14 @@
 				console.error('signIn error', result.error);
 				error = result.error.message ?? '알 수 없는 오류가 발생했습니다.';
 			} else {
-				// 로그인 성공 - 모든 데이터 무효화하고 역할에 따라 이동
+				// 로그인 성공 - 먼저 모든 스토어 리셋
+				resetAllStores();
+				
+				// 모든 데이터 무효화
 				await invalidateAll();
+
+				// Wait a bit to ensure session is properly established
+				await new Promise(resolve => setTimeout(resolve, 100));
 
 				// Get user role from the result or make a quick API call
 				try {
@@ -51,13 +58,13 @@
 					const data = await response.json();
 
 					if (data.role === 'guide') {
-						goto('/trips');
+						await goto('/trips');
 					} else {
-						goto('/my-trips');
+						await goto('/my-trips');
 					}
 				} catch {
 					// Fallback to home if role check fails
-					goto('/');
+					await goto('/');
 				}
 			}
 		} finally {
