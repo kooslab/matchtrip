@@ -23,7 +23,9 @@ if (R2_ACCOUNT_ID && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY) {
 		credentials: {
 			accessKeyId: R2_ACCESS_KEY_ID,
 			secretAccessKey: R2_SECRET_ACCESS_KEY
-		}
+		},
+		// Required for R2 compatibility
+		forcePathStyle: true
 	});
 }
 

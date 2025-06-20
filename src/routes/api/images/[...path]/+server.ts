@@ -31,21 +31,18 @@ if (R2_ACCOUNT_ID && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY) {
 		credentials: {
 			accessKeyId: R2_ACCESS_KEY_ID,
 			secretAccessKey: R2_SECRET_ACCESS_KEY
-		}
+		},
+		// Required for R2 compatibility
+		forcePathStyle: true
 	});
+	console.log('[Image API] R2 client initialized with account:', R2_ACCOUNT_ID);
+} else {
+	console.log('[Image API] R2 client not initialized - missing credentials');
 }
 
 export const GET: RequestHandler = async ({ params, request, locals }) => {
 	try {
 		const imagePath = params.path;
-		console.log('[Image API] Request for:', imagePath);
-		console.log('[Image API] R2 Config:', {
-			hasClient: !!r2Client,
-			hasPrivateBucket: !!R2_BUCKET_NAME,
-			hasPublicBucket: !!R2_PUBLIC_BUCKET_NAME,
-			privateBucket: R2_BUCKET_NAME,
-			publicBucket: R2_PUBLIC_BUCKET_NAME
-		});
 		
 		// Check origin
 		const origin = request.headers.get('origin') || request.headers.get('referer');
@@ -63,48 +60,53 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 
 		// If R2 is configured, generate presigned URL
 		if (r2Client && (R2_BUCKET_NAME || R2_PUBLIC_BUCKET_NAME)) {
+			// Determine which bucket to use based on the image type
+			const isPublicImage = imagePath?.includes('destination/') || imagePath?.includes('guide-profile/');
+			const bucketName = isPublicImage && R2_PUBLIC_BUCKET_NAME ? R2_PUBLIC_BUCKET_NAME : R2_BUCKET_NAME;
+			
+			if (!bucketName) {
+				throw error(500, 'No bucket configured');
+			}
+
+			const command = new GetObjectCommand({
+				Bucket: bucketName,
+				Key: imagePath
+			});
+
 			try {
-				// Determine which bucket to use based on the image type
-				const isPublicImage = imagePath?.includes('destination/') || imagePath?.includes('guide-profile/');
-				const bucketName = isPublicImage && R2_PUBLIC_BUCKET_NAME ? R2_PUBLIC_BUCKET_NAME : R2_BUCKET_NAME;
-				
-				if (!bucketName) {
-					throw new Error('No bucket configured');
-				}
-
-				const command = new GetObjectCommand({
-					Bucket: bucketName,
-					Key: imagePath
-				});
-
-				console.log('[Image API] Generating presigned URL for:', {
-					bucket: bucketName,
-					key: imagePath,
-					isPublicImage
-				});
-
 				// Generate presigned URL with 1 hour expiration
 				const presignedUrl = await getSignedUrl(r2Client, command, { expiresIn: 3600 });
-				console.log('[Image API] Generated presigned URL');
 				
 				// Redirect to the presigned URL
 				throw redirect(302, presignedUrl);
-			} catch (r2Error) {
-				console.error('R2 presigned URL error:', r2Error);
-				// If it's already a redirect, throw it
-				if (r2Error instanceof Response && r2Error.status === 302) {
+			} catch (r2Error: any) {
+				// If it's a redirect (which is what we want), re-throw it
+				if (r2Error?.status === 302 || r2Error?.constructor?.name === 'Redirect') {
 					throw r2Error;
 				}
-				throw error(404, 'Image not found');
+				
+				// Otherwise, it's an actual error
+				console.error('R2 presigned URL error:', r2Error);
+				
+				// Check if it's an AWS SDK error
+				if (r2Error?.$metadata) {
+					console.error('AWS SDK Error:', {
+						name: r2Error.name,
+						message: r2Error.message,
+						metadata: r2Error.$metadata
+					});
+				}
+				
+				// Extract error message
+				const errorMessage = r2Error?.message || r2Error?.toString() || 'Unknown error';
+				throw error(500, `Failed to generate presigned URL: ${errorMessage}`);
 			}
 		}
 
 		// For development without R2, check in-memory storage
 		if (dev && imagePath) {
-			console.log('[Image API] Checking dev storage for:', imagePath);
 			const storedImage = devImageStorage.get(imagePath);
 			if (storedImage) {
-				console.log('[Image API] Found in dev storage');
 				return new Response(storedImage.buffer, {
 					status: 200,
 					headers: {
@@ -114,16 +116,21 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 					}
 				});
 			}
-			console.log('[Image API] Not found in dev storage');
 		}
 		
-		console.log('[Image API] Image not found, throwing 404');
 		throw error(404, 'Image not found');
 		
-	} catch (err) {
+	} catch (err: any) {
+		// If it's a redirect, let it through
+		if (err?.status === 302 || err?.constructor?.name === 'Redirect') {
+			throw err;
+		}
+		
+		// If it's already an HTTP error, re-throw it
 		if (err instanceof Error && 'status' in err) {
 			throw err;
 		}
+		
 		console.error('Image serving error:', err);
 		throw error(500, 'Internal server error');
 	}
