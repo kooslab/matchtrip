@@ -16,7 +16,8 @@
 		"db:push": "drizzle-kit push",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
-		"db:studio": "drizzle-kit studio"
+		"db:studio": "drizzle-kit studio",
+		"migrate:images": "tsx scripts/migrate-image-urls.ts"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^4.0.0",
@@ -34,6 +35,7 @@
 		"svelte": "^5.23.0",
 		"svelte-check": "^4.1.5",
 		"tailwindcss": "^4.0.14",
+		"tsx": "^4.20.3",
 		"typescript": "^5.8.2",
 		"vite": "^6.2.2"
 	},

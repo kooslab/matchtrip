@@ -92,8 +92,15 @@ export const POST: RequestHandler = async ({ request }) => {
 
 				await r2Client.send(uploadCommand);
 
-				// Always return the API endpoint URL since R2 is not publicly accessible
-				const publicUrl = `/api/images/${filename}`;
+				// Return the appropriate URL based on bucket type
+				let publicUrl: string;
+				if (uploadedToPublicBucket && R2_ACCOUNT_ID) {
+					// For public bucket, use the direct R2 public URL
+					publicUrl = `https://pub-${R2_ACCOUNT_ID}.r2.dev/${filename}`;
+				} else {
+					// For private bucket, use our API endpoint
+					publicUrl = `/api/images/${filename}`;
+				}
 				
 				return json({
 					success: true,
