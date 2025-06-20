@@ -29,18 +29,9 @@ if (R2_ACCOUNT_ID && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY) {
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
-		console.log('Upload request received');
-		
 		const formData = await request.formData();
 		const file = formData.get('file') as File;
 		const type = formData.get('type') as string;
-
-		console.log('File details:', {
-			name: file?.name,
-			size: file?.size,
-			type: file?.type,
-			uploadType: type
-		});
 
 		if (!file) {
 			return json({ error: 'No file provided' }, { status: 400 });
@@ -85,15 +76,6 @@ export const POST: RequestHandler = async ({ request }) => {
 				const bucketName = isPublic && R2_PUBLIC_BUCKET_NAME ? R2_PUBLIC_BUCKET_NAME : R2_BUCKET_NAME;
 				const uploadedToPublicBucket = bucketName === R2_PUBLIC_BUCKET_NAME;
 				
-				console.log('R2 upload config:', {
-					type,
-					isPublic,
-					bucketName,
-					R2_PUBLIC_BUCKET_NAME,
-					R2_BUCKET_NAME,
-					actualBucketUsed: bucketName
-				});
-				
 				if (!bucketName) {
 					throw new Error('Bucket name not configured');
 				}
@@ -106,33 +88,10 @@ export const POST: RequestHandler = async ({ request }) => {
 					ContentLength: file.size
 				});
 
-				console.log('Uploading to R2...', { bucket: bucketName, key: filename });
 				await r2Client.send(uploadCommand);
-				console.log('R2 upload successful');
 
-				// Return the public URL
-				let publicUrl: string;
-				if (isPublic) {
-					// For public bucket, use the R2 public URL
-					if (R2_PUBLIC_URL) {
-						publicUrl = `${R2_PUBLIC_URL}/${filename}`;
-					} else if (R2_ACCOUNT_ID) {
-						// Fallback to R2 dev URL if public URL not set
-						publicUrl = `https://pub-${R2_ACCOUNT_ID}.r2.dev/${filename}`;
-					} else {
-						// If no R2 config, return a mock URL for development
-						publicUrl = `https://mock-public-storage.example.com/${filename}`;
-					}
-				} else {
-					// For private bucket, return our secure image endpoint URL
-					publicUrl = `/api/images/${filename}`;
-				}
-
-				console.log('Returning upload response:', {
-					isPublic,
-					publicUrl,
-					bucketName
-				});
+				// Always return the API endpoint URL since R2 is not publicly accessible
+				const publicUrl = `/api/images/${filename}`;
 				
 				return json({
 					success: true,
@@ -151,7 +110,9 @@ export const POST: RequestHandler = async ({ request }) => {
 		
 		// Store in memory for development
 		if (dev) {
+			console.log('[Upload] Storing in dev storage:', filename);
 			devImageStorage.set(filename, { buffer, contentType: file.type });
+			console.log('[Upload] Dev storage now has:', devImageStorage.size, 'images');
 			
 			// Return the secure endpoint URL
 			return json({
