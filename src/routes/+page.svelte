@@ -1,334 +1,70 @@
 <script lang="ts">
-	import type { PageData } from './$types';
-	let { data }: { data: PageData } = $props();
-
-	let menuOpen = false;
-	// let search = '';
-	let results: any[] = $state([]);
+	import { signIn } from '$lib/authClient';
+	
 	let loading = $state(false);
-	let showDropdown = $state(false);
-	let debounceTimeout: ReturnType<typeof setTimeout>;
-	let fetchController: AbortController | null = null;
-	let calendarOpen = $state(false);
-	let selectedCity = $state<any>(undefined);
-	import { DateRangePicker } from 'bits-ui';
-	import CalendarBlank from 'phosphor-svelte/lib/CalendarBlank';
-	import CaretLeft from 'phosphor-svelte/lib/CaretLeft';
-	import CaretRight from 'phosphor-svelte/lib/CaretRight';
-	import { goto } from '$app/navigation';
-	import { Plus, FilePlus } from 'phosphor-svelte';
-	import { tripForm } from '$lib/stores/tripForm';
 
-	// Modal state
-	let showComingSoonModal = $state(false);
-
-	function openComingSoonModal() {
-		showComingSoonModal = true;
-	}
-
-	function closeComingSoonModal() {
-		showComingSoonModal = false;
-	}
-
-	// Cache for API results
-	const apiCache = new Map<string, { data: any; timestamp: number }>();
-	const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-
-	// Preload images when component mounts
-	$effect(() => {
-		// Preload destination images
-		data.destinations.forEach((destination) => {
-			if (destination.imageUrl) {
-				const img = new Image();
-				img.src = destination.imageUrl;
-			}
-		});
-	});
-
-	function handleInput(e: Event) {
-		const target = e.target as HTMLInputElement;
-		tripForm.update((f) => ({ ...f, search: target.value }));
-		selectedCity = undefined;
-		clearTimeout(debounceTimeout);
-		// Reduce debounce time and only search if 2+ chars
-		if (target.value.length >= 2) {
-			debounceTimeout = setTimeout(() => fetchResults(target.value), 150);
-		} else {
-			results = [];
-			showDropdown = false;
-		}
-	}
-
-	async function fetchResults(q: string) {
-		if (!q || q.length < 2) {
-			results = [];
-			showDropdown = false;
-			return;
-		}
-
-		// Check cache first
-		const cacheKey = `destinations-${q.toLowerCase()}`;
-		const cached = apiCache.get(cacheKey);
-
-		if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-			results = cached.data.results;
-			showDropdown = results.length > 0;
-			return;
-		}
-
+	async function handleGoogleLogin() {
 		loading = true;
-
-		// Abort previous fetch if it exists
-		if (fetchController) {
-			fetchController.abort();
-		}
-		fetchController = new AbortController();
-
 		try {
-			const res = await fetch(`/api/destinations?q=${encodeURIComponent(q)}`, {
-				signal: fetchController.signal,
-				headers: {
-					'Cache-Control': 'max-age=300' // Browser cache for 5 minutes
-				}
+			await signIn.social({
+				provider: 'google'
 			});
-			const data = await res.json();
-
-			// Store in cache with lowercase key for better hit rate
-			apiCache.set(cacheKey, {
-				data,
-				timestamp: Date.now()
-			});
-
-			results = data.results;
-			showDropdown = results.length > 0;
 		} catch (err) {
-			if (err.name !== 'AbortError') {
-				console.error(err);
-			}
+			console.error('Google sign in error:', err);
+			// Don't show error to user, just log it
 		} finally {
 			loading = false;
 		}
 	}
-
-	function handleSelect(cityObj: any) {
-		tripForm.update((f) => ({ ...f, search: cityObj.city, selectedCity: cityObj }));
-		selectedCity = cityObj;
-		showDropdown = false;
-	}
-
-	function resetCitySelection() {
-		tripForm.update((f) => ({ ...f, search: '', selectedCity: undefined }));
-		selectedCity = undefined;
-		results = [];
-		showDropdown = false;
-	}
-
-	function handlePeopleChange(val: number) {
-		tripForm.update((f) => ({ ...f, people: val }));
-	}
-
-	function handleDateRangeChange(val: any) {
-		tripForm.update((f) => ({ ...f, dateRange: val }));
-	}
-
-	function handleTourTypeChange(val: string) {
-		tripForm.update((f) => ({ ...f, tourType: val }));
-	}
-
-	function handleSearch(event: Event) {
-		event.preventDefault();
-		if (!$tripForm.selectedCity || $tripForm.selectedCity.city !== $tripForm.search) {
-			alert('목록에서 여행지를 선택해주세요.');
-			return;
-		}
-		goto('/create-trip');
-	}
-
-	function handleBlur() {
-		if (!$tripForm.selectedCity || $tripForm.selectedCity.city !== $tripForm.search) {
-			tripForm.update((f) => ({ ...f, search: '', selectedCity: undefined }));
-			selectedCity = undefined;
-		}
-	}
-
-	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Enter') {
-			if (!$tripForm.selectedCity || $tripForm.selectedCity.city !== $tripForm.search) {
-				e.preventDefault();
-				tripForm.update((f) => ({ ...f, search: '', selectedCity: undefined }));
-				selectedCity = undefined;
-			}
-		}
-	}
-
-	// On page load, if search is prefilled, fetch results and set selectedCity
-	let initialFetchDone = false;
-	$effect(() => {
-		if ($tripForm.search && !$tripForm.selectedCity && !initialFetchDone) {
-			initialFetchDone = true;
-			fetchResults($tripForm.search).then(() => {
-				const match = results.find((dest) => dest.city === $tripForm.search);
-				if (match) {
-					tripForm.update((f) => ({ ...f, selectedCity: match }));
-					selectedCity = match;
-				}
-			});
-		}
-	});
-
-	$effect(() => {
-		return () => {
-			clearTimeout(debounceTimeout);
-			if (fetchController) fetchController.abort();
-		};
-	});
 </script>
 
-<div class="flex min-h-screen flex-col bg-white">
-	<!-- Header -->
-	<!-- <header class="relative flex items-center justify-center border-b px-4 py-3">
-		<span class="rounded bg-gray-100 px-4 py-2 text-xl font-semibold">매치트립 로고</span>
-	</header> -->
+<!-- Splash Screen Style Landing Page -->
+<div class="relative min-h-screen overflow-hidden">
+	<!-- Background Image -->
+	<div class="absolute inset-0">
+		<img 
+			src="/image.png" 
+			alt="Scenic mountain and lake view" 
+			class="w-full h-full object-cover"
+		/>
+		<!-- Subtle gradient overlay -->
+		<div class="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/30"></div>
+	</div>
 
-	<!-- Hero Section with Catchphrases -->
-	<section class="bg-gradient-to-br from-blue-600 to-blue-800 px-4 py-8 md:py-12">
-		<div class="mx-auto max-w-4xl text-center">
-			<div class="mb-8 space-y-4">
-				<h1 class="text-4xl font-bold text-white md:text-6xl">Match Trip</h1>
-				<div
-					class="flex flex-col justify-center gap-2 text-lg text-white/90 md:flex-row md:text-xl">
-					<p>현지 전문가와 함께 하는</p>
-					<p>나만의 특별한 프라이빗 여행</p>
-				</div>
-			</div>
+	<!-- Main Content -->
+	<div class="relative z-10 flex min-h-screen flex-col px-4">
+		<!-- Logo in center -->
+		<div class="flex flex-1 items-center justify-center pt-16">
+			<img 
+				src="/logo-1.png" 
+				alt="Matchtrip Logo" 
+				class="w-64 md:w-80 brightness-0 invert"
+			/>
 		</div>
-	</section>
-
-	<!-- Search Bar -->
-	<section class="bg-white px-4 py-8 md:py-12">
-		<form
-			class="mx-auto flex max-w-2xl flex-col gap-4 rounded-xl border bg-white px-4 py-4 shadow-sm md:flex-row md:items-center md:gap-4 md:px-6 md:py-6 md:shadow-lg"
-			onsubmit={handleSearch}>
-			<label
-				class="flex shrink-0 items-center gap-2 text-sm font-medium text-gray-700 md:text-base">
-				어디로 가고 싶으신가요?
-			</label>
-			<div class="relative min-w-0 flex-1">
-				<input
-					class="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 focus:outline-none md:px-4 md:py-3 md:text-base"
-					placeholder="여행지를 검색하세요"
-					value={$tripForm.search}
-					oninput={handleInput}
-					onfocus={() => {
-						if (results.length) showDropdown = true;
-					}}
-					onblur={handleBlur}
-					onkeydown={handleKeydown}
-					autocomplete="off"
-					readonly={$tripForm.selectedCity && $tripForm.selectedCity.city === $tripForm.search} />
-				{#if $tripForm.selectedCity && $tripForm.selectedCity.city === $tripForm.search}
-					<button
-						type="button"
-						class="absolute top-2 right-2 text-xs text-blue-600 underline"
-						onclick={resetCitySelection}>
-						변경
-					</button>
-				{/if}
-				{#if showDropdown}
-					<ul
-						class="absolute right-0 left-0 z-10 mt-1 max-h-60 overflow-auto rounded-xl border bg-white shadow-lg">
-						{#if loading}
-							<li class="p-2 text-center text-sm text-gray-400">검색 중...</li>
-						{/if}
-						{#each results as dest}
-							<li
-								class="flex cursor-pointer justify-between px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
-								onmousedown={() => handleSelect(dest)}>
-								<span>{dest.city}</span>
-								<span class="text-gray-400">{dest.country}</span>
-							</li>
-						{/each}
-					</ul>
-				{/if}
-			</div>
+		
+		<!-- Google login button at bottom -->
+		<div class="pb-12 flex flex-col items-center gap-4">
+			<!-- Sign in text -->
+			<p class="text-white text-sm font-medium">Sign In with Social Networks</p>
+			
+			<!-- Google button -->
 			<button
-				type="submit"
-				class="w-full shrink-0 rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-700 md:w-auto md:px-8 md:py-3 md:text-base">
-				➡️ 여행 계획 시작하기
+				onclick={handleGoogleLogin}
+				disabled={loading}
+				class="rounded-full bg-white p-4 shadow-lg transition-all hover:shadow-xl hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed"
+				aria-label="Sign in with Google"
+			>
+				<!-- Google Icon -->
+				<svg class="h-6 w-6" viewBox="0 0 24 24">
+					<path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+					<path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+					<path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+					<path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+				</svg>
 			</button>
-		</form>
-	</section>
-
-	<!-- Recommended Destinations Section -->
-	<section class="border-b bg-gray-50 px-4 py-12 md:py-20">
-		<div class="mx-auto max-w-6xl">
-			<div class="mb-8 text-center">
-				<h2 class="mb-4 hidden text-3xl font-bold text-gray-900 md:block">
-					🌍 Match Trip 서비스 지역
-				</h2>
-				<p class="text-lg text-gray-600">유럽 주요 인기 도시에서 현지 전문가와 함께하세요</p>
-			</div>
-
-			<!-- Destinations Grid - Dynamic from Database -->
-			<div class="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
-				{#each data.destinations as destination, index}
-					<div
-						class="group relative overflow-hidden rounded-xl bg-gray-100 shadow-lg transition-transform hover:scale-105">
-						{#if destination.imageUrl}
-							<img
-								src={destination.imageUrl}
-								alt={destination.city}
-								loading={index < 4 ? 'eager' : 'lazy'}
-								decoding="async"
-								class="aspect-square w-full bg-gray-200 object-cover object-center" />
-						{:else}
-							<img
-								src="https://source.unsplash.com/featured/?{destination.city.toLowerCase()}"
-								alt={destination.city}
-								loading={index < 4 ? 'eager' : 'lazy'}
-								decoding="async"
-								class="aspect-square w-full bg-gray-200 object-cover object-center" />
-						{/if}
-						<div class="absolute inset-0 bg-black/30 transition-all group-hover:bg-black/40"></div>
-						<div
-							class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/70 to-transparent p-6">
-							<h3 class="text-2xl font-bold text-white">{destination.city}</h3>
-							<p class="text-gray-200">{destination.country}</p>
-						</div>
-					</div>
-				{/each}
-
-				{#if data.destinations.length === 0}
-					<div class="col-span-full py-12 text-center">
-						<p class="text-gray-500">아직 등록된 여행지가 없습니다.</p>
-					</div>
-				{/if}
-			</div>
-		</div>
-	</section>
-</div>
-
-<!-- Coming Soon Modal -->
-{#if showComingSoonModal}
-	<div
-		class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black"
-		onclick={closeComingSoonModal}>
-		<div
-			class="mx-4 max-w-md rounded-lg bg-white p-6 shadow-xl"
-			onclick={(e) => e.stopPropagation()}>
-			<div class="text-center">
-				<div class="mb-4 text-4xl">✈️</div>
-				<h3 class="mb-2 text-xl font-bold text-gray-900">해당 서비스 지역은</h3>
-				<h3 class="mb-4 text-xl font-bold text-gray-900">곧 오픈 예정입니다.</h3>
-				<p class="mb-6 text-gray-600">
-					더 많은 여행지에서 현지 전문가와 함께할 수 있도록 준비 중입니다.
-				</p>
-				<button
-					class="rounded-lg bg-blue-600 px-6 py-2 text-white transition-colors hover:bg-blue-700"
-					onclick={closeComingSoonModal}>
-					확인
-				</button>
-			</div>
+			
+			<!-- Copyright text -->
+			<p class="text-white/70 text-xs">© Matchtrip.corp.</p>
 		</div>
 	</div>
-{/if}
+</div>

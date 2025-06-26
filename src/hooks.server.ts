@@ -5,6 +5,48 @@ import { redirect, type Handle } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
+import { dev } from '$app/environment';
+
+const corsHandler = (async ({ event, resolve }) => {
+	// Handle CORS for API routes
+	if (event.url.pathname.startsWith('/api/')) {
+		const allowedOrigins = [
+			'http://localhost:5173',
+			'http://localhost:5174',
+			'https://matchtrip.net',
+			'https://www.matchtrip.net',
+			'https://dev.matchtrip.net'
+		];
+
+		const origin = event.request.headers.get('origin') || '';
+		
+		// In development, be more permissive
+		const isAllowed = dev ? origin.includes('localhost') : allowedOrigins.includes(origin);
+		const allowOrigin = isAllowed ? origin : allowedOrigins[0];
+
+		// Handle preflight requests
+		if (event.request.method === 'OPTIONS') {
+			return new Response(null, {
+				status: 200,
+				headers: {
+					'Access-Control-Allow-Origin': allowOrigin,
+					'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+					'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+					'Access-Control-Allow-Credentials': 'true',
+					'Access-Control-Max-Age': '86400'
+				}
+			});
+		}
+
+		// Add CORS headers to the response
+		const response = await resolve(event);
+		response.headers.set('Access-Control-Allow-Origin', allowOrigin);
+		response.headers.set('Access-Control-Allow-Credentials', 'true');
+		return response;
+	}
+
+	return resolve(event);
+}) satisfies Handle;
 
 const betterAuthHandler = (async ({ event, resolve }) => {
 	return svelteKitHandler({ event, resolve, auth });
@@ -61,15 +103,35 @@ const authorizationHandler = (async ({ event, resolve }) => {
 
 	// Handle auth route redirects - redirect to role-based pages
 	if (routeId?.startsWith('/(auth)') && session && event.locals.user) {
-		if (event.locals.user.role === 'guide') {
+		// Check if user has a role (Google OAuth users might not have one)
+		if (!event.locals.user.role) {
+			redirect(302, '/select-role');
+		} else if (event.locals.user.role === 'guide') {
 			redirect(302, '/trips');
 		} else {
 			redirect(302, '/my-trips');
 		}
 	}
 
+	// Handle OAuth callback redirects - when coming from Google OAuth
+	if (routeId === '/' && session && event.locals.user && event.request.headers.get('referer')?.includes('/api/auth/callback/google')) {
+		// Check if user has a role (Google OAuth users might not have one)
+		if (!event.locals.user.role) {
+			redirect(302, '/select-role');
+		} else if (event.locals.user.role === 'guide') {
+			redirect(302, '/my-offers');
+		} else {
+			redirect(302, '/my-trips');
+		}
+	}
+
+	// Check if user needs to select a role (for Google OAuth users)
+	if (session && event.locals.user && !event.locals.user.role && routeId !== '/select-role' && !routeId?.startsWith('/api')) {
+		redirect(302, '/select-role');
+	}
+
 	// Check email verification for protected routes (exclude verify-email and API routes)
-	const unverifiedAllowedRoutes = ['/verify-email', '/api', '/(auth)'];
+	const unverifiedAllowedRoutes = ['/verify-email', '/api', '/(auth)', '/select-role'];
 	const isUnverifiedAllowed = unverifiedAllowedRoutes.some((route) => routeId?.includes(route));
 	
 	if (session?.user && event.locals.user && !event.locals.user.emailVerified && !isUnverifiedAllowed) {
@@ -110,4 +172,4 @@ const authorizationHandler = (async ({ event, resolve }) => {
 	return resolve(event);
 }) satisfies Handle;
 
-export const handle = sequence(betterAuthHandler, authorizationHandler);
+export const handle = sequence(corsHandler, betterAuthHandler, authorizationHandler);

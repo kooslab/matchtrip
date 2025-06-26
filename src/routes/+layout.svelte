@@ -2,6 +2,7 @@
 	import '../app.css';
 	import Footer from '$lib/components/Footer.svelte';
 	import NavigationLink from '$lib/components/NavigationLink.svelte';
+	import BottomNav from '$lib/components/BottomNav.svelte';
 	import { page } from '$app/stores';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { navigating } from '$app/stores';
@@ -66,6 +67,7 @@
 {/if}
 
 <!-- Mobile Navbar - Don't show on admin pages -->
+<!-- 
 {#if !$page.url.pathname.startsWith('/admin')}
 <nav class="fixed top-0 left-0 z-40 w-full bg-white shadow md:hidden">
 	<div class="flex items-center justify-between px-4 py-3">
@@ -84,11 +86,9 @@
 			</svg>
 		</button>
 	</div>
-	<!-- Sidebar Overlay -->
 	{#if isOpen}
 		<div class="fixed inset-0 z-40 bg-black/30" onclick={() => closeMenu()}></div>
 	{/if}
-	<!-- Sidebar -->
 	<div
 		class="fixed top-0 left-0 z-50 h-full w-64 bg-white shadow-lg transition-transform duration-200 ease-in-out {isOpen
 			? 'translate-x-0'
@@ -100,13 +100,8 @@
 				type="button"
 				onclick={() => closeMenu()}
 				aria-label="Close menu"
-				class="flex h-10 w-10 touch-manipulation items-center justify-center rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:ring-2 focus:ring-blue-500 focus:outline-none">
-				<svg
-					class="h-6 w-6"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke="currentColor"
-					aria-hidden="true">
+				class="relative z-50 flex h-10 w-10 touch-manipulation items-center justify-center rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+				<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
 					<path
 						stroke-linecap="round"
 						stroke-linejoin="round"
@@ -115,121 +110,124 @@
 				</svg>
 			</button>
 		</div>
-		<ul class="flex flex-col gap-2 px-6 py-6">
+		<ul class="space-y-2 px-4 py-6">
 			<li>
-				<NavigationLink
+				<a
 					href="/"
-					class="block py-2 font-medium text-gray-800 hover:text-blue-600"
-					onclick={() => closeMenu()}>홈</NavigationLink>
+					onclick={() => closeMenu()}
+					class="block rounded-md px-3 py-2 font-medium text-gray-800 hover:bg-gray-100 hover:text-blue-600">
+					홈
+				</a>
 			</li>
 
 			{#if isLoggedIn}
-				<!-- Logged in menu items -->
 				{#if !isGuide}
 					<li>
-						<NavigationLink
+						<a
 							href="/my-trips"
-							class="block py-2 font-medium text-gray-800 hover:text-blue-600"
-							onclick={() => closeMenu()}>나의 여행</NavigationLink>
+							onclick={() => closeMenu()}
+							class="block rounded-md px-3 py-2 font-medium text-gray-800 hover:bg-gray-100 hover:text-blue-600">
+							나의 여행
+						</a>
 					</li>
 					<li>
-						<NavigationLink
+						<a
 							href="/order-history"
-							class="block py-2 font-medium text-gray-800 hover:text-blue-600"
-							onclick={() => closeMenu()}>주문 내역</NavigationLink>
+							onclick={() => closeMenu()}
+							class="block rounded-md px-3 py-2 font-medium text-gray-800 hover:bg-gray-100 hover:text-blue-600">
+							주문 내역
+						</a>
 					</li>
 					{#if isTraveler}
 						<li>
-							<NavigationLink
+							<a
 								href="/profile/traveler"
-								class="block py-2 font-medium text-gray-800 hover:text-blue-600"
-								onclick={() => closeMenu()}>내 프로필</NavigationLink>
+								onclick={() => closeMenu()}
+								class="block rounded-md px-3 py-2 font-medium text-gray-800 hover:bg-gray-100 hover:text-blue-600">
+								내 프로필
+							</a>
 						</li>
 					{/if}
 				{/if}
 				{#if isGuide}
 					<li>
-						<NavigationLink
+						<a
 							href="/trips"
-							class="block py-2 font-medium text-gray-800 hover:text-blue-600"
-							onclick={() => closeMenu()}>여행찾기</NavigationLink>
+							onclick={() => closeMenu()}
+							class="block rounded-md px-3 py-2 font-medium text-gray-800 hover:bg-gray-100 hover:text-blue-600">
+							여행찾기
+						</a>
 					</li>
 					<li>
-						<NavigationLink
+						<a
 							href="/my-offers"
-							class="block py-2 font-medium text-gray-800 hover:text-blue-600"
-							onclick={() => closeMenu()}>나의 제안</NavigationLink>
+							onclick={() => closeMenu()}
+							class="block rounded-md px-3 py-2 font-medium text-gray-800 hover:bg-gray-100 hover:text-blue-600">
+							나의 제안
+						</a>
 					</li>
 					<li>
-						<NavigationLink
+						<a
 							href="/profile/guide"
-							class="block py-2 font-medium text-gray-800 hover:text-blue-600"
-							onclick={() => closeMenu()}>내 프로필</NavigationLink>
+							onclick={() => closeMenu()}
+							class="block rounded-md px-3 py-2 font-medium text-gray-800 hover:bg-gray-100 hover:text-blue-600">
+							내 프로필
+						</a>
 					</li>
 				{/if}
 
-				<!-- Conversations link for both travelers and guides -->
-				{#if isTraveler || isGuide}
-					<li>
-						<NavigationLink
-							href="/conversations"
-							class="block py-2 font-medium text-gray-800 hover:text-blue-600"
-							onclick={() => closeMenu()}>대화 목록</NavigationLink>
-					</li>
-				{/if}
-
-				<!-- Admin Dashboard link -->
 				{#if isAdmin}
 					<li>
-						<NavigationLink
+						<a
 							href="/admin"
-							class="flex items-center gap-2 py-2 font-medium text-gray-800 hover:text-blue-600"
-							onclick={() => closeMenu()}>
-							<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-							</svg>
-							관리자 대시보드
-						</NavigationLink>
+							onclick={() => closeMenu()}
+							class="block rounded-md px-3 py-2 font-medium text-gray-800 hover:bg-gray-100 hover:text-blue-600">
+							<div class="flex items-center gap-2">
+								<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+								</svg>
+								관리자 대시보드
+							</div>
+						</a>
 					</li>
 				{/if}
 
-				<li>
-					<div class="my-2 border-t border-gray-200"></div>
-				</li>
-				<li>
-					<div class="px-2 py-1 text-sm text-gray-500">
-						안녕하세요, {user?.name || '사용자'}님
+				<li class="mt-6 border-t pt-6">
+					<div class="px-3">
+						<div class="mb-4 text-sm text-gray-600">안녕하세요, {user?.name || '사용자'}님</div>
+						<button
+							onclick={handleLogout}
+							class="flex w-full items-center justify-center rounded-md bg-red-600 px-4 py-2 font-medium text-white hover:bg-red-700">
+							로그아웃
+						</button>
 					</div>
 				</li>
-				<li>
-					<button
-						type="button"
-						onclick={() => handleLogout()}
-						class="block w-full py-2 text-left font-medium text-red-600 hover:text-red-700">
-						로그아웃
-					</button>
-				</li>
 			{:else}
-				<!-- Not logged in menu items -->
 				<li>
-					<NavigationLink
+					<a
 						href="/signin"
-						class="block py-2 font-medium text-gray-800 hover:text-blue-600"
-						onclick={() => closeMenu()}>로그인</NavigationLink>
+						onclick={() => closeMenu()}
+						class="block rounded-md px-3 py-2 font-medium text-gray-800 hover:bg-gray-100 hover:text-blue-600">
+						로그인
+					</a>
 				</li>
 				<li>
-					<NavigationLink
+					<a
 						href="/signup"
-						class="block py-2 font-medium text-gray-800 hover:text-blue-600"
-						onclick={closeMenu}>회원가입</NavigationLink>
+						onclick={() => closeMenu()}
+						class="block rounded-md px-3 py-2 font-medium text-gray-800 hover:bg-gray-100 hover:text-blue-600">
+						회원가입
+					</a>
 				</li>
 			{/if}
 		</ul>
 	</div>
 </nav>
 {/if}
+-->
 
 <!-- Desktop Navbar - Don't show on admin pages -->
+<!-- 
 {#if !$page.url.pathname.startsWith('/admin')}
 <nav class="hidden items-center justify-between bg-white/90 px-8 py-4 shadow md:flex">
 	<a href="/" class="text-lg font-bold text-blue-600">MatchTrip</a>
@@ -240,7 +238,6 @@
 		</li>
 
 		{#if isLoggedIn}
-			<!-- Logged in desktop menu -->
 			{#if !isGuide}
 				<li>
 					<NavigationLink href="/my-trips" class="font-medium text-gray-800 hover:text-blue-600"
@@ -273,7 +270,6 @@
 				</li>
 			{/if}
 
-			<!-- Admin Dashboard link for desktop -->
 			{#if isAdmin}
 				<li>
 					<NavigationLink href="/admin" class="flex items-center gap-2 font-medium text-gray-800 hover:text-blue-600">
@@ -294,7 +290,6 @@
 				</div>
 			</li>
 		{:else}
-			<!-- Not logged in desktop menu -->
 			<li>
 				<NavigationLink href="/signin" class="font-medium text-gray-800 hover:text-blue-600"
 					>로그인</NavigationLink>
@@ -307,10 +302,16 @@
 	</ul>
 </nav>
 {/if}
+-->
 
-<div class="flex min-h-screen flex-col {$page.url.pathname.startsWith('/admin') ? '' : 'pt-16 md:pt-20'}">
+<div class="flex min-h-screen flex-col {isTraveler && !$page.url.pathname.startsWith('/admin') ? 'pb-20' : ''}">
 	<slot />
-	{#if !$page.url.pathname.startsWith('/admin')}
+	<!-- {#if !$page.url.pathname.startsWith('/admin')}
 		<Footer />
+	{/if} -->
+	
+	<!-- Bottom Navigation for Travelers -->
+	{#if isTraveler && !$page.url.pathname.startsWith('/admin') && !$page.url.pathname.startsWith('/signin') && !$page.url.pathname.startsWith('/signup') && $page.url.pathname !== '/'}
+		<BottomNav />
 	{/if}
 </div>
