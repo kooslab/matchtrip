@@ -60,6 +60,7 @@ export const load = async ({ locals }) => {
 		.orderBy(trips.createdAt);
 
 	return {
-		trips: availableTrips
+		trips: availableTrips,
+		userRole: user?.role || null
 	};
 };

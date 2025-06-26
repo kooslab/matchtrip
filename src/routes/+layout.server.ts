@@ -34,7 +34,8 @@ export const load = async ({ request, locals }) => {
 						id: true,
 						role: true,
 						name: true,
-						email: true
+						email: true,
+						emailVerified: true
 					}
 				});
 
@@ -48,7 +49,8 @@ export const load = async ({ request, locals }) => {
 						id: user.id,
 						role: user.role,
 						name: user.name,
-						email: user.email
+						email: user.email,
+						emailVerified: user.emailVerified
 					};
 					locals.session = session;
 					console.log('Layout server - User cached in locals:', user.email, 'Role:', user.role);

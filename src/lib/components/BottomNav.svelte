@@ -25,7 +25,7 @@
 	<!-- Floating Create Trip Button -->
 	<button 
 		class="absolute -top-12 right-4 flex items-center gap-1 bg-[#1095f4] text-white px-3.5 py-3 rounded-[20px] shadow-[0px_2px_4px_0px_rgba(0,0,0,0.08)] hover:shadow-lg transition-shadow"
-		onclick={() => goto('/app/trips/new')}
+		onclick={() => goto('/new-trip')}
 	>
 		<span class="text-xs font-bold whitespace-nowrap">새 여행 만들기</span>
 		<Plus class="w-3 h-3 opacity-80" />

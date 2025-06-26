@@ -4,19 +4,50 @@
 	import { invalidateAll } from '$app/navigation';
 	import Button from '$lib/components/Button.svelte';
 	import { resetAllStores } from '$lib/stores/resetStores';
+	import { browser } from '$app/environment';
 
 	let error = $state('');
 	let isLoading = $state(false);
 
 	async function handleGoogleSignIn() {
 		isLoading = true;
+		error = '';
 		try {
-			await signIn.social({
+			console.log('[SIGNIN] Initiating Google sign-in');
+			const result = await signIn.social({
 				provider: 'google'
 			});
+			console.log('[SIGNIN] Google sign-in result:', result);
 		} catch (err) {
-			console.error('Google sign in error:', err);
-			error = 'Google 로그인에 실패했습니다.';
+			console.error('[SIGNIN] Google sign in error:', err);
+			console.error('[SIGNIN] Error details:', {
+				message: err?.message,
+				stack: err?.stack,
+				response: err?.response
+			});
+			
+			// Log error to server
+			if (browser) {
+				try {
+					await fetch('/api/auth/errors', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({
+							type: 'signin',
+							message: 'Google sign-in failed',
+							details: {
+								error: err?.message,
+								userAgent: navigator.userAgent,
+								timestamp: new Date().toISOString()
+							}
+						})
+					});
+				} catch (logError) {
+					console.error('[SIGNIN] Failed to log error:', logError);
+				}
+			}
+			
+			error = err?.message || 'Google 로그인에 실패했습니다.';
 		} finally {
 			isLoading = false;
 		}

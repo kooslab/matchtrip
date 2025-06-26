@@ -72,7 +72,7 @@
 	}
 
 	function goToCreateTrip() {
-		goto('/create-trip');
+		goto('/new-trip');
 	}
 
 	async function goToTripDetails(tripId: string) {

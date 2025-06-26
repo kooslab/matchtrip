@@ -6,6 +6,7 @@
 	let { data } = $props();
 
 	let trips = $derived(data.trips);
+	let userRole = $derived(data.userRole);
 
 	// Loading state for proposal navigation
 	let navigatingTripId = $state<string | null>(null);
@@ -55,7 +56,13 @@
 <div class="container mx-auto px-4 py-8">
 	<div class="mb-8">
 		<h1 class="mb-2 text-3xl font-bold text-gray-900">여행찾기</h1>
-		<p class="text-gray-600">가이드할 수 있는 여행을 찾아보세요</p>
+		<p class="text-gray-600">
+			{#if userRole === 'guide'}
+				가이드할 수 있는 여행을 찾아보세요
+			{:else}
+				다양한 여행을 둘러보세요
+			{/if}
+		</p>
 	</div>
 
 	{#if trips.length === 0}
@@ -69,8 +76,20 @@
 						d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
 				</svg>
 			</div>
-			<h3 class="mb-2 text-lg font-medium text-gray-900">현재 이용 가능한 여행이 없습니다</h3>
-			<p class="text-gray-500">새로운 여행 요청이 들어오면 알려드릴게요!</p>
+			<h3 class="mb-2 text-lg font-medium text-gray-900">
+				{#if userRole === 'guide'}
+					현재 가이드할 수 있는 여행이 없습니다
+				{:else}
+					현재 이용 가능한 여행이 없습니다
+				{/if}
+			</h3>
+			<p class="text-gray-500">
+				{#if userRole === 'guide'}
+					새로운 여행 요청이 들어오면 알려드릴게요!
+				{:else}
+					곧 새로운 여행이 등록될 예정입니다.
+				{/if}
+			</p>
 		</div>
 	{:else}
 		<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

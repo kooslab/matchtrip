@@ -6,6 +6,7 @@ import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { dev } from '$app/environment';
+import { authErrorLogger } from '$lib/utils/authErrorLogger';
 
 const corsHandler = (async ({ event, resolve }) => {
 	// Handle CORS for API routes
@@ -67,6 +68,7 @@ const authorizationHandler = (async ({ event, resolve }) => {
 		// Store session in locals for use in page server functions
 		if (session) {
 			event.locals.session = session;
+			console.log('[HOOKS] Session found for user:', session.user?.email);
 		}
 
 		// If user is logged in, fetch their full user data including role
@@ -79,20 +81,28 @@ const authorizationHandler = (async ({ event, resolve }) => {
 						id: true,
 						role: true,
 						name: true,
-						email: true
+						email: true,
+						emailVerified: true
 					}
 				});
 
 				if (user) {
 					event.locals.user = user;
-					console.log('Hooks - User loaded in locals:', user.email, 'Role:', user.role);
+					console.log('Hooks - User loaded in locals:', user.email, 'Role:', user.role, 'EmailVerified:', user.emailVerified);
 				}
 			} catch (error) {
-				console.error('Hooks - Failed to fetch user:', error);
+				authErrorLogger.log('db', 'Failed to fetch user from database', {
+					userId: session.user.id,
+					error: error?.message
+				}, error as Error);
 			}
 		}
 	} catch (error) {
-		console.error('Hooks - Critical error in session handling:', error);
+		authErrorLogger.log('session', 'Critical error in session handling', {
+			route: routeId,
+			error: error?.message,
+			url: event.url.pathname
+		}, error as Error);
 		// Clean up session data on error
 		event.locals.session = undefined;
 		event.locals.user = undefined;
@@ -105,6 +115,8 @@ const authorizationHandler = (async ({ event, resolve }) => {
 		// Check if user has a role (Google OAuth users might not have one)
 		if (!event.locals.user.role) {
 			redirect(302, '/select-role');
+		} else if (event.locals.user.role === 'admin') {
+			redirect(302, '/admin');
 		} else if (event.locals.user.role === 'guide') {
 			redirect(302, '/trips');
 		} else {
@@ -117,6 +129,8 @@ const authorizationHandler = (async ({ event, resolve }) => {
 		// Check if user has a role (Google OAuth users might not have one)
 		if (!event.locals.user.role) {
 			redirect(302, '/select-role');
+		} else if (event.locals.user.role === 'admin') {
+			redirect(302, '/admin');
 		} else if (event.locals.user.role === 'guide') {
 			redirect(302, '/my-offers');
 		} else {
@@ -139,6 +153,11 @@ const authorizationHandler = (async ({ event, resolve }) => {
 	const guideOnlyRoutes = ['/trips', '/offers', '/my-offers'];
 	const isGuideOnlyRoute = guideOnlyRoutes.some((route) => routeId?.includes(route));
 	const isAdminRoute = routeId?.startsWith('/admin');
+
+	// Allow admin users to access any route
+	if (event.locals.user?.role === 'admin') {
+		return resolve(event);
+	}
 
 	if (
 		isGuideOnlyRoute &&

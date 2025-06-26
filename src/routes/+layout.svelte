@@ -3,6 +3,7 @@
 	import Footer from '$lib/components/Footer.svelte';
 	import NavigationLink from '$lib/components/NavigationLink.svelte';
 	import BottomNav from '$lib/components/BottomNav.svelte';
+	import GuideBottomNav from '$lib/components/GuideBottomNav.svelte';
 	import { page } from '$app/stores';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { navigating } from '$app/stores';
@@ -312,14 +313,24 @@
 {/if}
 -->
 
-<div class="flex min-h-screen flex-col {isTraveler && !$page.url.pathname.startsWith('/admin') ? 'pb-20' : ''}">
+{#if $page.url.pathname.startsWith('/admin')}
+	<!-- Admin layout has its own structure, don't wrap it -->
 	<slot />
-	<!-- {#if !$page.url.pathname.startsWith('/admin')}
-		<Footer />
-	{/if} -->
-	
-	<!-- Bottom Navigation for Travelers -->
-	{#if isTraveler && !$page.url.pathname.startsWith('/admin') && !$page.url.pathname.startsWith('/signin') && !$page.url.pathname.startsWith('/signup') && $page.url.pathname !== '/'}
-		<BottomNav />
-	{/if}
-</div>
+{:else}
+	<div class="flex min-h-screen flex-col {(isTraveler || isGuide) ? 'pb-20' : ''}">
+		<slot />
+		<!-- {#if !$page.url.pathname.startsWith('/admin')}
+			<Footer />
+		{/if} -->
+		
+		<!-- Bottom Navigation for Travelers -->
+		{#if isTraveler && !$page.url.pathname.startsWith('/signin') && !$page.url.pathname.startsWith('/signup') && $page.url.pathname !== '/'}
+			<BottomNav />
+		{/if}
+		
+		<!-- Bottom Navigation for Guides -->
+		{#if isGuide && !$page.url.pathname.startsWith('/signin') && !$page.url.pathname.startsWith('/signup') && $page.url.pathname !== '/'}
+			<GuideBottomNav />
+		{/if}
+	</div>
+{/if}

@@ -23,12 +23,13 @@ export const users = pgTable(
 		id: uuid('id').primaryKey().defaultRandom(),
 		name: text('name').notNull(),
 		email: text('email').notNull().unique(),
+		emailVerified: boolean('email_verified').notNull().default(false),
 		image: text('image'),
 		role: userRoleEnum('role'),
 		phone: text('phone'),
 		birthDate: date('birth_date'),
-		createdAt: timestamp('created_at').notNull(),
-		updatedAt: timestamp('updated_at').notNull()
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at').defaultNow().notNull()
 	},
 	(table) => ({
 		// Add indexes for frequently queried columns
@@ -49,7 +50,7 @@ export const userAgreements = pgTable('user_agreements', {
 	termsAgreedAt: timestamp('terms_agreed_at'),
 	privacyAgreedAt: timestamp('privacy_agreed_at'),
 	marketingAgreedAt: timestamp('marketing_agreed_at'),
-	updatedAt: timestamp('updated_at').notNull()
+	updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
 // Guide profiles table for additional guide information
@@ -116,8 +117,8 @@ export const sessions = pgTable('sessions', {
 	id: uuid('id').primaryKey().defaultRandom(),
 	expiresAt: timestamp('expires_at').notNull(),
 	token: text('token').notNull().unique(),
-	createdAt: timestamp('created_at').notNull(),
-	updatedAt: timestamp('updated_at').notNull(),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull(),
 	ipAddress: text('ip_address'),
 	userAgent: text('user_agent'),
 	userId: uuid('user_id')
@@ -138,8 +139,8 @@ export const accounts = pgTable('accounts', {
 	accessTokenExpiresAt: timestamp('access_token_expires_at'),
 	refreshTokenExpiresAt: timestamp('refresh_token_expires_at'),
 	scope: text('scope'),
-	createdAt: timestamp('created_at').notNull(),
-	updatedAt: timestamp('updated_at').notNull()
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
 // Rate limit table for better-auth
@@ -148,8 +149,18 @@ export const rateLimits = pgTable('rate_limits', {
 	key: text('key').notNull().unique(),
 	points: integer('points').notNull(),
 	expiresAt: timestamp('expires_at').notNull(),
-	createdAt: timestamp('created_at').notNull(),
-	updatedAt: timestamp('updated_at').notNull()
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Verifications table for better-auth (required even without email/password auth)
+export const verifications = pgTable('verifications', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	identifier: text('identifier').notNull(),
+	value: text('value').notNull(),
+	expiresAt: timestamp('expires_at').notNull(),
+	createdAt: timestamp('created_at'),
+	updatedAt: timestamp('updated_at')
 });
 
 export const destinations = pgTable(

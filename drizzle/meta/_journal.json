@@ -113,6 +113,27 @@
       "when": 1750943446643,
       "tag": "0015_unique_roughhouse",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1750943844489,
+      "tag": "0016_supreme_vertigo",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1750944069212,
+      "tag": "0017_huge_sharon_carter",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1750944823564,
+      "tag": "0018_lumpy_morlocks",
+      "breakpoints": true
     }
   ]
 }

@@ -55,8 +55,10 @@
 						? 'bg-pink-50 text-pink-600 border-r-4 border-pink-600'
 						: ''}"
 				>
-					<svelte:component this={item.icon} class="h-5 w-5" />
-					{item.name}
+					<div class="h-5 w-5 flex-shrink-0">
+						<svelte:component this={item.icon} class="h-full w-full" />
+					</div>
+					<span>{item.name}</span>
 				</a>
 			{/each}
 		</nav>
@@ -65,8 +67,10 @@
 				href="/"
 				class="flex items-center gap-3 text-gray-700 hover:text-blue-600"
 			>
-				<Home class="h-5 w-5" />
-				홈페이지로 돌아가기
+				<div class="h-5 w-5 flex-shrink-0">
+					<Home class="h-full w-full" />
+				</div>
+				<span>홈페이지로 돌아가기</span>
 			</a>
 			<button
 				onclick={async () => {
@@ -85,8 +89,10 @@
 				}}
 				class="flex items-center gap-3 text-gray-700 hover:text-red-600 w-full text-left"
 			>
-				<LogOut class="h-5 w-5" />
-				로그아웃
+				<div class="h-5 w-5 flex-shrink-0">
+					<LogOut class="h-full w-full" />
+				</div>
+				<span>로그아웃</span>
 			</button>
 		</div>
 	</div>

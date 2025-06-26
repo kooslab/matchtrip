@@ -253,22 +253,25 @@
 			imagePreview = '';
 			selectedFile = null;
 			
-			// Update the list optimistically
+			// For new destinations, we need to refresh the entire list to get proper sorting
+			// and ensure we have all the fields populated correctly
 			if (mode === 'add') {
-				data.destinations = [...data.destinations, savedDestination];
+				// Immediately refresh the data to get the complete list with proper sorting
+				await invalidateAll();
 			} else {
+				// For updates, replace the existing destination
 				data.destinations = data.destinations.map(d => 
 					d.id === savedDestination.id ? savedDestination : d
 				);
+				
+				// If we're editing from the detail view, update selectedDestination too
+				if (selectedDestination && selectedDestination.id === savedDestination.id) {
+					selectedDestination = savedDestination;
+				}
 			}
 			
 			// Update cache timestamp
 			lastFetchTime = Date.now();
-			
-			// Reload data in background only if cache is stale
-			if (isStale) {
-				invalidateAll();
-			}
 		} catch (error) {
 			console.error('Save error:', error);
 			if (error instanceof Error && error.message.includes('already exists')) {
@@ -350,12 +353,19 @@
 				throw new Error('Failed to update destination');
 			}
 
-			// Refresh data and update selected destination
-			await invalidateAll();
-			const updatedDestination = data.destinations.find(d => d.id === selectedDestination.id);
-			if (updatedDestination) {
-				selectedDestination = updatedDestination;
-			}
+			// Get the updated destination from the response
+			const updatedDestination = await updateResponse.json();
+			
+			// Update the destination in the list
+			data.destinations = data.destinations.map(d => 
+				d.id === updatedDestination.id ? updatedDestination : d
+			);
+			
+			// Update the selected destination to show the new image immediately
+			selectedDestination = updatedDestination;
+			
+			// Update cache timestamp
+			lastFetchTime = Date.now();
 		} catch (error) {
 			console.error('Upload error:', error);
 			alert(error instanceof Error ? error.message : 'Failed to upload image');

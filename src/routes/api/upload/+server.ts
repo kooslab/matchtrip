@@ -94,9 +94,9 @@ export const POST: RequestHandler = async ({ request }) => {
 
 				// Return the appropriate URL based on bucket type
 				let publicUrl: string;
-				if (uploadedToPublicBucket && R2_ACCOUNT_ID) {
-					// For public bucket, use the direct R2 public URL
-					publicUrl = `https://pub-${R2_ACCOUNT_ID}.r2.dev/${filename}`;
+				if (uploadedToPublicBucket && R2_PUBLIC_URL) {
+					// For public bucket, use the configured public URL
+					publicUrl = `${R2_PUBLIC_URL}/${filename}`;
 				} else {
 					// For private bucket, use our API endpoint
 					publicUrl = `/api/images/${filename}`;
