@@ -43,18 +43,26 @@
 			// Reset all client-side stores first
 			resetAllStores();
 			
-			// Sign out using better-auth
-			await signOut();
-			
-			// Invalidate all cached data
-			await invalidateAll();
-			
-			// Navigate to signin page
-			await goto('/signin');
+			// Sign out using better-auth with proper callback
+			await signOut({
+				fetchOptions: {
+					onSuccess: () => {
+						// Clear any remaining browser storage
+						if (typeof window !== 'undefined') {
+							sessionStorage.clear();
+							localStorage.clear();
+							// Force a hard reload to clear all state
+							window.location.href = '/';
+						}
+					}
+				}
+			});
 		} catch (error) {
 			console.error('Logout error:', error);
-			// Even on error, try to navigate away
-			await goto('/signin');
+			// Force reload on error
+			if (typeof window !== 'undefined') {
+				window.location.href = '/';
+			}
 		}
 	}
 </script>

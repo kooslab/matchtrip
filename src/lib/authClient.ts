@@ -5,14 +5,24 @@ import { env } from '$env/dynamic/public';
 const getBaseUrl = () => {
 	if (typeof window !== 'undefined') {
 		// In browser environments, use the environment variable or current origin
-		return env.PUBLIC_BETTER_AUTH_URL || window.location.origin;
+		const url = env.PUBLIC_BETTER_AUTH_URL || window.location.origin;
+		console.log('[AUTH CLIENT] Browser - Base URL:', url);
+		console.log('[AUTH CLIENT] Browser - env.PUBLIC_BETTER_AUTH_URL:', env.PUBLIC_BETTER_AUTH_URL);
+		console.log('[AUTH CLIENT] Browser - window.location.origin:', window.location.origin);
+		return url;
 	}
 	// In SSR, use environment variable or localhost as fallback
-	return env.PUBLIC_BETTER_AUTH_URL || 'http://localhost:5173';
+	const url = env.PUBLIC_BETTER_AUTH_URL || 'http://localhost:5173';
+	console.log('[AUTH CLIENT] SSR - Base URL:', url);
+	console.log('[AUTH CLIENT] SSR - env.PUBLIC_BETTER_AUTH_URL:', env.PUBLIC_BETTER_AUTH_URL);
+	return url;
 };
 
+const baseURL = getBaseUrl();
+console.log('[AUTH CLIENT] Creating auth client with baseURL:', baseURL);
+
 export const authClient = createAuthClient({
-	baseURL: getBaseUrl() // dynamically determine the base URL
+	baseURL // dynamically determine the base URL
 });
 
 export const { 

@@ -4,12 +4,22 @@ import { users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 
 export const load = async ({ request, locals }) => {
+	console.log('[LAYOUT SERVER] Starting load function');
+	console.log('[LAYOUT SERVER] Request URL:', request.url);
+	console.log('[LAYOUT SERVER] Request headers:', Object.fromEntries(request.headers.entries()));
+	
 	try {
+		console.log('[LAYOUT SERVER] Getting session from auth.api');
 		const session = await auth.api.getSession({
 			headers: request.headers
 		});
 
-		console.log('Layout server - Session exists:', !!session, 'User ID:', session?.user?.id);
+		console.log('[LAYOUT SERVER] Session result:', JSON.stringify({
+			exists: !!session,
+			userId: session?.user?.id,
+			userEmail: session?.user?.email,
+			sessionId: session?.session?.id
+		}, null, 2));
 
 		let userRole = null;
 		let fullUser = null;
@@ -58,14 +68,25 @@ export const load = async ({ request, locals }) => {
 			console.log('Layout server - No session found');
 		}
 
-		return {
+		const returnData = {
 			user: session?.user ?? null,
 			session: session?.session ?? null,
 			userRole,
 			fullUser
 		};
+		
+		console.log('[LAYOUT SERVER] Returning data:', JSON.stringify({
+			hasUser: !!returnData.user,
+			hasSession: !!returnData.session,
+			userRole: returnData.userRole,
+			hasFullUser: !!returnData.fullUser
+		}, null, 2));
+		
+		return returnData;
 	} catch (error) {
-		console.error('Layout server - Critical error:', error);
+		console.error('[LAYOUT SERVER] Critical error:', error);
+		console.error('[LAYOUT SERVER] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+		
 		// Return safe defaults on error
 		return {
 			user: null,

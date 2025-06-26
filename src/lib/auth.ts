@@ -3,6 +3,14 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { db } from './server/db';
 import { sendVerificationEmail, sendPasswordResetEmail } from './server/email';
 import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from '$env/static/private';
+import { PUBLIC_BETTER_AUTH_URL } from '$env/static/public';
+
+const getAuthUrl = () => {
+	const url = PUBLIC_BETTER_AUTH_URL || 'http://localhost:5173';
+	console.log('[AUTH CONFIG] Auth URL:', url);
+	console.log('[AUTH CONFIG] PUBLIC_BETTER_AUTH_URL:', PUBLIC_BETTER_AUTH_URL);
+	return url;
+};
 
 export const auth = betterAuth({
 	database: drizzleAdapter(db, { provider: 'pg' }),
@@ -13,7 +21,8 @@ export const auth = betterAuth({
 		google: {
 			clientId: GOOGLE_CLIENT_ID,
 			clientSecret: GOOGLE_CLIENT_SECRET,
-			redirectURI: '/api/auth/callback/google'
+			redirectURI: `${getAuthUrl()}/api/auth/callback/google`,
+			prompt: "select_account" // Force account selection on each login
 		}
 	},
 	emailAndPassword: {

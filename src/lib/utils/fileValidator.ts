@@ -47,7 +47,11 @@ export function formatFileSize(bytes: number): string {
  * Get file extension from filename
  */
 function getFileExtension(filename: string): string {
-	return filename.toLowerCase().substring(filename.lastIndexOf('.'));
+	const lastDotIndex = filename.lastIndexOf('.');
+	if (lastDotIndex === -1) {
+		return ''; // No extension found
+	}
+	return filename.toLowerCase().substring(lastDotIndex);
 }
 
 /**

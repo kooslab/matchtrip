@@ -32,30 +32,57 @@
 
 	async function handleSubmit(event: Event) {
 		event.preventDefault();
+		console.log('[SIGNIN CLIENT] Form submitted');
+		console.log('[SIGNIN CLIENT] Email:', email);
+		console.log('[SIGNIN CLIENT] Password length:', password.length);
+		
 		isLoading = true;
 		try {
+			console.log('[SIGNIN CLIENT] Starting sign in process...');
 			const result = await signIn.email({
 				email,
 				password,
 				rememberMe: true
 			});
+			
+			console.log('[SIGNIN CLIENT] Sign in result:', result);
+			console.log('[SIGNIN CLIENT] Result type:', typeof result);
+			console.log('[SIGNIN CLIENT] Result keys:', result ? Object.keys(result) : 'null');
 			if (result.error) {
-				console.error('signIn error', result.error);
-				error = result.error.message ?? '알 수 없는 오류가 발생했습니다.';
+				console.error('signIn error - full error object:', result.error);
+				console.error('signIn error - error type:', typeof result.error);
+				console.error('signIn error - error keys:', result.error ? Object.keys(result.error) : 'null');
+				
+				// Safely extract error message
+				if (result.error && typeof result.error === 'object' && 'message' in result.error) {
+					error = String(result.error.message) || '알 수 없는 오류가 발생했습니다.';
+				} else if (typeof result.error === 'string') {
+					error = result.error;
+				} else {
+					error = '알 수 없는 오류가 발생했습니다.';
+				}
 			} else {
+				console.log('[SIGNIN CLIENT] Sign in successful');
+				
 				// 로그인 성공 - 먼저 모든 스토어 리셋
+				console.log('[SIGNIN CLIENT] Resetting all stores');
 				resetAllStores();
 				
 				// 모든 데이터 무효화
+				console.log('[SIGNIN CLIENT] Invalidating all data');
 				await invalidateAll();
 
 				// Wait a bit to ensure session is properly established
+				console.log('[SIGNIN CLIENT] Waiting for session establishment');
 				await new Promise(resolve => setTimeout(resolve, 100));
 
 				// Get user role from the result or make a quick API call
 				try {
+					console.log('[SIGNIN CLIENT] Fetching user role');
 					const response = await fetch('/api/user/role');
+					console.log('[SIGNIN CLIENT] Role response status:', response.status);
 					const data = await response.json();
+					console.log('[SIGNIN CLIENT] Role data:', data);
 
 					if (data.role === 'guide') {
 						await goto('/trips');
@@ -67,6 +94,10 @@
 					await goto('/');
 				}
 			}
+		} catch (err) {
+			console.error('Caught error during sign in:', err);
+			console.error('Error stack:', err instanceof Error ? err.stack : 'No stack trace');
+			error = '로그인 중 오류가 발생했습니다. 다시 시도해 주세요.';
 		} finally {
 			isLoading = false;
 		}
