@@ -23,9 +23,8 @@ export const users = pgTable(
 		id: uuid('id').primaryKey().defaultRandom(),
 		name: text('name').notNull(),
 		email: text('email').notNull().unique(),
-		emailVerified: boolean('email_verified').notNull(),
 		image: text('image'),
-		role: userRoleEnum('role').notNull().default('traveler'),
+		role: userRoleEnum('role'),
 		phone: text('phone'),
 		birthDate: date('birth_date'),
 		createdAt: timestamp('created_at').notNull(),
@@ -139,18 +138,8 @@ export const accounts = pgTable('accounts', {
 	accessTokenExpiresAt: timestamp('access_token_expires_at'),
 	refreshTokenExpiresAt: timestamp('refresh_token_expires_at'),
 	scope: text('scope'),
-	password: text('password'),
 	createdAt: timestamp('created_at').notNull(),
 	updatedAt: timestamp('updated_at').notNull()
-});
-
-export const verifications = pgTable('verifications', {
-	id: uuid('id').primaryKey().defaultRandom(),
-	identifier: text('identifier').notNull(),
-	value: text('value').notNull(),
-	expiresAt: timestamp('expires_at').notNull(),
-	createdAt: timestamp('created_at'),
-	updatedAt: timestamp('updated_at')
 });
 
 // Rate limit table for better-auth

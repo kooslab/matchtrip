@@ -6,10 +6,9 @@ declare global {
 		interface Locals {
 			user?: {
 				id: string;
-				role: string;
+				role: string | null;
 				name: string;
 				email: string;
-				emailVerified: boolean;
 			};
 			session?: any;
 		}
