@@ -1,25 +1,12 @@
 <script lang="ts">
 	import '../app.css';
-	import Footer from '$lib/components/Footer.svelte';
-	import NavigationLink from '$lib/components/NavigationLink.svelte';
-	import BottomNav from '$lib/components/BottomNav.svelte';
-	import GuideBottomNav from '$lib/components/GuideBottomNav.svelte';
-	import { page } from '$app/stores';
-	import { goto, invalidateAll } from '$app/navigation';
 	import { navigating } from '$app/stores';
 	import { preloadCommonRoutes } from '$lib/utils/preloader';
-	import { resetRole } from '$lib/stores/userRole';
-	import { signOut } from '$lib/authClient';
-	import { resetAllStores } from '$lib/stores/resetStores';
 
 	let { data } = $props();
 
 	let user = $derived(data?.user);
-	let userRole = $derived(data?.userRole);
 	let isLoggedIn = $derived(!!user);
-	let isGuide = $derived(userRole === 'guide');
-	let isTraveler = $derived(userRole === 'traveler');
-	let isAdmin = $derived(userRole === 'admin');
 
 	// Preload common routes for logged in users
 	$effect(() => {
@@ -27,45 +14,6 @@
 			preloadCommonRoutes();
 		}
 	});
-
-	let isOpen = $state(false);
-	function openMenu() {
-		isOpen = true;
-	}
-	function closeMenu() {
-		isOpen = false;
-	}
-
-	async function handleLogout() {
-		try {
-			// Close menu immediately
-			closeMenu();
-			
-			// Reset all client-side stores first
-			resetAllStores();
-			
-			// Sign out using better-auth with proper callback
-			await signOut({
-				fetchOptions: {
-					onSuccess: () => {
-						// Clear any remaining browser storage
-						if (typeof window !== 'undefined') {
-							sessionStorage.clear();
-							localStorage.clear();
-							// Force a hard reload to clear all state
-							window.location.href = '/';
-						}
-					}
-				}
-			});
-		} catch (error) {
-			console.error('Logout error:', error);
-			// Force reload on error
-			if (typeof window !== 'undefined') {
-				window.location.href = '/';
-			}
-		}
-	}
 </script>
 
 <!-- Global Loading Bar -->
@@ -313,24 +261,4 @@
 {/if}
 -->
 
-{#if $page.url.pathname.startsWith('/admin')}
-	<!-- Admin layout has its own structure, don't wrap it -->
-	<slot />
-{:else}
-	<div class="flex min-h-screen flex-col {(isTraveler || isGuide) ? 'pb-20' : ''}">
-		<slot />
-		<!-- {#if !$page.url.pathname.startsWith('/admin')}
-			<Footer />
-		{/if} -->
-		
-		<!-- Bottom Navigation for Travelers -->
-		{#if isTraveler && !$page.url.pathname.startsWith('/signin') && !$page.url.pathname.startsWith('/signup') && $page.url.pathname !== '/'}
-			<BottomNav />
-		{/if}
-		
-		<!-- Bottom Navigation for Guides -->
-		{#if isGuide && !$page.url.pathname.startsWith('/signin') && !$page.url.pathname.startsWith('/signup') && $page.url.pathname !== '/'}
-			<GuideBottomNav />
-		{/if}
-	</div>
-{/if}
+<slot />

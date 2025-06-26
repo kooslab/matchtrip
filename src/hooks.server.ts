@@ -144,13 +144,14 @@ const authorizationHandler = (async ({ event, resolve }) => {
 	}
 
 
-	// Handle protected routes that require authentication (exclude API routes)
-	if (routeId?.includes('/my-trips') && !routeId?.startsWith('/api') && !session?.user) {
+	// Handle protected app routes that require authentication
+	const isAppRoute = routeId?.startsWith('/(app)');
+	if (isAppRoute && !session?.user) {
 		redirect(302, '/signin');
 	}
 
-	// Handle protected routes that require specific roles (guide-only routes, exclude API routes and admin routes)
-	const guideOnlyRoutes = ['/trips', '/offers', '/my-offers'];
+	// Handle protected routes that require specific roles (guide-only routes)
+	const guideOnlyRoutes = ['/(app)/trips', '/(app)/offers', '/(app)/my-offers'];
 	const isGuideOnlyRoute = guideOnlyRoutes.some((route) => routeId?.includes(route));
 	const isAdminRoute = routeId?.startsWith('/admin');
 

@@ -10,7 +10,7 @@
 	import UserIcon from '$lib/icons/icon-user-mono.svg?raw';
 
 	const navItems = [
-		{ href: '/app', icon: HomeIcon, label: '홈' },
+		{ href: '/', icon: HomeIcon, label: '홈' },
 		{ href: '/trips', icon: FlagMapIcon, label: '여행 찾기' },
 		{ href: '/my-offers', icon: BookIcon, label: '나의 제안' },
 		{ href: '/conversations', icon: ChatIcon, label: '대 화' },
