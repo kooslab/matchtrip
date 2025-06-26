@@ -32,7 +32,7 @@
 - 🚀 **[SvelteKit 2.0+](https://svelte.dev/docs/kit)** - Latest version
 - 🔄 **[Svelte 5.0](https://svelte.dev/docs/svelte)** - With runes
 - 🎨 **[TailwindCSS 4.0](https://tailwindcss.com/)** - Utility-first styling
-  - [Lucide](https://lucide.dev/) icons
+- 🎨 **Icons**: Use custom icons from `src/lib/icons/` when available, fallback to [Lucide](https://lucide.dev/) icons
 - 🎨 **[Bits-UI](https://bits-ui.com/)** - Headless UI components
 - 🗃️ **[Drizzle ORM](https://orm.drizzle.team/)** - Type-safe database queries and Drizzle-kit for migrations
 - 🐘 **[PostgreSQL](https://www.postgresql.org/)** - Database

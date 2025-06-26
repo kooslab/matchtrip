@@ -1,6 +1,6 @@
 <script lang="ts">
-	import SearchIcon from '$lib/icons/icon-search-mono.svg?component';
-	import NotificationIcon from '$lib/icons/icon-loudspeaker-mono.svg?component';
+	import searchIconUrl from '$lib/icons/icon-search-mono.svg';
+	import notificationIconUrl from '$lib/icons/icon-loudspeaker-mono.svg';
 </script>
 
 <header class="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200">
@@ -9,11 +9,11 @@
 		
 		<div class="flex items-center gap-4">
 			<button class="text-gray-600 hover:text-gray-900">
-				<SearchIcon class="h-6 w-6" />
+				<img src={searchIconUrl} alt="Search" class="h-6 w-6" />
 			</button>
 			
 			<button class="relative text-gray-600 hover:text-gray-900">
-				<NotificationIcon class="h-6 w-6" />
+				<img src={notificationIconUrl} alt="Notifications" class="h-6 w-6" />
 				<span class="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500"></span>
 			</button>
 		</div>

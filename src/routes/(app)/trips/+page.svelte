@@ -2,11 +2,11 @@
 	import { goto } from '$app/navigation';
 	import { formatDate, formatDateRange } from '$lib/utils/dateFormatter';
 	import { userTimezone, userLocale } from '$lib/stores/location';
-	import CalendarIcon from '$lib/icons/icon-calendar-check-mono.svg?component';
-	import UsersIcon from '$lib/icons/icon-user-two-mono.svg?component';
-	import DotsIcon from '$lib/icons/icon-dots-six-vertical-mono.svg?component';
-	import ArrowDownIcon from '$lib/icons/icon-arrow-up-limit-mono.svg?component';
-	import CheckIcon from '$lib/icons/icon-check-circle-mono.svg?component';
+	import calendarIconUrl from '$lib/icons/icon-calendar-check-mono.svg';
+	import usersIconUrl from '$lib/icons/icon-user-two-mono.svg';
+	import dotsIconUrl from '$lib/icons/icon-dots-six-vertical-mono.svg';
+	import arrowDownIconUrl from '$lib/icons/icon-arrow-up-limit-mono.svg';
+	import checkIconUrl from '$lib/icons/icon-check-circle-mono.svg';
 
 	let { data } = $props();
 
@@ -84,13 +84,13 @@
 				</div>
 				<div class="flex items-center gap-3">
 					<div class="flex items-center gap-2 text-sm text-gray-600">
-						<CheckIcon class="h-4 w-4" />
+						<img src={checkIconUrl} alt="Check" class="h-4 w-4" />
 						<span>완료된 여행 제외</span>
 					</div>
 					<button
 						class="flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50">
 						최신순
-						<ArrowDownIcon class="h-4 w-4 rotate-180" />
+						<img src={arrowDownIconUrl} alt="Arrow" class="h-4 w-4 rotate-180" />
 					</button>
 				</div>
 			</div>
@@ -142,7 +142,7 @@
 									</h3>
 								</div>
 								<button class="text-gray-400 hover:text-gray-600">
-									<DotsIcon class="h-5 w-5" />
+									<img src={dotsIconUrl} alt="Options" class="h-5 w-5" />
 								</button>
 							</div>
 
@@ -207,8 +207,10 @@
 									<summary
 										class="flex cursor-pointer items-center justify-between text-sm font-medium text-gray-900">
 										요청 사항
-										<ArrowDownIcon
-											class="h-5 w-5 text-gray-400 rotate-180 transition-transform group-open:rotate-0" />
+										<img
+											src={arrowDownIconUrl}
+											alt="Toggle"
+											class="h-5 w-5 rotate-180 transition-transform group-open:rotate-0" />
 									</summary>
 									<div class="mt-3 space-y-3">
 										{#if trip.customRequest}
