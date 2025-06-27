@@ -75,6 +75,7 @@ export const auth = betterAuth({
 		'https://matchtrip.vercel.app',
 		// Add any other domains you might deploy to
 		'http://localhost:5173', // For local development,
+		'https://dev.matchtrip.net', // dev environment
 		'https://matchtrip.net', // production
 		'https://www.matchtrip.net' // production
 	],

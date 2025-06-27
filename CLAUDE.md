@@ -64,3 +64,8 @@
 - **Scroll behavior**: SvelteKit handles scroll restoration by default, but you can customize it in `handle` hooks if needed.
 - **Error boundaries**: Use `+error.svelte` files to handle navigation errors gracefully.
 - **Route guards**: Protect routes using hooks or layout logic (e.g., check authentication in `+layout.server.ts`).
+
+## Icons to use
+
+- I will use as many as icons from `src/lib/icons` becaus these are the resource from designers.
+- If not found from that local files, then use lucide-icons
