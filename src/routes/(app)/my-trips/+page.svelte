@@ -2,8 +2,11 @@
 	import { goto } from '$app/navigation';
 	import { useSession } from '$lib/authClient';
 	import { invalidate } from '$app/navigation';
-	import { formatDate, formatDateRange } from '$lib/utils/dateFormatter';
+	import { formatDate, formatDateRange, formatKoreanDateRange } from '$lib/utils/dateFormatter';
 	import { userTimezone, userLocale } from '$lib/stores/location';
+	import flightIconUrl from '$lib/icons/icon-flight-mono.svg';
+	import calendarIconUrl from '$lib/icons/icon-calendar-check-mono.svg';
+	import userIconUrl from '$lib/icons/icon-user-two-mono.svg';
 
 	// Get data from server load function
 	let { data } = $props();
@@ -62,13 +65,30 @@
 
 	function getStatusColor(status: string) {
 		const colorMap: Record<string, string> = {
-			draft: 'bg-gray-100 text-gray-800',
-			submitted: 'bg-blue-100 text-blue-800',
-			accepted: 'bg-green-100 text-green-800',
-			completed: 'bg-purple-100 text-purple-800',
-			cancelled: 'bg-red-100 text-red-800'
+			draft: 'bg-gray-50 text-gray-700',
+			submitted: 'bg-green-600 text-white',
+			accepted: 'bg-blue-50 text-blue-700',
+			completed: 'bg-purple-50 text-purple-700',
+			cancelled: 'bg-red-50 text-red-700'
 		};
-		return colorMap[status] || 'bg-gray-100 text-gray-800';
+		return colorMap[status] || 'bg-gray-50 text-gray-700';
+	}
+
+	function getTravelMethodText(method: string) {
+		const methodMap: Record<string, string> = {
+			walking: '도보',
+			driving: '자동차',
+			public_transport: '대중교통',
+			bike: '자전거',
+			'walking+public_transport': '도보+대중교통',
+			'walking+bike': '도보+자전거',
+			'walking+driving': '도보+자동차',
+			'walking+driving+public_transport': '도보+자동차+대중교통',
+			'walking+driving+bike': '도보+자동차+자전거',
+			'walking+driving+public_transport+bike': '모든 교통수단',
+			other: '기타'
+		};
+		return methodMap[method] || method;
 	}
 
 	function goToCreateTrip() {
@@ -98,26 +118,20 @@
 		<!-- Header -->
 		<div class="border-b border-gray-200 bg-white px-4 py-4">
 			<div class="flex items-center justify-between">
-				<div class="flex items-center gap-3">
-					<h1 class="text-xl font-bold text-gray-900">나의 여행</h1>
-					<button
-						onclick={refreshTrips}
-						disabled={refreshing}
-						class="rounded-lg border border-gray-300 px-3 py-1 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50"
-						title="새로고침">
-						{#if refreshing}
-							<div
-								class="h-4 w-4 animate-spin rounded-full border border-gray-400 border-t-transparent">
-							</div>
-						{:else}
-							🔄
-						{/if}
-					</button>
+				<div class="flex items-center gap-2">
+					<span class="text-sm text-gray-900">
+						전체 <span class="text-sm font-bold text-blue-600">{trips.length}</span>
+					</span>
 				</div>
-				<button
-					class="rounded-lg bg-pink-500 px-4 py-2 text-sm font-medium text-white hover:bg-pink-600"
-					onclick={goToCreateTrip}>
-					새 여행 만들기
+				<button class="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900">
+					<span>최신순</span>
+					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M19 9l-7 7-7-7" />
+					</svg>
 				</button>
 			</div>
 		</div>
@@ -141,96 +155,95 @@
 					</button>
 				</div>
 			{:else if trips.length === 0}
-				<div class="flex flex-col items-center justify-center py-12">
-					<div class="mb-4 text-6xl">✈️</div>
-					<h2 class="mb-2 text-lg font-medium text-gray-900">아직 여행이 없습니다</h2>
-					<p class="mb-6 text-gray-600">첫 번째 여행을 만들어보세요!</p>
-					<button
-						class="rounded-lg bg-pink-500 px-6 py-3 text-base font-medium text-white hover:bg-pink-600"
-						onclick={goToCreateTrip}>
-						여행 만들기
-					</button>
+				<div class="flex flex-col items-center justify-center px-6 py-16">
+					<!-- Icon Container -->
+					<div class="mb-8 rounded-full bg-gray-50 p-8">
+						<img src={flightIconUrl} alt="Flight" class="h-16 w-16 opacity-40" />
+					</div>
+
+					<!-- Text Content -->
+					<h2 class="mb-3 text-xl font-semibold text-gray-900">아직 여행이 없어요</h2>
+					<p class="mb-8 max-w-sm text-center text-base leading-relaxed text-gray-500">
+						새로운 여행을 계획하고<br />
+						현지 가이드의 특별한 제안을 받아보세요
+					</p>
 				</div>
 			{:else}
 				<div class="space-y-4">
 					{#each trips as trip}
-						<div 
-							class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+						<button
 							onclick={() => goToTripDetails(trip.id)}
-							role="button"
-							tabindex="0"
-							onkeydown={(e) => {
-								if (e.key === 'Enter' || e.key === ' ') {
-									e.preventDefault();
-									goToTripDetails(trip.id);
-								}
-							}}>
-							<div class="flex items-start justify-between">
-								<div class="flex-1 pointer-events-none">
-									<div class="mb-2 flex items-center gap-2">
-										<h3 class="text-lg font-medium text-gray-900">
-											{trip.destination?.city || '알 수 없는 목적지'}
-										</h3>
-										<span
-											class="rounded-full px-2 py-1 text-xs font-medium {getStatusColor(
-												trip.status
-											)}">
-											{getStatusText(trip.status)}
-										</span>
-									</div>
+							class="w-full cursor-pointer overflow-hidden rounded-xl border border-gray-100 bg-white text-left transition-shadow hover:shadow-md">
+							<!-- Status Badge -->
+							<div class="px-4 pt-4">
+								<span
+									class="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium {getStatusColor(
+										trip.status
+									)}">
+									{getStatusText(trip.status)}
+								</span>
+							</div>
 
-									<div class="space-y-1 text-sm text-gray-600">
-										<p>📅 {formatDateRange(trip.startDate, trip.endDate, { locale: $userLocale, timezone: $userTimezone, format: 'medium' })}</p>
-										<p>
-											👥 성인 {trip.adultsCount}명{trip.childrenCount > 0
-												? `, 유아 ${trip.childrenCount}명`
-												: ''}
-										</p>
-										{#if trip.travelMethod}
-											<p>🚶 {trip.travelMethod}</p>
-										{/if}
-										{#if trip.customRequest}
-											<p class="mt-2 text-gray-700">💬 {trip.customRequest}</p>
-										{/if}
-									</div>
+							<!-- Trip Info -->
+							<div class="px-4 pb-4">
+								<h3 class="mt-3 text-lg font-semibold text-gray-900">
+									{trip.destination?.city || '목적지'}, {trip.destination?.country || ''}
+								</h3>
+
+								<!-- Date and Calendar Icon -->
+								<div class="mt-2 flex items-center gap-2 text-sm text-gray-600">
+									<img src={calendarIconUrl} alt="" class="h-4 w-4 opacity-60" />
+									<span>{formatKoreanDateRange(trip.startDate, trip.endDate)}</span>
 								</div>
 
-								<div class="ml-4 flex flex-col gap-2">
-									<button
-										onclick={(e) => {
-											e.stopPropagation();
-											goToTripDetails(trip.id);
-										}}
-										disabled={navigatingTripId === trip.id}
-										class="flex items-center justify-center gap-1 rounded bg-gray-100 px-3 py-1 text-sm text-gray-700 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50">
-										{#if navigatingTripId === trip.id}
-											<div
-												class="h-3 w-3 animate-spin rounded-full border border-gray-500 border-t-transparent">
-											</div>
-											<span>로딩중...</span>
-										{:else}
-											상세보기
-										{/if}
-									</button>
-									{#if trip.status === 'draft'}
-										<button
-											onclick={(e) => e.stopPropagation()}
-											class="rounded bg-pink-100 px-3 py-1 text-sm text-pink-700 hover:bg-pink-200">
-											수정하기
-										</button>
+								<!-- Participants -->
+								<div class="mt-1 flex items-center gap-2 text-sm text-gray-600">
+									<img src={userIconUrl} alt="" class="h-4 w-4 opacity-60" />
+									<span
+										>성인 {trip.adultsCount}명{trip.childrenCount > 0
+											? `, 아동 ${trip.childrenCount}명`
+											: ''}</span>
+								</div>
+
+								<!-- Price Range and Travel Details -->
+								<div class="mt-3 flex flex-wrap items-center gap-3 text-sm">
+									<span class="font-medium text-blue-600">
+										{trip.minBudget
+											? `${trip.minBudget}-${trip.maxBudget || trip.minBudget}만원`
+											: '예산 미정'}
+									</span>
+									{#if trip.travelMethod}
+										<span class="text-gray-500">{getTravelMethodText(trip.travelMethod)}</span>
 									{/if}
-									{#if trip.offerCount > 0}
-										<span class="rounded bg-blue-100 px-3 py-1 text-sm text-blue-700">
-											{trip.offerCount}건 제안
-										</span>
+									{#if trip.needsDriver}
+										<span class="text-gray-500">차량 / 운전기사</span>
+									{/if}
+								</div>
+
+								<!-- Offer Status Section -->
+								<div class="mt-4 rounded-lg bg-gray-50 p-3">
+									<div class="flex items-center justify-between">
+										<div class="flex items-center gap-2">
+											<span class="text-sm text-gray-600">요청 사항</span>
+										</div>
+										<span class="text-base font-medium text-gray-900"
+											>{trip.offerCount || 0}건</span>
+									</div>
+									<p class="mt-2 text-sm text-gray-500">남은 기간 7일</p>
+								</div>
+
+								<!-- Action Button -->
+								<div
+									onclick={(e) => e.stopPropagation()}
+									class="mt-4 w-full rounded-lg border border-gray-300 bg-white py-2.5 text-center text-sm font-medium text-gray-700">
+									{#if trip.offerCount === 0}
+										받은 제안 0건
+									{:else}
+										받은 제안 {trip.offerCount}건
 									{/if}
 								</div>
 							</div>
-
-							<div class="mt-3 text-xs text-gray-500 pointer-events-none">
-								생성일: {formatTripDate(trip.createdAt)}
-							</div>
-						</div>
+						</button>
 					{/each}
 				</div>
 			{/if}

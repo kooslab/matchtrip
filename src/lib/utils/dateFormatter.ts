@@ -111,6 +111,29 @@ export function formatDateRange(
 	return `${start} - ${end}`;
 }
 
+export function formatKoreanDate(date: Date | string | number): string {
+	const dateObj = date instanceof Date ? date : new Date(date);
+	
+	if (isNaN(dateObj.getTime())) {
+		return 'Invalid Date';
+	}
+	
+	const year = dateObj.getFullYear();
+	const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+	const day = String(dateObj.getDate()).padStart(2, '0');
+	
+	return `${year}. ${month}. ${day}`;
+}
+
+export function formatKoreanDateRange(
+	startDate: Date | string | number,
+	endDate: Date | string | number
+): string {
+	const start = formatKoreanDate(startDate);
+	const end = formatKoreanDate(endDate);
+	return `${start} - ${end}`;
+}
+
 export function isToday(date: Date | string | number): boolean {
 	const dateObj = date instanceof Date ? date : new Date(date);
 	const today = new Date();

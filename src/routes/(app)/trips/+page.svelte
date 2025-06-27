@@ -4,9 +4,10 @@
 	import { userTimezone, userLocale } from '$lib/stores/location';
 	import calendarIconUrl from '$lib/icons/icon-calendar-check-mono.svg';
 	import usersIconUrl from '$lib/icons/icon-user-two-mono.svg';
-	import dotsIconUrl from '$lib/icons/icon-dots-six-vertical-mono.svg';
+	import bookmarkIconUrl from '$lib/icons/icon-bookmark-mono.svg';
 	import arrowDownIconUrl from '$lib/icons/icon-arrow-up-limit-mono.svg';
 	import checkIconUrl from '$lib/icons/icon-check-circle-mono.svg';
+	import chevronRightIconUrl from '$lib/icons/icon-arrow-right-small-mono.svg';
 
 	let { data } = $props();
 
@@ -15,6 +16,19 @@
 
 	// Loading state for proposal navigation
 	let navigatingTripId = $state<string | null>(null);
+	
+	// Filter states
+	let selectedFilters = $state({
+		destination: false,
+		dates: false,
+		people: false,
+		budget: false
+	});
+	
+	// Get unique destinations count
+	let uniqueDestinations = $derived(
+		new Set(trips.map(trip => `${trip.destination.city}, ${trip.destination.country}`)).size
+	);
 
 	// Get status display info
 	function getStatusInfo(status: string) {
@@ -75,6 +89,46 @@
 </svelte:head>
 
 <div class="min-h-screen bg-gray-50">
+	<!-- Filter Bar -->
+	<div class="sticky top-0 z-10 bg-white border-b border-gray-200">
+		<div class="container mx-auto px-4 py-3">
+			<div class="flex gap-2 overflow-x-auto scrollbar-hide">
+				<button
+					onclick={() => selectedFilters.destination = !selectedFilters.destination}
+					class="flex-shrink-0 flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition-all {selectedFilters.destination 
+						? 'border-gray-900 bg-gray-900 text-white' 
+						: 'border border-gray-300 bg-white text-gray-700 hover:border-gray-400'}">
+					<span>여행지 {uniqueDestinations > 0 ? `${uniqueDestinations}곳` : ''}</span>
+					<img src={chevronRightIconUrl} alt="" class="w-4 h-4 {selectedFilters.destination ? 'brightness-0 invert' : ''}" />
+				</button>
+				<button
+					onclick={() => selectedFilters.dates = !selectedFilters.dates}
+					class="flex-shrink-0 flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition-all {selectedFilters.dates 
+						? 'border-gray-900 bg-gray-900 text-white' 
+						: 'border border-gray-300 bg-white text-gray-700 hover:border-gray-400'}">
+					<span>일정</span>
+					<img src={chevronRightIconUrl} alt="" class="w-4 h-4 {selectedFilters.dates ? 'brightness-0 invert' : ''}" />
+				</button>
+				<button
+					onclick={() => selectedFilters.people = !selectedFilters.people}
+					class="flex-shrink-0 flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition-all {selectedFilters.people 
+						? 'border-gray-900 bg-gray-900 text-white' 
+						: 'border border-gray-300 bg-white text-gray-700 hover:border-gray-400'}">
+					<span>인원</span>
+					<img src={chevronRightIconUrl} alt="" class="w-4 h-4 {selectedFilters.people ? 'brightness-0 invert' : ''}" />
+				</button>
+				<button
+					onclick={() => selectedFilters.budget = !selectedFilters.budget}
+					class="flex-shrink-0 flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition-all {selectedFilters.budget 
+						? 'border-gray-900 bg-gray-900 text-white' 
+						: 'border border-gray-300 bg-white text-gray-700 hover:border-gray-400'}">
+					<span>예산</span>
+					<img src={chevronRightIconUrl} alt="" class="w-4 h-4 {selectedFilters.budget ? 'brightness-0 invert' : ''}" />
+				</button>
+			</div>
+		</div>
+	</div>
+
 	<div class="container mx-auto px-4 py-6">
 		<div class="mb-6">
 			<div class="mb-4 flex items-center justify-between">
@@ -90,7 +144,9 @@
 					<button
 						class="flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50">
 						최신순
-						<img src={arrowDownIconUrl} alt="Arrow" class="h-4 w-4 rotate-180" />
+						<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+						</svg>
 					</button>
 				</div>
 			</div>
@@ -125,7 +181,17 @@
 		{:else}
 			<div class="space-y-3">
 				{#each trips as trip}
-					<div class="overflow-hidden rounded-lg bg-white shadow-sm">
+					<div 
+						onclick={() => goto(`/trips/${trip.id}`)}
+						role="button"
+						tabindex="0"
+						onkeydown={(e) => {
+							if (e.key === 'Enter' || e.key === ' ') {
+								e.preventDefault();
+								goto(`/trips/${trip.id}`);
+							}
+						}}
+						class="w-full text-left overflow-hidden rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer">
 						<div class="p-4">
 							<div class="mb-3 flex items-start justify-between">
 								<div class="flex-1">
@@ -141,8 +207,10 @@
 										{trip.destination.city}, {trip.destination.country}
 									</h3>
 								</div>
-								<button class="text-gray-400 hover:text-gray-600">
-									<img src={dotsIconUrl} alt="Options" class="h-5 w-5" />
+								<button 
+									onclick={(e) => e.stopPropagation()}
+									class="text-gray-400 hover:text-gray-600 transition-colors">
+									<img src={bookmarkIconUrl} alt="Bookmark" class="h-5 w-5" />
 								</button>
 							</div>
 
@@ -207,10 +275,9 @@
 									<summary
 										class="flex cursor-pointer items-center justify-between text-sm font-medium text-gray-900">
 										요청 사항
-										<img
-											src={arrowDownIconUrl}
-											alt="Toggle"
-											class="h-5 w-5 rotate-180 transition-transform group-open:rotate-0" />
+										<svg class="h-5 w-5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+										</svg>
 									</summary>
 									<div class="mt-3 space-y-3">
 										{#if trip.customRequest}
@@ -232,7 +299,10 @@
 											<div>
 												<p class="mb-2 text-xs text-gray-500">자세히 보기</p>
 												<button
-													onclick={() => goto(`/trips/${trip.id}`)}
+													onclick={(e) => {
+														e.stopPropagation();
+														goto(`/trips/${trip.id}`);
+													}}
 													class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50">
 													자세히 보기
 												</button>
@@ -241,14 +311,20 @@
 												{#if trip.hasOffer}
 													<p class="mb-2 text-xs text-gray-500">지원한 보기</p>
 													<button
-														onclick={() => goto(`/conversations/${trip.conversationId}`)}
+														onclick={(e) => {
+															e.stopPropagation();
+															goto(`/conversations/${trip.conversationId}`);
+														}}
 														class="w-full rounded-lg bg-[#2B2D5B] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#1F2147]">
 														제안하기
 													</button>
 												{:else}
 													<p class="mb-2 text-xs text-gray-500">&nbsp;</p>
 													<button
-														onclick={() => goToOffer(trip.id)}
+														onclick={(e) => {
+															e.stopPropagation();
+															goToOffer(trip.id);
+														}}
 														disabled={navigatingTripId === trip.id}
 														class="w-full rounded-lg bg-[#2B2D5B] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#1F2147] disabled:cursor-not-allowed disabled:opacity-50">
 														{#if navigatingTripId === trip.id}

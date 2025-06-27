@@ -1,73 +1,70 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
-import { trips, destinations, users } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
-import { auth } from '$lib/auth';
+import { trips, offers } from '$lib/server/db/schema';
+import { eq, and } from 'drizzle-orm';
 
-export const GET: RequestHandler = async ({ params, request }) => {
+export const PATCH: RequestHandler = async ({ params, request, locals }) => {
+	const session = await locals.auth();
+	
+	if (!session || !session.user) {
+		return json({ error: 'Unauthorized' }, { status: 401 });
+	}
+
+	const tripId = params.id;
+	const updates = await request.json();
+
 	try {
-		// Get session
-		const session = await auth.api.getSession({
-			headers: request.headers
-		});
-
-		if (!session) {
-			return json({ success: false, error: '로그인이 필요합니다.' }, { status: 401 });
-		}
-
-		const tripId = params.id;
-
-		if (!tripId) {
-			return json({ success: false, error: '여행 ID가 필요합니다.' }, { status: 400 });
-		}
-
-		// Fetch trip with destination and traveler info
-		const trip = await db
-			.select({
-				id: trips.id,
-				startDate: trips.startDate,
-				endDate: trips.endDate,
-				adultsCount: trips.adultsCount,
-				childrenCount: trips.childrenCount,
-				travelMethod: trips.travelMethod,
-				customRequest: trips.customRequest,
-				status: trips.status,
-				createdAt: trips.createdAt,
-				destination: {
-					id: destinations.id,
-					city: destinations.city,
-					country: destinations.country
-				},
-				traveler: {
-					id: users.id,
-					name: users.name
-				}
-			})
+		// Verify trip ownership
+		const [existingTrip] = await db
+			.select()
 			.from(trips)
-			.leftJoin(destinations, eq(trips.destinationId, destinations.id))
-			.leftJoin(users, eq(trips.userId, users.id))
-			.where(eq(trips.id, tripId))
+			.where(and(eq(trips.id, tripId), eq(trips.userId, session.user.id)))
 			.limit(1);
 
-		if (trip.length === 0) {
-			return json({ success: false, error: '여행을 찾을 수 없습니다.' }, { status: 404 });
+		if (!existingTrip) {
+			return json({ error: 'Trip not found' }, { status: 404 });
 		}
 
-		// Check if trip is available for offers (status should be 'submitted')
-		if (trip[0].status !== 'submitted') {
-			return json(
-				{ success: false, error: '이 여행은 더 이상 제안을 받지 않습니다.' },
-				{ status: 400 }
-			);
+		// Check if there are any offers - can't edit if offers exist
+		const existingOffers = await db
+			.select()
+			.from(offers)
+			.where(eq(offers.tripId, tripId))
+			.limit(1);
+
+		if (existingOffers.length > 0) {
+			return json({ error: 'Cannot edit trip with existing offers' }, { status: 400 });
 		}
 
-		return json({
-			success: true,
-			trip: trip[0]
-		});
+		// Update only allowed fields
+		const allowedUpdates: any = {};
+		
+		if (updates.minBudget !== undefined) {
+			allowedUpdates.minBudget = updates.minBudget;
+		}
+		
+		if (updates.maxBudget !== undefined) {
+			allowedUpdates.maxBudget = updates.maxBudget;
+		}
+		
+		if (updates.customRequest !== undefined) {
+			allowedUpdates.customRequest = updates.customRequest;
+		}
+
+		// Add updatedAt
+		allowedUpdates.updatedAt = new Date();
+
+		// Perform update
+		const [updatedTrip] = await db
+			.update(trips)
+			.set(allowedUpdates)
+			.where(and(eq(trips.id, tripId), eq(trips.userId, session.user.id)))
+			.returning();
+
+		return json({ success: true, trip: updatedTrip });
 	} catch (error) {
-		console.error('Error fetching trip:', error);
-		return json({ success: false, error: '서버 오류가 발생했습니다.' }, { status: 500 });
+		console.error('Error updating trip:', error);
+		return json({ error: 'Failed to update trip' }, { status: 500 });
 	}
 };
