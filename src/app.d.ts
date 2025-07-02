@@ -12,6 +12,7 @@ declare global {
 				emailVerified: boolean;
 			};
 			session?: any;
+			hasAgreedToTerms?: boolean;
 		}
 		// interface PageData {}
 		// interface PageState {}

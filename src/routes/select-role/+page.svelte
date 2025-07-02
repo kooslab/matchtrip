@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { invalidateAll } from '$app/navigation';
-	import Button from '$lib/components/Button.svelte';
-	import { MapPin, Users } from 'lucide-svelte';
 
 	let selectedRole: 'traveler' | 'guide' | null = $state(null);
 	let isLoading = $state(false);
@@ -34,13 +32,8 @@
 			// Invalidate all data to refresh user session
 			await invalidateAll();
 
-			// Redirect based on selected role
-			// TODO: Later redirect to onboarding pages
-			if (selectedRole === 'guide') {
-				await goto('/my-offers');
-			} else {
-				await goto('/my-trips');
-			}
+			// Redirect to name collection page
+			await goto('/onboarding/name');
 		} catch (err) {
 			error = err instanceof Error ? err.message : '역할 선택 중 오류가 발생했습니다.';
 		} finally {
@@ -49,101 +42,91 @@
 	}
 </script>
 
-<div class="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center px-4 py-12">
-	<div class="max-w-4xl w-full">
+<div class="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
+	<div class="max-w-md w-full">
 		<div class="text-center mb-8">
-			<h1 class="text-3xl font-bold text-gray-900 mb-2">MatchTrip에 오신 것을 환영합니다!</h1>
-			<p class="text-lg text-gray-600">여행자와 가이드를 연결하는 플랫폼입니다.</p>
+			<h1 class="text-2xl font-bold text-gray-900 mb-2">어떤 역할로 시작하시겠어요?</h1>
+			<p class="text-gray-600">언제든지 변경할 수 있어요</p>
 		</div>
 
-		<div class="bg-white rounded-lg shadow-lg p-8">
-			<h2 class="text-2xl font-semibold text-center mb-6">어떤 역할로 시작하시겠습니까?</h2>
-			
-			<div class="grid md:grid-cols-2 gap-6 mb-8">
-				<!-- Traveler Option -->
-				<button
-					onclick={() => selectedRole = 'traveler'}
-					class="p-6 border-2 rounded-lg transition-all cursor-pointer hover:shadow-md {selectedRole === 'traveler' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}"
-					disabled={isLoading}
-				>
-					<div class="flex flex-col items-center text-center">
-						<div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-							<MapPin class="w-8 h-8 text-blue-600" />
-						</div>
-						<h3 class="text-xl font-semibold mb-2">여행자</h3>
-						<p class="text-gray-600">
-							현지 가이드와 함께 특별한 여행 경험을 만들어보세요.
-						</p>
-						<ul class="mt-4 text-sm text-gray-500 text-left">
-							<li class="flex items-start gap-2 mb-1">
-								<span class="text-green-500 mt-0.5">✓</span>
-								<span>검증된 현지 가이드 매칭</span>
-							</li>
-							<li class="flex items-start gap-2 mb-1">
-								<span class="text-green-500 mt-0.5">✓</span>
-								<span>맞춤형 여행 일정 제안</span>
-							</li>
-							<li class="flex items-start gap-2">
-								<span class="text-green-500 mt-0.5">✓</span>
-								<span>안전한 결제 시스템</span>
-							</li>
-						</ul>
+		<div class="space-y-4">
+			<!-- Traveler Option -->
+			<button
+				onclick={() => selectedRole = 'traveler'}
+				class="w-full p-6 bg-white rounded-xl border-2 transition-all {selectedRole === 'traveler' ? 'border-blue-500 shadow-lg' : 'border-gray-200 hover:border-gray-300 hover:shadow-md'}"
+				disabled={isLoading}
+			>
+				<div class="flex items-start gap-4">
+					<!-- Placeholder for traveler image -->
+					<div class="w-20 h-20 bg-gray-200 rounded-lg flex-shrink-0 flex items-center justify-center">
+						<span class="text-gray-400 text-xs">Image</span>
 					</div>
-				</button>
-
-				<!-- Guide Option -->
-				<button
-					onclick={() => selectedRole = 'guide'}
-					class="p-6 border-2 rounded-lg transition-all cursor-pointer hover:shadow-md {selectedRole === 'guide' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'}"
-					disabled={isLoading}
-				>
-					<div class="flex flex-col items-center text-center">
-						<div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-							<Users class="w-8 h-8 text-green-600" />
-						</div>
-						<h3 class="text-xl font-semibold mb-2">가이드</h3>
-						<p class="text-gray-600">
-							여행자에게 특별한 경험을 제공하고 수익을 창출하세요.
+					
+					<div class="flex-1 text-left">
+						<h3 class="text-lg font-semibold mb-1">여행자로 시작하기</h3>
+						<p class="text-sm text-gray-600">
+							현지 가이드와 함께 특별한 여행을 계획하고 경험해보세요
 						</p>
-						<ul class="mt-4 text-sm text-gray-500 text-left">
-							<li class="flex items-start gap-2 mb-1">
-								<span class="text-green-500 mt-0.5">✓</span>
-								<span>자유로운 일정 관리</span>
-							</li>
-							<li class="flex items-start gap-2 mb-1">
-								<span class="text-green-500 mt-0.5">✓</span>
-								<span>여행자와 직접 소통</span>
-							</li>
-							<li class="flex items-start gap-2">
-								<span class="text-green-500 mt-0.5">✓</span>
-								<span>투명한 수수료 정책</span>
-							</li>
-						</ul>
 					</div>
-				</button>
-			</div>
 
-			{#if error}
-				<div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-					<p class="text-sm text-red-600">{error}</p>
+					<!-- Radio button indicator -->
+					<div class="flex-shrink-0 mt-6">
+						<div class="w-5 h-5 rounded-full border-2 {selectedRole === 'traveler' ? 'border-blue-500' : 'border-gray-300'} flex items-center justify-center">
+							{#if selectedRole === 'traveler'}
+								<div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+							{/if}
+						</div>
+					</div>
 				</div>
-			{/if}
+			</button>
 
-			<div class="flex justify-center">
-				<Button
-					onclick={handleRoleSelection}
-					disabled={!selectedRole || isLoading}
-					loading={isLoading}
-					loadingText="처리 중..."
-					class="px-8"
-				>
-					{selectedRole === 'guide' ? '가이드로 시작하기' : selectedRole === 'traveler' ? '여행자로 시작하기' : '역할을 선택해주세요'}
-				</Button>
-			</div>
+			<!-- Guide Option -->
+			<button
+				onclick={() => selectedRole = 'guide'}
+				class="w-full p-6 bg-white rounded-xl border-2 transition-all {selectedRole === 'guide' ? 'border-blue-500 shadow-lg' : 'border-gray-200 hover:border-gray-300 hover:shadow-md'}"
+				disabled={isLoading}
+			>
+				<div class="flex items-start gap-4">
+					<!-- Placeholder for guide image -->
+					<div class="w-20 h-20 bg-gray-200 rounded-lg flex-shrink-0 flex items-center justify-center">
+						<span class="text-gray-400 text-xs">Image</span>
+					</div>
+					
+					<div class="flex-1 text-left">
+						<h3 class="text-lg font-semibold mb-1">가이드로 시작하기</h3>
+						<p class="text-sm text-gray-600">
+							여행자에게 특별한 경험을 제공하고 수익을 창출하세요
+						</p>
+					</div>
 
-			<p class="text-center text-sm text-gray-500 mt-6">
-				나중에 설정에서 역할을 변경할 수 있습니다.
-			</p>
+					<!-- Radio button indicator -->
+					<div class="flex-shrink-0 mt-6">
+						<div class="w-5 h-5 rounded-full border-2 {selectedRole === 'guide' ? 'border-blue-500' : 'border-gray-300'} flex items-center justify-center">
+							{#if selectedRole === 'guide'}
+								<div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+							{/if}
+						</div>
+					</div>
+				</div>
+			</button>
 		</div>
+
+		{#if error}
+			<div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+				<p class="text-sm text-red-600 text-center">{error}</p>
+			</div>
+		{/if}
+
+		<button
+			onclick={handleRoleSelection}
+			disabled={!selectedRole || isLoading}
+			class="w-full mt-8 py-3 px-6 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+		>
+			{#if isLoading}
+				처리 중...
+			{:else}
+				계속하기
+			{/if}
+		</button>
 	</div>
 </div>

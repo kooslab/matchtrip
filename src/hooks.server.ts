@@ -3,7 +3,7 @@ import { sequence } from '@sveltejs/kit/hooks';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
 import { redirect, type Handle } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { users } from '$lib/server/db/schema';
+import { users, userAgreements } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { dev } from '$app/environment';
 import { authErrorLogger } from '$lib/utils/authErrorLogger';
@@ -89,6 +89,20 @@ const authorizationHandler = (async ({ event, resolve }) => {
 				if (user) {
 					event.locals.user = user;
 					console.log('Hooks - User loaded in locals:', user.email, 'Role:', user.role, 'EmailVerified:', user.emailVerified);
+					
+					// Check if user has agreed to terms
+					const agreement = await db.query.userAgreements.findFirst({
+						where: eq(userAgreements.userId, user.id),
+						columns: {
+							termsAgreed: true,
+							privacyAgreed: true
+						}
+					});
+					
+					// TEMPORARY: Always treat Google OAuth users as first-time users
+					// Remove this when onboarding flow is complete
+					const isGoogleUser = session.user?.email && !session.user?.password;
+					event.locals.hasAgreedToTerms = isGoogleUser ? false : !!(agreement?.termsAgreed && agreement?.privacyAgreed);
 				}
 			} catch (error) {
 				authErrorLogger.log('db', 'Failed to fetch user from database', {
@@ -112,8 +126,12 @@ const authorizationHandler = (async ({ event, resolve }) => {
 
 	// Handle auth route redirects - redirect to role-based pages
 	if (routeId?.startsWith('/(auth)') && session && event.locals.user) {
-		// Check if user has a role (Google OAuth users might not have one)
-		if (!event.locals.user.role) {
+		// First check if user has agreed to terms
+		if (!event.locals.hasAgreedToTerms) {
+			redirect(302, '/agreement');
+		}
+		// Then check if user has a role (Google OAuth users might not have one)
+		else if (!event.locals.user.role) {
 			redirect(302, '/select-role');
 		} else if (event.locals.user.role === 'admin') {
 			redirect(302, '/admin');
@@ -126,8 +144,12 @@ const authorizationHandler = (async ({ event, resolve }) => {
 
 	// Handle OAuth callback redirects - when coming from Google OAuth
 	if (routeId === '/' && session && event.locals.user && event.request.headers.get('referer')?.includes('/api/auth/callback/google')) {
-		// Check if user has a role (Google OAuth users might not have one)
-		if (!event.locals.user.role) {
+		// First check if user has agreed to terms
+		if (!event.locals.hasAgreedToTerms) {
+			redirect(302, '/agreement');
+		}
+		// Then check if user has a role (Google OAuth users might not have one)
+		else if (!event.locals.user.role) {
 			redirect(302, '/select-role');
 		} else if (event.locals.user.role === 'admin') {
 			redirect(302, '/admin');
@@ -138,8 +160,13 @@ const authorizationHandler = (async ({ event, resolve }) => {
 		}
 	}
 
+	// Check if user needs to agree to terms first
+	if (session && event.locals.user && !event.locals.hasAgreedToTerms && routeId !== '/agreement' && !routeId?.startsWith('/api') && !routeId?.startsWith('/terms')) {
+		redirect(302, '/agreement');
+	}
+
 	// Check if user needs to select a role (for Google OAuth users)
-	if (session && event.locals.user && !event.locals.user.role && routeId !== '/select-role' && !routeId?.startsWith('/api')) {
+	if (session && event.locals.user && event.locals.hasAgreedToTerms && !event.locals.user.role && routeId !== '/select-role' && !routeId?.startsWith('/api')) {
 		redirect(302, '/select-role');
 	}
 
