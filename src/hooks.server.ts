@@ -82,7 +82,9 @@ const authorizationHandler = (async ({ event, resolve }) => {
 						role: true,
 						name: true,
 						email: true,
-						emailVerified: true
+						emailVerified: true,
+						phone: true,
+						birthDate: true
 					}
 				});
 
@@ -99,22 +101,20 @@ const authorizationHandler = (async ({ event, resolve }) => {
 						}
 					});
 					
-					// TEMPORARY: Always treat Google OAuth users as first-time users
-					// Remove this when onboarding flow is complete
-					const isGoogleUser = session.user?.email && !session.user?.password;
-					event.locals.hasAgreedToTerms = isGoogleUser ? false : !!(agreement?.termsAgreed && agreement?.privacyAgreed);
+					// Check if user has agreed to terms
+					event.locals.hasAgreedToTerms = !!(agreement?.termsAgreed && agreement?.privacyAgreed);
 				}
 			} catch (error) {
 				authErrorLogger.log('db', 'Failed to fetch user from database', {
 					userId: session.user.id,
-					error: error?.message
+					error: error instanceof Error ? error.message : String(error)
 				}, error as Error);
 			}
 		}
 	} catch (error) {
 		authErrorLogger.log('session', 'Critical error in session handling', {
 			route: routeId,
-			error: error?.message,
+			error: error instanceof Error ? error.message : String(error),
 			url: event.url.pathname
 		}, error as Error);
 		// Clean up session data on error

@@ -23,6 +23,7 @@
 		isSubmitting = true;
 		
 		try {
+			console.log('Submitting agreements...');
 			const response = await fetch('/api/user/agreements', {
 				method: 'POST',
 				headers: {
@@ -35,24 +36,22 @@
 				})
 			});
 
+			console.log('Response status:', response.status);
 			if (!response.ok) {
 				throw new Error('Failed to save agreements');
 			}
 
+			// Ensure the response is fully consumed before navigating
+			const data = await response.json();
+			console.log('Response data:', data);
+
 			// Redirect to role selection or appropriate page
-			if (!$page.data.user?.role) {
-				goto('/select-role');
-			} else if ($page.data.user.role === 'admin') {
-				goto('/admin');
-			} else if ($page.data.user.role === 'guide') {
-				goto('/my-offers');
-			} else {
-				goto('/my-trips');
-			}
+			console.log('Navigating to /select-role...');
+			await goto('/select-role', { replaceState: true });
+			console.log('Navigation complete');
 		} catch (error) {
 			console.error('Error saving agreements:', error);
 			alert('Failed to save your preferences. Please try again.');
-		} finally {
 			isSubmitting = false;
 		}
 	}
