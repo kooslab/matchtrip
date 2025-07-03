@@ -45,8 +45,8 @@
 		error = '';
 
 		try {
-			// Navigate to complete page
-			await goto('/onboarding/complete');
+			// Navigate to guide qualification page
+			await goto('/onboarding/guide-qualification');
 		} catch (err) {
 			error = err instanceof Error ? err.message : '다음 단계로 진행할 수 없습니다.';
 		} finally {

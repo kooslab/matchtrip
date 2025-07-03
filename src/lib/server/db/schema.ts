@@ -71,6 +71,7 @@ export const guideProfiles = pgTable('guide_profiles', {
 	profileImageUrl: text('profile_image_url'),
 	idDocumentUrl: text('id_document_url'),
 	certificationUrls: jsonb('certification_urls').$type<string[]>(),
+	qualifications: jsonb('qualifications').$type<Record<string, string>>(),
 	isVerified: boolean('is_verified').notNull().default(false),
 	verifiedAt: timestamp('verified_at'),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
