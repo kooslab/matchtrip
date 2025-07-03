@@ -157,8 +157,8 @@
 				throw new Error('Failed to update birth date');
 			}
 
-			// Continue to email verification
-			await goto('/onboarding/email');
+			// Continue to signup complete page
+			await goto('/onboarding/complete');
 		} catch (err) {
 			error = err instanceof Error ? err.message : '생년월일 저장에 실패했습니다.';
 		} finally {

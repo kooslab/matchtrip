@@ -159,6 +159,29 @@ const authorizationHandler = (async ({ event, resolve }) => {
 			redirect(302, '/my-trips');
 		}
 	}
+	
+	// Handle first-time users landing on home page - redirect to onboarding
+	if (routeId === '/' && session && event.locals.user) {
+		// Check if this is a first-time user (no agreements)
+		if (!event.locals.hasAgreedToTerms) {
+			redirect(302, '/agreement');
+		}
+		// Check if user hasn't selected a role yet
+		else if (!event.locals.user.role) {
+			redirect(302, '/select-role');
+		}
+		// Check if user hasn't completed profile (name, phone, birthDate)
+		else if (!event.locals.user.name || !event.locals.user.phone || !event.locals.user.birthDate) {
+			// Redirect to the appropriate onboarding step
+			if (!event.locals.user.name) {
+				redirect(302, '/onboarding/name');
+			} else if (!event.locals.user.phone) {
+				redirect(302, '/onboarding/phone');
+			} else if (!event.locals.user.birthDate) {
+				redirect(302, '/onboarding/birthdate');
+			}
+		}
+	}
 
 	// Check if user needs to agree to terms first
 	if (session && event.locals.user && !event.locals.hasAgreedToTerms && routeId !== '/agreement' && !routeId?.startsWith('/api') && !routeId?.startsWith('/terms')) {
