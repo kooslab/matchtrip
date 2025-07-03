@@ -98,11 +98,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		const { offerId } = await request.json();
 
 		// Get the offer details
-		const offer = await db
-			.select()
-			.from(offers)
-			.where(eq(offers.id, offerId))
-			.limit(1);
+		const offer = await db.select().from(offers).where(eq(offers.id, offerId)).limit(1);
 
 		if (!offer.length) {
 			return json({ error: 'Offer not found' }, { status: 404 });

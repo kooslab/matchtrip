@@ -31,7 +31,7 @@ function createLocationStore() {
 					});
 				});
 
-				update(state => ({
+				update((state) => ({
 					...state,
 					latitude: position.coords.latitude,
 					longitude: position.coords.longitude,
@@ -39,14 +39,14 @@ function createLocationStore() {
 				}));
 			}
 		} catch (error) {
-			update(state => ({
+			update((state) => ({
 				...state,
 				error: error instanceof Error ? error.message : 'Location detection failed'
 			}));
 		}
 
 		// Always update timezone and locale regardless of geolocation success
-		update(state => ({
+		update((state) => ({
 			...state,
 			timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 			locale: navigator.language
@@ -61,26 +61,21 @@ function createLocationStore() {
 	return {
 		subscribe,
 		detectLocation,
-		reset: () => set({
-			latitude: null,
-			longitude: null,
-			timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-			locale: browser ? navigator.language : 'en-US',
-			error: null
-		})
+		reset: () =>
+			set({
+				latitude: null,
+				longitude: null,
+				timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+				locale: browser ? navigator.language : 'en-US',
+				error: null
+			})
 	};
 }
 
 export const locationStore = createLocationStore();
 
 // Derived store for just timezone
-export const userTimezone = derived(
-	locationStore,
-	$location => $location.timezone
-);
+export const userTimezone = derived(locationStore, ($location) => $location.timezone);
 
 // Derived store for just locale
-export const userLocale = derived(
-	locationStore,
-	$location => $location.locale
-);
+export const userLocale = derived(locationStore, ($location) => $location.locale);

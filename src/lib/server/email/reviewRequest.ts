@@ -12,9 +12,9 @@ interface ReviewEmailData {
 
 export function generateReviewRequestEmail(data: ReviewEmailData) {
 	const reviewUrl = `${process.env.PUBLIC_BASE_URL || 'http://localhost:5173'}/review?token=${data.reviewToken}`;
-	
+
 	const subject = `${data.guideName} 가이드님과의 여행은 어떠셨나요?`;
-	
+
 	const htmlContent = `
 		<!DOCTYPE html>
 		<html>
@@ -115,7 +115,7 @@ export function generateReviewRequestEmail(data: ReviewEmailData) {
 		</body>
 		</html>
 	`;
-	
+
 	const textContent = `
 ${subject}
 
@@ -139,7 +139,7 @@ ${reviewUrl}
 감사합니다.
 MatchTrip 팀 드림
 	`;
-	
+
 	return {
 		to: data.travelerEmail,
 		subject,
@@ -151,19 +151,19 @@ MatchTrip 팀 드림
 // TODO: Integrate with your email service provider (SendGrid, AWS SES, etc.)
 export async function sendReviewRequestEmail(data: ReviewEmailData) {
 	const emailData = generateReviewRequestEmail(data);
-	
+
 	// For now, just log the email data
 	console.log('Review request email prepared:', {
 		to: emailData.to,
 		subject: emailData.subject,
 		reviewUrl: `${process.env.PUBLIC_BASE_URL || 'http://localhost:5173'}/review?token=${data.reviewToken}`
 	});
-	
+
 	// TODO: Implement actual email sending
 	// Example with SendGrid:
 	// const sgMail = require('@sendgrid/mail');
 	// sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 	// await sgMail.send(emailData);
-	
+
 	return true;
 }

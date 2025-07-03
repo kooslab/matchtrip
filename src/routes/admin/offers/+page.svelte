@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { 
-		FileText, 
-		Calendar, 
-		Users, 
-		MapPin, 
+	import {
+		FileText,
+		Calendar,
+		Users,
+		MapPin,
 		DollarSign,
 		Clock,
 		CheckCircle,
@@ -59,49 +59,51 @@
 		return message.substring(0, maxLength) + '...';
 	}
 
-	let filteredOffers = $derived(data.offers
-		.filter(offer => {
-			// Status filter
-			if (statusFilter !== 'all' && offer.status !== statusFilter) return false;
-			
-			// Payment filter
-			if (paymentFilter !== 'all' && offer.paymentStatus !== paymentFilter) return false;
-			
-			// Search filter
-			if (searchQuery) {
-				const query = searchQuery.toLowerCase();
-				return (
-					offer.tripDestination?.toLowerCase().includes(query) ||
-					offer.travelerName?.toLowerCase().includes(query) ||
-					offer.travelerEmail?.toLowerCase().includes(query) ||
-					offer.guideName?.toLowerCase().includes(query) ||
-					offer.guideEmail?.toLowerCase().includes(query) ||
-					offer.message?.toLowerCase().includes(query)
-				);
-			}
-			return true;
-		})
-		.sort((a, b) => {
-			if (sortBy === 'newest') {
-				return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-			} else if (sortBy === 'oldest') {
-				return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-			} else if (sortBy === 'price-high') {
-				return parseFloat(b.price) - parseFloat(a.price);
-			} else if (sortBy === 'price-low') {
-				return parseFloat(a.price) - parseFloat(b.price);
-			}
-			return 0;
-		}));
+	let filteredOffers = $derived(
+		data.offers
+			.filter((offer) => {
+				// Status filter
+				if (statusFilter !== 'all' && offer.status !== statusFilter) return false;
+
+				// Payment filter
+				if (paymentFilter !== 'all' && offer.paymentStatus !== paymentFilter) return false;
+
+				// Search filter
+				if (searchQuery) {
+					const query = searchQuery.toLowerCase();
+					return (
+						offer.tripDestination?.toLowerCase().includes(query) ||
+						offer.travelerName?.toLowerCase().includes(query) ||
+						offer.travelerEmail?.toLowerCase().includes(query) ||
+						offer.guideName?.toLowerCase().includes(query) ||
+						offer.guideEmail?.toLowerCase().includes(query) ||
+						offer.message?.toLowerCase().includes(query)
+					);
+				}
+				return true;
+			})
+			.sort((a, b) => {
+				if (sortBy === 'newest') {
+					return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+				} else if (sortBy === 'oldest') {
+					return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+				} else if (sortBy === 'price-high') {
+					return parseFloat(b.price) - parseFloat(a.price);
+				} else if (sortBy === 'price-low') {
+					return parseFloat(a.price) - parseFloat(b.price);
+				}
+				return 0;
+			})
+	);
 
 	async function handleDelete(offerId: string) {
 		if (!confirm('정말로 이 제안을 삭제하시겠습니까?')) return;
-		
+
 		try {
 			const response = await fetch(`/api/admin/offers/${offerId}`, {
 				method: 'DELETE'
 			});
-			
+
 			if (response.ok) {
 				window.location.reload();
 			} else {
@@ -132,14 +134,14 @@
 	}
 </script>
 
-<div class="p-8 overflow-auto h-full">
+<div class="h-full overflow-auto p-8">
 	<div class="mb-8">
 		<h1 class="text-3xl font-bold text-gray-900">제안 관리</h1>
 		<p class="mt-2 text-gray-600">가이드의 여행 제안을 관리하고 모니터링합니다</p>
 	</div>
 
 	<!-- Statistics Cards -->
-	<div class="grid gap-4 md:grid-cols-7 mb-8">
+	<div class="mb-8 grid gap-4 md:grid-cols-7">
 		<div class="rounded-lg bg-white p-6 shadow">
 			<div class="flex items-center justify-between">
 				<div>
@@ -212,9 +214,9 @@
 	</div>
 
 	<!-- Filters and Search -->
-	<div class="mb-6 bg-white rounded-lg shadow p-4">
-		<div class="flex flex-wrap gap-4 items-center">
-			<div class="flex-1 min-w-[200px]">
+	<div class="mb-6 rounded-lg bg-white p-4 shadow">
+		<div class="flex flex-wrap items-center gap-4">
+			<div class="min-w-[200px] flex-1">
 				<input
 					type="text"
 					placeholder="여행지, 여행자, 가이드 또는 메시지 검색..."
@@ -222,7 +224,7 @@
 					class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
 				/>
 			</div>
-			
+
 			<div class="flex items-center gap-2">
 				<Filter class="h-5 w-5 text-gray-500" />
 				<select
@@ -267,44 +269,60 @@
 	</div>
 
 	<!-- Offers Table -->
-	<div class="bg-white rounded-lg shadow overflow-hidden">
+	<div class="overflow-hidden rounded-lg bg-white shadow">
 		<div class="overflow-x-auto">
 			<table class="min-w-full divide-y divide-gray-200">
 				<thead class="bg-gray-50">
 					<tr>
-						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+						<th
+							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						>
 							여행 정보
 						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+						<th
+							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						>
 							여행자
 						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+						<th
+							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						>
 							가이드
 						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+						<th
+							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						>
 							제안 내용
 						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+						<th
+							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						>
 							가격
 						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+						<th
+							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						>
 							상태
 						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+						<th
+							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						>
 							결제
 						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+						<th
+							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						>
 							작업
 						</th>
 					</tr>
 				</thead>
-				<tbody class="bg-white divide-y divide-gray-200">
+				<tbody class="divide-y divide-gray-200 bg-white">
 					{#each filteredOffers as offer}
 						{@const badge = getStatusBadge(offer.status)}
 						<tr class="hover:bg-gray-50">
 							<td class="px-6 py-4 whitespace-nowrap">
 								<div class="flex items-center">
-									<MapPin class="h-5 w-5 text-gray-400 mr-2" />
+									<MapPin class="mr-2 h-5 w-5 text-gray-400" />
 									<div>
 										<div class="text-sm font-medium text-gray-900">
 											{offer.tripDestination || '미지정'}
@@ -330,14 +348,14 @@
 										<div class="text-xs text-gray-500">{offer.guideEmail}</div>
 									</div>
 									{#if offer.guideVerified}
-										<ShieldCheck class="h-4 w-4 text-green-500 ml-2" title="인증된 가이드" />
+										<ShieldCheck class="ml-2 h-4 w-4 text-green-500" title="인증된 가이드" />
 									{/if}
 								</div>
 							</td>
 							<td class="px-6 py-4">
 								<div class="flex items-center">
-									<MessageSquare class="h-4 w-4 text-gray-400 mr-2 flex-shrink-0" />
-									<div class="text-sm text-gray-900 max-w-xs">
+									<MessageSquare class="mr-2 h-4 w-4 flex-shrink-0 text-gray-400" />
+									<div class="max-w-xs text-sm text-gray-900">
 										{truncateMessage(offer.message)}
 									</div>
 								</div>
@@ -348,18 +366,24 @@
 								</div>
 							</td>
 							<td class="px-6 py-4 whitespace-nowrap">
-								<span class="inline-flex rounded-full px-2 text-xs font-semibold leading-5 {badge.bg} {badge.text}">
+								<span
+									class="inline-flex rounded-full px-2 text-xs leading-5 font-semibold {badge.bg} {badge.text}"
+								>
 									{badge.label}
 								</span>
 							</td>
 							<td class="px-6 py-4 whitespace-nowrap">
 								{#if offer.paymentStatus === 'paid'}
-									<span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 text-xs font-semibold leading-5 text-emerald-800">
+									<span
+										class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 text-xs leading-5 font-semibold text-emerald-800"
+									>
 										<CreditCard class="h-3 w-3" />
 										결제완료
 									</span>
 								{:else if offer.status === 'accepted'}
-									<span class="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2 text-xs font-semibold leading-5 text-yellow-800">
+									<span
+										class="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2 text-xs leading-5 font-semibold text-yellow-800"
+									>
 										<Clock class="h-3 w-3" />
 										대기중
 									</span>
@@ -367,7 +391,7 @@
 									<span class="text-xs text-gray-500">-</span>
 								{/if}
 							</td>
-							<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+							<td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
 								<div class="flex items-center gap-2">
 									<a
 										href="/admin/offers/{offer.id}"
@@ -389,7 +413,9 @@
 					{:else}
 						<tr>
 							<td colspan="8" class="px-6 py-12 text-center text-sm text-gray-500">
-								{searchQuery || statusFilter !== 'all' || paymentFilter !== 'all' ? '검색 결과가 없습니다.' : '등록된 제안이 없습니다.'}
+								{searchQuery || statusFilter !== 'all' || paymentFilter !== 'all'
+									? '검색 결과가 없습니다.'
+									: '등록된 제안이 없습니다.'}
 							</td>
 						</tr>
 					{/each}

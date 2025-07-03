@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { 
-		Plane, 
-		Calendar, 
-		Users, 
-		MapPin, 
+	import {
+		Plane,
+		Calendar,
+		Users,
+		MapPin,
 		DollarSign,
 		FileText,
 		Clock,
@@ -67,30 +67,32 @@
 		return types[type] || type;
 	}
 
-	let filteredTrips = $derived(data.trips
-		.filter(trip => {
-			// Status filter
-			if (statusFilter !== 'all' && trip.status !== statusFilter) return false;
-			
-			// Search filter
-			if (searchQuery) {
-				const query = searchQuery.toLowerCase();
-				return (
-					trip.destination?.toLowerCase().includes(query) ||
-					trip.travelerName?.toLowerCase().includes(query) ||
-					trip.travelerEmail?.toLowerCase().includes(query)
-				);
-			}
-			return true;
-		})
-		.sort((a, b) => {
-			if (sortBy === 'newest') {
-				return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-			} else if (sortBy === 'oldest') {
-				return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-			}
-			return 0;
-		}));
+	let filteredTrips = $derived(
+		data.trips
+			.filter((trip) => {
+				// Status filter
+				if (statusFilter !== 'all' && trip.status !== statusFilter) return false;
+
+				// Search filter
+				if (searchQuery) {
+					const query = searchQuery.toLowerCase();
+					return (
+						trip.destination?.toLowerCase().includes(query) ||
+						trip.travelerName?.toLowerCase().includes(query) ||
+						trip.travelerEmail?.toLowerCase().includes(query)
+					);
+				}
+				return true;
+			})
+			.sort((a, b) => {
+				if (sortBy === 'newest') {
+					return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+				} else if (sortBy === 'oldest') {
+					return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+				}
+				return 0;
+			})
+	);
 
 	async function handleDelete(tripId: string) {
 		const warning = `⚠️ 경고: 이 작업은 되돌릴 수 없습니다!
@@ -102,14 +104,14 @@
 - 여행 상태 기록
 
 정말로 이 여행을 삭제하시겠습니까?`;
-		
+
 		if (!confirm(warning)) return;
-		
+
 		try {
 			const response = await fetch(`/api/admin/trips/${tripId}`, {
 				method: 'DELETE'
 			});
-			
+
 			if (response.ok) {
 				if (showModal) {
 					showModal = false;
@@ -136,8 +138,12 @@
 		isEditing = true;
 		editForm = {
 			destination: selectedTrip.destination || '',
-			startDate: selectedTrip.startDate ? new Date(selectedTrip.startDate).toISOString().split('T')[0] : '',
-			endDate: selectedTrip.endDate ? new Date(selectedTrip.endDate).toISOString().split('T')[0] : '',
+			startDate: selectedTrip.startDate
+				? new Date(selectedTrip.startDate).toISOString().split('T')[0]
+				: '',
+			endDate: selectedTrip.endDate
+				? new Date(selectedTrip.endDate).toISOString().split('T')[0]
+				: '',
 			people: selectedTrip.people || 1,
 			tourType: selectedTrip.tourType || 'individual',
 			budget: selectedTrip.budget || '',
@@ -147,7 +153,7 @@
 
 	async function handleUpdate() {
 		if (!selectedTrip) return;
-		
+
 		try {
 			const response = await fetch(`/api/admin/trips/${selectedTrip.id}`, {
 				method: 'PATCH',
@@ -156,7 +162,7 @@
 				},
 				body: JSON.stringify(editForm)
 			});
-			
+
 			if (response.ok) {
 				window.location.reload();
 			} else {
@@ -188,14 +194,14 @@
 	}
 </script>
 
-<div class="p-8 overflow-auto h-full">
+<div class="h-full overflow-auto p-8">
 	<div class="mb-8">
 		<h1 class="text-3xl font-bold text-gray-900">여행 관리</h1>
 		<p class="mt-2 text-gray-600">등록된 모든 여행을 관리하고 모니터링합니다</p>
 	</div>
 
 	<!-- Statistics Cards -->
-	<div class="grid gap-4 md:grid-cols-6 mb-8">
+	<div class="mb-8 grid gap-4 md:grid-cols-6">
 		<div class="rounded-lg bg-white p-6 shadow">
 			<div class="flex items-center justify-between">
 				<div>
@@ -258,9 +264,9 @@
 	</div>
 
 	<!-- Filters and Search -->
-	<div class="mb-6 bg-white rounded-lg shadow p-4">
-		<div class="flex flex-wrap gap-4 items-center">
-			<div class="flex-1 min-w-[200px]">
+	<div class="mb-6 rounded-lg bg-white p-4 shadow">
+		<div class="flex flex-wrap items-center gap-4">
+			<div class="min-w-[200px] flex-1">
 				<input
 					type="text"
 					placeholder="여행지, 여행자 이름 또는 이메일 검색..."
@@ -268,7 +274,7 @@
 					class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
 				/>
 			</div>
-			
+
 			<div class="flex items-center gap-2">
 				<Filter class="h-5 w-5 text-gray-500" />
 				<select
@@ -303,44 +309,60 @@
 	</div>
 
 	<!-- Trips Table -->
-	<div class="bg-white rounded-lg shadow overflow-hidden">
+	<div class="overflow-hidden rounded-lg bg-white shadow">
 		<div class="overflow-x-auto">
 			<table class="min-w-full divide-y divide-gray-200">
 				<thead class="bg-gray-50">
 					<tr>
-						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+						<th
+							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						>
 							여행 정보
 						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+						<th
+							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						>
 							여행자
 						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+						<th
+							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						>
 							날짜
 						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+						<th
+							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						>
 							인원/유형
 						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+						<th
+							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						>
 							예산
 						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+						<th
+							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						>
 							제안
 						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+						<th
+							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						>
 							상태
 						</th>
-						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+						<th
+							class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						>
 							작업
 						</th>
 					</tr>
 				</thead>
-				<tbody class="bg-white divide-y divide-gray-200">
+				<tbody class="divide-y divide-gray-200 bg-white">
 					{#each filteredTrips as trip}
 						{@const badge = getStatusBadge(trip.status)}
 						<tr class="hover:bg-gray-50">
 							<td class="px-6 py-4 whitespace-nowrap">
 								<div class="flex items-center">
-									<MapPin class="h-5 w-5 text-gray-400 mr-2" />
+									<MapPin class="mr-2 h-5 w-5 text-gray-400" />
 									<div>
 										<div class="text-sm font-medium text-gray-900">
 											{trip.destination || '미지정'}
@@ -371,7 +393,7 @@
 							</td>
 							<td class="px-6 py-4 whitespace-nowrap">
 								<div class="flex items-center text-sm text-gray-900">
-									<Users class="h-4 w-4 text-gray-400 mr-1" />
+									<Users class="mr-1 h-4 w-4 text-gray-400" />
 									{trip.people || 0}명
 								</div>
 								<div class="text-xs text-gray-500">
@@ -392,11 +414,13 @@
 								{/if}
 							</td>
 							<td class="px-6 py-4 whitespace-nowrap">
-								<span class="inline-flex rounded-full px-2 text-xs font-semibold leading-5 {badge.bg} {badge.text}">
+								<span
+									class="inline-flex rounded-full px-2 text-xs leading-5 font-semibold {badge.bg} {badge.text}"
+								>
 									{badge.label}
 								</span>
 							</td>
-							<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+							<td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
 								<div class="flex items-center gap-2">
 									<button
 										onclick={() => openTripModal(trip)}
@@ -418,7 +442,9 @@
 					{:else}
 						<tr>
 							<td colspan="8" class="px-6 py-12 text-center text-sm text-gray-500">
-								{searchQuery || statusFilter !== 'all' ? '검색 결과가 없습니다.' : '등록된 여행이 없습니다.'}
+								{searchQuery || statusFilter !== 'all'
+									? '검색 결과가 없습니다.'
+									: '등록된 여행이 없습니다.'}
 							</td>
 						</tr>
 					{/each}
@@ -433,14 +459,16 @@
 			<div class="flex min-h-screen items-center justify-center p-4">
 				<!-- Background overlay -->
 				<div
-					class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
-					onclick={() => showModal = false}
+					class="bg-opacity-50 fixed inset-0 bg-black transition-opacity"
+					onclick={() => (showModal = false)}
 				></div>
 
 				<!-- Modal content -->
-				<div class="relative bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+				<div
+					class="relative max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-lg bg-white shadow-xl"
+				>
 					<!-- Modal header -->
-					<div class="flex items-center justify-between p-6 border-b">
+					<div class="flex items-center justify-between border-b p-6">
 						<h3 class="text-2xl font-bold text-gray-900">
 							{isEditing ? '여행 수정' : '여행 상세 정보'}
 						</h3>
@@ -448,7 +476,7 @@
 							{#if !isEditing}
 								<button
 									onclick={startEditing}
-									class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+									class="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
 								>
 									<Edit class="h-4 w-4" />
 									수정
@@ -456,36 +484,31 @@
 							{:else}
 								<button
 									onclick={handleUpdate}
-									class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+									class="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700"
 								>
 									<Save class="h-4 w-4" />
 									저장
 								</button>
 								<button
-									onclick={() => isEditing = false}
-									class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+									onclick={() => (isEditing = false)}
+									class="rounded-lg bg-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-400"
 								>
 									취소
 								</button>
 							{/if}
-							<button
-								onclick={() => showModal = false}
-								class="text-gray-400 hover:text-gray-600"
-							>
+							<button onclick={() => (showModal = false)} class="text-gray-400 hover:text-gray-600">
 								<X class="h-6 w-6" />
 							</button>
 						</div>
 					</div>
 
 					<!-- Modal body -->
-					<div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+					<div class="max-h-[calc(90vh-200px)] overflow-y-auto p-6">
 						{#if isEditing}
 							<!-- Edit form -->
 							<div class="grid gap-6 md:grid-cols-2">
 								<div>
-									<label class="block text-sm font-medium text-gray-700 mb-2">
-										여행지
-									</label>
+									<label class="mb-2 block text-sm font-medium text-gray-700"> 여행지 </label>
 									<input
 										type="text"
 										bind:value={editForm.destination}
@@ -494,9 +517,7 @@
 								</div>
 
 								<div>
-									<label class="block text-sm font-medium text-gray-700 mb-2">
-										상태
-									</label>
+									<label class="mb-2 block text-sm font-medium text-gray-700"> 상태 </label>
 									<select
 										bind:value={editForm.status}
 										class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
@@ -510,9 +531,7 @@
 								</div>
 
 								<div>
-									<label class="block text-sm font-medium text-gray-700 mb-2">
-										시작일
-									</label>
+									<label class="mb-2 block text-sm font-medium text-gray-700"> 시작일 </label>
 									<input
 										type="date"
 										bind:value={editForm.startDate}
@@ -521,9 +540,7 @@
 								</div>
 
 								<div>
-									<label class="block text-sm font-medium text-gray-700 mb-2">
-										종료일
-									</label>
+									<label class="mb-2 block text-sm font-medium text-gray-700"> 종료일 </label>
 									<input
 										type="date"
 										bind:value={editForm.endDate}
@@ -532,9 +549,7 @@
 								</div>
 
 								<div>
-									<label class="block text-sm font-medium text-gray-700 mb-2">
-										인원
-									</label>
+									<label class="mb-2 block text-sm font-medium text-gray-700"> 인원 </label>
 									<input
 										type="number"
 										min="1"
@@ -544,9 +559,7 @@
 								</div>
 
 								<div>
-									<label class="block text-sm font-medium text-gray-700 mb-2">
-										여행 유형
-									</label>
+									<label class="mb-2 block text-sm font-medium text-gray-700"> 여행 유형 </label>
 									<select
 										bind:value={editForm.tourType}
 										class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
@@ -558,9 +571,7 @@
 								</div>
 
 								<div>
-									<label class="block text-sm font-medium text-gray-700 mb-2">
-										예산
-									</label>
+									<label class="mb-2 block text-sm font-medium text-gray-700"> 예산 </label>
 									<input
 										type="number"
 										min="0"
@@ -574,14 +585,18 @@
 							<div class="space-y-6">
 								<!-- Basic info -->
 								<div class="grid gap-4 md:grid-cols-2">
-									<div class="bg-gray-50 rounded-lg p-4">
-										<h4 class="text-sm font-medium text-gray-600 mb-1">여행 ID</h4>
+									<div class="rounded-lg bg-gray-50 p-4">
+										<h4 class="mb-1 text-sm font-medium text-gray-600">여행 ID</h4>
 										<p class="text-sm text-gray-900">{selectedTrip.id}</p>
 									</div>
-									
-									<div class="bg-gray-50 rounded-lg p-4">
-										<h4 class="text-sm font-medium text-gray-600 mb-1">상태</h4>
-										<span class="inline-flex rounded-full px-3 py-1 text-sm font-semibold {getStatusBadge(selectedTrip.status).bg} {getStatusBadge(selectedTrip.status).text}">
+
+									<div class="rounded-lg bg-gray-50 p-4">
+										<h4 class="mb-1 text-sm font-medium text-gray-600">상태</h4>
+										<span
+											class="inline-flex rounded-full px-3 py-1 text-sm font-semibold {getStatusBadge(
+												selectedTrip.status
+											).bg} {getStatusBadge(selectedTrip.status).text}"
+										>
 											{getStatusBadge(selectedTrip.status).label}
 										</span>
 									</div>
@@ -589,7 +604,7 @@
 
 								<!-- Traveler info -->
 								<div class="border-t pt-6">
-									<h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+									<h4 class="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900">
 										<Users class="h-5 w-5" />
 										여행자 정보
 									</h4>
@@ -607,20 +622,20 @@
 
 								<!-- Trip details -->
 								<div class="border-t pt-6">
-									<h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+									<h4 class="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900">
 										<Plane class="h-5 w-5" />
 										여행 상세 정보
 									</h4>
 									<div class="grid gap-4 md:grid-cols-2">
 										<div>
-											<p class="text-sm text-gray-600 flex items-center gap-1">
+											<p class="flex items-center gap-1 text-sm text-gray-600">
 												<MapPin class="h-4 w-4" />
 												여행지
 											</p>
 											<p class="font-medium">{selectedTrip.destination || '미지정'}</p>
 										</div>
 										<div>
-											<p class="text-sm text-gray-600 flex items-center gap-1">
+											<p class="flex items-center gap-1 text-sm text-gray-600">
 												<Calendar class="h-4 w-4" />
 												날짜
 											</p>
@@ -633,7 +648,7 @@
 											</p>
 										</div>
 										<div>
-											<p class="text-sm text-gray-600 flex items-center gap-1">
+											<p class="flex items-center gap-1 text-sm text-gray-600">
 												<Users class="h-4 w-4" />
 												인원
 											</p>
@@ -644,7 +659,7 @@
 											<p class="font-medium">{getTourTypeLabel(selectedTrip.tourType)}</p>
 										</div>
 										<div>
-											<p class="text-sm text-gray-600 flex items-center gap-1">
+											<p class="flex items-center gap-1 text-sm text-gray-600">
 												<DollarSign class="h-4 w-4" />
 												예산
 											</p>
@@ -655,7 +670,7 @@
 											<p class="font-medium">
 												{selectedTrip.offerCount || 0}개
 												{#if selectedTrip.acceptedOfferId}
-													<span class="text-green-600 text-sm"> (1개 수락됨)</span>
+													<span class="text-sm text-green-600"> (1개 수락됨)</span>
 												{/if}
 											</p>
 										</div>
@@ -664,7 +679,7 @@
 
 								<!-- Timestamps -->
 								<div class="border-t pt-6">
-									<h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+									<h4 class="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900">
 										<Clock class="h-5 w-5" />
 										시간 정보
 									</h4>
@@ -682,18 +697,18 @@
 
 								<!-- Delete button -->
 								<div class="border-t pt-6">
-									<div class="bg-red-50 border border-red-200 rounded-lg p-4">
+									<div class="rounded-lg border border-red-200 bg-red-50 p-4">
 										<div class="flex items-center gap-3">
-											<AlertTriangle class="h-5 w-5 text-red-600 flex-shrink-0" />
+											<AlertTriangle class="h-5 w-5 flex-shrink-0 text-red-600" />
 											<div class="flex-1">
 												<h5 class="font-semibold text-red-800">위험 구역</h5>
-												<p class="text-sm text-red-700 mt-1">
+												<p class="mt-1 text-sm text-red-700">
 													여행을 삭제하면 모든 관련 데이터(제안, 대화, 리뷰 등)도 함께 삭제됩니다.
 												</p>
 											</div>
 											<button
 												onclick={() => handleDelete(selectedTrip.id)}
-												class="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+												class="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
 											>
 												<Trash2 class="h-4 w-4" />
 												여행 삭제

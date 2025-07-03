@@ -113,12 +113,14 @@
 				ontouchstart={handleTouchStart}
 				ontouchend={handleTouchEnd}
 				onmousedown={handleMouseDown}
-				onmouseup={handleMouseUp}>
+				onmouseup={handleMouseUp}
+			>
 				{#each slides as slide, index}
 					<div class="flex w-full flex-shrink-0 justify-center">
 						<div class="flex flex-col items-center">
 							<div
-								class="mb-4 h-96 w-56 rounded-3xl border-4 border-gray-800 bg-white p-4 shadow-xl">
+								class="mb-4 h-96 w-56 rounded-3xl border-4 border-gray-800 bg-white p-4 shadow-xl"
+							>
 								<div class="mb-4 h-6 w-full rounded-full bg-gray-900"></div>
 								<div class="space-y-4">
 									<div class="text-center">
@@ -139,26 +141,25 @@
 			<button
 				class="absolute top-1/2 left-4 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-lg transition-colors hover:bg-gray-50"
 				onclick={prevSlide}
-				disabled={currentSlide === 0}>
+				disabled={currentSlide === 0}
+			>
 				<svg class="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path
 						stroke-linecap="round"
 						stroke-linejoin="round"
 						stroke-width="2"
-						d="M15 19l-7-7 7-7" />
+						d="M15 19l-7-7 7-7"
+					/>
 				</svg>
 			</button>
 
 			<button
 				class="absolute top-1/2 right-4 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-lg transition-colors hover:bg-gray-50"
 				onclick={nextSlide}
-				disabled={currentSlide === slides.length - 1}>
+				disabled={currentSlide === slides.length - 1}
+			>
 				<svg class="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M9 5l7 7-7 7" />
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
 				</svg>
 			</button>
 		</div>
@@ -175,7 +176,8 @@
 							? 'bg-blue-600'
 							: 'bg-gray-300'}"
 						onclick={() => goToSlide(index)}
-						aria-label="슬라이드 {index + 1}로 이동">
+						aria-label="슬라이드 {index + 1}로 이동"
+					>
 					</button>
 				{/each}
 			</div>

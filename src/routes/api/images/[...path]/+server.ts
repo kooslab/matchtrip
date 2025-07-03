@@ -43,11 +43,11 @@ if (R2_ACCOUNT_ID && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY) {
 export const GET: RequestHandler = async ({ params, request, locals }) => {
 	try {
 		const imagePath = params.path;
-		
+
 		// Check origin
 		const origin = request.headers.get('origin') || request.headers.get('referer');
-		const isAllowedOrigin = origin && ALLOWED_ORIGINS.some(allowed => origin.startsWith(allowed));
-		
+		const isAllowedOrigin = origin && ALLOWED_ORIGINS.some((allowed) => origin.startsWith(allowed));
+
 		// In development, always allow. In production, check origin
 		if (!dev && !isAllowedOrigin) {
 			throw error(403, 'Forbidden');
@@ -61,9 +61,11 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 		// If R2 is configured, generate presigned URL
 		if (r2Client && (R2_BUCKET_NAME || R2_PUBLIC_BUCKET_NAME)) {
 			// Determine which bucket to use based on the image type
-			const isPublicImage = imagePath?.includes('destination/') || imagePath?.includes('guide-profile/');
-			const bucketName = isPublicImage && R2_PUBLIC_BUCKET_NAME ? R2_PUBLIC_BUCKET_NAME : R2_BUCKET_NAME;
-			
+			const isPublicImage =
+				imagePath?.includes('destination/') || imagePath?.includes('guide-profile/');
+			const bucketName =
+				isPublicImage && R2_PUBLIC_BUCKET_NAME ? R2_PUBLIC_BUCKET_NAME : R2_BUCKET_NAME;
+
 			if (!bucketName) {
 				throw error(500, 'No bucket configured');
 			}
@@ -76,7 +78,7 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 			try {
 				// Generate presigned URL with 1 hour expiration
 				const presignedUrl = await getSignedUrl(r2Client, command, { expiresIn: 3600 });
-				
+
 				// Redirect to the presigned URL
 				throw redirect(302, presignedUrl);
 			} catch (r2Error: any) {
@@ -84,10 +86,10 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 				if (r2Error?.status === 302 || r2Error?.constructor?.name === 'Redirect') {
 					throw r2Error;
 				}
-				
+
 				// Otherwise, it's an actual error
 				console.error('R2 presigned URL error:', r2Error);
-				
+
 				// Check if it's an AWS SDK error
 				if (r2Error?.$metadata) {
 					console.error('AWS SDK Error:', {
@@ -96,7 +98,7 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 						metadata: r2Error.$metadata
 					});
 				}
-				
+
 				// Extract error message
 				const errorMessage = r2Error?.message || r2Error?.toString() || 'Unknown error';
 				throw error(500, `Failed to generate presigned URL: ${errorMessage}`);
@@ -117,20 +119,19 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 				});
 			}
 		}
-		
+
 		throw error(404, 'Image not found');
-		
 	} catch (err: any) {
 		// If it's a redirect, let it through
 		if (err?.status === 302 || err?.constructor?.name === 'Redirect') {
 			throw err;
 		}
-		
+
 		// If it's already an HTTP error, re-throw it
 		if (err instanceof Error && 'status' in err) {
 			throw err;
 		}
-		
+
 		console.error('Image serving error:', err);
 		throw error(500, 'Internal server error');
 	}
@@ -139,12 +140,12 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 // Handle preflight requests
 export const OPTIONS: RequestHandler = async ({ request }) => {
 	const origin = request.headers.get('origin') || request.headers.get('referer');
-	const isAllowedOrigin = origin && ALLOWED_ORIGINS.some(allowed => origin.startsWith(allowed));
-	
+	const isAllowedOrigin = origin && ALLOWED_ORIGINS.some((allowed) => origin.startsWith(allowed));
+
 	return new Response(null, {
 		status: 200,
 		headers: {
-			'Access-Control-Allow-Origin': (dev || isAllowedOrigin) ? (origin || '*') : '',
+			'Access-Control-Allow-Origin': dev || isAllowedOrigin ? origin || '*' : '',
 			'Access-Control-Allow-Methods': 'GET, OPTIONS',
 			'Access-Control-Allow-Headers': 'Content-Type',
 			'Access-Control-Max-Age': '86400'

@@ -63,28 +63,31 @@
 	}
 </script>
 
-<div class="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
-	<div class="max-w-md w-full">
+<div class="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
+	<div class="w-full max-w-md">
 		<!-- Progress indicator -->
 		<div class="mb-8">
-			<div class="flex items-center justify-between mb-2">
+			<div class="mb-2 flex items-center justify-between">
 				<span class="text-sm text-gray-600">4/4</span>
 			</div>
-			<div class="h-2 bg-gray-200 rounded-full overflow-hidden">
-				<div class="h-full bg-blue-600 rounded-full transition-all duration-300" style="width: 100%"></div>
+			<div class="h-2 overflow-hidden rounded-full bg-gray-200">
+				<div
+					class="h-full rounded-full bg-blue-600 transition-all duration-300"
+					style="width: 100%"
+				></div>
 			</div>
 		</div>
 
-		<div class="bg-white rounded-xl shadow-md p-8">
+		<div class="rounded-xl bg-white p-8 shadow-md">
 			{#if !emailSent}
-				<h1 class="text-2xl font-bold text-gray-900 mb-2">이메일 인증</h1>
-				<p class="text-gray-600 mb-8">
+				<h1 class="mb-2 text-2xl font-bold text-gray-900">이메일 인증</h1>
+				<p class="mb-8 text-gray-600">
 					{isGoogleUser ? '구글 계정으로 가입하셨습니다' : '이메일 주소를 확인해주세요'}
 				</p>
 
 				<div class="space-y-6">
 					<div>
-						<label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+						<label for="email" class="mb-2 block text-sm font-medium text-gray-700">
 							이메일 주소
 						</label>
 						<input
@@ -92,14 +95,26 @@
 							type="email"
 							bind:value={email}
 							placeholder="example@email.com"
-							class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all {isGoogleUser ? 'bg-gray-100 border-gray-200 cursor-not-allowed' : 'border-gray-300'}"
+							class="w-full rounded-lg border px-4 py-3 transition-all outline-none focus:border-transparent focus:ring-2 focus:ring-blue-500 {isGoogleUser
+								? 'cursor-not-allowed border-gray-200 bg-gray-100'
+								: 'border-gray-300'}"
 							disabled={isLoading || isGoogleUser}
 							readonly={isGoogleUser}
 						/>
 						{#if isGoogleUser}
-							<p class="text-sm text-gray-500 mt-2 flex items-center gap-2">
-								<svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+							<p class="mt-2 flex items-center gap-2 text-sm text-gray-500">
+								<svg
+									class="h-4 w-4 text-green-500"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M5 13l4 4L19 7"
+									></path>
 								</svg>
 								구글 계정으로 인증됨
 							</p>
@@ -107,7 +122,7 @@
 					</div>
 
 					{#if error}
-						<div class="p-3 bg-red-50 border border-red-200 rounded-lg">
+						<div class="rounded-lg border border-red-200 bg-red-50 p-3">
 							<p class="text-sm text-red-600">{error}</p>
 						</div>
 					{/if}
@@ -116,7 +131,7 @@
 						{#if isGoogleUser}
 							<button
 								onclick={() => goto('/onboarding-complete')}
-								class="w-full py-3 px-6 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+								class="w-full rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-700"
 							>
 								계속하기
 							</button>
@@ -124,14 +139,14 @@
 							<button
 								onclick={handleSendVerification}
 								disabled={!isValidEmail() || isLoading}
-								class="w-full py-3 px-6 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+								class="w-full rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
 							>
 								{isLoading ? '전송 중...' : '인증 메일 발송'}
 							</button>
-							
+
 							<button
 								onclick={handleSkip}
-								class="w-full py-3 px-6 bg-white text-gray-600 font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+								class="w-full rounded-lg border border-gray-300 bg-white px-6 py-3 font-medium text-gray-600 transition-colors hover:bg-gray-50"
 							>
 								나중에 하기
 							</button>
@@ -142,25 +157,37 @@
 				<!-- Email sent state -->
 				<div class="text-center">
 					<div class="mb-6">
-						<div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
-							<svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+						<div
+							class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-100"
+						>
+							<svg
+								class="h-8 w-8 text-blue-600"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+								></path>
 							</svg>
 						</div>
 					</div>
-					
-					<h2 class="text-2xl font-bold text-gray-900 mb-2">인증 메일을 발송했습니다</h2>
-					<p class="text-gray-600 mb-2">{email}로</p>
-					<p class="text-gray-600 mb-8">인증 메일을 보냈습니다. 이메일을 확인해주세요.</p>
+
+					<h2 class="mb-2 text-2xl font-bold text-gray-900">인증 메일을 발송했습니다</h2>
+					<p class="mb-2 text-gray-600">{email}로</p>
+					<p class="mb-8 text-gray-600">인증 메일을 보냈습니다. 이메일을 확인해주세요.</p>
 
 					<button
 						onclick={() => goto('/onboarding-complete')}
-						class="w-full py-3 px-6 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+						class="w-full rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-700"
 					>
 						계속하기
 					</button>
 
-					<p class="text-sm text-gray-500 mt-6">
+					<p class="mt-6 text-sm text-gray-500">
 						이메일이 오지 않나요? 스팸 메일함을 확인해주세요.
 					</p>
 				</div>

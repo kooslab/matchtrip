@@ -38,7 +38,7 @@ export const GET: RequestHandler = async ({ params }) => {
 						dietaryRestrictions: result.traveler_profiles.dietaryRestrictions,
 						accessibilityNeeds: result.traveler_profiles.accessibilityNeeds,
 						profileImageUrl: result.traveler_profiles.profileImageUrl
-				  }
+					}
 				: null
 		});
 	} catch (error) {

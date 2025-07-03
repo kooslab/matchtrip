@@ -52,7 +52,9 @@
 		{#if isLoading}
 			<div class="flex items-center justify-center py-12">
 				<div class="text-center">
-					<div class="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-pink-500"></div>
+					<div
+						class="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-pink-500"
+					></div>
 					<p class="text-gray-600">가이드 정보를 불러오는 중...</p>
 				</div>
 			</div>
@@ -77,19 +79,23 @@
 								<User class="h-16 w-16 text-gray-400" />
 							</div>
 						{/if}
-						
+
 						<div class="flex-1 text-center sm:text-left">
 							<div class="mb-2 flex items-center justify-center gap-2 sm:justify-start">
 								<h1 class="text-2xl font-bold text-gray-800">{guide.name}</h1>
 								{#if guide.profile?.isVerified}
-									<span class="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
+									<span
+										class="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700"
+									>
 										인증됨
 									</span>
 								{/if}
 							</div>
-							
+
 							{#if guide.profile?.currentLocation}
-								<div class="mb-4 flex items-center justify-center gap-2 text-gray-600 sm:justify-start">
+								<div
+									class="mb-4 flex items-center justify-center gap-2 text-gray-600 sm:justify-start"
+								>
 									<MapPin class="h-4 w-4" />
 									<span>{guide.profile.currentLocation}</span>
 								</div>

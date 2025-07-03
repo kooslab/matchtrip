@@ -81,7 +81,8 @@
 		{#if status === 'Success! Payment widget loaded.'}
 			<button
 				onclick={handlePayment}
-				class="w-full rounded-lg bg-blue-500 px-4 py-3 font-medium text-white hover:bg-blue-600">
+				class="w-full rounded-lg bg-blue-500 px-4 py-3 font-medium text-white hover:bg-blue-600"
+			>
 				결제하기
 			</button>
 		{/if}

@@ -7,15 +7,22 @@ import { eq } from 'drizzle-orm';
 export async function GET({ request }) {
 	console.log('[API USER ROLE] Request received');
 	console.log('[API USER ROLE] Headers:', Object.fromEntries(request.headers.entries()));
-	
+
 	try {
 		console.log('[API USER ROLE] Getting session');
 		const session = await auth.api.getSession({ headers: request.headers });
-		console.log('[API USER ROLE] Session:', JSON.stringify({
-			exists: !!session,
-			userId: session?.user?.id,
-			userEmail: session?.user?.email
-		}, null, 2));
+		console.log(
+			'[API USER ROLE] Session:',
+			JSON.stringify(
+				{
+					exists: !!session,
+					userId: session?.user?.id,
+					userEmail: session?.user?.email
+				},
+				null,
+				2
+			)
+		);
 
 		if (!session?.user?.id) {
 			console.log('[API USER ROLE] No authenticated user');
@@ -40,7 +47,10 @@ export async function GET({ request }) {
 		return json({ role: user.role });
 	} catch (error) {
 		console.error('[API USER ROLE] Error:', error);
-		console.error('[API USER ROLE] Error stack:', error instanceof Error ? error.stack : 'No stack');
+		console.error(
+			'[API USER ROLE] Error stack:',
+			error instanceof Error ? error.stack : 'No stack'
+		);
 		return json({ error: 'Internal server error' }, { status: 500 });
 	}
 }

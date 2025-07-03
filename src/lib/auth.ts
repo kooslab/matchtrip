@@ -30,7 +30,7 @@ console.log('[AUTH CONFIG] Initializing better-auth with drizzle adapter');
 console.log('[AUTH CONFIG] Database tables available:', Object.keys(db._.schema || {}));
 
 export const auth = betterAuth({
-	database: drizzleAdapter(db, { 
+	database: drizzleAdapter(db, {
 		provider: 'pg',
 		schema: {
 			users: schema.users,
@@ -50,7 +50,7 @@ export const auth = betterAuth({
 			clientId: GOOGLE_CLIENT_ID,
 			clientSecret: GOOGLE_CLIENT_SECRET,
 			redirectURI: `${getAuthUrl()}/api/auth/callback/google`,
-			prompt: "select_account", // Force account selection on each login
+			prompt: 'select_account', // Force account selection on each login
 			// Map Google profile data to our user schema
 			mapProfileToUser: (profile) => {
 				console.log('[GOOGLE OAUTH] Mapping profile:', JSON.stringify(profile, null, 2));
@@ -84,8 +84,11 @@ export const auth = betterAuth({
 		const url = new URL(request.url);
 		console.log('[AUTH REQUEST]', request.method, url.pathname);
 		console.log('[AUTH REQUEST] Search params:', url.searchParams.toString());
-		
-		if (request.method === 'POST' && request.headers.get('content-type')?.includes('application/json')) {
+
+		if (
+			request.method === 'POST' &&
+			request.headers.get('content-type')?.includes('application/json')
+		) {
 			try {
 				const body = await request.clone().json();
 				console.log('[AUTH REQUEST] Body:', JSON.stringify(body, null, 2));

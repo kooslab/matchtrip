@@ -6,7 +6,7 @@ import { eq, and } from 'drizzle-orm';
 
 export const PATCH: RequestHandler = async ({ params, request, locals }) => {
 	const session = await locals.auth();
-	
+
 	if (!session || !session.user) {
 		return json({ error: 'Unauthorized' }, { status: 401 });
 	}
@@ -27,11 +27,7 @@ export const PATCH: RequestHandler = async ({ params, request, locals }) => {
 		}
 
 		// Check if there are any offers - can't edit if offers exist
-		const existingOffers = await db
-			.select()
-			.from(offers)
-			.where(eq(offers.tripId, tripId))
-			.limit(1);
+		const existingOffers = await db.select().from(offers).where(eq(offers.tripId, tripId)).limit(1);
 
 		if (existingOffers.length > 0) {
 			return json({ error: 'Cannot edit trip with existing offers' }, { status: 400 });
@@ -39,15 +35,15 @@ export const PATCH: RequestHandler = async ({ params, request, locals }) => {
 
 		// Update only allowed fields
 		const allowedUpdates: any = {};
-		
+
 		if (updates.minBudget !== undefined) {
 			allowedUpdates.minBudget = updates.minBudget;
 		}
-		
+
 		if (updates.maxBudget !== undefined) {
 			allowedUpdates.maxBudget = updates.maxBudget;
 		}
-		
+
 		if (updates.customRequest !== undefined) {
 			allowedUpdates.customRequest = updates.customRequest;
 		}

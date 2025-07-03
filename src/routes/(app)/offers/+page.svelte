@@ -189,8 +189,9 @@
 
 {#if $session.isPending || loading}
 	<div class="flex min-h-screen items-center justify-center">
-		<div class="h-8 w-8 animate-spin rounded-full border-2 border-pink-500 border-t-transparent">
-		</div>
+		<div
+			class="h-8 w-8 animate-spin rounded-full border-2 border-pink-500 border-t-transparent"
+		></div>
 		<span class="ml-2 text-gray-600">로딩 중...</span>
 	</div>
 {:else if error}
@@ -199,7 +200,8 @@
 			<p class="text-red-800">{error}</p>
 			<button
 				class="mt-2 text-sm text-red-600 underline hover:text-red-800"
-				onclick={() => goto('/trips')}>
+				onclick={() => goto('/trips')}
+			>
 				여행찾기로 돌아가기
 			</button>
 		</div>
@@ -210,7 +212,8 @@
 			<p class="text-gray-600">여행 정보를 찾을 수 없습니다.</p>
 			<button
 				class="mt-4 rounded-lg bg-pink-500 px-4 py-2 text-white hover:bg-pink-600"
-				onclick={() => goto('/trips')}>
+				onclick={() => goto('/trips')}
+			>
 				여행찾기로 돌아가기
 			</button>
 		</div>
@@ -231,20 +234,22 @@
 			<div class="space-y-3">
 				<div>
 					<span class="font-medium text-gray-700">여행지:</span>
-					<span class="ml-2 text-gray-900"
-						>{trip.destination.city}, {trip.destination.country}</span>
+					<span class="ml-2 text-gray-900">{trip.destination.city}, {trip.destination.country}</span
+					>
 				</div>
 				<div>
 					<span class="font-medium text-gray-700">여행일정:</span>
 					<span class="ml-2 text-gray-900"
-						>{formatDate(trip.startDate)} ~ {formatDate(trip.endDate)}</span>
+						>{formatDate(trip.startDate)} ~ {formatDate(trip.endDate)}</span
+					>
 				</div>
 				<div>
 					<span class="font-medium text-gray-700">인원:</span>
 					<span class="ml-2 text-gray-900"
 						>성인 {trip.adultsCount}명{trip.childrenCount > 0
 							? `, 아동 ${trip.childrenCount}명`
-							: ''}</span>
+							: ''}</span
+					>
 				</div>
 				{#if trip.customRequest}
 					<div>
@@ -278,7 +283,8 @@
 								placeholder="100000"
 								class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-pink-500 focus:ring-1 focus:ring-pink-500 focus:outline-none"
 								min="0"
-								step="1000" />
+								step="1000"
+							/>
 							<span class="absolute top-2 right-3 text-gray-500">원</span>
 						</div>
 					</div>
@@ -296,7 +302,8 @@
 					<button
 						type="button"
 						onclick={() => (useSimpleEditor = !useSimpleEditor)}
-						class="text-xs text-blue-600 underline hover:text-blue-800">
+						class="text-xs text-blue-600 underline hover:text-blue-800"
+					>
 						{useSimpleEditor ? '고급 편집기 사용' : '간단 편집기 사용'}
 					</button>
 				</div>
@@ -315,14 +322,16 @@
 ..."
 						class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 						rows="12"
-						style="font-size: 16px; line-height: 1.5;"></textarea>
+						style="font-size: 16px; line-height: 1.5;"
+					></textarea>
 				{:else}
 					<!-- TinyMCE Editor -->
 					<div class="rounded-lg border border-gray-300 {isMobile ? 'mobile-editor' : ''}">
 						<Editor
 							apiKey={import.meta.env.VITE_TINYMCE_API_KEY || 'no-api-key'}
 							conf={editorConfig}
-							bind:value={itinerary} />
+							bind:value={itinerary}
+						/>
 					</div>
 				{/if}
 
@@ -336,7 +345,8 @@
 				<button
 					onclick={submitOffer}
 					disabled={submitting || !pricePerPerson || !itinerary.trim()}
-					class="rounded-lg bg-pink-500 px-6 py-3 font-medium text-white transition-colors hover:bg-pink-600 disabled:cursor-not-allowed disabled:bg-gray-300">
+					class="rounded-lg bg-pink-500 px-6 py-3 font-medium text-white transition-colors hover:bg-pink-600 disabled:cursor-not-allowed disabled:bg-gray-300"
+				>
 					{submitting ? '제출 중...' : '제안하기'}
 				</button>
 			</div>

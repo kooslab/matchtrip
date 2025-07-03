@@ -99,7 +99,6 @@
 			isSubmitting = false;
 		}
 	}
-
 </script>
 
 <div class="min-h-screen bg-gray-50 py-8">
@@ -107,7 +106,9 @@
 		{#if isLoading}
 			<div class="flex items-center justify-center py-12">
 				<div class="text-center">
-					<div class="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-pink-500"></div>
+					<div
+						class="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-pink-500"
+					></div>
 					<p class="text-gray-600">리뷰 정보를 불러오는 중...</p>
 				</div>
 			</div>
@@ -121,7 +122,7 @@
 				<!-- Trip Information -->
 				<div class="rounded-lg bg-white p-6 shadow-sm">
 					<h1 class="mb-6 text-2xl font-bold text-gray-800">여행 후기 작성</h1>
-					
+
 					<div class="space-y-4">
 						<!-- Guide Info -->
 						<div class="flex items-start gap-4">
@@ -146,11 +147,19 @@
 						<div class="space-y-2 border-t border-gray-100 pt-4">
 							<div class="flex items-center gap-2 text-sm text-gray-600">
 								<MapPin class="h-4 w-4" />
-								<span>{reviewData.trip.destination.city}, {reviewData.trip.destination.country}</span>
+								<span
+									>{reviewData.trip.destination.city}, {reviewData.trip.destination.country}</span
+								>
 							</div>
 							<div class="flex items-center gap-2 text-sm text-gray-600">
 								<Calendar class="h-4 w-4" />
-								<span>{formatDateRange(reviewData.trip.startDate, reviewData.trip.endDate, { locale: $userLocale, timezone: $userTimezone, format: 'long' })}</span>
+								<span
+									>{formatDateRange(reviewData.trip.startDate, reviewData.trip.endDate, {
+										locale: $userLocale,
+										timezone: $userTimezone,
+										format: 'long'
+									})}</span
+								>
 							</div>
 						</div>
 					</div>
@@ -180,21 +189,31 @@
 							{#each [1, 2, 3, 4, 5] as star}
 								<button
 									type="button"
-									onclick={() => rating = star}
-									onmouseenter={() => hoveredStar = star}
-									onmouseleave={() => hoveredStar = 0}
+									onclick={() => (rating = star)}
+									onmouseenter={() => (hoveredStar = star)}
+									onmouseleave={() => (hoveredStar = 0)}
 									disabled={!$session.data || isSubmitting}
 									class="transition-transform hover:scale-110 disabled:cursor-not-allowed disabled:opacity-50"
 								>
 									<Star
-										class="h-8 w-8 {(hoveredStar >= star || rating >= star) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}"
+										class="h-8 w-8 {hoveredStar >= star || rating >= star
+											? 'fill-yellow-400 text-yellow-400'
+											: 'text-gray-300'}"
 									/>
 								</button>
 							{/each}
 						</div>
 						{#if rating > 0}
 							<p class="mt-2 text-sm text-gray-600">
-								{rating === 5 ? '최고예요!' : rating === 4 ? '좋아요!' : rating === 3 ? '괜찮아요' : rating === 2 ? '별로예요' : '아쉬워요'}
+								{rating === 5
+									? '최고예요!'
+									: rating === 4
+										? '좋아요!'
+										: rating === 3
+											? '괜찮아요'
+											: rating === 2
+												? '별로예요'
+												: '아쉬워요'}
 							</p>
 						{/if}
 					</div>
@@ -227,7 +246,9 @@
 					>
 						{#if isSubmitting}
 							<span class="inline-flex items-center gap-2">
-								<span class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+								<span
+									class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+								></span>
 								제출 중...
 							</span>
 						{:else}

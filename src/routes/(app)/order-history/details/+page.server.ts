@@ -66,12 +66,7 @@ export const load = async ({ url, request, locals }) => {
 		.leftJoin(trips, eq(payments.tripId, trips.id))
 		.leftJoin(destinations, eq(trips.destinationId, destinations.id))
 		.leftJoin(users, eq(offers.guideId, users.id))
-		.where(
-			and(
-				eq(payments.id, paymentId),
-				eq(payments.userId, session.user.id)
-			)
-		)
+		.where(and(eq(payments.id, paymentId), eq(payments.userId, session.user.id)))
 		.limit(1);
 
 	if (orderDetails.length === 0) {
@@ -92,23 +87,29 @@ export const load = async ({ url, request, locals }) => {
 		customRequest: order.customRequest,
 		status: order.tripStatus,
 		createdAt: order.tripCreatedAt,
-		destination: order.destinationId ? {
-			id: order.destinationId,
-			city: order.destinationCity,
-			country: order.destinationCountry
-		} : null,
-		offer: order.offerId ? {
-			id: order.offerId,
-			price: order.offerPrice,
-			itinerary: order.offerItinerary,
-			status: order.offerStatus,
-			createdAt: order.offerCreatedAt
-		} : null,
-		guide: order.guideId ? {
-			id: order.guideId,
-			name: order.guideName,
-			email: order.guideEmail
-		} : null,
+		destination: order.destinationId
+			? {
+					id: order.destinationId,
+					city: order.destinationCity,
+					country: order.destinationCountry
+				}
+			: null,
+		offer: order.offerId
+			? {
+					id: order.offerId,
+					price: order.offerPrice,
+					itinerary: order.offerItinerary,
+					status: order.offerStatus,
+					createdAt: order.offerCreatedAt
+				}
+			: null,
+		guide: order.guideId
+			? {
+					id: order.guideId,
+					name: order.guideName,
+					email: order.guideEmail
+				}
+			: null,
 		payment: {
 			id: order.paymentId,
 			amount: order.paymentAmount,

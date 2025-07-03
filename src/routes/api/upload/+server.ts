@@ -49,11 +49,10 @@ export const POST: RequestHandler = async ({ request }) => {
 		const imageTypes = ['image/jpeg', 'image/png', 'image/webp'];
 		const documentTypes = ['application/pdf'];
 		const allowedTypes = type === 'destination' ? imageTypes : [...imageTypes, ...documentTypes];
-		
+
 		if (!allowedTypes.includes(file.type)) {
-			const allowedFormats = type === 'destination' 
-				? 'JPEG, PNG, and WebP' 
-				: 'JPEG, PNG, WebP, and PDF';
+			const allowedFormats =
+				type === 'destination' ? 'JPEG, PNG, and WebP' : 'JPEG, PNG, WebP, and PDF';
 			return json(
 				{ error: `Invalid file type. Only ${allowedFormats} files are allowed.` },
 				{ status: 400 }
@@ -75,9 +74,10 @@ export const POST: RequestHandler = async ({ request }) => {
 				// Use public bucket for destination and guide profile images, private bucket for others
 				const isPublic = type === 'destination' || type === 'guide-profile';
 				// If marked as public but no public bucket, still use private bucket but generate public URL
-				const bucketName = isPublic && R2_PUBLIC_BUCKET_NAME ? R2_PUBLIC_BUCKET_NAME : R2_BUCKET_NAME;
+				const bucketName =
+					isPublic && R2_PUBLIC_BUCKET_NAME ? R2_PUBLIC_BUCKET_NAME : R2_BUCKET_NAME;
 				const uploadedToPublicBucket = bucketName === R2_PUBLIC_BUCKET_NAME;
-				
+
 				if (!bucketName) {
 					throw new Error('Bucket name not configured');
 				}
@@ -101,7 +101,7 @@ export const POST: RequestHandler = async ({ request }) => {
 					// For private bucket, use our API endpoint
 					publicUrl = `/api/images/${filename}`;
 				}
-				
+
 				return json({
 					success: true,
 					url: publicUrl,
@@ -116,13 +116,13 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		// Fallback: For development without R2
 		console.warn('R2 not configured, using in-memory storage for development');
-		
+
 		// Store in memory for development
 		if (dev) {
 			console.log('[Upload] Storing in dev storage:', filename);
 			devImageStorage.set(filename, { buffer, contentType: file.type });
 			console.log('[Upload] Dev storage now has:', devImageStorage.size, 'images');
-			
+
 			// Return the secure endpoint URL
 			return json({
 				success: true,
@@ -131,7 +131,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				isDevelopment: true
 			});
 		}
-		
+
 		// If not in dev and no R2, return error
 		return json({ error: 'Image storage not configured' }, { status: 500 });
 	} catch (error) {

@@ -26,10 +26,10 @@
 	};
 
 	const canSubmit = $derived(
-		firstName.trim().length > 0 && 
-		lastName.trim().length > 0 && 
-		isValidName(firstName) && 
-		isValidName(lastName)
+		firstName.trim().length > 0 &&
+			lastName.trim().length > 0 &&
+			isValidName(firstName) &&
+			isValidName(lastName)
 	);
 
 	async function handleSubmit() {
@@ -40,7 +40,7 @@
 
 		try {
 			const fullName = `${firstName.trim()} ${lastName.trim()}`;
-			
+
 			const response = await fetch('/api/user/profile', {
 				method: 'PATCH',
 				headers: {
@@ -54,7 +54,12 @@
 			}
 
 			// Continue to phone verification
-			await goto('/onboarding/phone');
+			// Guides go to a different phone page (no verification)
+			if ($page.data.user?.role === 'guide') {
+				await goto('/onboarding/guide-phone');
+			} else {
+				await goto('/onboarding/phone');
+			}
 		} catch (err) {
 			error = err instanceof Error ? err.message : '이름 저장에 실패했습니다.';
 		} finally {
@@ -69,25 +74,34 @@
 	}
 </script>
 
-<div class="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
-	<div class="max-w-md w-full">
+<div class="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
+	<div class="w-full max-w-md">
 		<!-- Progress indicator -->
 		<div class="mb-8">
-			<div class="flex items-center justify-between mb-2">
+			<div class="mb-2 flex items-center justify-between">
 				<span class="text-sm text-gray-600">1/4</span>
 			</div>
-			<div class="h-2 bg-gray-200 rounded-full overflow-hidden">
-				<div class="h-full bg-blue-600 rounded-full transition-all duration-300" style="width: 25%"></div>
+			<div class="h-2 overflow-hidden rounded-full bg-gray-200">
+				<div
+					class="h-full rounded-full bg-blue-600 transition-all duration-300"
+					style="width: 25%"
+				></div>
 			</div>
 		</div>
 
-		<div class="bg-white rounded-xl shadow-md p-8">
-			<h1 class="text-2xl font-bold text-gray-900 mb-2">이름을 알려주세요</h1>
-			<p class="text-gray-600 mb-8">매치트립에서 사용할 이름을 입력해주세요</p>
+		<div class="rounded-xl bg-white p-8 shadow-md">
+			<h1 class="mb-2 text-2xl font-bold text-gray-900">이름을 알려주세요</h1>
+			<p class="mb-8 text-gray-600">매치트립에서 사용할 이름을 입력해주세요</p>
 
-			<form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="space-y-6">
+			<form
+				onsubmit={(e) => {
+					e.preventDefault();
+					handleSubmit();
+				}}
+				class="space-y-6"
+			>
 				<div>
-					<label for="firstName" class="block text-sm font-medium text-gray-700 mb-2">
+					<label for="firstName" class="mb-2 block text-sm font-medium text-gray-700">
 						이름 (First name)
 					</label>
 					<input
@@ -96,13 +110,13 @@
 						bind:value={firstName}
 						onkeydown={handleKeydown}
 						placeholder="길동"
-						class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+						class="w-full rounded-lg border border-gray-300 px-4 py-3 transition-all outline-none focus:border-transparent focus:ring-2 focus:ring-blue-500"
 						disabled={isLoading}
 					/>
 				</div>
 
 				<div>
-					<label for="lastName" class="block text-sm font-medium text-gray-700 mb-2">
+					<label for="lastName" class="mb-2 block text-sm font-medium text-gray-700">
 						성 (Last name)
 					</label>
 					<input
@@ -111,13 +125,13 @@
 						bind:value={lastName}
 						onkeydown={handleKeydown}
 						placeholder="홍"
-						class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+						class="w-full rounded-lg border border-gray-300 px-4 py-3 transition-all outline-none focus:border-transparent focus:ring-2 focus:ring-blue-500"
 						disabled={isLoading}
 					/>
 				</div>
 
 				{#if error}
-					<div class="p-3 bg-red-50 border border-red-200 rounded-lg">
+					<div class="rounded-lg border border-red-200 bg-red-50 p-3">
 						<p class="text-sm text-red-600">{error}</p>
 					</div>
 				{/if}
@@ -125,7 +139,7 @@
 				<button
 					type="submit"
 					disabled={!canSubmit || isLoading}
-					class="w-full py-3 px-6 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+					class="w-full rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
 				>
 					{#if isLoading}
 						저장 중...
@@ -135,9 +149,7 @@
 				</button>
 			</form>
 
-			<p class="text-center text-sm text-gray-500 mt-6">
-				실명을 입력해주세요. 예약 시 필요합니다.
-			</p>
+			<p class="mt-6 text-center text-sm text-gray-500">실명을 입력해주세요. 예약 시 필요합니다.</p>
 		</div>
 	</div>
 </div>

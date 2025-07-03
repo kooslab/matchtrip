@@ -1,7 +1,17 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { preloadData, invalidateAll, goto } from '$app/navigation';
-	import { Home, MapPin, Users, Settings, LogOut, Plane, FileText, CreditCard, MessageSquare } from 'lucide-svelte';
+	import {
+		Home,
+		MapPin,
+		Users,
+		Settings,
+		LogOut,
+		Plane,
+		FileText,
+		CreditCard,
+		MessageSquare
+	} from 'lucide-svelte';
 	import { resetRole } from '$lib/stores/userRole';
 
 	const navigation = [
@@ -23,7 +33,7 @@
 		// Don't preload the current page or already preloaded routes
 		if ($page.url.pathname !== href && !preloadedRoutes.has(href)) {
 			preloadedRoutes.add(href);
-			preloadData(href).catch(err => {
+			preloadData(href).catch((err) => {
 				console.error('Failed to preload:', href, err);
 				// Remove from set so it can be retried
 				preloadedRoutes.delete(href);
@@ -32,14 +42,17 @@
 	}
 
 	// Clear preloaded routes cache periodically (every 5 minutes)
-	setInterval(() => {
-		preloadedRoutes.clear();
-	}, 5 * 60 * 1000);
+	setInterval(
+		() => {
+			preloadedRoutes.clear();
+		},
+		5 * 60 * 1000
+	);
 </script>
 
-<div class="admin-layout flex h-screen bg-gray-100 overflow-hidden">
+<div class="admin-layout flex h-screen overflow-hidden bg-gray-100">
 	<!-- Sidebar -->
-	<div class="w-64 bg-white shadow-md flex flex-col">
+	<div class="flex w-64 flex-col bg-white shadow-md">
 		<div class="p-6">
 			<h2 class="text-2xl font-bold text-gray-800">관리자 패널</h2>
 		</div>
@@ -50,9 +63,9 @@
 					onmouseenter={() => handleMouseEnter(item.href)}
 					onmouseover={() => handleMouseEnter(item.href)}
 					onfocus={() => handleMouseEnter(item.href)}
-					class="flex items-center gap-3 px-6 py-3 text-gray-700 hover:bg-gray-100 hover:text-pink-600 transition-colors {$page.url
-						.pathname === item.href
-						? 'bg-pink-50 text-pink-600 border-r-4 border-pink-600'
+					class="flex items-center gap-3 px-6 py-3 text-gray-700 transition-colors hover:bg-gray-100 hover:text-pink-600 {$page
+						.url.pathname === item.href
+						? 'border-r-4 border-pink-600 bg-pink-50 text-pink-600'
 						: ''}"
 				>
 					<div class="h-5 w-5 flex-shrink-0">
@@ -62,11 +75,8 @@
 				</a>
 			{/each}
 		</nav>
-		<div class="p-6 border-t space-y-3">
-			<a
-				href="/"
-				class="flex items-center gap-3 text-gray-700 hover:text-blue-600"
-			>
+		<div class="space-y-3 border-t p-6">
+			<a href="/" class="flex items-center gap-3 text-gray-700 hover:text-blue-600">
 				<div class="h-5 w-5 flex-shrink-0">
 					<Home class="h-full w-full" />
 				</div>
@@ -87,7 +97,7 @@
 						await goto('/signin');
 					}
 				}}
-				class="flex items-center gap-3 text-gray-700 hover:text-red-600 w-full text-left"
+				class="flex w-full items-center gap-3 text-left text-gray-700 hover:text-red-600"
 			>
 				<div class="h-5 w-5 flex-shrink-0">
 					<LogOut class="h-full w-full" />
@@ -107,7 +117,7 @@
 	:global(html:has(.admin-layout)) {
 		overflow: hidden;
 	}
-	
+
 	:global(body:has(.admin-layout)) {
 		overflow: hidden;
 		height: 100vh;

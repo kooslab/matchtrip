@@ -41,6 +41,7 @@
 	{href}
 	class="transition-colors duration-200 {className}"
 	onclick={handleClick}
-	onmouseenter={handleMouseEnter}>
+	onmouseenter={handleMouseEnter}
+>
 	{@render children()}
 </a>

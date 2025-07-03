@@ -13,7 +13,7 @@ export const PATCH: RequestHandler = async ({ request, locals }) => {
 	try {
 		const updates = await request.json();
 		const allowedFields = ['name', 'phone', 'birthDate'];
-		
+
 		// Filter out any fields that aren't allowed
 		const filteredUpdates: Record<string, any> = {};
 		for (const field of allowedFields) {
@@ -33,12 +33,25 @@ export const PATCH: RequestHandler = async ({ request, locals }) => {
 
 		// Validate phone if provided
 		if ('phone' in filteredUpdates) {
-			// Remove all non-numeric characters
-			const phone = filteredUpdates.phone?.replace(/\D/g, '');
-			if (!phone || phone.length < 10 || phone.length > 11) {
-				return json({ error: 'Invalid phone number format' }, { status: 400 });
+			const phone = filteredUpdates.phone?.trim();
+			
+			// Check if it starts with + (international format)
+			if (phone && phone.startsWith('+')) {
+				// For international numbers, just ensure it has country code + number
+				const digitsOnly = phone.substring(1).replace(/\D/g, ''); // Remove + and non-digits
+				if (digitsOnly.length < 7 || digitsOnly.length > 20) {
+					return json({ error: 'Invalid phone number format' }, { status: 400 });
+				}
+				// Store with + and digits only
+				filteredUpdates.phone = '+' + digitsOnly;
+			} else {
+				// For local numbers (legacy support)
+				const digitsOnly = phone?.replace(/\D/g, '');
+				if (!digitsOnly || digitsOnly.length < 10 || digitsOnly.length > 11) {
+					return json({ error: 'Invalid phone number format' }, { status: 400 });
+				}
+				filteredUpdates.phone = digitsOnly;
 			}
-			filteredUpdates.phone = phone;
 		}
 
 		// Validate birthDate if provided
@@ -46,22 +59,22 @@ export const PATCH: RequestHandler = async ({ request, locals }) => {
 			const birthDate = new Date(filteredUpdates.birthDate);
 			const now = new Date();
 			const age = now.getFullYear() - birthDate.getFullYear();
-			
+
 			// Check if date is valid
 			if (isNaN(birthDate.getTime())) {
 				return json({ error: 'Invalid birth date format' }, { status: 400 });
 			}
-			
+
 			// Check minimum age (14 years)
 			if (age < 14) {
 				return json({ error: 'You must be at least 14 years old' }, { status: 400 });
 			}
-			
+
 			// Check maximum age (100 years)
 			if (age > 100) {
 				return json({ error: 'Invalid birth date' }, { status: 400 });
 			}
-			
+
 			filteredUpdates.birthDate = filteredUpdates.birthDate;
 		}
 

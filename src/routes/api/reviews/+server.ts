@@ -127,9 +127,10 @@ export const GET: RequestHandler = async ({ url }) => {
 			columns: { rating: true }
 		});
 
-		const avgRating = allReviews.length > 0
-			? allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length
-			: 0;
+		const avgRating =
+			allReviews.length > 0
+				? allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length
+				: 0;
 
 		return json({
 			reviews: guideReviews,

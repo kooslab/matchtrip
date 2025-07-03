@@ -25,7 +25,7 @@
 	function formatPhoneNumber(value: string): string {
 		// Remove all non-numeric characters
 		let cleaned = value.replace(/\D/g, '');
-		
+
 		// Format as Korean phone number (010-0000-0000)
 		if (cleaned.length <= 3) {
 			return cleaned;
@@ -38,7 +38,7 @@
 			return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 7)}-${cleaned.slice(7, 11)}`;
 		}
 	}
-	
+
 	function handlePhoneInput(e: Event) {
 		const input = e.target as HTMLInputElement;
 		phoneNumber = formatPhoneNumber(input.value);
@@ -70,8 +70,8 @@
 		try {
 			// For now, just simulate sending code
 			// In production, this would call an actual SMS API
-			await new Promise(resolve => setTimeout(resolve, 1000));
-			
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+
 			showVerificationInput = true;
 			startResendTimer();
 		} catch (err) {
@@ -90,7 +90,7 @@
 
 		try {
 			console.log('Verifying code:', cleanCode);
-			
+
 			// Save phone number first
 			const response = await fetch('/api/user/profile', {
 				method: 'PATCH',
@@ -119,18 +119,18 @@
 	function handleSingleDigitInput(e: Event, index: number) {
 		const input = e.target as HTMLInputElement;
 		const value = input.value.replace(/\D/g, '').slice(-1); // Take only the last digit
-		
+
 		// Update the verification code string
 		const codeArray = verificationCode.padEnd(6, ' ').split('');
 		codeArray[index] = value || ' ';
 		verificationCode = codeArray.join('').trim();
-		
+
 		// Auto-focus next input if value was entered
 		if (value && index < 5) {
 			const nextInput = document.getElementById(`code-input-${index + 1}`);
 			nextInput?.focus();
 		}
-		
+
 		// Update button state when all digits are entered
 		const cleanCode = verificationCode.replace(/\s/g, '');
 		console.log('Current verification code:', cleanCode, 'Length:', cleanCode.length);
@@ -138,7 +138,7 @@
 
 	function handleKeyDown(e: KeyboardEvent, index: number) {
 		const currentValue = verificationCode[index] || '';
-		
+
 		// Handle backspace
 		if (e.key === 'Backspace') {
 			if (!currentValue && index > 0) {
@@ -157,8 +157,7 @@
 			e.preventDefault();
 			const prevInput = document.getElementById(`code-input-${index - 1}`);
 			prevInput?.focus();
-		}
-		else if (e.key === 'ArrowRight' && index < 5) {
+		} else if (e.key === 'ArrowRight' && index < 5) {
 			e.preventDefault();
 			const nextInput = document.getElementById(`code-input-${index + 1}`);
 			nextInput?.focus();
@@ -175,27 +174,30 @@
 	});
 </script>
 
-<div class="min-h-screen bg-white flex items-center justify-center px-4 py-12">
-	<div class="max-w-md w-full">
+<div class="flex min-h-screen items-center justify-center bg-white px-4 py-12">
+	<div class="w-full max-w-md">
 		<!-- Progress indicator -->
 		<div class="mb-8">
-			<div class="flex items-center justify-between mb-2">
+			<div class="mb-2 flex items-center justify-between">
 				<span class="text-sm text-gray-600">2/4</span>
 			</div>
-			<div class="h-2 bg-gray-200 rounded-full overflow-hidden">
-				<div class="h-full bg-blue-600 rounded-full transition-all duration-300" style="width: 50%"></div>
+			<div class="h-2 overflow-hidden rounded-full bg-gray-200">
+				<div
+					class="h-full rounded-full bg-blue-600 transition-all duration-300"
+					style="width: 50%"
+				></div>
 			</div>
 		</div>
 
 		<div class="space-y-8">
 			<div>
-				<h1 class="text-2xl font-bold text-gray-900 mb-2">휴대폰 번호 인증</h1>
+				<h1 class="mb-2 text-2xl font-bold text-gray-900">휴대폰 번호 인증</h1>
 				<p class="text-gray-600">안전한 서비스 이용을 위해 본인 인증을 진행해주세요</p>
 			</div>
 
 			<div class="space-y-6">
 				<div>
-					<label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
+					<label for="phone" class="mb-2 block text-sm font-medium text-gray-700">
 						휴대폰 번호
 					</label>
 					<div class="flex gap-3">
@@ -205,13 +207,17 @@
 							value={phoneNumber}
 							oninput={handlePhoneInput}
 							placeholder="010-0000-0000"
-							class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-base {showVerificationInput ? 'bg-gray-50 text-gray-500' : ''}"
+							class="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-base transition-all outline-none focus:border-transparent focus:ring-2 focus:ring-blue-500 {showVerificationInput
+								? 'bg-gray-50 text-gray-500'
+								: ''}"
 							disabled={isLoading || showVerificationInput}
 						/>
 						<button
 							onclick={handleSendCode}
 							disabled={!canSendCode}
-							class="px-6 py-3 text-white font-medium rounded-lg transition-colors whitespace-nowrap {canSendCode ? 'bg-gray-500 hover:bg-gray-600' : 'bg-gray-300 cursor-not-allowed'}"
+							class="rounded-lg px-6 py-3 font-medium whitespace-nowrap text-white transition-colors {canSendCode
+								? 'bg-gray-500 hover:bg-gray-600'
+								: 'cursor-not-allowed bg-gray-300'}"
 						>
 							{#if showVerificationInput}
 								재전송
@@ -225,9 +231,7 @@
 				{#if showVerificationInput}
 					<div class="space-y-4">
 						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-2">
-								인증번호
-							</label>
+							<label class="mb-2 block text-sm font-medium text-gray-700"> 인증번호 </label>
 							<div class="flex gap-2">
 								{#each Array(6) as _, i}
 									<input
@@ -236,13 +240,17 @@
 										value={verificationCode[i] || ''}
 										oninput={(e) => handleSingleDigitInput(e, i)}
 										onkeydown={(e) => handleKeyDown(e, i)}
-										class="w-12 h-12 border border-gray-300 rounded-lg text-center text-lg font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all {verificationCode[i] ? 'bg-gray-50' : 'bg-white'}"
+										class="h-12 w-12 rounded-lg border border-gray-300 text-center text-lg font-medium transition-all outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 {verificationCode[
+											i
+										]
+											? 'bg-gray-50'
+											: 'bg-white'}"
 										disabled={isLoading}
 										id={`code-input-${i}`}
 									/>
 								{/each}
 							</div>
-							<p class="text-sm text-gray-500 mt-2">
+							<p class="mt-2 text-sm text-gray-500">
 								{phoneNumber}로 전송된 인증번호를 입력해주세요
 							</p>
 						</div>
@@ -251,20 +259,23 @@
 						<button
 							onclick={handleVerify}
 							disabled={verificationCode.replace(/\s/g, '').length !== 6 || isLoading}
-							class="w-full py-3 text-white font-medium rounded-lg transition-colors {verificationCode.replace(/\s/g, '').length === 6 && !isLoading ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-300 cursor-not-allowed'}"
+							class="w-full rounded-lg py-3 font-medium text-white transition-colors {verificationCode.replace(
+								/\s/g,
+								''
+							).length === 6 && !isLoading
+								? 'bg-blue-600 hover:bg-blue-700'
+								: 'cursor-not-allowed bg-gray-300'}"
 						>
 							{isLoading ? '인증 중...' : '확인'}
 						</button>
 
 						<div class="flex items-center justify-between">
-							<span class="text-sm text-gray-600">
-								인증번호가 오지 않나요?
-							</span>
+							<span class="text-sm text-gray-600"> 인증번호가 오지 않나요? </span>
 							<button
 								type="button"
 								onclick={handleSendCode}
 								disabled={resendTimer > 0}
-								class="text-sm text-gray-600 hover:text-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed"
+								class="text-sm text-gray-600 hover:text-gray-700 disabled:cursor-not-allowed disabled:text-gray-400"
 							>
 								재전송 {resendTimer > 0 ? `(${resendTimer}초)` : ''}
 							</button>
@@ -273,16 +284,16 @@
 				{/if}
 
 				{#if error}
-					<div class="p-3 bg-red-50 border border-red-200 rounded-lg">
+					<div class="rounded-lg border border-red-200 bg-red-50 p-3">
 						<p class="text-sm text-red-600">{error}</p>
 					</div>
 				{/if}
 			</div>
 
 			<!-- Information box -->
-			<div class="p-4 bg-gray-50 rounded-lg">
-				<p class="text-xs text-gray-600 font-medium mb-1">안내사항</p>
-				<ul class="text-xs text-gray-600 space-y-0.5">
+			<div class="rounded-lg bg-gray-50 p-4">
+				<p class="mb-1 text-xs font-medium text-gray-600">안내사항</p>
+				<ul class="space-y-0.5 text-xs text-gray-600">
 					<li>• 입력하신 번호로 인증번호가 전송됩니다</li>
 					<li>• 인증번호는 3분간 유효합니다</li>
 					<li>• 본인 명의의 휴대폰 번호를 입력해주세요</li>

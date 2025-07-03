@@ -21,7 +21,7 @@ class AuthErrorLogger {
 		};
 
 		this.errors.push(authError);
-		
+
 		// Keep only the last maxErrors
 		if (this.errors.length > this.maxErrors) {
 			this.errors = this.errors.slice(-this.maxErrors);
@@ -33,14 +33,14 @@ class AuthErrorLogger {
 
 	getErrors(type?: AuthError['type']): AuthError[] {
 		if (type) {
-			return this.errors.filter(e => e.type === type);
+			return this.errors.filter((e) => e.type === type);
 		}
 		return [...this.errors];
 	}
 
 	getRecentErrors(minutes: number = 5): AuthError[] {
 		const cutoff = new Date(Date.now() - minutes * 60 * 1000);
-		return this.errors.filter(e => new Date(e.timestamp) > cutoff);
+		return this.errors.filter((e) => new Date(e.timestamp) > cutoff);
 	}
 
 	clear() {

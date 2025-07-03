@@ -34,22 +34,27 @@ export const GET: RequestHandler = async ({ request }) => {
 			status: 'ok',
 			timestamp: new Date().toISOString(),
 			environment: envCheck,
-			session: session ? {
-				userId: session.user?.id,
-				email: session.user?.email,
-				hasSession: true
-			} : {
-				hasSession: false,
-				error: sessionError
-			},
+			session: session
+				? {
+						userId: session.user?.id,
+						email: session.user?.email,
+						hasSession: true
+					}
+				: {
+						hasSession: false,
+						error: sessionError
+					},
 			authConfig
 		});
 	} catch (error) {
 		console.error('[AUTH TEST] Error:', error);
-		return json({
-			status: 'error',
-			error: error?.message || 'Unknown error',
-			timestamp: new Date().toISOString()
-		}, { status: 500 });
+		return json(
+			{
+				status: 'error',
+				error: error?.message || 'Unknown error',
+				timestamp: new Date().toISOString()
+			},
+			{ status: 500 }
+		);
 	}
 };

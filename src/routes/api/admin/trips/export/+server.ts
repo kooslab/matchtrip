@@ -47,7 +47,7 @@ export const GET: RequestHandler = async ({ locals }) => {
 			'Updated At'
 		];
 
-		const rows = allTrips.map(trip => [
+		const rows = allTrips.map((trip) => [
 			trip.id,
 			trip.destination || '',
 			trip.startDate ? new Date(trip.startDate).toISOString().split('T')[0] : '',
@@ -65,12 +65,14 @@ export const GET: RequestHandler = async ({ locals }) => {
 		// Convert to CSV format
 		const csvContent = [
 			headers.join(','),
-			...rows.map(row => 
-				row.map(cell => {
-					// Escape quotes and wrap in quotes if contains comma
-					const escaped = cell.replace(/"/g, '""');
-					return escaped.includes(',') ? `"${escaped}"` : escaped;
-				}).join(',')
+			...rows.map((row) =>
+				row
+					.map((cell) => {
+						// Escape quotes and wrap in quotes if contains comma
+						const escaped = cell.replace(/"/g, '""');
+						return escaped.includes(',') ? `"${escaped}"` : escaped;
+					})
+					.join(',')
 			)
 		].join('\n');
 

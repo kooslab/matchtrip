@@ -16,10 +16,7 @@ export function getUserLocale(): string {
 	return 'en-US';
 }
 
-export function formatDate(
-	date: Date | string | number,
-	options: DateFormatOptions = {}
-): string {
+export function formatDate(date: Date | string | number, options: DateFormatOptions = {}): string {
 	const {
 		locale = getUserLocale(),
 		timezone = getUserTimezone(),
@@ -36,7 +33,8 @@ export function formatDate(
 	const dateOptions: Intl.DateTimeFormatOptions = {
 		timeZone: timezone,
 		year: 'numeric',
-		month: format === 'short' ? 'short' : format === 'long' || format === 'full' ? 'long' : 'numeric',
+		month:
+			format === 'short' ? 'short' : format === 'long' || format === 'full' ? 'long' : 'numeric',
 		day: 'numeric'
 	};
 
@@ -55,11 +53,7 @@ export function formatTime(
 	date: Date | string | number,
 	options: Omit<DateFormatOptions, 'includeTime'> = {}
 ): string {
-	const {
-		locale = getUserLocale(),
-		timezone = getUserTimezone(),
-		format = 'medium'
-	} = options;
+	const { locale = getUserLocale(), timezone = getUserTimezone(), format = 'medium' } = options;
 
 	const dateObj = date instanceof Date ? date : new Date(date);
 
@@ -80,7 +74,10 @@ export function formatTime(
 	return new Intl.DateTimeFormat(locale, timeOptions).format(dateObj);
 }
 
-export function formatRelativeTime(date: Date | string | number, locale: string = getUserLocale()): string {
+export function formatRelativeTime(
+	date: Date | string | number,
+	locale: string = getUserLocale()
+): string {
 	const dateObj = date instanceof Date ? date : new Date(date);
 	const now = new Date();
 	const diffInMs = now.getTime() - dateObj.getTime();
@@ -113,15 +110,15 @@ export function formatDateRange(
 
 export function formatKoreanDate(date: Date | string | number): string {
 	const dateObj = date instanceof Date ? date : new Date(date);
-	
+
 	if (isNaN(dateObj.getTime())) {
 		return 'Invalid Date';
 	}
-	
+
 	const year = dateObj.getFullYear();
 	const month = String(dateObj.getMonth() + 1).padStart(2, '0');
 	const day = String(dateObj.getDate()).padStart(2, '0');
-	
+
 	return `${year}. ${month}. ${day}`;
 }
 

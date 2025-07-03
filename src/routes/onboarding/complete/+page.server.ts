@@ -24,12 +24,22 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	// Check if user has set their phone
 	if (!locals.user.phone) {
-		redirect(302, '/onboarding/phone');
+		// Guides go to a different phone page (no verification)
+		if (locals.user.role === 'guide') {
+			redirect(302, '/onboarding/guide-phone');
+		} else {
+			redirect(302, '/onboarding/phone');
+		}
 	}
 
 	// Check if user has set their birthdate
 	if (!locals.user.birthDate) {
-		redirect(302, '/onboarding/birthdate');
+		// Guides go to profile page for birthdate entry
+		if (locals.user.role === 'guide') {
+			redirect(302, '/onboarding/guide-profile');
+		} else {
+			redirect(302, '/onboarding/birthdate');
+		}
 	}
 
 	return {

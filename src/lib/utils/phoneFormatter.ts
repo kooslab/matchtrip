@@ -11,10 +11,10 @@
 export function formatPhoneNumber(value: string): string {
 	// If empty, return empty
 	if (!value) return '';
-	
+
 	// Remove all non-digits except the initial +
 	let digits = value.replace(/[^\d+]/g, '');
-	
+
 	// If user types only digits (no + at start), automatically add +
 	if (digits && !digits.startsWith('+') && !digits.startsWith('0')) {
 		digits = '+' + digits;
@@ -37,7 +37,7 @@ export function formatPhoneNumber(value: string): string {
 				return `+49 ${numberPart.slice(0, 2)} ${numberPart.slice(2, 10)}`;
 			}
 		}
-	} 
+	}
 	// Handle national format (0176...) - keep as is for backwards compatibility
 	else if (digits.startsWith('0')) {
 		if (digits.length <= 4) {
@@ -61,7 +61,7 @@ export function formatPhoneNumber(value: string): string {
 		if (countryCodeMatch) {
 			const countryCode = countryCodeMatch[1];
 			const numberPart = digits.slice(countryCode.length + 1);
-			
+
 			if (numberPart.length === 0) {
 				return `+${countryCode}`;
 			} else if (numberPart.length <= 3) {

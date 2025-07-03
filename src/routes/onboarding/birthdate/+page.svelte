@@ -7,17 +7,17 @@
 	let selectedDay = $state(1);
 	let isLoading = $state(false);
 	let error = $state('');
-	
+
 	// Visual selection states (what appears centered)
 	let visualYear = $state(1990);
 	let visualMonth = $state(1);
 	let visualDay = $state(1);
-	
+
 	// Track which items are in the selection area
 	let inSelectionYear = $state<number | null>(null);
 	let inSelectionMonth = $state<number | null>(null);
 	let inSelectionDay = $state<number | null>(null);
-	
+
 	// Prevent recursive scroll updates
 	let isSnapping = false;
 
@@ -29,7 +29,7 @@
 	// Generate arrays for picker
 	const years = Array.from({ length: maxYear - minYear + 1 }, (_, i) => maxYear - i);
 	const months = Array.from({ length: 12 }, (_, i) => i + 1);
-	
+
 	const days = $derived(() => {
 		const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
 		return Array.from({ length: daysInMonth }, (_, i) => i + 1);
@@ -67,13 +67,13 @@
 			inSelectionMonth = selectedMonth;
 			inSelectionDay = selectedDay;
 			scrollToSelected();
-			
+
 			// Update initial styles
 			setTimeout(() => {
 				const yearPicker = document.getElementById('year-picker');
 				const monthPicker = document.getElementById('month-picker');
 				const dayPicker = document.getElementById('day-picker');
-				
+
 				if (yearPicker) updateItemStyles(yearPicker, 'year');
 				if (monthPicker) updateItemStyles(monthPicker, 'month');
 				if (dayPicker) updateItemStyles(dayPicker, 'day');
@@ -84,7 +84,7 @@
 	function scrollToSelected() {
 		const itemHeight = 40;
 		const padding = 96;
-		
+
 		// Scroll year picker
 		const yearPicker = document.getElementById('year-picker');
 		const yearIndex = years.indexOf(selectedYear);
@@ -97,44 +97,52 @@
 		const monthPicker = document.getElementById('month-picker');
 		if (monthPicker) {
 			const centerPosition = monthPicker.clientHeight / 2;
-			monthPicker.scrollTop = (selectedMonth - 1) * itemHeight - centerPosition + padding + itemHeight / 2;
+			monthPicker.scrollTop =
+				(selectedMonth - 1) * itemHeight - centerPosition + padding + itemHeight / 2;
 		}
 
 		// Scroll day picker
 		const dayPicker = document.getElementById('day-picker');
 		if (dayPicker) {
 			const centerPosition = dayPicker.clientHeight / 2;
-			dayPicker.scrollTop = (selectedDay - 1) * itemHeight - centerPosition + padding + itemHeight / 2;
+			dayPicker.scrollTop =
+				(selectedDay - 1) * itemHeight - centerPosition + padding + itemHeight / 2;
 		}
 	}
-	
+
 	// Update item styles based on what's in selection
 	function updateItemStyles(container: HTMLElement, type: 'year' | 'month' | 'day') {
 		const items = container.querySelectorAll('.picker-item');
 		items.forEach((item) => {
 			const element = item as HTMLElement;
 			let value: number | null = null;
-			
+
 			if (type === 'year') {
 				value = parseInt(element.dataset.year || '0');
 				if (value === inSelectionYear) {
-					element.className = 'picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer text-black font-bold text-lg';
+					element.className =
+						'picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer text-black font-bold text-lg';
 				} else {
-					element.className = 'picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer text-gray-400 text-base';
+					element.className =
+						'picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer text-gray-400 text-base';
 				}
 			} else if (type === 'month') {
 				value = parseInt(element.dataset.month || '0');
 				if (value === inSelectionMonth) {
-					element.className = 'picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer text-black font-bold text-lg';
+					element.className =
+						'picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer text-black font-bold text-lg';
 				} else {
-					element.className = 'picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer text-gray-400 text-base';
+					element.className =
+						'picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer text-gray-400 text-base';
 				}
 			} else if (type === 'day') {
 				value = parseInt(element.dataset.day || '0');
 				if (value === inSelectionDay) {
-					element.className = 'picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer text-black font-bold text-lg';
+					element.className =
+						'picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer text-black font-bold text-lg';
 				} else {
-					element.className = 'picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer text-gray-400 text-base';
+					element.className =
+						'picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer text-gray-400 text-base';
 				}
 			}
 		});
@@ -143,18 +151,18 @@
 	// Handle scroll snap
 	function handlePickerScroll(e: Event, type: 'year' | 'month' | 'day') {
 		if (isSnapping) return; // Prevent handling scroll during snap
-		
+
 		const target = e.target as HTMLElement;
 		const itemHeight = 40;
 		const padding = 96; // py-24 = 96px
 		const containerHeight = target.clientHeight;
 		const centerPosition = containerHeight / 2;
 		const scrollTop = target.scrollTop;
-		
+
 		// Calculate which item is at the center, accounting for padding
 		const adjustedScrollTop = scrollTop + centerPosition - padding;
 		const index = Math.round(adjustedScrollTop / itemHeight);
-		
+
 		// Update which item is in the selection area
 		if (type === 'year' && years[index]) {
 			inSelectionYear = years[index];
@@ -168,22 +176,22 @@
 			inSelectionDay = dayIndex + 1;
 			visualDay = dayIndex + 1;
 		}
-		
+
 		// Update all items' styles
 		updateItemStyles(target, type);
-		
+
 		// Clear any existing timeout
 		if (target.dataset.scrollTimeout) {
 			clearTimeout(parseInt(target.dataset.scrollTimeout));
 		}
-		
+
 		// Set a new timeout for snap and final selection
 		const timeoutId = setTimeout(() => {
 			isSnapping = true;
-			
+
 			// Calculate the exact position to center the item in selection area
 			const targetScrollTop = index * itemHeight - centerPosition + padding + itemHeight / 2;
-			
+
 			// Update the actual selected values based on what's centered
 			if (type === 'year' && years[index]) {
 				selectedYear = years[index];
@@ -197,13 +205,13 @@
 				selectedDay = dayIndex + 1;
 				target.scrollTop = dayIndex * itemHeight - centerPosition + padding + itemHeight / 2;
 			}
-			
+
 			// Reset the flag after animation
 			setTimeout(() => {
 				isSnapping = false;
 			}, 300);
 		}, 100);
-		
+
 		target.dataset.scrollTimeout = timeoutId.toString();
 	}
 
@@ -221,8 +229,10 @@
 
 		try {
 			// Create ISO date string
-			const birthDate = new Date(selectedYear, selectedMonth - 1, selectedDay).toISOString().split('T')[0];
-			
+			const birthDate = new Date(selectedYear, selectedMonth - 1, selectedDay)
+				.toISOString()
+				.split('T')[0];
+
 			const response = await fetch('/api/user/profile', {
 				method: 'PATCH',
 				headers: {
@@ -253,39 +263,44 @@
 	}
 </script>
 
-<div class="min-h-screen bg-white flex items-center justify-center px-4 py-12">
-	<div class="max-w-md w-full">
+<div class="flex min-h-screen items-center justify-center bg-white px-4 py-12">
+	<div class="w-full max-w-md">
 		<!-- Progress indicator -->
 		<div class="mb-8">
-			<div class="flex items-center justify-between mb-2">
+			<div class="mb-2 flex items-center justify-between">
 				<span class="text-sm text-gray-600">3/4</span>
 			</div>
-			<div class="h-2 bg-gray-200 rounded-full overflow-hidden">
-				<div class="h-full bg-blue-600 rounded-full transition-all duration-300" style="width: 75%"></div>
+			<div class="h-2 overflow-hidden rounded-full bg-gray-200">
+				<div
+					class="h-full rounded-full bg-blue-600 transition-all duration-300"
+					style="width: 75%"
+				></div>
 			</div>
 		</div>
 
 		<div class="space-y-8">
 			<div>
-				<h1 class="text-2xl font-bold text-gray-900 mb-2">생년월일을 알려주세요</h1>
+				<h1 class="mb-2 text-2xl font-bold text-gray-900">생년월일을 알려주세요</h1>
 				<p class="text-gray-600">서비스 이용을 위해 필요한 정보입니다</p>
 			</div>
 
 			<!-- iOS Style Date Picker Always Visible -->
-			<div class="bg-gray-50 rounded-2xl p-4">
-				<div class="flex gap-1 h-52 overflow-hidden">
+			<div class="rounded-2xl bg-gray-50 p-4">
+				<div class="flex h-52 gap-1 overflow-hidden">
 					<!-- Year Picker -->
-					<div class="flex-1 relative">
-						<div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-10 bg-transparent border-2 border-blue-400 rounded-lg pointer-events-none z-10"></div>
-						<div 
-							class="overflow-y-auto h-full picker-scroll" 
+					<div class="relative flex-1">
+						<div
+							class="pointer-events-none absolute inset-x-0 top-1/2 z-10 h-10 -translate-y-1/2 rounded-lg border-2 border-blue-400 bg-transparent"
+						></div>
+						<div
+							class="picker-scroll h-full overflow-y-auto"
 							id="year-picker"
 							onscroll={(e) => handlePickerScroll(e, 'year')}
 						>
 							<div class="py-24" style="padding-top: 96px; padding-bottom: 96px;">
 								{#each years as year}
 									<div
-										class="picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer text-gray-400 text-base"
+										class="picker-item flex h-10 w-full cursor-pointer items-center justify-center text-base text-gray-400 transition-all"
 										data-year={year}
 										onclick={() => {
 											selectedYear = year;
@@ -306,17 +321,19 @@
 					</div>
 
 					<!-- Month Picker -->
-					<div class="flex-1 relative">
-						<div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-10 bg-transparent border-2 border-blue-400 rounded-lg pointer-events-none z-10"></div>
-						<div 
-							class="overflow-y-auto h-full picker-scroll" 
+					<div class="relative flex-1">
+						<div
+							class="pointer-events-none absolute inset-x-0 top-1/2 z-10 h-10 -translate-y-1/2 rounded-lg border-2 border-blue-400 bg-transparent"
+						></div>
+						<div
+							class="picker-scroll h-full overflow-y-auto"
 							id="month-picker"
 							onscroll={(e) => handlePickerScroll(e, 'month')}
 						>
 							<div class="py-24" style="padding-top: 96px; padding-bottom: 96px;">
 								{#each months as month}
 									<div
-										class="picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer text-gray-400 text-base"
+										class="picker-item flex h-10 w-full cursor-pointer items-center justify-center text-base text-gray-400 transition-all"
 										data-month={month}
 										onclick={() => {
 											selectedMonth = month;
@@ -337,17 +354,19 @@
 					</div>
 
 					<!-- Day Picker -->
-					<div class="flex-1 relative">
-						<div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-10 bg-transparent border-2 border-blue-400 rounded-lg pointer-events-none z-10"></div>
-						<div 
-							class="overflow-y-auto h-full picker-scroll" 
+					<div class="relative flex-1">
+						<div
+							class="pointer-events-none absolute inset-x-0 top-1/2 z-10 h-10 -translate-y-1/2 rounded-lg border-2 border-blue-400 bg-transparent"
+						></div>
+						<div
+							class="picker-scroll h-full overflow-y-auto"
 							id="day-picker"
 							onscroll={(e) => handlePickerScroll(e, 'day')}
 						>
 							<div class="py-24" style="padding-top: 96px; padding-bottom: 96px;">
 								{#each days() as day}
 									<div
-										class="picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer text-gray-400 text-base"
+										class="picker-item flex h-10 w-full cursor-pointer items-center justify-center text-base text-gray-400 transition-all"
 										data-day={day}
 										onclick={() => {
 											selectedDay = day;
@@ -370,7 +389,7 @@
 			</div>
 
 			{#if error}
-				<div class="p-3 bg-red-50 border border-red-200 rounded-lg">
+				<div class="rounded-lg border border-red-200 bg-red-50 p-3">
 					<p class="text-sm text-red-600">{error}</p>
 				</div>
 			{/if}
@@ -378,7 +397,7 @@
 			<button
 				onclick={handleSubmit}
 				disabled={isLoading}
-				class="w-full py-3 px-6 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+				class="w-full rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
 			>
 				{#if isLoading}
 					저장 중...
@@ -387,9 +406,7 @@
 				{/if}
 			</button>
 
-			<p class="text-center text-sm text-gray-500 mt-4">
-				만 14세 이상만 가입할 수 있습니다
-			</p>
+			<p class="mt-4 text-center text-sm text-gray-500">만 14세 이상만 가입할 수 있습니다</p>
 		</div>
 	</div>
 </div>
@@ -402,11 +419,11 @@
 		scroll-snap-type: y mandatory;
 		scroll-behavior: smooth;
 	}
-	
+
 	.picker-scroll::-webkit-scrollbar {
 		display: none; /* Chrome, Safari, Opera */
 	}
-	
+
 	.picker-item {
 		scroll-snap-align: center;
 		height: 40px;

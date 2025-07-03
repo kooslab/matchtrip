@@ -16,7 +16,7 @@
 
 	// Loading state for proposal navigation
 	let navigatingTripId = $state<string | null>(null);
-	
+
 	// Filter states
 	let selectedFilters = $state({
 		destination: false,
@@ -24,10 +24,10 @@
 		people: false,
 		budget: false
 	});
-	
+
 	// Get unique destinations count
 	let uniqueDestinations = $derived(
-		new Set(trips.map(trip => `${trip.destination.city}, ${trip.destination.country}`)).size
+		new Set(trips.map((trip) => `${trip.destination.city}, ${trip.destination.country}`)).size
 	);
 
 	// Get status display info
@@ -90,40 +90,60 @@
 
 <div class="min-h-screen bg-gray-50">
 	<!-- Filter Bar -->
-	<div class="sticky top-0 z-10 bg-white border-b border-gray-200">
+	<div class="sticky top-0 z-10 border-b border-gray-200 bg-white">
 		<div class="container mx-auto px-4 py-3">
-			<div class="flex gap-2 overflow-x-auto scrollbar-hide">
+			<div class="scrollbar-hide flex gap-2 overflow-x-auto">
 				<button
-					onclick={() => selectedFilters.destination = !selectedFilters.destination}
-					class="flex-shrink-0 flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition-all {selectedFilters.destination 
-						? 'border-gray-900 bg-gray-900 text-white' 
-						: 'border border-gray-300 bg-white text-gray-700 hover:border-gray-400'}">
+					onclick={() => (selectedFilters.destination = !selectedFilters.destination)}
+					class="flex flex-shrink-0 items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition-all {selectedFilters.destination
+						? 'border-gray-900 bg-gray-900 text-white'
+						: 'border border-gray-300 bg-white text-gray-700 hover:border-gray-400'}"
+				>
 					<span>여행지 {uniqueDestinations > 0 ? `${uniqueDestinations}곳` : ''}</span>
-					<img src={chevronRightIconUrl} alt="" class="w-4 h-4 {selectedFilters.destination ? 'brightness-0 invert' : ''}" />
+					<img
+						src={chevronRightIconUrl}
+						alt=""
+						class="h-4 w-4 {selectedFilters.destination ? 'brightness-0 invert' : ''}"
+					/>
 				</button>
 				<button
-					onclick={() => selectedFilters.dates = !selectedFilters.dates}
-					class="flex-shrink-0 flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition-all {selectedFilters.dates 
-						? 'border-gray-900 bg-gray-900 text-white' 
-						: 'border border-gray-300 bg-white text-gray-700 hover:border-gray-400'}">
+					onclick={() => (selectedFilters.dates = !selectedFilters.dates)}
+					class="flex flex-shrink-0 items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition-all {selectedFilters.dates
+						? 'border-gray-900 bg-gray-900 text-white'
+						: 'border border-gray-300 bg-white text-gray-700 hover:border-gray-400'}"
+				>
 					<span>일정</span>
-					<img src={chevronRightIconUrl} alt="" class="w-4 h-4 {selectedFilters.dates ? 'brightness-0 invert' : ''}" />
+					<img
+						src={chevronRightIconUrl}
+						alt=""
+						class="h-4 w-4 {selectedFilters.dates ? 'brightness-0 invert' : ''}"
+					/>
 				</button>
 				<button
-					onclick={() => selectedFilters.people = !selectedFilters.people}
-					class="flex-shrink-0 flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition-all {selectedFilters.people 
-						? 'border-gray-900 bg-gray-900 text-white' 
-						: 'border border-gray-300 bg-white text-gray-700 hover:border-gray-400'}">
+					onclick={() => (selectedFilters.people = !selectedFilters.people)}
+					class="flex flex-shrink-0 items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition-all {selectedFilters.people
+						? 'border-gray-900 bg-gray-900 text-white'
+						: 'border border-gray-300 bg-white text-gray-700 hover:border-gray-400'}"
+				>
 					<span>인원</span>
-					<img src={chevronRightIconUrl} alt="" class="w-4 h-4 {selectedFilters.people ? 'brightness-0 invert' : ''}" />
+					<img
+						src={chevronRightIconUrl}
+						alt=""
+						class="h-4 w-4 {selectedFilters.people ? 'brightness-0 invert' : ''}"
+					/>
 				</button>
 				<button
-					onclick={() => selectedFilters.budget = !selectedFilters.budget}
-					class="flex-shrink-0 flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition-all {selectedFilters.budget 
-						? 'border-gray-900 bg-gray-900 text-white' 
-						: 'border border-gray-300 bg-white text-gray-700 hover:border-gray-400'}">
+					onclick={() => (selectedFilters.budget = !selectedFilters.budget)}
+					class="flex flex-shrink-0 items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition-all {selectedFilters.budget
+						? 'border-gray-900 bg-gray-900 text-white'
+						: 'border border-gray-300 bg-white text-gray-700 hover:border-gray-400'}"
+				>
 					<span>예산</span>
-					<img src={chevronRightIconUrl} alt="" class="w-4 h-4 {selectedFilters.budget ? 'brightness-0 invert' : ''}" />
+					<img
+						src={chevronRightIconUrl}
+						alt=""
+						class="h-4 w-4 {selectedFilters.budget ? 'brightness-0 invert' : ''}"
+					/>
 				</button>
 			</div>
 		</div>
@@ -142,10 +162,16 @@
 						<span>완료된 여행 제외</span>
 					</div>
 					<button
-						class="flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50">
+						class="flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+					>
 						최신순
 						<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M19 9l-7 7-7-7"
+							/>
 						</svg>
 					</button>
 				</div>
@@ -160,7 +186,8 @@
 							stroke-linecap="round"
 							stroke-linejoin="round"
 							stroke-width="2"
-							d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+							d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+						/>
 					</svg>
 				</div>
 				<h3 class="mb-2 text-lg font-medium text-gray-900">
@@ -181,7 +208,7 @@
 		{:else}
 			<div class="space-y-3">
 				{#each trips as trip}
-					<div 
+					<div
 						onclick={() => goto(`/trips/${trip.id}`)}
 						role="button"
 						tabindex="0"
@@ -191,7 +218,8 @@
 								goto(`/trips/${trip.id}`);
 							}
 						}}
-						class="w-full text-left overflow-hidden rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+						class="w-full cursor-pointer overflow-hidden rounded-lg bg-white text-left shadow-sm transition-shadow hover:shadow-md"
+					>
 						<div class="p-4">
 							<div class="mb-3 flex items-start justify-between">
 								<div class="flex-1">
@@ -199,7 +227,8 @@
 										<span
 											class="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium {getStatusInfo(
 												trip.status
-											).class}">
+											).class}"
+										>
 											{getStatusInfo(trip.status).label}
 										</span>
 									</div>
@@ -207,9 +236,10 @@
 										{trip.destination.city}, {trip.destination.country}
 									</h3>
 								</div>
-								<button 
+								<button
 									onclick={(e) => e.stopPropagation()}
-									class="text-gray-400 hover:text-gray-600 transition-colors">
+									class="text-gray-400 transition-colors hover:text-gray-600"
+								>
 									<img src={bookmarkIconUrl} alt="Bookmark" class="h-5 w-5" />
 								</button>
 							</div>
@@ -220,19 +250,22 @@
 										class="h-4 w-4 text-gray-400"
 										fill="none"
 										stroke="currentColor"
-										viewBox="0 0 24 24">
+										viewBox="0 0 24 24"
+									>
 										<path
 											stroke-linecap="round"
 											stroke-linejoin="round"
 											stroke-width="2"
-											d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+											d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+										/>
 									</svg>
 									<span
 										>{formatDateRange(trip.startDate, trip.endDate, {
 											locale: $userLocale,
 											timezone: $userTimezone,
 											format: 'short'
-										})}</span>
+										})}</span
+									>
 								</div>
 
 								<div class="flex items-center gap-2 text-sm text-gray-600">
@@ -240,31 +273,37 @@
 										class="h-4 w-4 text-gray-400"
 										fill="none"
 										stroke="currentColor"
-										viewBox="0 0 24 24">
+										viewBox="0 0 24 24"
+									>
 										<path
 											stroke-linecap="round"
 											stroke-linejoin="round"
 											stroke-width="2"
-											d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+											d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+										/>
 									</svg>
 									<span
 										>성인 {trip.adultsCount}명{#if trip.childrenCount > 0}
-											아동 {trip.childrenCount}명{/if}</span>
+											아동 {trip.childrenCount}명{/if}</span
+									>
 								</div>
 							</div>
 
-							<div class="mb-4 -mx-4 px-4">
-								<div class="flex gap-2 overflow-x-auto scrollbar-hide">
+							<div class="-mx-4 mb-4 px-4">
+								<div class="scrollbar-hide flex gap-2 overflow-x-auto">
 									<span
-										class="inline-flex flex-shrink-0 items-center rounded-md bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
+										class="inline-flex flex-shrink-0 items-center rounded-md bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700"
+									>
 										200~500만원
 									</span>
 									<span
-										class="inline-flex flex-shrink-0 items-center rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">
+										class="inline-flex flex-shrink-0 items-center rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700"
+									>
 										{formatTravelMethod(trip.travelMethod)}
 									</span>
 									<span
-										class="inline-flex flex-shrink-0 items-center rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">
+										class="inline-flex flex-shrink-0 items-center rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700"
+									>
 										자연 / 아웃도어
 									</span>
 								</div>
@@ -273,10 +312,21 @@
 							<div class="border-t border-gray-100 pt-4">
 								<details class="group">
 									<summary
-										class="flex cursor-pointer items-center justify-between text-sm font-medium text-gray-900">
+										class="flex cursor-pointer items-center justify-between text-sm font-medium text-gray-900"
+									>
 										요청 사항
-										<svg class="h-5 w-5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+										<svg
+											class="h-5 w-5 transition-transform group-open:rotate-180"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M19 9l-7 7-7-7"
+											/>
 										</svg>
 									</summary>
 									<div class="mt-3 space-y-3">
@@ -303,7 +353,8 @@
 														e.stopPropagation();
 														goto(`/trips/${trip.id}`);
 													}}
-													class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50">
+													class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+												>
 													자세히 보기
 												</button>
 											</div>
@@ -315,7 +366,8 @@
 															e.stopPropagation();
 															goto(`/conversations/${trip.conversationId}`);
 														}}
-														class="w-full rounded-lg bg-[#2B2D5B] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#1F2147]">
+														class="w-full rounded-lg bg-[#2B2D5B] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#1F2147]"
+													>
 														제안하기
 													</button>
 												{:else}
@@ -326,7 +378,8 @@
 															goToOffer(trip.id);
 														}}
 														disabled={navigatingTripId === trip.id}
-														class="w-full rounded-lg bg-[#2B2D5B] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#1F2147] disabled:cursor-not-allowed disabled:opacity-50">
+														class="w-full rounded-lg bg-[#2B2D5B] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#1F2147] disabled:cursor-not-allowed disabled:opacity-50"
+													>
 														{#if navigatingTripId === trip.id}
 															로딩중...
 														{:else}

@@ -1,6 +1,18 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { Search, User, Shield, Phone, Mail, Calendar, Check, X, FileText, Image, Download } from 'lucide-svelte';
+	import {
+		Search,
+		User,
+		Shield,
+		Phone,
+		Mail,
+		Calendar,
+		Check,
+		X,
+		FileText,
+		Image,
+		Download
+	} from 'lucide-svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -11,25 +23,28 @@
 
 	// Filter users based on search query
 	const filteredTravelers = $derived(
-		(data?.travelers || []).filter(user => 
-			user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			user.profile?.phone?.includes(searchQuery)
+		(data?.travelers || []).filter(
+			(user) =>
+				user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+				user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+				user.profile?.phone?.includes(searchQuery)
 		)
 	);
 
 	const filteredGuides = $derived(
-		(data?.guides || []).filter(user => 
-			user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			user.profile?.phone?.includes(searchQuery)
+		(data?.guides || []).filter(
+			(user) =>
+				user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+				user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+				user.profile?.phone?.includes(searchQuery)
 		)
 	);
 
 	const filteredAdmins = $derived(
-		(data?.admins || []).filter(user => 
-			user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			user.email.toLowerCase().includes(searchQuery.toLowerCase())
+		(data?.admins || []).filter(
+			(user) =>
+				user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+				user.email.toLowerCase().includes(searchQuery.toLowerCase())
 		)
 	);
 
@@ -57,11 +72,11 @@
 
 	function getFileTypeInfo(uploadType: string, fileType: string) {
 		const typeLabels: Record<string, string> = {
-			'profile': '프로필 사진',
-			'id': '신분증',
-			'guide': '가이드 자격증',
-			'driver': '운전면허증',
-			'insurance': '자동차 보험증'
+			profile: '프로필 사진',
+			id: '신분증',
+			guide: '가이드 자격증',
+			driver: '운전면허증',
+			insurance: '자동차 보험증'
 		};
 
 		const isImage = fileType.startsWith('image/');
@@ -78,7 +93,7 @@
 
 	async function makeAdmin(userId: string) {
 		if (!confirm('이 사용자를 관리자로 지정하시겠습니까?')) return;
-		
+
 		changingRole = true;
 		try {
 			const response = await fetch('/api/users/role', {
@@ -88,18 +103,18 @@
 			});
 
 			if (!response.ok) throw new Error('Failed to update role');
-			
+
 			// Move user from guides to admins
-			const guideIndex = data.guides.findIndex(g => g.id === userId);
+			const guideIndex = data.guides.findIndex((g) => g.id === userId);
 			if (guideIndex !== -1) {
 				const user = data.guides[guideIndex];
 				user.role = 'admin';
 				data.guides.splice(guideIndex, 1);
 				data.admins.push(user);
-				
+
 				// Force reactivity
 				data = { ...data };
-				
+
 				// Close modal if this user was selected
 				if (selectedUser && selectedUser.id === userId) {
 					showDetailModal = false;
@@ -114,7 +129,7 @@
 
 	async function removeAdmin(userId: string) {
 		if (!confirm('이 관리자의 권한을 제거하시겠습니까? 가이드로 변경됩니다.')) return;
-		
+
 		changingRole = true;
 		try {
 			const response = await fetch('/api/users/role', {
@@ -124,18 +139,18 @@
 			});
 
 			if (!response.ok) throw new Error('Failed to update role');
-			
+
 			// Move user from admins to guides
-			const adminIndex = data.admins.findIndex(a => a.id === userId);
+			const adminIndex = data.admins.findIndex((a) => a.id === userId);
 			if (adminIndex !== -1) {
 				const user = data.admins[adminIndex];
 				user.role = 'guide';
 				data.admins.splice(adminIndex, 1);
 				data.guides.push(user);
-				
+
 				// Switch to guides tab
 				activeTab = 'guides';
-				
+
 				// Force reactivity
 				data = { ...data };
 			}
@@ -149,7 +164,7 @@
 	async function toggleVerification(userId: string, currentStatus: boolean) {
 		const action = currentStatus ? '인증을 취소' : '인증';
 		if (!confirm(`이 가이드를 ${action}하시겠습니까?`)) return;
-		
+
 		changingVerification = true;
 		try {
 			const response = await fetch('/api/users/verify', {
@@ -159,23 +174,23 @@
 			});
 
 			if (!response.ok) throw new Error('Failed to update verification');
-			
+
 			// Update the local data instead of reloading
 			const newStatus = !currentStatus;
-			
+
 			// Update in guides array
-			const guideIndex = data.guides.findIndex(g => g.id === userId);
+			const guideIndex = data.guides.findIndex((g) => g.id === userId);
 			if (guideIndex !== -1 && data.guides[guideIndex].profile) {
 				data.guides[guideIndex].profile.isVerified = newStatus;
 				data.guides[guideIndex].profile.verifiedAt = newStatus ? new Date() : null;
 			}
-			
+
 			// Update selectedUser if modal is open
 			if (selectedUser && selectedUser.id === userId && selectedUser.profile) {
 				selectedUser.profile.isVerified = newStatus;
 				selectedUser.profile.verifiedAt = newStatus ? new Date() : null;
 			}
-			
+
 			// Force reactivity
 			data = { ...data };
 			if (selectedUser) {
@@ -191,12 +206,12 @@
 	async function downloadFile(e: MouseEvent, fileId: string, originalName: string) {
 		e.preventDefault();
 		downloadingFileId = fileId;
-		
+
 		try {
 			// Simply open the download URL in a new window
 			// The server will redirect to a presigned URL
 			window.open(`/api/admin/download?fileId=${fileId}`, '_blank');
-			
+
 			// Wait a bit before removing the loading state
 			setTimeout(() => {
 				downloadingFileId = null;
@@ -209,7 +224,7 @@
 	}
 </script>
 
-<div class="p-8 h-full flex flex-col">
+<div class="flex h-full flex-col p-8">
 	<div class="mb-8">
 		<h1 class="text-3xl font-bold text-gray-900">사용자 관리</h1>
 		<p class="mt-2 text-gray-600">플랫폼에 등록된 사용자를 관리합니다</p>
@@ -262,12 +277,12 @@
 	<div class="mb-6 rounded-lg bg-white p-4 shadow">
 		<div class="mb-4">
 			<div class="relative">
-				<Search class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+				<Search class="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
 				<input
 					type="text"
 					bind:value={searchQuery}
 					placeholder="이름, 이메일 또는 전화번호로 검색..."
-					class="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 focus:border-pink-500 focus:outline-none"
+					class="w-full rounded-lg border border-gray-300 py-2 pr-4 pl-10 focus:border-pink-500 focus:outline-none"
 				/>
 			</div>
 		</div>
@@ -275,7 +290,8 @@
 		<div class="flex gap-2">
 			<button
 				onclick={() => (activeTab = 'travelers')}
-				class="flex-1 rounded-lg px-4 py-2 text-center font-medium transition-colors {activeTab === 'travelers'
+				class="flex-1 rounded-lg px-4 py-2 text-center font-medium transition-colors {activeTab ===
+				'travelers'
 					? 'bg-pink-500 text-white'
 					: 'bg-gray-100 text-gray-700 hover:bg-gray-200'}"
 			>
@@ -283,7 +299,8 @@
 			</button>
 			<button
 				onclick={() => (activeTab = 'guides')}
-				class="flex-1 rounded-lg px-4 py-2 text-center font-medium transition-colors {activeTab === 'guides'
+				class="flex-1 rounded-lg px-4 py-2 text-center font-medium transition-colors {activeTab ===
+				'guides'
 					? 'bg-pink-500 text-white'
 					: 'bg-gray-100 text-gray-700 hover:bg-gray-200'}"
 			>
@@ -291,7 +308,8 @@
 			</button>
 			<button
 				onclick={() => (activeTab = 'admins')}
-				class="flex-1 rounded-lg px-4 py-2 text-center font-medium transition-colors {activeTab === 'admins'
+				class="flex-1 rounded-lg px-4 py-2 text-center font-medium transition-colors {activeTab ===
+				'admins'
 					? 'bg-pink-500 text-white'
 					: 'bg-gray-100 text-gray-700 hover:bg-gray-200'}"
 			>
@@ -301,39 +319,51 @@
 	</div>
 
 	<!-- Users Table -->
-	<div class="flex-1 flex flex-col overflow-hidden rounded-lg bg-white shadow">
+	<div class="flex flex-1 flex-col overflow-hidden rounded-lg bg-white shadow">
 		<div class="flex-1 overflow-auto">
 			{#if activeTab === 'travelers'}
 				<table class="min-w-full divide-y divide-gray-200">
-					<thead class="bg-gray-50 sticky top-0 z-10">
+					<thead class="sticky top-0 z-10 bg-gray-50">
 						<tr>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+							<th
+								class="bg-gray-50 px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+							>
 								이름
 							</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+							<th
+								class="bg-gray-50 px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+							>
 								이메일
 							</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+							<th
+								class="bg-gray-50 px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+							>
 								전화번호
 							</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+							<th
+								class="bg-gray-50 px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+							>
 								가입일
 							</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+							<th
+								class="bg-gray-50 px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+							>
 								상태
 							</th>
 						</tr>
 					</thead>
-					<tbody class="bg-white divide-y divide-gray-200">
+					<tbody class="divide-y divide-gray-200 bg-white">
 						{#each filteredTravelers as traveler}
-							<tr 
-								class="hover:bg-gray-50 cursor-pointer transition-colors"
+							<tr
+								class="cursor-pointer transition-colors hover:bg-gray-50"
 								onclick={() => openDetailModal(traveler)}
 							>
 								<td class="px-6 py-4 whitespace-nowrap">
 									<div class="flex items-center">
 										<div class="h-10 w-10 flex-shrink-0">
-											<div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+											<div
+												class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300"
+											>
 												<User class="h-5 w-5 text-gray-600" />
 											</div>
 										</div>
@@ -352,11 +382,13 @@
 										{formatPhone(traveler.profile?.phone)}
 									</div>
 								</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+								<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-500">
 									{formatDate(traveler.createdAt)}
 								</td>
 								<td class="px-6 py-4 whitespace-nowrap">
-									<span class="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800">
+									<span
+										class="inline-flex rounded-full bg-green-100 px-2 text-xs leading-5 font-semibold text-green-800"
+									>
 										활성
 									</span>
 								</td>
@@ -372,38 +404,52 @@
 				</table>
 			{:else if activeTab === 'guides'}
 				<table class="min-w-full divide-y divide-gray-200">
-					<thead class="bg-gray-50 sticky top-0 z-10">
+					<thead class="sticky top-0 z-10 bg-gray-50">
 						<tr>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+							<th
+								class="bg-gray-50 px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+							>
 								이름
 							</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+							<th
+								class="bg-gray-50 px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+							>
 								이메일
 							</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+							<th
+								class="bg-gray-50 px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+							>
 								전화번호
 							</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+							<th
+								class="bg-gray-50 px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+							>
 								가입일
 							</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+							<th
+								class="bg-gray-50 px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+							>
 								인증 상태
 							</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+							<th
+								class="bg-gray-50 px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+							>
 								작업
 							</th>
 						</tr>
 					</thead>
-					<tbody class="bg-white divide-y divide-gray-200">
+					<tbody class="divide-y divide-gray-200 bg-white">
 						{#each filteredGuides as guide}
-							<tr 
-								class="hover:bg-gray-50 cursor-pointer transition-colors"
+							<tr
+								class="cursor-pointer transition-colors hover:bg-gray-50"
 								onclick={() => openDetailModal(guide)}
 							>
 								<td class="px-6 py-4 whitespace-nowrap">
 									<div class="flex items-center">
 										<div class="h-10 w-10 flex-shrink-0">
-											<div class="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
+											<div
+												class="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100"
+											>
 												<Shield class="h-5 w-5 text-purple-600" />
 											</div>
 										</div>
@@ -422,28 +468,35 @@
 										{formatPhone(guide.profile?.phone)}
 									</div>
 								</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+								<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-500">
 									{formatDate(guide.createdAt)}
 								</td>
 								<td class="px-6 py-4 whitespace-nowrap">
 									{#if guide.profile?.isVerified}
-										<span class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 text-xs font-semibold leading-5 text-blue-800">
+										<span
+											class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 text-xs leading-5 font-semibold text-blue-800"
+										>
 											<Check class="h-3 w-3" />
 											인증됨
 										</span>
 									{:else}
-										<span class="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2 text-xs font-semibold leading-5 text-yellow-800">
+										<span
+											class="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2 text-xs leading-5 font-semibold text-yellow-800"
+										>
 											<X class="h-3 w-3" />
 											미인증
 										</span>
 									{/if}
 								</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+								<td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
 									<div class="flex gap-2">
 										<button
-											onclick={() => toggleVerification(guide.id, guide.profile?.isVerified || false)}
+											onclick={() =>
+												toggleVerification(guide.id, guide.profile?.isVerified || false)}
 											disabled={changingVerification}
-											class="{guide.profile?.isVerified ? 'text-yellow-600 hover:text-yellow-900' : 'text-green-600 hover:text-green-900'} disabled:opacity-50"
+											class="{guide.profile?.isVerified
+												? 'text-yellow-600 hover:text-yellow-900'
+												: 'text-green-600 hover:text-green-900'} disabled:opacity-50"
 										>
 											{guide.profile?.isVerified ? '인증 취소' : '인증하기'}
 										</button>
@@ -468,29 +521,39 @@
 				</table>
 			{:else if activeTab === 'admins'}
 				<table class="min-w-full divide-y divide-gray-200">
-					<thead class="bg-gray-50 sticky top-0 z-10">
+					<thead class="sticky top-0 z-10 bg-gray-50">
 						<tr>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+							<th
+								class="bg-gray-50 px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+							>
 								이름
 							</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+							<th
+								class="bg-gray-50 px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+							>
 								이메일
 							</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+							<th
+								class="bg-gray-50 px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+							>
 								가입일
 							</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+							<th
+								class="bg-gray-50 px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+							>
 								작업
 							</th>
 						</tr>
 					</thead>
-					<tbody class="bg-white divide-y divide-gray-200">
+					<tbody class="divide-y divide-gray-200 bg-white">
 						{#each filteredAdmins as admin}
 							<tr class="hover:bg-gray-50">
 								<td class="px-6 py-4 whitespace-nowrap">
 									<div class="flex items-center">
 										<div class="h-10 w-10 flex-shrink-0">
-											<div class="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
+											<div
+												class="flex h-10 w-10 items-center justify-center rounded-full bg-red-100"
+											>
 												<Shield class="h-5 w-5 text-red-600" />
 											</div>
 										</div>
@@ -504,10 +567,10 @@
 								<td class="px-6 py-4 whitespace-nowrap">
 									<div class="text-sm text-gray-900">{admin.email}</div>
 								</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+								<td class="px-6 py-4 text-sm whitespace-nowrap text-gray-500">
 									{formatDate(admin.createdAt)}
 								</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+								<td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
 									<button
 										onclick={() => removeAdmin(admin.id)}
 										disabled={changingRole}
@@ -533,21 +596,18 @@
 
 <!-- User Detail Modal -->
 {#if showDetailModal && selectedUser}
-	<div 
+	<div
 		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
 		onclick={() => (showDetailModal = false)}
 	>
-		<div 
-			class="w-full max-w-2xl rounded-lg bg-white overflow-hidden"
+		<div
+			class="w-full max-w-2xl overflow-hidden rounded-lg bg-white"
 			onclick={(e) => e.stopPropagation()}
 		>
 			<!-- Header -->
-			<div class="bg-gray-50 px-6 py-4 flex items-center justify-between">
+			<div class="flex items-center justify-between bg-gray-50 px-6 py-4">
 				<h2 class="text-xl font-semibold text-gray-900">사용자 상세 정보</h2>
-				<button
-					onclick={() => (showDetailModal = false)}
-					class="rounded-lg p-2 hover:bg-gray-200"
-				>
+				<button onclick={() => (showDetailModal = false)} class="rounded-lg p-2 hover:bg-gray-200">
 					<X class="h-5 w-5" />
 				</button>
 			</div>
@@ -556,7 +616,14 @@
 			<div class="p-6">
 				<!-- User Info -->
 				<div class="mb-6 flex items-center gap-4">
-					<div class="h-20 w-20 rounded-full flex items-center justify-center {selectedUser.role === 'admin' ? 'bg-red-100' : selectedUser.role === 'guide' ? 'bg-purple-100' : 'bg-gray-300'}">
+					<div
+						class="flex h-20 w-20 items-center justify-center rounded-full {selectedUser.role ===
+						'admin'
+							? 'bg-red-100'
+							: selectedUser.role === 'guide'
+								? 'bg-purple-100'
+								: 'bg-gray-300'}"
+					>
 						{#if selectedUser.role === 'admin'}
 							<Shield class="h-10 w-10 text-red-600" />
 						{:else if selectedUser.role === 'guide'}
@@ -570,7 +637,11 @@
 							{selectedUser.name || '이름 없음'}
 						</h3>
 						<p class="text-gray-600">
-							{selectedUser.role === 'admin' ? '관리자' : selectedUser.role === 'guide' ? '가이드' : '여행자'}
+							{selectedUser.role === 'admin'
+								? '관리자'
+								: selectedUser.role === 'guide'
+									? '가이드'
+									: '여행자'}
 						</p>
 					</div>
 				</div>
@@ -579,7 +650,7 @@
 				<div class="space-y-4">
 					<div class="grid gap-4 md:grid-cols-2">
 						<div class="rounded-lg border p-4">
-							<div class="flex items-center gap-2 mb-1">
+							<div class="mb-1 flex items-center gap-2">
 								<Mail class="h-4 w-4 text-gray-400" />
 								<span class="text-sm text-gray-500">이메일</span>
 							</div>
@@ -587,7 +658,7 @@
 						</div>
 
 						<div class="rounded-lg border p-4">
-							<div class="flex items-center gap-2 mb-1">
+							<div class="mb-1 flex items-center gap-2">
 								<Phone class="h-4 w-4 text-gray-400" />
 								<span class="text-sm text-gray-500">전화번호</span>
 							</div>
@@ -597,7 +668,7 @@
 						</div>
 
 						<div class="rounded-lg border p-4">
-							<div class="flex items-center gap-2 mb-1">
+							<div class="mb-1 flex items-center gap-2">
 								<Calendar class="h-4 w-4 text-gray-400" />
 								<span class="text-sm text-gray-500">가입일</span>
 							</div>
@@ -605,7 +676,7 @@
 						</div>
 
 						<div class="rounded-lg border p-4">
-							<div class="flex items-center gap-2 mb-1">
+							<div class="mb-1 flex items-center gap-2">
 								<Shield class="h-4 w-4 text-gray-400" />
 								<span class="text-sm text-gray-500">상태</span>
 							</div>
@@ -621,57 +692,66 @@
 
 					{#if selectedUser.role === 'guide' && selectedUser.profile}
 						<div class="border-t pt-4">
-							<h4 class="font-medium text-gray-900 mb-3">가이드 프로필 정보</h4>
+							<h4 class="mb-3 font-medium text-gray-900">가이드 프로필 정보</h4>
 							<div class="space-y-3">
 								{#if selectedUser.profile.introduction}
 									<div>
-										<p class="text-sm text-gray-500 mb-1">자기소개</p>
+										<p class="mb-1 text-sm text-gray-500">자기소개</p>
 										<p class="text-gray-900">{selectedUser.profile.introduction}</p>
 									</div>
 								{/if}
 								{#if selectedUser.profile.languages}
 									<div>
-										<p class="text-sm text-gray-500 mb-1">가능한 언어</p>
-										<p class="text-gray-900">{Array.isArray(selectedUser.profile.languages) ? selectedUser.profile.languages.join(', ') : selectedUser.profile.languages}</p>
+										<p class="mb-1 text-sm text-gray-500">가능한 언어</p>
+										<p class="text-gray-900">
+											{Array.isArray(selectedUser.profile.languages)
+												? selectedUser.profile.languages.join(', ')
+												: selectedUser.profile.languages}
+										</p>
 									</div>
 								{/if}
 								{#if selectedUser.profile.guideAreas}
 									<div>
-										<p class="text-sm text-gray-500 mb-1">가이드 지역</p>
+										<p class="mb-1 text-sm text-gray-500">가이드 지역</p>
 										<p class="text-gray-900">{selectedUser.profile.guideAreas}</p>
 									</div>
 								{/if}
 								{#if selectedUser.profile.experience}
 									<div>
-										<p class="text-sm text-gray-500 mb-1">경력</p>
+										<p class="mb-1 text-sm text-gray-500">경력</p>
 										<p class="text-gray-900">{selectedUser.profile.experience}</p>
 									</div>
 								{/if}
 							</div>
-							
+
 							<!-- Uploaded Files -->
 							{#if selectedUser.uploads && selectedUser.uploads.length > 0}
-								<div class="border-t pt-4 mt-4">
-									<h4 class="font-medium text-gray-900 mb-3">업로드된 파일</h4>
-									<div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+								<div class="mt-4 border-t pt-4">
+									<h4 class="mb-3 font-medium text-gray-900">업로드된 파일</h4>
+									<div class="grid grid-cols-2 gap-3 md:grid-cols-3">
 										{#each selectedUser.uploads as upload}
 											{@const fileInfo = getFileTypeInfo(upload.uploadType, upload.fileType)}
 											<button
 												onclick={(e) => downloadFile(e, upload.id, upload.originalName)}
 												disabled={downloadingFileId === upload.id}
-												class="flex flex-col items-center p-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
+												class="group flex flex-col items-center rounded-lg border border-gray-200 p-3 transition-colors hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
 											>
 												{#if downloadingFileId === upload.id}
-													<div class="h-10 w-10 flex items-center justify-center">
-														<div class="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600"></div>
+													<div class="flex h-10 w-10 items-center justify-center">
+														<div
+															class="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600"
+														></div>
 													</div>
 												{:else}
-													<svelte:component this={fileInfo.icon} class="h-10 w-10 text-gray-400 group-hover:text-gray-600 mb-2" />
+													<svelte:component
+														this={fileInfo.icon}
+														class="mb-2 h-10 w-10 text-gray-400 group-hover:text-gray-600"
+													/>
 												{/if}
-												<span class="text-xs text-gray-600 text-center">{fileInfo.label}</span>
-												<span class="text-xs text-gray-400 mt-1">{upload.originalName}</span>
+												<span class="text-center text-xs text-gray-600">{fileInfo.label}</span>
+												<span class="mt-1 text-xs text-gray-400">{upload.originalName}</span>
 												{#if downloadingFileId !== upload.id}
-													<Download class="h-4 w-4 text-gray-400 group-hover:text-gray-600 mt-2" />
+													<Download class="mt-2 h-4 w-4 text-gray-400 group-hover:text-gray-600" />
 												{/if}
 											</button>
 										{/each}
@@ -691,7 +771,10 @@
 								toggleVerification(selectedUser.id, selectedUser.profile?.isVerified || false);
 							}}
 							disabled={changingVerification}
-							class="flex-1 rounded-lg px-4 py-2 text-white disabled:opacity-50 {selectedUser.profile?.isVerified ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-green-600 hover:bg-green-700'}"
+							class="flex-1 rounded-lg px-4 py-2 text-white disabled:opacity-50 {selectedUser
+								.profile?.isVerified
+								? 'bg-yellow-600 hover:bg-yellow-700'
+								: 'bg-green-600 hover:bg-green-700'}"
 						>
 							{selectedUser.profile?.isVerified ? '인증 취소' : '인증하기'}
 						</button>

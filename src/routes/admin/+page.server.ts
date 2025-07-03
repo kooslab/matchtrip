@@ -20,7 +20,7 @@ export const load: PageServerLoad = async () => {
 		admins: 0
 	};
 
-	userStats.forEach(stat => {
+	userStats.forEach((stat) => {
 		userCounts.total += stat.count;
 		if (stat.role === 'traveler') userCounts.travelers = stat.count;
 		else if (stat.role === 'guide') userCounts.guides = stat.count;
@@ -32,7 +32,7 @@ export const load: PageServerLoad = async () => {
 		.select({ count: sql<number>`count(*)::int` })
 		.from(guideProfiles)
 		.where(eq(guideProfiles.isVerified, true));
-	
+
 	const verifiedGuides = verifiedGuidesResult[0]?.count || 0;
 
 	// Get trip statistics
@@ -53,7 +53,7 @@ export const load: PageServerLoad = async () => {
 		cancelled: 0
 	};
 
-	tripStats.forEach(stat => {
+	tripStats.forEach((stat) => {
 		tripCounts.total += stat.count;
 		tripCounts[stat.status] = stat.count;
 	});
@@ -75,7 +75,7 @@ export const load: PageServerLoad = async () => {
 		cancelled: 0
 	};
 
-	offerStats.forEach(stat => {
+	offerStats.forEach((stat) => {
 		offerCounts.total += stat.count;
 		offerCounts[stat.status] = stat.count;
 	});
@@ -84,7 +84,7 @@ export const load: PageServerLoad = async () => {
 	const destinationResult = await db
 		.select({ count: sql<number>`count(*)::int` })
 		.from(destinations);
-	
+
 	const destinationCount = destinationResult[0]?.count || 0;
 
 	// Get recent activity (last 30 days)
@@ -96,7 +96,7 @@ export const load: PageServerLoad = async () => {
 		.select({ count: sql<number>`count(*)::int` })
 		.from(users)
 		.where(gte(users.createdAt, thirtyDaysAgo));
-	
+
 	const newUsers = newUsersResult[0]?.count || 0;
 
 	// New trips in last 30 days
@@ -104,7 +104,7 @@ export const load: PageServerLoad = async () => {
 		.select({ count: sql<number>`count(*)::int` })
 		.from(trips)
 		.where(gte(trips.createdAt, thirtyDaysAgo));
-	
+
 	const newTrips = newTripsResult[0]?.count || 0;
 
 	// Payment statistics
@@ -123,7 +123,7 @@ export const load: PageServerLoad = async () => {
 		failed: 0
 	};
 
-	paymentStats.forEach(stat => {
+	paymentStats.forEach((stat) => {
 		if (stat.status === 'completed') {
 			paymentCounts.completed = stat.totalAmount || 0;
 			paymentCounts.totalRevenue = stat.totalAmount || 0;

@@ -71,13 +71,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Key Architecture Patterns
 
 ### Authentication Flow
+
 The app uses better-auth with Google OAuth. Authentication state is managed through:
+
 - Server-side session validation in `hooks.server.ts`
 - Protected routes under `(app)` layout group
 - Role-based access control (traveler, guide, admin)
 - User profiles split between `users`, `travelerProfiles`, and `guideProfiles` tables
 
 ### Database Schema
+
 - **Users**: Core user data with role enum (traveler/guide/admin)
 - **Profiles**: Separate tables for traveler and guide specific data
 - **Trips**: Trip listings created by travelers
@@ -87,13 +90,16 @@ The app uses better-auth with Google OAuth. Authentication state is managed thro
 - **Reviews**: Review system for completed trips
 
 ### Route Protection
+
 - Public routes: Landing, auth pages, public profiles
 - Protected routes: Under `(app)` layout, requires authentication
 - Admin routes: Requires admin role, separate layout
 - API routes: Use better-auth session validation
 
 ### File Storage
+
 Uses AWS S3/R2 for file uploads with presigned URLs:
+
 - Public bucket for profile images
 - Private bucket for documents and certifications
 - Image optimization and migration utilities
@@ -101,6 +107,7 @@ Uses AWS S3/R2 for file uploads with presigned URLs:
 ## Environment Variables
 
 Required environment variables (see `.env.example`):
+
 - `DATABASE_URL` - PostgreSQL connection string
 - `BETTER_AUTH_SECRET` - Secret for auth sessions
 - `PUBLIC_BETTER_AUTH_URL` - Public URL for auth redirects
@@ -130,16 +137,19 @@ Required environment variables (see `.env.example`):
 ## Common Development Tasks
 
 ### Running Tests
+
 - Type checking: `bun run check` (runs svelte-check)
 - Linting: `bun run lint` (checks Prettier formatting)
 - Format code: `bun run format` (applies Prettier formatting)
 
 ### Database Operations
+
 - View/edit data: `bun run db:studio` opens Drizzle Studio
 - Schema changes: Edit files in `src/lib/server/db/schema.ts`, then run `bun run db:push` for development
 - Production migrations: Generate with `bun run db:generate`, apply with `bun run db:migrate`
 
 ### Working with Authentication
+
 - Auth configuration: `src/lib/auth.ts`
 - Session handling: Managed in `src/hooks.server.ts`
 - Protected routes: Place under `src/routes/(app)/`
@@ -148,10 +158,12 @@ Required environment variables (see `.env.example`):
 ## Application-Specific Context
 
 This is a travel marketplace platform connecting travelers with local guides:
+
 - **Travelers**: Create trip requests, browse guide offers, book experiences
 - **Guides**: Browse trips, make offers, manage bookings
 - **Admin**: Platform management, user verification, payment oversight
 
 Key user flows:
+
 1. Traveler posts trip → Guides make offers → Traveler accepts → Payment → Trip completion → Reviews
 2. Role selection on first login → Profile completion → Platform access

@@ -3,7 +3,7 @@ import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ params, fetch }) => {
 	try {
 		const response = await fetch(`/api/traveler/${params.id}`);
-		
+
 		if (!response.ok) {
 			return {
 				traveler: null,
@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 		}
 
 		const data = await response.json();
-		
+
 		return {
 			traveler: data.traveler,
 			travelerProfile: data.travelerProfile

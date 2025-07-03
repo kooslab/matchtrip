@@ -58,21 +58,31 @@
 
 	function getOfferStatusText(status: string) {
 		switch (status) {
-			case 'pending': return '대기중';
-			case 'accepted': return '수락됨';
-			case 'rejected': return '거절됨';
-			case 'withdrawn': return '철회됨';
-			default: return status;
+			case 'pending':
+				return '대기중';
+			case 'accepted':
+				return '수락됨';
+			case 'rejected':
+				return '거절됨';
+			case 'withdrawn':
+				return '철회됨';
+			default:
+				return status;
 		}
 	}
 
 	function getOfferStatusColor(status: string) {
 		switch (status) {
-			case 'pending': return 'text-yellow-600 bg-yellow-50';
-			case 'accepted': return 'text-green-600 bg-green-50';
-			case 'rejected': return 'text-red-600 bg-red-50';
-			case 'withdrawn': return 'text-gray-600 bg-gray-50';
-			default: return 'text-gray-600 bg-gray-50';
+			case 'pending':
+				return 'text-yellow-600 bg-yellow-50';
+			case 'accepted':
+				return 'text-green-600 bg-green-50';
+			case 'rejected':
+				return 'text-red-600 bg-red-50';
+			case 'withdrawn':
+				return 'text-gray-600 bg-gray-50';
+			default:
+				return 'text-gray-600 bg-gray-50';
 		}
 	}
 </script>
@@ -129,7 +139,7 @@
 									</span>
 								</div>
 							{/if}
-							
+
 							<div class="text-left">
 								<div class="flex items-center gap-2">
 									<h3 class="font-medium text-gray-900">
@@ -139,13 +149,15 @@
 										({conversation.otherUser.role === 'guide' ? '가이드' : '여행자'})
 									</span>
 								</div>
-								
+
 								<p class="mt-1 text-sm text-gray-600">
 									{conversation.offer.title}
 								</p>
-								
+
 								<div class="mt-2 flex items-center gap-4 text-xs text-gray-500">
-									<span class={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${getOfferStatusColor(conversation.offer.status)}`}>
+									<span
+										class={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${getOfferStatusColor(conversation.offer.status)}`}
+									>
 										{getOfferStatusText(conversation.offer.status)}
 									</span>
 									<span class="flex items-center gap-1">
@@ -155,10 +167,12 @@
 								</div>
 							</div>
 						</div>
-						
+
 						<div class="flex items-center gap-2">
 							{#if conversation.unreadCount > 0}
-								<span class="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-xs font-bold text-white">
+								<span
+									class="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-xs font-bold text-white"
+								>
 									{conversation.unreadCount}
 								</span>
 							{/if}

@@ -175,25 +175,29 @@
 		class="fixed inset-0 z-50 overflow-y-auto bg-black/50"
 		onclick={(e) => {
 			if (e.target === e.currentTarget) onClose();
-		}}>
+		}}
+	>
 		<!-- Modal content wrapper -->
 		<div class="flex min-h-full items-center justify-center p-4">
 			<!-- Modal content -->
 			<div
 				class="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white shadow-xl"
-				bind:this={widgetContainer}>
+				bind:this={widgetContainer}
+			>
 				<!-- Header -->
 				<div class="flex items-center justify-between border-b px-3 py-1.5">
 					<h2 class="text-base font-semibold text-gray-900">결제하기</h2>
 					<button
 						onclick={onClose}
-						class="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+						class="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+					>
 						<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
 								stroke-width="2"
-								d="M6 18L18 6M6 6l12 12" />
+								d="M6 18L18 6M6 6l12 12"
+							/>
 						</svg>
 					</button>
 				</div>
@@ -223,7 +227,8 @@
 							<div class="mt-1 flex justify-between border-t pt-1">
 								<span class="font-medium text-gray-900">총 금액</span>
 								<span class="text-base font-bold text-pink-600"
-									>{offer.price.toLocaleString()}원</span>
+									>{offer.price.toLocaleString()}원</span
+								>
 							</div>
 						</div>
 					</div>
@@ -234,8 +239,8 @@
 							<div class="absolute inset-0 z-10 flex items-center justify-center bg-white/90">
 								<div class="flex flex-col items-center justify-center text-center">
 									<div
-										class="mb-2 h-8 w-8 animate-spin rounded-full border-4 border-pink-500 border-t-transparent">
-									</div>
+										class="mb-2 h-8 w-8 animate-spin rounded-full border-4 border-pink-500 border-t-transparent"
+									></div>
 									<p class="text-sm text-gray-600">결제 시스템을 불러오는 중...</p>
 								</div>
 							</div>
@@ -258,13 +263,15 @@
 					<div class="mt-2 flex gap-2">
 						<button
 							onclick={onClose}
-							class="flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50">
+							class="flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+						>
 							취소
 						</button>
 						<button
 							onclick={handlePayment}
 							disabled={isLoading || !!error || !paymentWidget}
-							class="flex-1 rounded-lg bg-pink-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-50">
+							class="flex-1 rounded-lg bg-pink-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-50"
+						>
 							결제하기
 						</button>
 					</div>

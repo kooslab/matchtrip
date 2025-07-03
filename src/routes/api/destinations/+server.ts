@@ -96,12 +96,12 @@ export const POST: RequestHandler = async ({ request }) => {
 		return json(newDestination);
 	} catch (error: any) {
 		console.error('Error creating destination:', error);
-		
+
 		// Handle unique constraint violation
 		if (error.code === '23505' && error.constraint === 'destinations_city_unique') {
 			return json({ error: 'A destination with this city already exists' }, { status: 409 });
 		}
-		
+
 		return json({ error: 'Failed to create destination' }, { status: 500 });
 	}
 };

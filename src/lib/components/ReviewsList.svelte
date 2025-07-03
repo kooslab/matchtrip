@@ -70,11 +70,9 @@
 
 	async function loadMore() {
 		offset += limit;
-		const response = await fetch(
-			`/api/reviews?guideId=${guideId}&limit=${limit}&offset=${offset}`
-		);
+		const response = await fetch(`/api/reviews?guideId=${guideId}&limit=${limit}&offset=${offset}`);
 		const data = await response.json();
-		
+
 		if (response.ok) {
 			reviews = [...reviews, ...data.reviews];
 			hasMore = offset + limit < totalCount;
@@ -110,7 +108,9 @@
 					<div class="mt-1 flex justify-center gap-0.5">
 						{#each [1, 2, 3, 4, 5] as star}
 							<Star
-								class="h-4 w-4 {star <= Math.round(averageRating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}"
+								class="h-4 w-4 {star <= Math.round(averageRating)
+									? 'fill-yellow-400 text-yellow-400'
+									: 'text-gray-300'}"
 							/>
 						{/each}
 					</div>
@@ -127,7 +127,9 @@
 	{#if isLoading}
 		<div class="flex justify-center py-8">
 			<div class="text-center">
-				<div class="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-pink-500"></div>
+				<div
+					class="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-pink-500"
+				></div>
 				<p class="text-gray-600">후기를 불러오는 중...</p>
 			</div>
 		</div>
@@ -172,7 +174,9 @@
 						<div class="flex gap-0.5">
 							{#each [1, 2, 3, 4, 5] as star}
 								<Star
-									class="h-4 w-4 {star <= review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}"
+									class="h-4 w-4 {star <= review.rating
+										? 'fill-yellow-400 text-yellow-400'
+										: 'text-gray-300'}"
 								/>
 							{/each}
 						</div>

@@ -25,10 +25,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			where: eq(trips.id, tripId),
 			with: {
 				offers: {
-					where: and(
-						eq(offers.guideId, session.user.id),
-						eq(offers.status, 'accepted')
-					),
+					where: and(eq(offers.guideId, session.user.id), eq(offers.status, 'accepted')),
 					limit: 1
 				},
 				user: {
@@ -55,10 +52,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 		// Check if review already exists or was requested
 		const existingReview = await db.query.reviews.findFirst({
-			where: and(
-				eq(reviews.tripId, tripId),
-				eq(reviews.travelerId, trip.userId)
-			)
+			where: and(eq(reviews.tripId, tripId), eq(reviews.travelerId, trip.userId))
 		});
 
 		if (existingReview && existingReview.content) {
@@ -105,7 +99,9 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				travelerName: trip.user.name,
 				travelerEmail: trip.user.email,
 				guideName: guide?.name || 'Guide',
-				destination: trip.destination ? `${trip.destination.city}, ${trip.destination.country}` : 'Your destination',
+				destination: trip.destination
+					? `${trip.destination.city}, ${trip.destination.country}`
+					: 'Your destination',
 				tripDates: {
 					start: new Date(trip.startDate).toLocaleDateString('ko-KR'),
 					end: new Date(trip.endDate).toLocaleDateString('ko-KR')

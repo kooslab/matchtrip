@@ -18,10 +18,7 @@ export const POST: RequestHandler = async ({ params, locals }) => {
 			where: eq(trips.id, tripId),
 			with: {
 				offers: {
-					where: and(
-						eq(offers.guideId, session.user.id),
-						eq(offers.status, 'accepted')
-					),
+					where: and(eq(offers.guideId, session.user.id), eq(offers.status, 'accepted')),
 					limit: 1
 				}
 			}
@@ -45,7 +42,7 @@ export const POST: RequestHandler = async ({ params, locals }) => {
 		const endDate = new Date(trip.endDate);
 		const today = new Date();
 		today.setHours(0, 0, 0, 0);
-		
+
 		// For development/testing, allow marking as complete before end date
 		// In production, uncomment the check below
 		/*

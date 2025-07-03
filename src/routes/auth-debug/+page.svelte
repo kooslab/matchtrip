@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	
+
 	let authTest = $state(null);
 	let errors = $state([]);
 	let loading = $state(true);
-	
+
 	onMount(async () => {
 		try {
 			// Fetch auth test results
 			const testRes = await fetch('/api/auth/test');
 			authTest = await testRes.json();
-			
+
 			// Fetch recent errors
 			const errorsRes = await fetch('/api/auth/errors?minutes=60');
 			const errorsData = await errorsRes.json();
@@ -21,27 +21,27 @@
 			loading = false;
 		}
 	});
-	
+
 	function clearErrors() {
 		fetch('/api/auth/errors', { method: 'POST' })
 			.then(() => {
 				errors = [];
 				alert('Error log cleared');
 			})
-			.catch(err => console.error('Failed to clear errors:', err));
+			.catch((err) => console.error('Failed to clear errors:', err));
 	}
 </script>
 
 <div class="min-h-screen bg-gray-50 p-8">
-	<div class="max-w-6xl mx-auto">
-		<h1 class="text-3xl font-bold mb-8">Auth Debug Dashboard</h1>
-		
+	<div class="mx-auto max-w-6xl">
+		<h1 class="mb-8 text-3xl font-bold">Auth Debug Dashboard</h1>
+
 		{#if loading}
 			<p class="text-gray-600">Loading debug information...</p>
 		{:else}
 			<!-- Auth Configuration Test -->
-			<div class="bg-white rounded-lg shadow-md p-6 mb-8">
-				<h2 class="text-xl font-semibold mb-4">Auth Configuration</h2>
+			<div class="mb-8 rounded-lg bg-white p-6 shadow-md">
+				<h2 class="mb-4 text-xl font-semibold">Auth Configuration</h2>
 				{#if authTest}
 					<div class="space-y-4">
 						<div>
@@ -50,21 +50,21 @@
 								{authTest.status}
 							</p>
 						</div>
-						
+
 						<div>
 							<h3 class="font-medium text-gray-700">Environment Variables</h3>
-							<ul class="text-sm space-y-1">
+							<ul class="space-y-1 text-sm">
 								{#each Object.entries(authTest.environment || {}) as [key, value]}
 									<li class="flex items-center gap-2">
 										<span class="font-mono">{key}:</span>
-										<span class="{value ? 'text-green-600' : 'text-red-600'}">
+										<span class={value ? 'text-green-600' : 'text-red-600'}>
 											{value || 'NOT SET'}
 										</span>
 									</li>
 								{/each}
 							</ul>
 						</div>
-						
+
 						<div>
 							<h3 class="font-medium text-gray-700">Session Status</h3>
 							{#if authTest.session?.hasSession}
@@ -75,43 +75,47 @@
 								<p class="text-sm text-gray-600">
 									No active session
 									{#if authTest.session?.error}
-										<span class="text-red-600 block">Error: {authTest.session.error}</span>
+										<span class="block text-red-600">Error: {authTest.session.error}</span>
 									{/if}
 								</p>
 							{/if}
 						</div>
-						
+
 						<div>
 							<h3 class="font-medium text-gray-700">Google OAuth Configuration</h3>
-							<ul class="text-sm space-y-1">
+							<ul class="space-y-1 text-sm">
 								<li>Provider configured: {authTest.authConfig?.hasGoogleProvider ? '✅' : '❌'}</li>
-								<li>Redirect URI: <code class="bg-gray-100 px-1">{authTest.authConfig?.googleRedirectURI}</code></li>
+								<li>
+									Redirect URI: <code class="bg-gray-100 px-1"
+										>{authTest.authConfig?.googleRedirectURI}</code
+									>
+								</li>
 							</ul>
 						</div>
 					</div>
 				{/if}
 			</div>
-			
+
 			<!-- Recent Errors -->
-			<div class="bg-white rounded-lg shadow-md p-6">
-				<div class="flex justify-between items-center mb-4">
+			<div class="rounded-lg bg-white p-6 shadow-md">
+				<div class="mb-4 flex items-center justify-between">
 					<h2 class="text-xl font-semibold">Recent Auth Errors ({errors.length})</h2>
-					<button 
+					<button
 						onclick={clearErrors}
-						class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+						class="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
 					>
 						Clear Errors
 					</button>
 				</div>
-				
+
 				{#if errors.length === 0}
 					<p class="text-gray-600">No recent errors</p>
 				{:else}
-					<div class="space-y-4 max-h-96 overflow-y-auto">
+					<div class="max-h-96 space-y-4 overflow-y-auto">
 						{#each errors as error}
-							<div class="border-l-4 border-red-500 pl-4 py-2">
-								<div class="flex items-center gap-2 mb-1">
-									<span class="text-xs font-semibold px-2 py-1 bg-red-100 text-red-700 rounded">
+							<div class="border-l-4 border-red-500 py-2 pl-4">
+								<div class="mb-1 flex items-center gap-2">
+									<span class="rounded bg-red-100 px-2 py-1 text-xs font-semibold text-red-700">
 										{error.type}
 									</span>
 									<span class="text-xs text-gray-500">
@@ -120,14 +124,14 @@
 								</div>
 								<p class="text-sm font-medium">{error.message}</p>
 								{#if error.details}
-									<pre class="text-xs mt-2 bg-gray-100 p-2 rounded overflow-x-auto">
+									<pre class="mt-2 overflow-x-auto rounded bg-gray-100 p-2 text-xs">
 {JSON.stringify(error.details, null, 2)}
 									</pre>
 								{/if}
 								{#if error.stack}
 									<details class="mt-2">
 										<summary class="cursor-pointer text-xs text-gray-600">Stack trace</summary>
-										<pre class="text-xs mt-1 bg-gray-100 p-2 rounded overflow-x-auto">
+										<pre class="mt-1 overflow-x-auto rounded bg-gray-100 p-2 text-xs">
 {error.stack}
 										</pre>
 									</details>

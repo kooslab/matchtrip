@@ -59,7 +59,8 @@
 	<div class="mb-8">
 		<button
 			class="mb-4 flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800"
-			onclick={() => goto('/order-history')}>
+			onclick={() => goto('/order-history')}
+		>
 			<ArrowLeft class="h-4 w-4" />
 			주문 내역으로 돌아가기
 		</button>
@@ -71,13 +72,16 @@
 		<div class="mb-4 flex items-start justify-between gap-4">
 			<div class="flex-1">
 				<h2 class="text-xl font-semibold text-gray-900">
-					{order.destination?.city || '알 수 없는 도시'}, {order.destination?.country || '알 수 없는 국가'}
+					{order.destination?.city || '알 수 없는 도시'}, {order.destination?.country ||
+						'알 수 없는 국가'}
 				</h2>
 				<p class="mt-1 text-sm text-gray-500">
 					주문 번호: <span class="font-mono text-xs">{order.payment.id}</span>
 				</p>
 			</div>
-			<span class="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800 whitespace-nowrap">
+			<span
+				class="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-sm font-medium whitespace-nowrap text-green-800"
+			>
 				결제 완료
 			</span>
 		</div>
@@ -88,7 +92,7 @@
 				<h3 class="mb-4 text-lg font-medium text-gray-900">여행 정보</h3>
 				<div class="space-y-3">
 					<div class="flex items-start gap-3">
-						<Calendar class="h-5 w-5 text-gray-400 mt-0.5" />
+						<Calendar class="mt-0.5 h-5 w-5 text-gray-400" />
 						<div>
 							<p class="text-sm font-medium text-gray-900">여행 일정</p>
 							<p class="text-sm text-gray-600">
@@ -98,7 +102,7 @@
 					</div>
 
 					<div class="flex items-start gap-3">
-						<User class="h-5 w-5 text-gray-400 mt-0.5" />
+						<User class="mt-0.5 h-5 w-5 text-gray-400" />
 						<div>
 							<p class="text-sm font-medium text-gray-900">가이드</p>
 							<p class="text-sm text-gray-600">
@@ -109,18 +113,20 @@
 					</div>
 
 					<div class="flex items-start gap-3">
-						<MapPin class="h-5 w-5 text-gray-400 mt-0.5" />
+						<MapPin class="mt-0.5 h-5 w-5 text-gray-400" />
 						<div>
 							<p class="text-sm font-medium text-gray-900">인원</p>
 							<p class="text-sm text-gray-600">
-								성인 {order.adultsCount}명{order.childrenCount > 0 ? `, 유아 ${order.childrenCount}명` : ''}
+								성인 {order.adultsCount}명{order.childrenCount > 0
+									? `, 유아 ${order.childrenCount}명`
+									: ''}
 							</p>
 						</div>
 					</div>
 
 					{#if order.travelMethod}
 						<div class="flex items-start gap-3">
-							<MapPin class="h-5 w-5 text-gray-400 mt-0.5" />
+							<MapPin class="mt-0.5 h-5 w-5 text-gray-400" />
 							<div>
 								<p class="text-sm font-medium text-gray-900">이동 수단</p>
 								<p class="text-sm text-gray-600">
@@ -137,7 +143,7 @@
 				<h3 class="mb-4 text-lg font-medium text-gray-900">결제 정보</h3>
 				<div class="space-y-3">
 					<div class="flex items-start gap-3">
-						<CreditCard class="h-5 w-5 text-gray-400 mt-0.5" />
+						<CreditCard class="mt-0.5 h-5 w-5 text-gray-400" />
 						<div>
 							<p class="text-sm font-medium text-gray-900">결제 수단</p>
 							<p class="text-sm text-gray-600">
@@ -147,7 +153,7 @@
 					</div>
 
 					<div class="flex items-start gap-3">
-						<Receipt class="h-5 w-5 text-gray-400 mt-0.5" />
+						<Receipt class="mt-0.5 h-5 w-5 text-gray-400" />
 						<div>
 							<p class="text-sm font-medium text-gray-900">결제 일시</p>
 							<p class="text-sm text-gray-600">
@@ -157,7 +163,7 @@
 					</div>
 
 					<div class="mt-4 rounded-lg bg-gray-50 p-4">
-						<div class="flex justify-between items-center">
+						<div class="flex items-center justify-between">
 							<span class="text-sm font-medium text-gray-900">총 결제 금액</span>
 							<span class="text-2xl font-bold text-pink-600">
 								{order.payment.amount.toLocaleString()}원
@@ -191,7 +197,8 @@
 	<div class="flex justify-center">
 		<button
 			onclick={() => goToTripDetails(order.id)}
-			class="rounded-lg bg-pink-500 px-8 py-3 font-medium text-white hover:bg-pink-600">
+			class="rounded-lg bg-pink-500 px-8 py-3 font-medium text-white hover:bg-pink-600"
+		>
 			여행 상세보기
 		</button>
 	</div>

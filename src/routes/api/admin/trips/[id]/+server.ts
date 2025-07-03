@@ -67,10 +67,7 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 		}
 
 		// Delete the trip (cascade will handle related records)
-		const result = await db
-			.delete(trips)
-			.where(eq(trips.id, id))
-			.returning();
+		const result = await db.delete(trips).where(eq(trips.id, id)).returning();
 
 		if (result.length === 0) {
 			throw error(404, 'Trip not found');

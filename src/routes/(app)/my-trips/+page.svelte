@@ -130,7 +130,8 @@
 							stroke-linecap="round"
 							stroke-linejoin="round"
 							stroke-width="2"
-							d="M19 9l-7 7-7-7" />
+							d="M19 9l-7 7-7-7"
+						/>
 					</svg>
 				</button>
 			</div>
@@ -141,8 +142,8 @@
 			{#if refreshing}
 				<div class="flex items-center justify-center py-12">
 					<div
-						class="h-8 w-8 animate-spin rounded-full border-2 border-pink-500 border-t-transparent">
-					</div>
+						class="h-8 w-8 animate-spin rounded-full border-2 border-pink-500 border-t-transparent"
+					></div>
 					<span class="ml-2 text-gray-600">여행 목록을 불러오는 중...</span>
 				</div>
 			{:else if serverError}
@@ -150,7 +151,8 @@
 					<p class="text-red-800">{serverError}</p>
 					<button
 						class="mt-2 text-sm text-red-600 underline hover:text-red-800"
-						onclick={refreshTrips}>
+						onclick={refreshTrips}
+					>
 						다시 시도
 					</button>
 				</div>
@@ -173,13 +175,15 @@
 					{#each trips as trip}
 						<button
 							onclick={() => goToTripDetails(trip.id)}
-							class="w-full cursor-pointer overflow-hidden rounded-xl border border-gray-100 bg-white text-left transition-shadow hover:shadow-md">
+							class="w-full cursor-pointer overflow-hidden rounded-xl border border-gray-100 bg-white text-left transition-shadow hover:shadow-md"
+						>
 							<!-- Status Badge -->
 							<div class="px-4 pt-4">
 								<span
 									class="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium {getStatusColor(
 										trip.status
-									)}">
+									)}"
+								>
 									{getStatusText(trip.status)}
 								</span>
 							</div>
@@ -202,7 +206,8 @@
 									<span
 										>성인 {trip.adultsCount}명{trip.childrenCount > 0
 											? `, 아동 ${trip.childrenCount}명`
-											: ''}</span>
+											: ''}</span
+									>
 								</div>
 
 								<!-- Price Range and Travel Details -->
@@ -226,8 +231,8 @@
 										<div class="flex items-center gap-2">
 											<span class="text-sm text-gray-600">요청 사항</span>
 										</div>
-										<span class="text-base font-medium text-gray-900"
-											>{trip.offerCount || 0}건</span>
+										<span class="text-base font-medium text-gray-900">{trip.offerCount || 0}건</span
+										>
 									</div>
 									<p class="mt-2 text-sm text-gray-500">남은 기간 7일</p>
 								</div>
@@ -235,7 +240,8 @@
 								<!-- Action Button -->
 								<div
 									onclick={(e) => e.stopPropagation()}
-									class="mt-4 w-full rounded-lg border border-gray-300 bg-white py-2.5 text-center text-sm font-medium text-gray-700">
+									class="mt-4 w-full rounded-lg border border-gray-300 bg-white py-2.5 text-center text-sm font-medium text-gray-700"
+								>
 									{#if trip.offerCount === 0}
 										받은 제안 0건
 									{:else}

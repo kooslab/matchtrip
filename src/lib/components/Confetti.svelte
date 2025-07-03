@@ -47,7 +47,7 @@
 		function animate() {
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-			particles = particles.filter(particle => {
+			particles = particles.filter((particle) => {
 				particle.x += particle.vx;
 				particle.y += particle.vy;
 				particle.vy += 0.1; // gravity
@@ -90,8 +90,4 @@
 	});
 </script>
 
-<canvas
-	bind:this={canvas}
-	class="fixed inset-0 pointer-events-none"
-	style="z-index: 50;"
-/>
+<canvas bind:this={canvas} class="pointer-events-none fixed inset-0" style="z-index: 50;" />

@@ -83,7 +83,7 @@
 					// Calculate new dimensions while maintaining aspect ratio
 					const maxWidth = 1920; // Max width for destinations
 					const maxHeight = 1080; // Max height for destinations
-					
+
 					if (width > height) {
 						if (width > maxWidth) {
 							height = (height * maxWidth) / width;
@@ -109,7 +109,7 @@
 
 					// Start with high quality
 					let quality = 0.9;
-					
+
 					const checkAndCompress = () => {
 						canvas.toBlob(
 							(blob) => {
@@ -159,18 +159,18 @@
 		try {
 			// Show loading state
 			uploadingImage = true;
-			
+
 			// Resize image if needed
 			const resizedFile = await resizeImage(file, 5); // 5MB max
 			selectedFile = resizedFile;
-			
+
 			// Preview
 			const reader = new FileReader();
 			reader.onload = (e) => {
 				imagePreview = e.target?.result as string;
 			};
 			reader.readAsDataURL(resizedFile);
-			
+
 			uploadingImage = false;
 		} catch (error) {
 			console.error('Error processing image:', error);
@@ -222,10 +222,9 @@
 				}
 			}
 
-			const endpoint = mode === 'add' 
-				? '/api/destinations' 
-				: `/api/destinations/${selectedDestination.id}`;
-			
+			const endpoint =
+				mode === 'add' ? '/api/destinations' : `/api/destinations/${selectedDestination.id}`;
+
 			const method = mode === 'add' ? 'POST' : 'PUT';
 
 			const response = await fetch(endpoint, {
@@ -243,16 +242,16 @@
 
 			// Get the new/updated destination
 			const savedDestination = await response.json();
-			
+
 			// Close modal immediately
 			showAddModal = false;
 			showEditModal = false;
-			
+
 			// Reset form
 			formData = { city: '', country: '', imageUrl: '' };
 			imagePreview = '';
 			selectedFile = null;
-			
+
 			// For new destinations, we need to refresh the entire list to get proper sorting
 			// and ensure we have all the fields populated correctly
 			if (mode === 'add') {
@@ -260,16 +259,16 @@
 				await invalidateAll();
 			} else {
 				// For updates, replace the existing destination
-				data.destinations = data.destinations.map(d => 
+				data.destinations = data.destinations.map((d) =>
 					d.id === savedDestination.id ? savedDestination : d
 				);
-				
+
 				// If we're editing from the detail view, update selectedDestination too
 				if (selectedDestination && selectedDestination.id === savedDestination.id) {
 					selectedDestination = savedDestination;
 				}
 			}
-			
+
 			// Update cache timestamp
 			lastFetchTime = Date.now();
 		} catch (error) {
@@ -295,13 +294,13 @@
 			}
 
 			// Update list optimistically
-			data.destinations = data.destinations.filter(d => d.id !== selectedDestination.id);
-			
+			data.destinations = data.destinations.filter((d) => d.id !== selectedDestination.id);
+
 			// Update cache timestamp
 			lastFetchTime = Date.now();
-			
+
 			showDeleteModal = false;
-			
+
 			// Reload data in background only if cache is stale
 			if (isStale) {
 				invalidateAll();
@@ -318,7 +317,7 @@
 		if (!file || !selectedDestination) return;
 
 		uploadingFromDetail = true;
-		
+
 		try {
 			// Upload the image
 			const formData = new FormData();
@@ -355,15 +354,15 @@
 
 			// Get the updated destination from the response
 			const updatedDestination = await updateResponse.json();
-			
+
 			// Update the destination in the list
-			data.destinations = data.destinations.map(d => 
+			data.destinations = data.destinations.map((d) =>
 				d.id === updatedDestination.id ? updatedDestination : d
 			);
-			
+
 			// Update the selected destination to show the new image immediately
 			selectedDestination = updatedDestination;
-			
+
 			// Update cache timestamp
 			lastFetchTime = Date.now();
 		} catch (error) {
@@ -375,8 +374,8 @@
 	}
 </script>
 
-<div class="h-full flex flex-col overflow-hidden">
-	<div class="px-8 pt-8 pb-4 flex items-center justify-between">
+<div class="flex h-full flex-col overflow-hidden">
+	<div class="flex items-center justify-between px-8 pt-8 pb-4">
 		<div>
 			<h1 class="text-3xl font-bold text-gray-900">여행지 관리</h1>
 			<p class="mt-2 text-gray-600">여행지를 관리합니다</p>
@@ -384,8 +383,8 @@
 		<div class="flex items-center gap-4">
 			<select
 				bind:value={itemsPerPage}
-				onchange={() => currentPage = 1}
-				class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-pink-500 focus:outline-none focus:ring-1 focus:ring-pink-500"
+				onchange={() => (currentPage = 1)}
+				class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-pink-500 focus:ring-1 focus:ring-pink-500 focus:outline-none"
 			>
 				<option value={10}>10개씩 보기</option>
 				<option value={20}>20개씩 보기</option>
@@ -413,107 +412,129 @@
 	</div>
 
 	<!-- Destinations Table -->
-	<div class="flex-1 flex flex-col overflow-hidden mx-8 mb-8 rounded-lg bg-white shadow">
+	<div class="mx-8 mb-8 flex flex-1 flex-col overflow-hidden rounded-lg bg-white shadow">
 		<div class="flex-1 overflow-auto">
 			<table class="min-w-full divide-y divide-gray-200">
-				<thead class="bg-gray-50 sticky top-0 z-10">
+				<thead class="sticky top-0 z-10 bg-gray-50">
 					<tr>
-						<th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+						<th
+							class="bg-gray-50 px-6 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						>
 							도시
 						</th>
-						<th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+						<th
+							class="bg-gray-50 px-6 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						>
 							국가
 						</th>
-						<th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+						<th
+							class="bg-gray-50 px-6 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						>
 							이미지
 						</th>
-						<th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+						<th
+							class="bg-gray-50 px-6 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase"
+						>
 							생성일
 						</th>
-						<th class="relative px-6 py-2 bg-gray-50">
+						<th class="relative bg-gray-50 px-6 py-2">
 							<span class="sr-only">작업</span>
 						</th>
 					</tr>
 				</thead>
-				<tbody class="bg-white divide-y divide-gray-200">
-				{#each paginatedDestinations() as destination}
-					<tr 
-						class="hover:bg-gray-50 cursor-pointer transition-colors"
-						onclick={() => openDetailModal(destination)}
-					>
-						<td class="px-6 py-2 whitespace-nowrap">
-							<div class="text-sm font-medium text-gray-900">{destination.city}</div>
-						</td>
-						<td class="px-6 py-2 whitespace-nowrap">
-							<div class="text-sm text-gray-500">{destination.country}</div>
-						</td>
-						<td class="px-6 py-2 whitespace-nowrap">
-							{#if destination.imageUrl}
-								<div class="h-10 w-10 rounded overflow-hidden bg-gray-100">
-									<img 
-										src={destination.imageUrl} 
-										alt={destination.city}
-										class="h-full w-full object-cover"
-									/>
-								</div>
-							{:else}
-								<div class="h-10 w-10 rounded bg-gray-200 flex items-center justify-center">
-									<svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-									</svg>
-								</div>
-							{/if}
-						</td>
-						<td class="px-6 py-2 whitespace-nowrap text-sm text-gray-500">
-							{new Date(destination.created_at).toLocaleDateString('ko-KR')}
-						</td>
-						<td class="px-6 py-2 whitespace-nowrap text-right text-sm font-medium">
-							<button
-								onclick={(e) => {
-									e.stopPropagation();
-									openEditModal(destination);
-								}}
-								class="text-indigo-600 hover:text-indigo-900 mr-4"
-							>
-								수정
-							</button>
-							<button
-								onclick={(e) => {
-									e.stopPropagation();
-									openDeleteModal(destination);
-								}}
-								class="text-red-600 hover:text-red-900"
-							>
-								삭제
-							</button>
-						</td>
-					</tr>
-				{:else}
-					<tr>
-						<td colspan="5" class="px-6 py-12 text-center">
-							<p class="text-gray-500">등록된 여행지가 없습니다. 첫 번째 여행지를 추가해보세요!</p>
-						</td>
-					</tr>
-				{/each}
+				<tbody class="divide-y divide-gray-200 bg-white">
+					{#each paginatedDestinations() as destination}
+						<tr
+							class="cursor-pointer transition-colors hover:bg-gray-50"
+							onclick={() => openDetailModal(destination)}
+						>
+							<td class="px-6 py-2 whitespace-nowrap">
+								<div class="text-sm font-medium text-gray-900">{destination.city}</div>
+							</td>
+							<td class="px-6 py-2 whitespace-nowrap">
+								<div class="text-sm text-gray-500">{destination.country}</div>
+							</td>
+							<td class="px-6 py-2 whitespace-nowrap">
+								{#if destination.imageUrl}
+									<div class="h-10 w-10 overflow-hidden rounded bg-gray-100">
+										<img
+											src={destination.imageUrl}
+											alt={destination.city}
+											class="h-full w-full object-cover"
+										/>
+									</div>
+								{:else}
+									<div class="flex h-10 w-10 items-center justify-center rounded bg-gray-200">
+										<svg
+											class="h-5 w-5 text-gray-400"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+											/>
+										</svg>
+									</div>
+								{/if}
+							</td>
+							<td class="px-6 py-2 text-sm whitespace-nowrap text-gray-500">
+								{new Date(destination.created_at).toLocaleDateString('ko-KR')}
+							</td>
+							<td class="px-6 py-2 text-right text-sm font-medium whitespace-nowrap">
+								<button
+									onclick={(e) => {
+										e.stopPropagation();
+										openEditModal(destination);
+									}}
+									class="mr-4 text-indigo-600 hover:text-indigo-900"
+								>
+									수정
+								</button>
+								<button
+									onclick={(e) => {
+										e.stopPropagation();
+										openDeleteModal(destination);
+									}}
+									class="text-red-600 hover:text-red-900"
+								>
+									삭제
+								</button>
+							</td>
+						</tr>
+					{:else}
+						<tr>
+							<td colspan="5" class="px-6 py-12 text-center">
+								<p class="text-gray-500">
+									등록된 여행지가 없습니다. 첫 번째 여행지를 추가해보세요!
+								</p>
+							</td>
+						</tr>
+					{/each}
 				</tbody>
 			</table>
 		</div>
-		
+
 		<!-- Pagination -->
 		{#if totalPages > 1}
-			<div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-2 sm:px-6">
+			<div
+				class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-2 sm:px-6"
+			>
 				<div class="flex flex-1 justify-between sm:hidden">
 					<button
-						onclick={() => currentPage = Math.max(1, currentPage - 1)}
+						onclick={() => (currentPage = Math.max(1, currentPage - 1))}
 						disabled={currentPage === 1}
-						class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+						class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						이전
 					</button>
 					<button
-						onclick={() => currentPage = Math.min(totalPages, currentPage + 1)}
+						onclick={() => (currentPage = Math.min(totalPages, currentPage + 1))}
 						disabled={currentPage === totalPages}
-						class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+						class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						다음
 					</button>
@@ -523,47 +544,63 @@
 						<p class="text-sm text-gray-700">
 							총 <span class="font-medium">{data.destinations.length}</span>개 중{' '}
 							<span class="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> -{' '}
-							<span class="font-medium">{Math.min(currentPage * itemsPerPage, data.destinations.length)}</span> 표시
+							<span class="font-medium"
+								>{Math.min(currentPage * itemsPerPage, data.destinations.length)}</span
+							> 표시
 						</p>
 					</div>
 					<div>
-						<nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+						<nav
+							class="isolate inline-flex -space-x-px rounded-md shadow-sm"
+							aria-label="Pagination"
+						>
 							<button
-								onclick={() => currentPage = Math.max(1, currentPage - 1)}
+								onclick={() => (currentPage = Math.max(1, currentPage - 1))}
 								disabled={currentPage === 1}
-								class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
+								class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:cursor-not-allowed disabled:opacity-50"
 							>
 								<span class="sr-only">이전</span>
 								<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-									<path fill-rule="evenodd" d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd" />
+									<path
+										fill-rule="evenodd"
+										d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z"
+										clip-rule="evenodd"
+									/>
 								</svg>
 							</button>
-							
+
 							{#each Array(totalPages) as _, i}
 								{#if i + 1 === 1 || i + 1 === totalPages || (i + 1 >= currentPage - 1 && i + 1 <= currentPage + 1)}
 									<button
-										onclick={() => currentPage = i + 1}
+										onclick={() => (currentPage = i + 1)}
 										class={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
 											currentPage === i + 1
 												? 'z-10 bg-pink-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-600'
-												: 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
+												: 'text-gray-900 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
 										}`}
 									>
 										{i + 1}
 									</button>
 								{:else if i + 1 === currentPage - 2 || i + 1 === currentPage + 2}
-									<span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0">...</span>
+									<span
+										class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-gray-300 ring-inset focus:outline-offset-0"
+										>...</span
+									>
 								{/if}
 							{/each}
-							
+
 							<button
-								onclick={() => currentPage = Math.min(totalPages, currentPage + 1)}
+								onclick={() => (currentPage = Math.min(totalPages, currentPage + 1))}
 								disabled={currentPage === totalPages}
-								class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
+								class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:cursor-not-allowed disabled:opacity-50"
 							>
 								<span class="sr-only">다음</span>
 								<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-									<path fill-rule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+									<path
+										fill-rule="evenodd"
+										d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z"
+										clip-rule="evenodd"
+									/>
 								</svg>
 							</button>
 						</nav>
@@ -576,25 +613,24 @@
 
 <!-- Add Modal -->
 {#if showAddModal}
-	<div 
+	<div
 		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
 		onclick={() => (showAddModal = false)}
 	>
-		<div 
-			class="w-full max-w-md rounded-lg bg-white p-6"
-			onclick={(e) => e.stopPropagation()}
-		>
+		<div class="w-full max-w-md rounded-lg bg-white p-6" onclick={(e) => e.stopPropagation()}>
 			<div class="mb-4 flex items-center justify-between">
 				<h2 class="text-xl font-semibold">여행지 추가</h2>
-				<button
-					onclick={() => (showAddModal = false)}
-					class="rounded-lg p-2 hover:bg-gray-100"
-				>
+				<button onclick={() => (showAddModal = false)} class="rounded-lg p-2 hover:bg-gray-100">
 					<X class="h-5 w-5" />
 				</button>
 			</div>
 
-			<form onsubmit={(e) => { e.preventDefault(); handleSubmit('add'); }}>
+			<form
+				onsubmit={(e) => {
+					e.preventDefault();
+					handleSubmit('add');
+				}}
+			>
 				<div class="space-y-4">
 					<div>
 						<label class="mb-1 block text-sm font-medium text-gray-700">도시</label>
@@ -620,19 +656,25 @@
 						<label class="mb-1 block text-sm font-medium text-gray-700">이미지</label>
 						{#if imagePreview}
 							<div class="mb-2 rounded-lg bg-gray-100 p-2">
-								<img src={imagePreview} alt="Preview" class="h-32 w-full rounded-lg object-contain" />
+								<img
+									src={imagePreview}
+									alt="Preview"
+									class="h-32 w-full rounded-lg object-contain"
+								/>
 							</div>
 						{:else}
 							<button
 								type="button"
 								onclick={() => {
-									const input = document.querySelector('#file-upload-' + (showAddModal ? 'add' : 'edit')) as HTMLInputElement;
+									const input = document.querySelector(
+										'#file-upload-' + (showAddModal ? 'add' : 'edit')
+									) as HTMLInputElement;
 									input?.click();
 								}}
-								class="mb-2 w-full h-32 rounded-lg bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+								class="mb-2 flex h-32 w-full items-center justify-center rounded-lg bg-gray-100 transition-colors hover:bg-gray-200"
 							>
-								<div class="text-center pointer-events-none">
-									<Upload class="h-8 w-8 text-gray-400 mx-auto mb-1" />
+								<div class="pointer-events-none text-center">
+									<Upload class="mx-auto mb-1 h-8 w-8 text-gray-400" />
 									<p class="text-xs text-gray-500">이미지를 업로드하려면 클릭하세요</p>
 								</div>
 							</button>
@@ -667,7 +709,7 @@
 					<button
 						type="submit"
 						disabled={saving || uploadingImage}
-						class="flex-1 rounded-lg bg-pink-500 px-4 py-2 text-white hover:bg-pink-600 disabled:opacity-50 disabled:cursor-not-allowed"
+						class="flex-1 rounded-lg bg-pink-500 px-4 py-2 text-white hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						{#if uploadingImage}
 							이미지 처리 중...
@@ -685,25 +727,24 @@
 
 <!-- Edit Modal -->
 {#if showEditModal}
-	<div 
+	<div
 		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
 		onclick={() => (showEditModal = false)}
 	>
-		<div 
-			class="w-full max-w-md rounded-lg bg-white p-6"
-			onclick={(e) => e.stopPropagation()}
-		>
+		<div class="w-full max-w-md rounded-lg bg-white p-6" onclick={(e) => e.stopPropagation()}>
 			<div class="mb-4 flex items-center justify-between">
 				<h2 class="text-xl font-semibold">여행지 수정</h2>
-				<button
-					onclick={() => (showEditModal = false)}
-					class="rounded-lg p-2 hover:bg-gray-100"
-				>
+				<button onclick={() => (showEditModal = false)} class="rounded-lg p-2 hover:bg-gray-100">
 					<X class="h-5 w-5" />
 				</button>
 			</div>
 
-			<form onsubmit={(e) => { e.preventDefault(); handleSubmit('edit'); }}>
+			<form
+				onsubmit={(e) => {
+					e.preventDefault();
+					handleSubmit('edit');
+				}}
+			>
 				<div class="space-y-4">
 					<div>
 						<label class="mb-1 block text-sm font-medium text-gray-700">도시</label>
@@ -729,19 +770,25 @@
 						<label class="mb-1 block text-sm font-medium text-gray-700">이미지</label>
 						{#if imagePreview}
 							<div class="mb-2 rounded-lg bg-gray-100 p-2">
-								<img src={imagePreview} alt="Preview" class="h-32 w-full rounded-lg object-contain" />
+								<img
+									src={imagePreview}
+									alt="Preview"
+									class="h-32 w-full rounded-lg object-contain"
+								/>
 							</div>
 						{:else}
 							<button
 								type="button"
 								onclick={() => {
-									const input = document.querySelector('#file-upload-' + (showAddModal ? 'add' : 'edit')) as HTMLInputElement;
+									const input = document.querySelector(
+										'#file-upload-' + (showAddModal ? 'add' : 'edit')
+									) as HTMLInputElement;
 									input?.click();
 								}}
-								class="mb-2 w-full h-32 rounded-lg bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+								class="mb-2 flex h-32 w-full items-center justify-center rounded-lg bg-gray-100 transition-colors hover:bg-gray-200"
 							>
-								<div class="text-center pointer-events-none">
-									<Upload class="h-8 w-8 text-gray-400 mx-auto mb-1" />
+								<div class="pointer-events-none text-center">
+									<Upload class="mx-auto mb-1 h-8 w-8 text-gray-400" />
 									<p class="text-xs text-gray-500">이미지를 업로드하려면 클릭하세요</p>
 								</div>
 							</button>
@@ -776,7 +823,7 @@
 					<button
 						type="submit"
 						disabled={saving || uploadingImage}
-						class="flex-1 rounded-lg bg-pink-500 px-4 py-2 text-white hover:bg-pink-600 disabled:opacity-50 disabled:cursor-not-allowed"
+						class="flex-1 rounded-lg bg-pink-500 px-4 py-2 text-white hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						{#if uploadingImage}
 							이미지 업로드 중...
@@ -794,18 +841,15 @@
 
 <!-- Delete Modal -->
 {#if showDeleteModal}
-	<div 
+	<div
 		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
 		onclick={() => (showDeleteModal = false)}
 	>
-		<div 
-			class="w-full max-w-md rounded-lg bg-white p-6"
-			onclick={(e) => e.stopPropagation()}
-		>
+		<div class="w-full max-w-md rounded-lg bg-white p-6" onclick={(e) => e.stopPropagation()}>
 			<h2 class="mb-4 text-xl font-semibold">여행지 삭제</h2>
 			<p class="mb-6 text-gray-600">
-				<strong>{selectedDestination?.city}</strong>를(를) 정말 삭제하시겠습니까? 이 작업은
-				취소할 수 없습니다.
+				<strong>{selectedDestination?.city}</strong>를(를) 정말 삭제하시겠습니까? 이 작업은 취소할
+				수 없습니다.
 			</p>
 
 			<div class="flex gap-3">
@@ -828,21 +872,18 @@
 
 <!-- Detail Modal -->
 {#if showDetailModal && selectedDestination}
-	<div 
+	<div
 		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
 		onclick={() => (showDetailModal = false)}
 	>
-		<div 
-			class="w-full max-w-2xl rounded-lg bg-white overflow-hidden"
+		<div
+			class="w-full max-w-2xl overflow-hidden rounded-lg bg-white"
 			onclick={(e) => e.stopPropagation()}
 		>
 			<!-- Header -->
-			<div class="bg-gray-50 px-6 py-4 flex items-center justify-between">
+			<div class="flex items-center justify-between bg-gray-50 px-6 py-4">
 				<h2 class="text-xl font-semibold text-gray-900">여행지 상세 정보</h2>
-				<button
-					onclick={() => (showDetailModal = false)}
-					class="rounded-lg p-2 hover:bg-gray-200"
-				>
+				<button onclick={() => (showDetailModal = false)} class="rounded-lg p-2 hover:bg-gray-200">
 					<X class="h-5 w-5" />
 				</button>
 			</div>
@@ -851,11 +892,11 @@
 			<div class="p-6">
 				<!-- Image Section -->
 				{#if selectedDestination.imageUrl}
-					<div class="mb-6 rounded-lg overflow-hidden bg-gray-100">
+					<div class="mb-6 overflow-hidden rounded-lg bg-gray-100">
 						<img
 							src={selectedDestination.imageUrl}
 							alt={selectedDestination.city}
-							class="w-full h-64 object-contain"
+							class="h-64 w-full object-contain"
 						/>
 					</div>
 				{:else}
@@ -863,15 +904,19 @@
 						type="button"
 						onclick={() => document.getElementById('detail-image-upload')?.click()}
 						disabled={uploadingFromDetail}
-						class="mb-6 w-full h-64 rounded-lg bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
+						class="group mb-6 flex h-64 w-full items-center justify-center rounded-lg bg-gray-100 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						<div class="text-center">
 							{#if uploadingFromDetail}
-								<div class="h-12 w-12 mx-auto mb-2 animate-spin rounded-full border-4 border-gray-300 border-t-gray-600"></div>
+								<div
+									class="mx-auto mb-2 h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-gray-600"
+								></div>
 								<p class="text-gray-500">업로드 중...</p>
 							{:else}
-								<Upload class="h-12 w-12 text-gray-400 mx-auto mb-2 group-hover:text-gray-500" />
-								<p class="text-gray-500 group-hover:text-gray-600">이미지를 업로드하려면 클릭하세요</p>
+								<Upload class="mx-auto mb-2 h-12 w-12 text-gray-400 group-hover:text-gray-500" />
+								<p class="text-gray-500 group-hover:text-gray-600">
+									이미지를 업로드하려면 클릭하세요
+								</p>
 							{/if}
 						</div>
 					</button>
@@ -891,7 +936,7 @@
 						<p class="text-lg text-gray-600">{selectedDestination.country}</p>
 					</div>
 
-					<div class="border-t pt-4 space-y-2">
+					<div class="space-y-2 border-t pt-4">
 						<div class="flex justify-between">
 							<span class="text-sm text-gray-500">생성일:</span>
 							<span class="text-sm text-gray-900">

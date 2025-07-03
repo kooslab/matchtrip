@@ -85,7 +85,8 @@
 			class="h-4 w-4 rounded border-gray-300 text-blue-500 focus:ring-2 focus:ring-blue-200"
 			bind:checked={allChecked}
 			onclick={toggleAll}
-			disabled={props.isLoading} />
+			disabled={props.isLoading}
+		/>
 		<label for="check-all" class="ml-2 font-medium text-gray-700">이용약관 전체동의</label>
 	</div>
 
@@ -99,12 +100,14 @@
 			bind:checked={termsChecked}
 			onchange={handleTermsChange}
 			disabled={props.isLoading}
-			required />
+			required
+		/>
 		<label for="check-terms" class="ml-2 text-gray-700">
 			이용약관 동의 <span class="text-red-500">(필수)</span>
 		</label>
 		<a href="/terms" target="_blank" class="ml-auto text-sm text-blue-500 hover:underline"
-			>내용보기</a>
+			>내용보기</a
+		>
 	</div>
 
 	<div class="flex items-center">
@@ -115,12 +118,14 @@
 			bind:checked={privacyChecked}
 			onchange={handlePrivacyChange}
 			disabled={props.isLoading}
-			required />
+			required
+		/>
 		<label for="check-privacy" class="ml-2 text-gray-700">
 			개인정보 수집 및 이용동의 <span class="text-red-500">(필수)</span>
 		</label>
 		<a href="/terms/privacy" target="_blank" class="ml-auto text-sm text-blue-500 hover:underline"
-			>내용보기</a>
+			>내용보기</a
+		>
 	</div>
 
 	<div class="flex items-center">
@@ -130,12 +135,14 @@
 			class="h-4 w-4 rounded border-gray-300 text-blue-500 focus:ring-2 focus:ring-blue-200"
 			bind:checked={marketingChecked}
 			onchange={handleMarketingChange}
-			disabled={props.isLoading} />
+			disabled={props.isLoading}
+		/>
 		<label for="check-marketing" class="ml-2 text-gray-700">
 			마케팅 동의 <span class="text-gray-400">(선택)</span>
 		</label>
 		<a href="/marketing-terms" target="_blank" class="ml-auto text-sm text-blue-500 hover:underline"
-			>내용보기</a>
+			>내용보기</a
+		>
 	</div>
 
 	{#if !requiredChecked}

@@ -3,7 +3,7 @@
 	import { MessageSquare } from 'lucide-svelte';
 	import { formatDate, formatDateRange } from '$lib/utils/dateFormatter';
 	import { userTimezone, userLocale } from '$lib/stores/location';
-	
+
 	let { data } = $props();
 
 	let offers = $derived(data.offers);
@@ -128,14 +128,16 @@
 						stroke-linecap="round"
 						stroke-linejoin="round"
 						stroke-width="2"
-						d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+						d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+					/>
 				</svg>
 			</div>
 			<h3 class="mb-2 text-lg font-medium text-gray-900">아직 제안한 여행이 없습니다</h3>
 			<p class="mb-4 text-gray-500">여행찾기에서 새로운 여행에 제안해보세요!</p>
 			<button
 				onclick={() => goto('/trips')}
-				class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none">
+				class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+			>
 				여행찾기
 			</button>
 		</div>
@@ -150,7 +152,8 @@
 				<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 					{#each offers.pending as offer}
 						<div
-							class="overflow-hidden rounded-lg border border-yellow-200 bg-white shadow-md transition-shadow hover:shadow-lg">
+							class="overflow-hidden rounded-lg border border-yellow-200 bg-white shadow-md transition-shadow hover:shadow-lg"
+						>
 							<div class="p-6">
 								<div class="mb-4 flex items-start justify-between">
 									<div>
@@ -164,14 +167,19 @@
 									<span
 										class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {getStatusColor(
 											offer.status
-										)}">
+										)}"
+									>
 										{getStatusText(offer.status)}
 									</span>
 								</div>
 
 								<div class="mb-4 space-y-1">
 									<p class="text-sm text-gray-600">
-										📅 {formatDateRange(offer.trip.startDate, offer.trip.endDate, { locale: $userLocale, timezone: $userTimezone, format: 'long' })}
+										📅 {formatDateRange(offer.trip.startDate, offer.trip.endDate, {
+											locale: $userLocale,
+											timezone: $userTimezone,
+											format: 'long'
+										})}
 									</p>
 									<p class="text-sm text-gray-600">
 										👥 성인 {offer.trip.adultsCount}명
@@ -208,13 +216,15 @@
 										<div class="flex gap-2">
 											<button
 												onclick={() => startConversation(offer.id)}
-												class="flex items-center gap-1 rounded-md bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100">
+												class="flex items-center gap-1 rounded-md bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100"
+											>
 												<MessageSquare class="h-3 w-3" />
 												대화하기
 											</button>
 											<button
 												onclick={() => goto(`/my-offers/${offer.id}`)}
-												class="rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-200">
+												class="rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-200"
+											>
 												상세보기
 											</button>
 										</div>
@@ -237,7 +247,8 @@
 				<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 					{#each offers.accepted as offer}
 						<div
-							class="overflow-hidden rounded-lg border border-green-200 bg-white shadow-md transition-shadow hover:shadow-lg">
+							class="overflow-hidden rounded-lg border border-green-200 bg-white shadow-md transition-shadow hover:shadow-lg"
+						>
 							<div class="p-6">
 								<div class="mb-4 flex items-start justify-between">
 									<div>
@@ -251,14 +262,19 @@
 									<span
 										class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {getStatusColor(
 											offer.status
-										)}">
+										)}"
+									>
 										{getStatusText(offer.status)}
 									</span>
 								</div>
 
 								<div class="mb-4 space-y-1">
 									<p class="text-sm text-gray-600">
-										📅 {formatDateRange(offer.trip.startDate, offer.trip.endDate, { locale: $userLocale, timezone: $userTimezone, format: 'long' })}
+										📅 {formatDateRange(offer.trip.startDate, offer.trip.endDate, {
+											locale: $userLocale,
+											timezone: $userTimezone,
+											format: 'long'
+										})}
 									</p>
 									<p class="text-sm text-gray-600">
 										👥 성인 {offer.trip.adultsCount}명
@@ -295,13 +311,15 @@
 										<div class="flex gap-2">
 											<button
 												onclick={() => startConversation(offer.id)}
-												class="flex items-center gap-1 rounded-md bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100">
+												class="flex items-center gap-1 rounded-md bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100"
+											>
 												<MessageSquare class="h-3 w-3" />
 												대화하기
 											</button>
 											<button
 												onclick={() => goto(`/my-offers/${offer.id}`)}
-												class="rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-200">
+												class="rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-200"
+											>
 												상세보기
 											</button>
 										</div>
@@ -324,7 +342,8 @@
 				<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
 					{#each offers.rejected as offer}
 						<div
-							class="overflow-hidden rounded-lg border border-red-200 bg-white shadow-md transition-shadow hover:shadow-lg">
+							class="overflow-hidden rounded-lg border border-red-200 bg-white shadow-md transition-shadow hover:shadow-lg"
+						>
 							<div class="p-6">
 								<div class="mb-4 flex items-start justify-between">
 									<div>
@@ -338,14 +357,19 @@
 									<span
 										class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {getStatusColor(
 											offer.status
-										)}">
+										)}"
+									>
 										{getStatusText(offer.status)}
 									</span>
 								</div>
 
 								<div class="mb-4 space-y-1">
 									<p class="text-sm text-gray-600">
-										📅 {formatDateRange(offer.trip.startDate, offer.trip.endDate, { locale: $userLocale, timezone: $userTimezone, format: 'long' })}
+										📅 {formatDateRange(offer.trip.startDate, offer.trip.endDate, {
+											locale: $userLocale,
+											timezone: $userTimezone,
+											format: 'long'
+										})}
 									</p>
 									<p class="text-sm text-gray-600">
 										👥 성인 {offer.trip.adultsCount}명
@@ -382,13 +406,15 @@
 										<div class="flex gap-2">
 											<button
 												onclick={() => startConversation(offer.id)}
-												class="flex items-center gap-1 rounded-md bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100">
+												class="flex items-center gap-1 rounded-md bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100"
+											>
 												<MessageSquare class="h-3 w-3" />
 												대화하기
 											</button>
 											<button
 												onclick={() => goto(`/my-offers/${offer.id}`)}
-												class="rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-200">
+												class="rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-200"
+											>
 												상세보기
 											</button>
 										</div>

@@ -13,11 +13,13 @@
 			xmlns="http://www.w3.org/2000/svg"
 			class="mr-2 h-5 w-5"
 			viewBox="0 0 20 20"
-			fill="currentColor">
+			fill="currentColor"
+		>
 			<path
 				fill-rule="evenodd"
 				d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
-				clip-rule="evenodd" />
+				clip-rule="evenodd"
+			/>
 		</svg>
 		뒤로 가기
 	</button>
@@ -69,7 +71,9 @@
 			<p class="text-sm text-gray-500">
 				마케팅 활용 동의와 관련한 더 자세한 내용은 '개인정보 처리방침'을 확인해 주세요.
 			</p>
-			<a href="/terms/privacy" class="text-sm text-blue-500 hover:underline">개인정보 처리방침 보기</a>
+			<a href="/terms/privacy" class="text-sm text-blue-500 hover:underline"
+				>개인정보 처리방침 보기</a
+			>
 		</div>
 	</div>
 </div>

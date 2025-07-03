@@ -35,7 +35,7 @@ export const PUT: RequestHandler = async ({ request }) => {
 		// Update guide verification status
 		const [updatedProfile] = await db
 			.update(guideProfiles)
-			.set({ 
+			.set({
 				isVerified,
 				verifiedAt: isVerified ? new Date() : null,
 				updatedAt: new Date()
@@ -47,8 +47,8 @@ export const PUT: RequestHandler = async ({ request }) => {
 			return json({ error: '가이드 프로필을 찾을 수 없습니다' }, { status: 404 });
 		}
 
-		return json({ 
-			success: true, 
+		return json({
+			success: true,
 			profile: updatedProfile
 		});
 	} catch (error) {

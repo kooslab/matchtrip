@@ -7,9 +7,9 @@
 	import SkeletonLoader from '$lib/components/SkeletonLoader.svelte';
 	import { formatDate, formatTime, isToday, isYesterday } from '$lib/utils/dateFormatter';
 	import { userTimezone, userLocale } from '$lib/stores/location';
-	
+
 	let { data = $page.data } = $props();
-	
+
 	// Debug logging
 	console.log('Conversation component mounted');
 	console.log('Props data:', data);
@@ -75,7 +75,7 @@
 
 	// Pattern to detect email addresses
 	const emailPattern = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
-	
+
 	// Pattern to detect Korean phone numbers (010-xxxx-xxxx, 010xxxxxxxx, etc.)
 	const phonePattern = /010[-\s]?\d{3,4}[-\s]?\d{4}/g;
 
@@ -86,7 +86,7 @@
 	function getSensitiveInfoWarning(text: string): string {
 		const hasEmail = emailPattern.test(text);
 		const hasPhone = phonePattern.test(text);
-		
+
 		if (hasEmail && hasPhone) {
 			return '이메일과 전화번호는 보안상의 이유로 대화에서 공유할 수 없습니다.';
 		} else if (hasEmail) {
@@ -117,35 +117,38 @@
 			console.log('Loading conversation:', conversationId);
 			const response = await fetch(`/api/conversations/${conversationId}`);
 			console.log('Response status:', response.status);
-			
+
 			if (response.ok) {
 				const data = await response.json();
 				console.log('Conversation data:', data);
 				conversation = data.conversation;
 				offer = data.offer || null;
-				
+
 				// Preserve optimistic messages (temp IDs) while updating real messages
-				const tempMessages = messages.filter(msg => msg.id.startsWith('temp-'));
+				const tempMessages = messages.filter((msg) => msg.id.startsWith('temp-'));
 				const serverMessages = data.messages || [];
-				
+
 				// Merge server messages with temp messages, avoiding duplicates
 				const mergedMessages = [...serverMessages];
 				for (const tempMsg of tempMessages) {
 					// Check if this temp message already exists on server (by content and sender)
-					const exists = serverMessages.some(serverMsg => 
-						serverMsg.content === tempMsg.content && 
-						serverMsg.senderId === tempMsg.senderId &&
-						Math.abs(new Date(serverMsg.createdAt).getTime() - new Date(tempMsg.createdAt).getTime()) < 60000 // Within 1 minute
+					const exists = serverMessages.some(
+						(serverMsg) =>
+							serverMsg.content === tempMsg.content &&
+							serverMsg.senderId === tempMsg.senderId &&
+							Math.abs(
+								new Date(serverMsg.createdAt).getTime() - new Date(tempMsg.createdAt).getTime()
+							) < 60000 // Within 1 minute
 					);
 					if (!exists) {
 						mergedMessages.push(tempMsg);
 					}
 				}
-				
-				messages = mergedMessages.sort((a, b) => 
-					new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+
+				messages = mergedMessages.sort(
+					(a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
 				);
-				
+
 				console.log('Messages set:', messages);
 				console.log('Conversation set:', conversation);
 				console.log('Conversation status:', conversation?.status);
@@ -210,7 +213,7 @@
 				image: data?.session?.user?.image || null
 			}
 		};
-		
+
 		messages = [...messages, optimisticMessage];
 		await tick();
 		scrollToBottom();
@@ -225,18 +228,16 @@
 			if (response.ok) {
 				const data = await response.json();
 				// Replace optimistic message with real one
-				messages = messages.map(msg => 
-					msg.id === optimisticMessage.id ? data.message : msg
-				);
+				messages = messages.map((msg) => (msg.id === optimisticMessage.id ? data.message : msg));
 			} else {
 				// Remove optimistic message on error
-				messages = messages.filter(msg => msg.id !== optimisticMessage.id);
+				messages = messages.filter((msg) => msg.id !== optimisticMessage.id);
 				error = '메시지 전송에 실패했습니다.';
 				newMessage = messageContent; // Restore message on error
 			}
 		} catch (err) {
 			// Remove optimistic message on error
-			messages = messages.filter(msg => msg.id !== optimisticMessage.id);
+			messages = messages.filter((msg) => msg.id !== optimisticMessage.id);
 			error = '메시지 전송에 실패했습니다.';
 			newMessage = messageContent;
 		} finally {
@@ -298,12 +299,9 @@
 
 <div class="fixed inset-0 flex flex-col bg-gray-50 pt-16 md:pt-20">
 	<!-- Header -->
-	<div class="border-b bg-white px-4 py-3 safe-area-top">
+	<div class="safe-area-top border-b bg-white px-4 py-3">
 		<div class="flex items-center gap-4">
-			<button
-				onclick={handleBackButton}
-				class="rounded-lg p-2 hover:bg-gray-100"
-			>
+			<button onclick={handleBackButton} class="rounded-lg p-2 hover:bg-gray-100">
 				<ArrowLeft class="h-5 w-5" />
 			</button>
 			<div class="flex-1">
@@ -319,16 +317,24 @@
 					{#if offer}
 						<div class="flex items-center gap-3 text-sm">
 							<span class="font-medium text-gray-900">{offer.price.toLocaleString('ko-KR')}원</span>
-							<span class={`font-medium px-2 py-1 rounded-full text-xs ${
-								offer.status === 'accepted' ? 'bg-green-100 text-green-700' : 
-								offer.status === 'rejected' ? 'bg-red-100 text-red-700' : 
-								offer.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 
-								'bg-gray-100 text-gray-700'
-							}`}>
-								{offer.status === 'accepted' ? '수락됨' : 
-								 offer.status === 'rejected' ? '거절됨' : 
-								 offer.status === 'pending' ? '검토중' : 
-								 offer.status}
+							<span
+								class={`rounded-full px-2 py-1 text-xs font-medium ${
+									offer.status === 'accepted'
+										? 'bg-green-100 text-green-700'
+										: offer.status === 'rejected'
+											? 'bg-red-100 text-red-700'
+											: offer.status === 'pending'
+												? 'bg-yellow-100 text-yellow-700'
+												: 'bg-gray-100 text-gray-700'
+								}`}
+							>
+								{offer.status === 'accepted'
+									? '수락됨'
+									: offer.status === 'rejected'
+										? '거절됨'
+										: offer.status === 'pending'
+											? '검토중'
+											: offer.status}
 							</span>
 						</div>
 					{/if}
@@ -343,17 +349,17 @@
 			<div class="flex-1 overflow-y-auto px-4 py-4">
 				<!-- Date separator skeleton -->
 				<div class="my-4 text-center">
-					<div class="inline-block h-6 w-32 rounded-full bg-gray-200 animate-pulse"></div>
+					<div class="inline-block h-6 w-32 animate-pulse rounded-full bg-gray-200"></div>
 				</div>
-				
+
 				<!-- Message skeletons -->
 				{#each Array(5) as _, i}
 					<div class={`mb-4 flex ${i % 2 === 0 ? 'justify-start' : 'justify-end'}`}>
 						<div class="max-w-[70%] space-y-2">
 							<!-- Sender name and time skeleton -->
 							<div class="flex items-center gap-2">
-								<div class="h-3 w-16 rounded bg-gray-200 animate-pulse"></div>
-								<div class="h-3 w-12 rounded bg-gray-200 animate-pulse"></div>
+								<div class="h-3 w-16 animate-pulse rounded bg-gray-200"></div>
+								<div class="h-3 w-12 animate-pulse rounded bg-gray-200"></div>
 							</div>
 							<!-- Message content skeleton -->
 							<div class={`rounded-lg px-4 py-2 ${i % 2 === 0 ? 'bg-gray-100' : 'bg-blue-100'}`}>
@@ -363,12 +369,12 @@
 					</div>
 				{/each}
 			</div>
-			
+
 			<!-- Input skeleton -->
-			<div class="border-t bg-white p-4 mb-2">
+			<div class="mb-2 border-t bg-white p-4">
 				<div class="flex gap-2">
-					<div class="flex-1 h-10 rounded-lg bg-gray-200 animate-pulse"></div>
-					<div class="w-10 h-10 rounded-lg bg-gray-200 animate-pulse"></div>
+					<div class="h-10 flex-1 animate-pulse rounded-lg bg-gray-200"></div>
+					<div class="h-10 w-10 animate-pulse rounded-lg bg-gray-200"></div>
 				</div>
 			</div>
 		</div>
@@ -388,10 +394,7 @@
 		<!-- Main content area with flex to ensure input stays at bottom -->
 		<div class="flex flex-1 flex-col overflow-hidden">
 			<!-- Messages -->
-			<div
-				bind:this={messagesContainer}
-				class="flex-1 overflow-y-auto px-4 py-4"
-			>
+			<div bind:this={messagesContainer} class="flex-1 overflow-y-auto px-4 py-4">
 				{#each messages as message, i}
 					{#if isNewDay(message, i > 0 ? messages[i - 1] : null)}
 						<div class="my-4 text-center">
@@ -401,7 +404,9 @@
 						</div>
 					{/if}
 
-					<div class={`mb-4 flex ${message.senderId === currentUserId ? 'justify-start' : 'justify-end'}`}>
+					<div
+						class={`mb-4 flex ${message.senderId === currentUserId ? 'justify-start' : 'justify-end'}`}
+					>
 						<div class={`max-w-[70%]`}>
 							<div class="mb-1 flex items-center gap-2">
 								<span class="text-xs font-medium text-gray-600">
@@ -422,7 +427,7 @@
 										: 'bg-gray-100 text-gray-900'
 								}`}
 							>
-								<p class="whitespace-pre-wrap text-sm">{message.content}</p>
+								<p class="text-sm whitespace-pre-wrap">{message.content}</p>
 							</div>
 						</div>
 					</div>
@@ -431,9 +436,9 @@
 
 			<!-- Input -->
 			{#if conversation.status === 'active'}
-				<div class="border-t bg-white p-4 mb-2 safe-area-bottom">
+				<div class="safe-area-bottom mb-2 border-t bg-white p-4">
 					{#if warningMessage}
-						<div class="mb-2 rounded-lg bg-red-50 border border-red-200 px-4 py-2">
+						<div class="mb-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2">
 							<p class="text-sm text-red-700">{warningMessage}</p>
 						</div>
 					{/if}
@@ -446,7 +451,7 @@
 							oninput={() => {
 								if (warningMessage) warningMessage = '';
 							}}
-							class="flex-1 rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+							class="flex-1 rounded-lg border px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
 						/>
 						<button
 							type="submit"
@@ -458,7 +463,9 @@
 					</form>
 				</div>
 			{:else}
-				<div class="border-t bg-gray-100 p-4 mb-2 safe-area-bottom text-center text-sm text-gray-500">
+				<div
+					class="safe-area-bottom mb-2 border-t bg-gray-100 p-4 text-center text-sm text-gray-500"
+				>
 					이 대화는 종료되었습니다. (상태: {conversation.status})
 				</div>
 			{/if}

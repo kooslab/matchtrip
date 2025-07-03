@@ -6,7 +6,7 @@ import { eq, and } from 'drizzle-orm';
 
 export const load = (async ({ params, locals }) => {
 	const session = await locals.auth();
-	
+
 	if (!session || !session.user) {
 		throw redirect(303, '/signin');
 	}
@@ -35,11 +35,7 @@ export const load = (async ({ params, locals }) => {
 		};
 
 		// Check if there are any offers - if yes, redirect back
-		const existingOffers = await db
-			.select()
-			.from(offers)
-			.where(eq(offers.tripId, tripId))
-			.limit(1);
+		const existingOffers = await db.select().from(offers).where(eq(offers.tripId, tripId)).limit(1);
 
 		if (existingOffers.length > 0) {
 			// Can't edit trip with existing offers

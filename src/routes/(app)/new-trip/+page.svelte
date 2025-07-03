@@ -17,7 +17,6 @@
 		}
 	});
 
-
 	// Debug dropdown visibility
 	$effect(() => {
 		console.log('Dropdown visibility changed:', showDropdown, 'Results count:', results.length);
@@ -107,21 +106,21 @@
 				childrenCount: children,
 				startDate: formData.dateRange.start
 					? (() => {
-						const date = formData.dateRange.start;
-						if (date.year && date.month && date.day) {
-							return new Date(date.year, date.month - 1, date.day).toISOString();
-						}
-						return new Date(date.toString()).toISOString();
-					})()
+							const date = formData.dateRange.start;
+							if (date.year && date.month && date.day) {
+								return new Date(date.year, date.month - 1, date.day).toISOString();
+							}
+							return new Date(date.toString()).toISOString();
+						})()
 					: '',
 				endDate: formData.dateRange.end
 					? (() => {
-						const date = formData.dateRange.end;
-						if (date.year && date.month && date.day) {
-							return new Date(date.year, date.month - 1, date.day).toISOString();
-						}
-						return new Date(date.toString()).toISOString();
-					})()
+							const date = formData.dateRange.end;
+							if (date.year && date.month && date.day) {
+								return new Date(date.year, date.month - 1, date.day).toISOString();
+							}
+							return new Date(date.toString()).toISOString();
+						})()
 					: '',
 				travelMethod: travelMethodMap[formData.tourType] || null,
 				customRequest: additionalRequests || null
@@ -279,21 +278,23 @@
 							}}
 							placeholder="여행지를 입력하세요"
 							autocomplete="off"
-							readonly={$tripForm.selectedCity &&
-								$tripForm.selectedCity.city === $tripForm.search} />
+							readonly={$tripForm.selectedCity && $tripForm.selectedCity.city === $tripForm.search}
+						/>
 
 						{#if $tripForm.selectedCity && $tripForm.selectedCity.city === $tripForm.search}
 							<button
 								type="button"
 								class="absolute top-2 right-2 text-xs text-pink-500 underline"
-								onclick={resetCitySelection}>
+								onclick={resetCitySelection}
+							>
 								변경
 							</button>
 						{/if}
 
 						{#if showDropdown}
 							<ul
-								class="absolute right-0 left-0 z-50 mt-1 max-h-60 overflow-auto rounded-lg border bg-white shadow-lg">
+								class="absolute right-0 left-0 z-50 mt-1 max-h-60 overflow-auto rounded-lg border bg-white shadow-lg"
+							>
 								{#each results as dest}
 									<button
 										type="button"
@@ -302,7 +303,8 @@
 											e.preventDefault();
 											e.stopPropagation();
 											handleDestinationSelect(dest);
-										}}>
+										}}
+									>
 										<span>{dest.city}</span>
 										<span class="text-gray-400">{dest.country}</span>
 									</button>
@@ -329,16 +331,20 @@
 							weekdayFormat="short"
 							fixedWeeks={true}
 							granularity="day"
-							class="w-full">
+							class="w-full"
+						>
 							{#if !calendarOpen}
 								<!-- Clean button UI when calendar is closed -->
 								<button
 									type="button"
-									onclick={() => calendarOpen = true}
-									class="flex w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-4 py-3 text-base hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-200">
+									onclick={() => (calendarOpen = true)}
+									class="flex w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-4 py-3 text-base hover:border-gray-400 focus:ring-2 focus:ring-pink-200 focus:outline-none"
+								>
 									<span class="text-gray-700">
 										{#if $tripForm.dateRange.start && $tripForm.dateRange.end}
-											{formatDate($tripForm.dateRange.start)} ~ {formatDate($tripForm.dateRange.end)}
+											{formatDate($tripForm.dateRange.start)} ~ {formatDate(
+												$tripForm.dateRange.end
+											)}
 										{:else}
 											<span class="text-gray-400">여행 날짜를 선택하세요</span>
 										{/if}
@@ -362,7 +368,8 @@
 							{:else}
 								<!-- Full date picker UI when calendar is open -->
 								<div
-									class="flex w-full items-center rounded-lg border border-gray-300 bg-white px-3 py-3 text-sm">
+									class="flex w-full items-center rounded-lg border border-gray-300 bg-white px-3 py-3 text-sm"
+								>
 									{#each ['start', 'end'] as type (type)}
 										<div class="flex items-center whitespace-nowrap">
 											<DateRangePicker.Input type={type as 'start' | 'end'}>
@@ -385,21 +392,24 @@
 														<DateRangePicker.Segment
 															part="year"
 															class="rounded px-0.5 py-1 hover:bg-gray-100 focus:bg-gray-100 focus:text-gray-900 focus-visible:ring-0 focus-visible:ring-offset-0"
-															>{yearSegment.value}</DateRangePicker.Segment>
+															>{yearSegment.value}</DateRangePicker.Segment
+														>
 														<span class="text-gray-400">.</span>
 													{/if}
 													{#if monthSegment}
 														<DateRangePicker.Segment
 															part="month"
 															class="rounded px-0.5 py-1 hover:bg-gray-100 focus:bg-gray-100 focus:text-gray-900 focus-visible:ring-0 focus-visible:ring-offset-0"
-															>{monthSegment.value}</DateRangePicker.Segment>
+															>{monthSegment.value}</DateRangePicker.Segment
+														>
 														<span class="text-gray-400">.</span>
 													{/if}
 													{#if daySegment}
 														<DateRangePicker.Segment
 															part="day"
 															class="rounded px-0.5 py-1 hover:bg-gray-100 focus:bg-gray-100 focus:text-gray-900 focus-visible:ring-0 focus-visible:ring-offset-0"
-															>{daySegment.value}</DateRangePicker.Segment>
+															>{daySegment.value}</DateRangePicker.Segment
+														>
 													{/if}
 													{#if yearSegment && monthSegment && daySegment}
 														<span class="ml-1 text-xs text-gray-400">({getKoreanDayOfWeek()})</span>
@@ -412,7 +422,8 @@
 										{/if}
 									{/each}
 									<DateRangePicker.Trigger
-										class="ml-auto inline-flex size-8 items-center justify-center rounded text-gray-400 transition-all hover:bg-gray-100">
+										class="ml-auto inline-flex size-8 items-center justify-center rounded text-gray-400 transition-all hover:bg-gray-100"
+									>
 										<CalendarBlank class="size-5" />
 									</DateRangePicker.Trigger>
 								</div>
@@ -422,12 +433,14 @@
 									{#snippet children({ months, weekdays })}
 										<DateRangePicker.Header class="mb-4 flex items-center justify-between">
 											<DateRangePicker.PrevButton
-												class="inline-flex size-8 items-center justify-center rounded hover:bg-gray-100">
+												class="inline-flex size-8 items-center justify-center rounded hover:bg-gray-100"
+											>
 												<CaretLeft class="size-4" />
 											</DateRangePicker.PrevButton>
 											<DateRangePicker.Heading class="text-base font-medium" />
 											<DateRangePicker.NextButton
-												class="inline-flex size-8 items-center justify-center rounded hover:bg-gray-100">
+												class="inline-flex size-8 items-center justify-center rounded hover:bg-gray-100"
+											>
 												<CaretRight class="size-4" />
 											</DateRangePicker.NextButton>
 										</DateRangePicker.Header>
@@ -436,7 +449,8 @@
 												<DateRangePicker.GridRow class="mb-2 flex w-full justify-between">
 													{#each weekdays as day}
 														<DateRangePicker.HeadCell
-															class="w-9 text-center text-xs font-normal text-gray-400">
+															class="w-9 text-center text-xs font-normal text-gray-400"
+														>
 															<div>{day.slice(0, 2)}</div>
 														</DateRangePicker.HeadCell>
 													{/each}
@@ -449,9 +463,11 @@
 															<DateRangePicker.Cell
 																{date}
 																month={months[0].value}
-																class="relative m-0 size-9 p-0 text-center text-sm">
+																class="relative m-0 size-9 p-0 text-center text-sm"
+															>
 																<DateRangePicker.Day
-																	class="rounded text-gray-900 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-pink-500 data-selected:bg-pink-100 data-selected:font-medium data-selected:text-pink-900 data-unavailable:text-gray-300">
+																	class="rounded text-gray-900 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-pink-500 data-selected:bg-pink-100 data-selected:font-medium data-selected:text-pink-900 data-unavailable:text-gray-300"
+																>
 																	{date.day}
 																</DateRangePicker.Day>
 															</DateRangePicker.Cell>
@@ -466,7 +482,8 @@
 												class="rounded-lg bg-pink-500 px-4 py-2 text-sm text-white hover:bg-pink-600"
 												onclick={() => {
 													calendarOpen = false;
-												}}>확인</button>
+												}}>확인</button
+											>
 										</div>
 									{/snippet}
 								</DateRangePicker.Calendar>
@@ -483,7 +500,8 @@
 					<div class="space-y-3">
 						<!-- Adults -->
 						<div
-							class="flex items-center justify-between rounded-lg border border-gray-300 px-4 py-3">
+							class="flex items-center justify-between rounded-lg border border-gray-300 px-4 py-3"
+						>
 							<span class="text-base text-gray-700">성인</span>
 							<div class="flex items-center gap-3">
 								<button
@@ -491,19 +509,21 @@
 									class="flex h-8 w-8 items-center justify-center rounded bg-gray-100 text-lg hover:bg-gray-200"
 									onclick={() =>
 										tripForm.update((f) => ({ ...f, people: Math.max(1, f.people - 1) }))}
-									disabled={$tripForm.people <= 1}>-</button>
+									disabled={$tripForm.people <= 1}>-</button
+								>
 								<span class="w-8 text-center text-base">{$tripForm.people}</span>
 								<button
 									type="button"
 									class="flex h-8 w-8 items-center justify-center rounded bg-gray-100 text-lg hover:bg-gray-200"
-									onclick={() => tripForm.update((f) => ({ ...f, people: f.people + 1 }))}
-									>+</button>
+									onclick={() => tripForm.update((f) => ({ ...f, people: f.people + 1 }))}>+</button
+								>
 							</div>
 						</div>
 
 						<!-- Children -->
 						<div
-							class="flex items-center justify-between rounded-lg border border-gray-300 px-4 py-3">
+							class="flex items-center justify-between rounded-lg border border-gray-300 px-4 py-3"
+						>
 							<span class="text-base text-gray-700">유아 (8세 이하)</span>
 							<div class="flex items-center gap-3">
 								<button
@@ -512,14 +532,16 @@
 									onclick={() => {
 										children = Math.max(0, children - 1);
 									}}
-									disabled={children <= 0}>-</button>
+									disabled={children <= 0}>-</button
+								>
 								<span class="w-8 text-center text-base">{children}</span>
 								<button
 									type="button"
 									class="flex h-8 w-8 items-center justify-center rounded bg-gray-100 text-lg hover:bg-gray-200"
 									onclick={() => {
 										children = children + 1;
-									}}>+</button>
+									}}>+</button
+								>
 							</div>
 						</div>
 					</div>
@@ -538,7 +560,8 @@
 							tripForm.update((f) => ({
 								...f,
 								tourType: (e.target as HTMLSelectElement).value
-							}))}>
+							}))}
+					>
 						<option value="" disabled selected>여행 방법을 선택하세요</option>
 						<option value="도보">도보</option>
 						<option value="자동차">자동차</option>
@@ -558,7 +581,8 @@
 						class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-2 focus:ring-pink-200 focus:outline-none"
 						rows="4"
 						bind:value={additionalRequests}
-						placeholder="추가 요청사항을 입력하세요"></textarea>
+						placeholder="추가 요청사항을 입력하세요"
+					></textarea>
 				</div>
 			</form>
 
@@ -566,18 +590,20 @@
 			<div class="mt-8 flex gap-4">
 				<button
 					class="flex-1 rounded-lg border border-gray-300 bg-white px-6 py-3 text-base font-medium text-gray-700 hover:bg-gray-50"
-					onclick={handleAIRecommendation}>
+					onclick={handleAIRecommendation}
+				>
 					AI 추천 일정<br />만들기
 				</button>
 				<button
 					class="flex-1 rounded-lg bg-pink-500 px-6 py-3 text-base font-medium text-white hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-50"
 					onclick={handleExpertProposal}
-					disabled={isSubmitting}>
+					disabled={isSubmitting}
+				>
 					{#if isSubmitting}
 						<div class="flex items-center justify-center gap-2">
 							<div
-								class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent">
-							</div>
+								class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+							></div>
 							<span>제출 중...</span>
 						</div>
 					{:else}

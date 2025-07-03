@@ -14,17 +14,17 @@ A modern, full-stack SvelteKit boilerplate with Drizzle ORM, PostgreSQL, Tailwin
 - 🚀 **[SvelteKit 2.0+](https://svelte.dev/docs/kit)** - Latest version
 - 🔄 **[Svelte 5.0](https://svelte.dev/docs/svelte)** - With runes
 - 🎨 **[TailwindCSS 4.0](https://tailwindcss.com/)** - Utility-first styling
-    - [Lucide](https://lucide.dev/) icons
-    - [Shadcn-svelte](https://shadcn-svelte.com) components coming later (based on Bits-UI)
+  - [Lucide](https://lucide.dev/) icons
+  - [Shadcn-svelte](https://shadcn-svelte.com) components coming later (based on Bits-UI)
 - 🎨 **[Bits-UI](https://bits-ui.com/)** - Headless UI components
 - 🗃️ **[Drizzle ORM](https://orm.drizzle.team/)** - Type-safe database queries and Drizzle-kit for migrations
 - 🐘 **[PostgreSQL](https://www.postgresql.org/)** - Database
 - 🔒 **[Better-auth](https://better-auth.com)** - Authentication system, check their docs for plugins:
-    - Email/password authentication
-    - Social/oauth login
-    - Rate limiting
-    - Handle payments andsubscriptions with Stripe or Polar
-    - Organizations/teams
+  - Email/password authentication
+  - Social/oauth login
+  - Rate limiting
+  - Handle payments andsubscriptions with Stripe or Polar
+  - Organizations/teams
 - 📦 **[Bun](https://bun.sh/)** - Fast JavaScript runtime and package manager
 - 🧩 **[TypeScript](https://www.typescriptlang.org/)** - For type safety throughout the codebase
 - 🧹 **[Prettier](https://prettier.io/)** - Code formatting with Tailwind plugin
@@ -40,28 +40,34 @@ A modern, full-stack SvelteKit boilerplate with Drizzle ORM, PostgreSQL, Tailwin
 ### Installation
 
 1. Clone this repository
+
 ```bash
 git clone https://github.com/thomasmolorg/sveltekit-boilerplate.git
 cd sveltekit-mvp-boilerplate
 ```
 
 2. Install dependencies
+
 ```bash
 bun install
 ```
 
 3. Set up your environment variables
+
 ```bash
 cp .env.example .env
 ```
+
 Edit the `.env` file with your database credentials and other configuration.
 
 4. Run database migrations
+
 ```bash
 bun run db:migrate
 ```
 
 5. Start the development server
+
 ```bash
 bun run dev
 ```
@@ -111,4 +117,3 @@ This boilerplate can be deployed to any platform that supports SvelteKit applica
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request.
-

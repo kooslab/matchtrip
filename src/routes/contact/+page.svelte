@@ -40,11 +40,13 @@
 			xmlns="http://www.w3.org/2000/svg"
 			class="mr-2 h-5 w-5"
 			viewBox="0 0 20 20"
-			fill="currentColor">
+			fill="currentColor"
+		>
 			<path
 				fill-rule="evenodd"
 				d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
-				clip-rule="evenodd" />
+				clip-rule="evenodd"
+			/>
 		</svg>
 		뒤로 가기
 	</button>
@@ -62,12 +64,14 @@
 						class="h-5 w-5 text-blue-600"
 						fill="none"
 						viewBox="0 0 24 24"
-						stroke="currentColor">
+						stroke="currentColor"
+					>
 						<path
 							stroke-linecap="round"
 							stroke-linejoin="round"
 							stroke-width="2"
-							d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+							d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+						/>
 					</svg>
 				</div>
 				<div class="ml-4">
@@ -83,12 +87,14 @@
 						class="h-5 w-5 text-blue-600"
 						fill="none"
 						viewBox="0 0 24 24"
-						stroke="currentColor">
+						stroke="currentColor"
+					>
 						<path
 							stroke-linecap="round"
 							stroke-linejoin="round"
 							stroke-width="2"
-							d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+							d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+						/>
 					</svg>
 				</div>
 				<div class="ml-4">
@@ -106,17 +112,20 @@
 						class="h-5 w-5 text-blue-600"
 						fill="none"
 						viewBox="0 0 24 24"
-						stroke="currentColor">
+						stroke="currentColor"
+					>
 						<path
 							stroke-linecap="round"
 							stroke-linejoin="round"
 							stroke-width="2"
-							d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+							d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+						/>
 						<path
 							stroke-linecap="round"
 							stroke-linejoin="round"
 							stroke-width="2"
-							d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+							d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+						/>
 					</svg>
 				</div>
 				<div class="ml-4">
@@ -148,7 +157,8 @@
 							bind:value={name}
 							class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 							required
-							disabled={isSubmitting} />
+							disabled={isSubmitting}
+						/>
 					</div>
 
 					<div>
@@ -159,7 +169,8 @@
 							bind:value={email}
 							class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 							required
-							disabled={isSubmitting} />
+							disabled={isSubmitting}
+						/>
 					</div>
 
 					<div>
@@ -170,7 +181,8 @@
 							bind:value={subject}
 							class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 							required
-							disabled={isSubmitting} />
+							disabled={isSubmitting}
+						/>
 					</div>
 
 					<div>
@@ -181,14 +193,16 @@
 							rows="4"
 							class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 							required
-							disabled={isSubmitting}></textarea>
+							disabled={isSubmitting}
+						></textarea>
 					</div>
 
 					<div>
 						<button
 							type="submit"
 							class="w-full rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-70"
-							disabled={isSubmitting}>
+							disabled={isSubmitting}
+						>
 							{isSubmitting ? '전송 중...' : '문의 보내기'}
 						</button>
 					</div>
@@ -204,7 +218,8 @@
 							<path
 								fill-rule="evenodd"
 								d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-								clip-rule="evenodd" />
+								clip-rule="evenodd"
+							/>
 						</svg>
 						<span>구체적인 정보를 포함해 주세요</span>
 					</li>
@@ -213,7 +228,8 @@
 							<path
 								fill-rule="evenodd"
 								d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-								clip-rule="evenodd" />
+								clip-rule="evenodd"
+							/>
 						</svg>
 						<span>예약 번호가 있다면 함께 기재해 주세요</span>
 					</li>
@@ -222,7 +238,8 @@
 							<path
 								fill-rule="evenodd"
 								d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-								clip-rule="evenodd" />
+								clip-rule="evenodd"
+							/>
 						</svg>
 						<span>영업시간 내 연락을 권장합니다</span>
 					</li>

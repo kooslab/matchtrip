@@ -43,7 +43,8 @@
 	onclick={handleClick}
 	class="inline-flex items-center justify-center gap-2 rounded-md bg-blue-500 px-4 py-2 text-white transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50 {isClicked
 		? 'scale-95 bg-blue-600'
-		: ''} {className}">
+		: ''} {className}"
+>
 	{#if loading}
 		<div class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
 		<span>{loadingText}</span>

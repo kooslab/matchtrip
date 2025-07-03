@@ -190,25 +190,41 @@
 	<div class="rounded-lg bg-white shadow">
 		<!-- Profile Header -->
 		<div class="border-b border-gray-200 p-3 sm:p-6">
-			<div class="flex flex-col space-y-4 sm:flex-row sm:items-start sm:justify-between sm:space-y-0">
-				<div class="flex flex-col items-center space-y-4 sm:flex-row sm:items-start sm:space-x-4 sm:space-y-0">
+			<div
+				class="flex flex-col space-y-4 sm:flex-row sm:items-start sm:justify-between sm:space-y-0"
+			>
+				<div
+					class="flex flex-col items-center space-y-4 sm:flex-row sm:items-start sm:space-y-0 sm:space-x-4"
+				>
 					<!-- Profile Image -->
 					<div class="group relative">
 						{#if isUploading || isImageLoading}
 							<!-- Loading spinner overlay -->
-							<div class="absolute inset-0 z-10 flex items-center justify-center rounded-full bg-gray-100">
-								<div class="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-indigo-600"></div>
+							<div
+								class="absolute inset-0 z-10 flex items-center justify-center rounded-full bg-gray-100"
+							>
+								<div
+									class="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-indigo-600"
+								></div>
 							</div>
 						{/if}
-						
+
 						<img
 							src={formData.profileImageUrl || getAvatarUrl(data.user.name)}
 							alt="Profile"
-							class="h-24 w-24 rounded-full object-cover transition-all {isUploading || isImageLoading ? 'opacity-50' : ''}"
-							onload={() => { isImageLoading = false; }}
-							onerror={() => { isImageLoading = false; uploadError = '이미지를 불러올 수 없습니다.'; }}
+							class="h-24 w-24 rounded-full object-cover transition-all {isUploading ||
+							isImageLoading
+								? 'opacity-50'
+								: ''}"
+							onload={() => {
+								isImageLoading = false;
+							}}
+							onerror={() => {
+								isImageLoading = false;
+								uploadError = '이미지를 불러올 수 없습니다.';
+							}}
 						/>
-						
+
 						{#if isEditing && !isUploading && !isImageLoading}
 							<label
 								class="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full transition-opacity"
@@ -243,7 +259,7 @@
 										oninput={handlePhoneInput}
 										placeholder="010-0000-0000"
 										maxlength="13"
-										class="text-sm rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+										class="rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
 									/>
 								</div>
 							{:else if formData.phone}

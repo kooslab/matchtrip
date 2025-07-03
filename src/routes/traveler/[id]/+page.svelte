@@ -46,7 +46,7 @@
 					<!-- Basic Info -->
 					<div class="flex-1">
 						<h1 class="text-3xl font-bold text-gray-900">{data.traveler.name}</h1>
-						
+
 						{#if data.travelerProfile?.nationality}
 							<p class="mt-2 flex items-center text-gray-600">
 								<Globe class="mr-2 h-4 w-4" />

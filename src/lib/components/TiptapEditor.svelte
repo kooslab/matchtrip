@@ -40,50 +40,64 @@
 		<div class="button-group flex flex-wrap gap-1">
 			<button
 				onclick={() => editor.chain().focus().toggleBold().run()}
-				class:active={editor.isActive('bold')}>Bold</button>
+				class:active={editor.isActive('bold')}>Bold</button
+			>
 			<button
 				onclick={() => editor.chain().focus().toggleItalic().run()}
-				class:active={editor.isActive('italic')}>Italic</button>
+				class:active={editor.isActive('italic')}>Italic</button
+			>
 			<button
 				onclick={() => editor.chain().focus().toggleStrike().run()}
-				class:active={editor.isActive('strike')}>Strike</button>
+				class:active={editor.isActive('strike')}>Strike</button
+			>
 			<button
 				onclick={() => editor.chain().focus().toggleCode().run()}
-				class:active={editor.isActive('code')}>Code</button>
+				class:active={editor.isActive('code')}>Code</button
+			>
 			<button onclick={() => editor.chain().focus().unsetAllMarks().run()}>Clear marks</button>
 			<button onclick={() => editor.chain().focus().clearNodes().run()}>Clear nodes</button>
 			<button
 				onclick={() => editor.chain().focus().setParagraph().run()}
-				class:active={editor.isActive('paragraph')}>Paragraph</button>
+				class:active={editor.isActive('paragraph')}>Paragraph</button
+			>
 			<button
 				onclick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-				class:active={editor.isActive('heading', { level: 1 })}>H1</button>
+				class:active={editor.isActive('heading', { level: 1 })}>H1</button
+			>
 			<button
 				onclick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-				class:active={editor.isActive('heading', { level: 2 })}>H2</button>
+				class:active={editor.isActive('heading', { level: 2 })}>H2</button
+			>
 			<button
 				onclick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-				class:active={editor.isActive('heading', { level: 3 })}>H3</button>
+				class:active={editor.isActive('heading', { level: 3 })}>H3</button
+			>
 			<button
 				onclick={() => editor.chain().focus().toggleBulletList().run()}
-				class:active={editor.isActive('bulletList')}>Bullet list</button>
+				class:active={editor.isActive('bulletList')}>Bullet list</button
+			>
 			<button
 				onclick={() => editor.chain().focus().toggleOrderedList().run()}
-				class:active={editor.isActive('orderedList')}>Ordered list</button>
+				class:active={editor.isActive('orderedList')}>Ordered list</button
+			>
 			<button
 				onclick={() => editor.chain().focus().toggleCodeBlock().run()}
-				class:active={editor.isActive('codeBlock')}>Code block</button>
+				class:active={editor.isActive('codeBlock')}>Code block</button
+			>
 			<button
 				onclick={() => editor.chain().focus().toggleBlockquote().run()}
-				class:active={editor.isActive('blockquote')}>Blockquote</button>
+				class:active={editor.isActive('blockquote')}>Blockquote</button
+			>
 			<button onclick={() => editor.chain().focus().setHorizontalRule().run()}
-				>Horizontal rule</button>
+				>Horizontal rule</button
+			>
 			<button onclick={() => editor.chain().focus().setHardBreak().run()}>Hard break</button>
 			<button onclick={() => editor.chain().focus().undo().run()}>Undo</button>
 			<button onclick={() => editor.chain().focus().redo().run()}>Redo</button>
 			<button
 				onclick={() => editor.chain().focus().setColor('#958DF1').run()}
-				class:active={editor.isActive('textStyle', { color: '#958DF1' })}>Purple</button>
+				class:active={editor.isActive('textStyle', { color: '#958DF1' })}>Purple</button
+			>
 		</div>
 	</div>
 {/if}

@@ -13,7 +13,6 @@
 			format: 'long'
 		});
 	}
-
 </script>
 
 <svelte:head>
@@ -35,7 +34,8 @@
 			<p class="mb-6 text-gray-600">여행 제안을 수락하고 결제를 완료하면 여기에 표시됩니다</p>
 			<button
 				onclick={() => goto('/trips')}
-				class="rounded-lg bg-pink-500 px-6 py-2 text-white hover:bg-pink-600">
+				class="rounded-lg bg-pink-500 px-6 py-2 text-white hover:bg-pink-600"
+			>
 				여행 둘러보기
 			</button>
 		</div>
@@ -43,9 +43,10 @@
 		<!-- Order List -->
 		<div class="space-y-4">
 			{#each orders as order}
-				<div 
-					class="rounded-lg border border-gray-200 bg-white p-4 hover:shadow-md transition-shadow cursor-pointer"
-					onclick={() => goto(`/order-history/details?id=${order.payment.id}`)}>
+				<div
+					class="cursor-pointer rounded-lg border border-gray-200 bg-white p-4 transition-shadow hover:shadow-md"
+					onclick={() => goto(`/order-history/details?id=${order.payment.id}`)}
+				>
 					<div class="flex items-center justify-between">
 						<!-- Left side - Order info -->
 						<div class="flex-1">
@@ -55,7 +56,11 @@
 										{order.destination?.city || '알 수 없는 도시'}
 									</h3>
 									<p class="text-sm text-gray-500">
-										{formatDateRange(order.startDate, order.endDate, { locale: $userLocale, timezone: $userTimezone, format: 'long' })}
+										{formatDateRange(order.startDate, order.endDate, {
+											locale: $userLocale,
+											timezone: $userTimezone,
+											format: 'long'
+										})}
 									</p>
 								</div>
 								<div class="hidden sm:block">

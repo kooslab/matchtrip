@@ -9,7 +9,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	if (!locals.session?.user?.id) {
 		return json({ error: '인증이 필요합니다.' }, { status: 401 });
 	}
-	
+
 	// TEMPORARY: Allow role changes for testing onboarding flow
 	// Uncomment this block when onboarding flow is complete
 	/*
@@ -18,21 +18,18 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		return json({ error: '이미 역할이 설정되어 있습니다.' }, { status: 400 });
 	}
 	*/
-	
+
 	try {
 		const { role } = await request.json();
-		
+
 		// Validate role
 		if (!['traveler', 'guide'].includes(role)) {
 			return json({ error: '유효하지 않은 역할입니다.' }, { status: 400 });
 		}
-		
+
 		// Update user role
-		await db
-			.update(users)
-			.set({ role })
-			.where(eq(users.id, locals.session.user.id));
-		
+		await db.update(users).set({ role }).where(eq(users.id, locals.session.user.id));
+
 		return json({ success: true });
 	} catch (error) {
 		console.error('Error setting user role:', error);

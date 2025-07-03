@@ -46,20 +46,20 @@ export const load: PageServerLoad = async ({ locals }) => {
 			.leftJoin(trips, eq(offers.tripId, trips.id))
 			.leftJoin(destinations, eq(trips.destinationId, destinations.id))
 			.orderBy(desc(payments.createdAt));
-		
+
 		console.log('[ADMIN PAYMENTS] Fetched payments:', allPayments.length);
 
 		// Calculate statistics
 		const stats = {
 			total: allPayments.length,
-			pending: allPayments.filter(p => p.status === 'pending').length,
-			processing: allPayments.filter(p => p.status === 'processing').length,
-			completed: allPayments.filter(p => p.status === 'completed').length,
-			failed: allPayments.filter(p => p.status === 'failed').length,
-			cancelled: allPayments.filter(p => p.status === 'cancelled').length,
-			refunded: allPayments.filter(p => p.status === 'refunded').length,
+			pending: allPayments.filter((p) => p.status === 'pending').length,
+			processing: allPayments.filter((p) => p.status === 'processing').length,
+			completed: allPayments.filter((p) => p.status === 'completed').length,
+			failed: allPayments.filter((p) => p.status === 'failed').length,
+			cancelled: allPayments.filter((p) => p.status === 'cancelled').length,
+			refunded: allPayments.filter((p) => p.status === 'refunded').length,
 			totalRevenue: allPayments
-				.filter(p => p.status === 'completed')
+				.filter((p) => p.status === 'completed')
 				.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0)
 		};
 
@@ -74,9 +74,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 				revenue: sql<number>`SUM(${payments.amount})`
 			})
 			.from(payments)
-			.where(
-				sql`${payments.status} = 'completed' AND ${payments.createdAt} >= ${sixMonthsAgo}`
-			)
+			.where(sql`${payments.status} = 'completed' AND ${payments.createdAt} >= ${sixMonthsAgo}`)
 			.groupBy(sql`TO_CHAR(${payments.createdAt}, 'YYYY-MM')`)
 			.orderBy(sql`TO_CHAR(${payments.createdAt}, 'YYYY-MM')`);
 

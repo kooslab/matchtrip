@@ -45,7 +45,7 @@ export const PUT: RequestHandler = async ({ request }) => {
 		// Update user role
 		const [updatedUser] = await db
 			.update(users)
-			.set({ 
+			.set({
 				role: role as 'admin' | 'guide' | 'traveler',
 				updatedAt: new Date()
 			})
@@ -56,8 +56,8 @@ export const PUT: RequestHandler = async ({ request }) => {
 			return json({ error: '사용자를 찾을 수 없습니다' }, { status: 404 });
 		}
 
-		return json({ 
-			success: true, 
+		return json({
+			success: true,
 			user: {
 				id: updatedUser.id,
 				name: updatedUser.name,

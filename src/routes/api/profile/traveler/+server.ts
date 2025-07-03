@@ -16,7 +16,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		if (data.phone !== undefined) {
 			await db
 				.update(users)
-				.set({ 
+				.set({
 					phone: data.phone || null,
 					updatedAt: new Date()
 				})

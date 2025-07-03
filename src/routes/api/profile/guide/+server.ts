@@ -37,7 +37,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		if (profileImageUrl !== undefined) {
 			updateData.profileImageUrl = profileImageUrl;
 		}
-		
+
 		const result = await db
 			.update(guideProfiles)
 			.set(updateData)

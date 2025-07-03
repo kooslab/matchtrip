@@ -55,12 +55,12 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 		return json(updatedDestination);
 	} catch (error: any) {
 		console.error('Error updating destination:', error);
-		
+
 		// Handle unique constraint violation
 		if (error.code === '23505' && error.constraint === 'destinations_city_unique') {
 			return json({ error: 'A destination with this city already exists' }, { status: 409 });
 		}
-		
+
 		return json({ error: 'Failed to update destination' }, { status: 500 });
 	}
 };
@@ -103,12 +103,15 @@ export const DELETE: RequestHandler = async ({ params, request }) => {
 		return json({ success: true });
 	} catch (error: any) {
 		console.error('Error deleting destination:', error);
-		
+
 		// Handle foreign key constraint
 		if (error.code === '23503') {
-			return json({ error: 'Cannot delete destination that has associated trips' }, { status: 409 });
+			return json(
+				{ error: 'Cannot delete destination that has associated trips' },
+				{ status: 409 }
+			);
 		}
-		
+
 		return json({ error: 'Failed to delete destination' }, { status: 500 });
 	}
 };

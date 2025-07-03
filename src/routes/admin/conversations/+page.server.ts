@@ -64,14 +64,14 @@ export const load: PageServerLoad = async ({ locals }) => {
 			.from(conversations)
 			.leftJoin(offers, eq(conversations.offerId, offers.id))
 			.orderBy(desc(conversations.updatedAt));
-		
+
 		console.log('[ADMIN CONVERSATIONS] Fetched conversations:', allConversations.length);
 
 		// Calculate statistics
 		const stats = {
 			total: allConversations.length,
-			active: allConversations.filter(c => c.unreadCount > 0).length,
-			withMessages: allConversations.filter(c => c.totalMessages > 0).length
+			active: allConversations.filter((c) => c.unreadCount > 0).length,
+			withMessages: allConversations.filter((c) => c.totalMessages > 0).length
 		};
 
 		console.log('[ADMIN CONVERSATIONS] Done loading');

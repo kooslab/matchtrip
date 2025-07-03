@@ -190,7 +190,8 @@
 			<div class="flex items-center gap-2">
 				<span class="text-sm text-gray-500">받은 제안</span>
 				<span class="rounded-full bg-gray-100 px-2 py-0.5 text-sm font-medium"
-					>{offers.length || 0}</span>
+					>{offers.length || 0}</span
+				>
 			</div>
 		</div>
 
@@ -200,14 +201,16 @@
 				class="flex-1 py-3 text-sm font-medium {activeTab === 'info'
 					? 'border-b-2 border-gray-900 text-gray-900'
 					: 'text-gray-500'}"
-				onclick={() => (activeTab = 'info')}>
+				onclick={() => (activeTab = 'info')}
+			>
 				여행 정보
 			</button>
 			<button
 				class="flex-1 py-3 text-sm font-medium {activeTab === 'offers'
 					? 'border-b-2 border-gray-900 text-gray-900'
 					: 'text-gray-500'}"
-				onclick={() => (activeTab = 'offers')}>
+				onclick={() => (activeTab = 'offers')}
+			>
 				받은 제안 ({offers.length})
 			</button>
 		</div>
@@ -236,7 +239,8 @@
 						<div class="flex items-center justify-between">
 							<span class="text-sm text-gray-600">현재 상태</span>
 							<span
-								class="inline-flex items-center rounded-md bg-green-600 px-3 py-1 text-xs font-medium text-white">
+								class="inline-flex items-center rounded-md bg-green-600 px-3 py-1 text-xs font-medium text-white"
+							>
 								{getStatusText(trip.status)}
 							</span>
 						</div>
@@ -245,9 +249,11 @@
 							<span class="text-sm text-gray-600">여행 일정</span>
 							<div class="text-right">
 								<span class="text-sm font-medium text-blue-600"
-									>{formatKoreanDateRange(trip.startDate, trip.endDate)}</span>
+									>{formatKoreanDateRange(trip.startDate, trip.endDate)}</span
+								>
 								<span class="ml-2 text-sm text-gray-600"
-									>{calculateNightsAndDays(trip.startDate, trip.endDate)}</span>
+									>{calculateNightsAndDays(trip.startDate, trip.endDate)}</span
+								>
 							</div>
 						</div>
 
@@ -279,12 +285,14 @@
 					<div class="rounded-lg bg-white">
 						<button
 							class="flex w-full items-center justify-between p-4"
-							onclick={() => (expandedSections.request = !expandedSections.request)}>
+							onclick={() => (expandedSections.request = !expandedSections.request)}
+						>
 							<h2 class="text-base font-semibold text-gray-900">요청 사항</h2>
 							<ChevronDown
 								class="h-5 w-5 text-gray-400 transition-transform {expandedSections.request
 									? 'rotate-180'
-									: ''}" />
+									: ''}"
+							/>
 						</button>
 						{#if expandedSections.request}
 							<div class="px-4 pb-4">
@@ -298,12 +306,14 @@
 				<div class="rounded-lg bg-white">
 					<button
 						class="flex w-full items-center justify-between p-4"
-						onclick={() => (expandedSections.files = !expandedSections.files)}>
+						onclick={() => (expandedSections.files = !expandedSections.files)}
+					>
 						<h2 class="text-base font-semibold text-gray-900">첨부 파일</h2>
 						<ChevronDown
 							class="h-5 w-5 text-gray-400 transition-transform {expandedSections.files
 								? 'rotate-180'
-								: ''}" />
+								: ''}"
+						/>
 					</button>
 					{#if expandedSections.files}
 						<div class="px-4 pb-4">
@@ -329,7 +339,8 @@
 				<div class="fixed right-0 bottom-14 left-0 border-t border-gray-200 bg-white p-4">
 					<button
 						onclick={() => goto(`/my-trips/${trip.id}/edit`)}
-						class="w-full rounded-lg bg-blue-500 py-3 font-medium text-white transition-colors hover:bg-blue-600">
+						class="w-full rounded-lg bg-blue-500 py-3 font-medium text-white transition-colors hover:bg-blue-600"
+					>
 						계획 변경하기
 					</button>
 				</div>
@@ -358,7 +369,8 @@
 										<span
 											class="inline-block rounded-md px-2 py-1 text-xs font-medium {getOfferStatusColor(
 												offer.status
-											)}">
+											)}"
+										>
 											{getOfferStatusText(offer.status)}
 										</span>
 										<p class="mt-1 text-lg font-semibold text-gray-900">
@@ -379,19 +391,22 @@
 								<div class="mt-4 flex gap-2">
 									<button
 										onclick={() => goto(`/guide/${offer.guideId}`)}
-										class="flex-1 rounded bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200">
+										class="flex-1 rounded bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
+									>
 										가이드 프로필
 									</button>
 									<button
 										onclick={() => startConversation(offer.id)}
-										class="flex-1 rounded bg-blue-100 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-200">
+										class="flex-1 rounded bg-blue-100 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-200"
+									>
 										대화하기
 									</button>
 									{#if offer.status === 'pending'}
 										<button
 											onclick={() => handleOfferAction(offer.id, 'accept')}
 											disabled={processingOfferId === offer.id}
-											class="flex-1 rounded bg-green-100 px-3 py-2 text-sm font-medium text-green-700 hover:bg-green-200 disabled:opacity-50">
+											class="flex-1 rounded bg-green-100 px-3 py-2 text-sm font-medium text-green-700 hover:bg-green-200 disabled:opacity-50"
+										>
 											{processingOfferId === offer.id ? '처리 중...' : '수락'}
 										</button>
 									{/if}
@@ -414,5 +429,6 @@
 			selectedOffer = null;
 		}}
 		offer={selectedOffer}
-		{trip} />
+		{trip}
+	/>
 {/if}

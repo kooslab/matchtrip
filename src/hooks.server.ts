@@ -20,7 +20,7 @@ const corsHandler = (async ({ event, resolve }) => {
 		];
 
 		const origin = event.request.headers.get('origin') || '';
-		
+
 		// In development, be more permissive
 		const isAllowed = dev ? origin.includes('localhost') : allowedOrigins.includes(origin);
 		const allowOrigin = isAllowed ? origin : allowedOrigins[0];
@@ -64,7 +64,7 @@ const authorizationHandler = (async ({ event, resolve }) => {
 		// Clean up locals first to ensure no stale data
 		event.locals.session = undefined;
 		event.locals.user = undefined;
-		
+
 		// Store session in locals for use in page server functions
 		if (session) {
 			event.locals.session = session;
@@ -90,8 +90,15 @@ const authorizationHandler = (async ({ event, resolve }) => {
 
 				if (user) {
 					event.locals.user = user;
-					console.log('Hooks - User loaded in locals:', user.email, 'Role:', user.role, 'EmailVerified:', user.emailVerified);
-					
+					console.log(
+						'Hooks - User loaded in locals:',
+						user.email,
+						'Role:',
+						user.role,
+						'EmailVerified:',
+						user.emailVerified
+					);
+
 					// Check if user has agreed to terms
 					const agreement = await db.query.userAgreements.findFirst({
 						where: eq(userAgreements.userId, user.id),
@@ -100,23 +107,33 @@ const authorizationHandler = (async ({ event, resolve }) => {
 							privacyAgreed: true
 						}
 					});
-					
+
 					// Check if user has agreed to terms
 					event.locals.hasAgreedToTerms = !!(agreement?.termsAgreed && agreement?.privacyAgreed);
 				}
 			} catch (error) {
-				authErrorLogger.log('db', 'Failed to fetch user from database', {
-					userId: session.user.id,
-					error: error instanceof Error ? error.message : String(error)
-				}, error as Error);
+				authErrorLogger.log(
+					'db',
+					'Failed to fetch user from database',
+					{
+						userId: session.user.id,
+						error: error instanceof Error ? error.message : String(error)
+					},
+					error as Error
+				);
 			}
 		}
 	} catch (error) {
-		authErrorLogger.log('session', 'Critical error in session handling', {
-			route: routeId,
-			error: error instanceof Error ? error.message : String(error),
-			url: event.url.pathname
-		}, error as Error);
+		authErrorLogger.log(
+			'session',
+			'Critical error in session handling',
+			{
+				route: routeId,
+				error: error instanceof Error ? error.message : String(error),
+				url: event.url.pathname
+			},
+			error as Error
+		);
 		// Clean up session data on error
 		event.locals.session = undefined;
 		event.locals.user = undefined;
@@ -143,7 +160,12 @@ const authorizationHandler = (async ({ event, resolve }) => {
 	}
 
 	// Handle OAuth callback redirects - when coming from Google OAuth
-	if (routeId === '/' && session && event.locals.user && event.request.headers.get('referer')?.includes('/api/auth/callback/google')) {
+	if (
+		routeId === '/' &&
+		session &&
+		event.locals.user &&
+		event.request.headers.get('referer')?.includes('/api/auth/callback/google')
+	) {
 		// First check if user has agreed to terms
 		if (!event.locals.hasAgreedToTerms) {
 			redirect(302, '/agreement');
@@ -159,7 +181,7 @@ const authorizationHandler = (async ({ event, resolve }) => {
 			redirect(302, '/my-trips');
 		}
 	}
-	
+
 	// Handle first-time users landing on home page - redirect to onboarding
 	if (routeId === '/' && session && event.locals.user) {
 		// Check if this is a first-time user (no agreements)
@@ -176,23 +198,46 @@ const authorizationHandler = (async ({ event, resolve }) => {
 			if (!event.locals.user.name) {
 				redirect(302, '/onboarding/name');
 			} else if (!event.locals.user.phone) {
-				redirect(302, '/onboarding/phone');
+				// Guides go to a different phone page (no verification)
+				if (event.locals.user.role === 'guide') {
+					redirect(302, '/onboarding/guide-phone');
+				} else {
+					redirect(302, '/onboarding/phone');
+				}
 			} else if (!event.locals.user.birthDate) {
-				redirect(302, '/onboarding/birthdate');
+				// Guides go to profile page for birthdate entry
+				if (event.locals.user.role === 'guide') {
+					redirect(302, '/onboarding/guide-profile');
+				} else {
+					redirect(302, '/onboarding/birthdate');
+				}
 			}
 		}
 	}
 
 	// Check if user needs to agree to terms first
-	if (session && event.locals.user && !event.locals.hasAgreedToTerms && routeId !== '/agreement' && !routeId?.startsWith('/api') && !routeId?.startsWith('/terms')) {
+	if (
+		session &&
+		event.locals.user &&
+		!event.locals.hasAgreedToTerms &&
+		routeId !== '/agreement' &&
+		!routeId?.startsWith('/api') &&
+		!routeId?.startsWith('/terms')
+	) {
 		redirect(302, '/agreement');
 	}
 
 	// Check if user needs to select a role (for Google OAuth users)
-	if (session && event.locals.user && event.locals.hasAgreedToTerms && !event.locals.user.role && routeId !== '/select-role' && !routeId?.startsWith('/api')) {
+	if (
+		session &&
+		event.locals.user &&
+		event.locals.hasAgreedToTerms &&
+		!event.locals.user.role &&
+		routeId !== '/select-role' &&
+		!routeId?.startsWith('/api')
+	) {
 		redirect(302, '/select-role');
 	}
-
 
 	// Handle protected app routes that require authentication
 	const isAppRoute = routeId?.startsWith('/(app)');

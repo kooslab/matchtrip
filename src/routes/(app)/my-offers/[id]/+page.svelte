@@ -186,7 +186,8 @@
 	<div class="mb-6 flex items-center gap-4">
 		<button
 			onclick={() => goto('/my-offers')}
-			class="flex items-center gap-2 text-gray-600 hover:text-gray-800">
+			class="flex items-center gap-2 text-gray-600 hover:text-gray-800"
+		>
 			<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
 			</svg>
@@ -210,7 +211,8 @@
 					<span
 						class="inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium {getStatusColor(
 							offer.status
-						)}">
+						)}"
+					>
 						{getStatusText(offer.status)}
 					</span>
 				</div>
@@ -238,7 +240,11 @@
 					<div>
 						<h3 class="mb-2 text-sm font-medium text-gray-900">여행 상태</h3>
 						<p class="text-gray-700">
-							<span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium {getStatusColor(offer.trip.status)}">
+							<span
+								class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium {getStatusColor(
+									offer.trip.status
+								)}"
+							>
 								{getStatusText(offer.trip.status)}
 							</span>
 						</p>
@@ -348,25 +354,25 @@
 
 			<!-- Status Messages -->
 			{#if completionMessage}
-				<div class="rounded-lg bg-green-50 p-4 text-green-700 text-sm">
+				<div class="rounded-lg bg-green-50 p-4 text-sm text-green-700">
 					{completionMessage}
 				</div>
 			{/if}
-			
+
 			{#if completionError}
-				<div class="rounded-lg bg-red-50 p-4 text-red-700 text-sm">
+				<div class="rounded-lg bg-red-50 p-4 text-sm text-red-700">
 					{completionError}
 				</div>
 			{/if}
 
 			{#if reviewRequestMessage}
-				<div class="rounded-lg bg-green-50 p-4 text-green-700 text-sm">
+				<div class="rounded-lg bg-green-50 p-4 text-sm text-green-700">
 					{reviewRequestMessage}
 				</div>
 			{/if}
-			
+
 			{#if reviewRequestError}
-				<div class="rounded-lg bg-red-50 p-4 text-red-700 text-sm">
+				<div class="rounded-lg bg-red-50 p-4 text-sm text-red-700">
 					{reviewRequestError}
 				</div>
 			{/if}
@@ -376,7 +382,8 @@
 				<!-- Conversation Button -->
 				<button
 					onclick={startConversation}
-					class="w-full flex items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none">
+					class="flex w-full items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+				>
 					<MessageSquare class="h-5 w-5" />
 					대화하기
 				</button>
@@ -384,7 +391,8 @@
 				{#if offer.status === 'accepted'}
 					<button
 						onclick={() => goto(`/my-trips/${offer.tripId}`)}
-						class="w-full rounded-md bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none">
+						class="w-full rounded-md bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none"
+					>
 						여행 관리하기
 					</button>
 
@@ -393,9 +401,12 @@
 							<button
 								onclick={markTripCompleted}
 								disabled={isMarkingCompleted}
-								class="w-full flex items-center justify-center gap-2 rounded-md bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
+								class="flex w-full items-center justify-center gap-2 rounded-md bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+							>
 								{#if isMarkingCompleted}
-									<span class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+									<span
+										class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+									></span>
 									처리 중...
 								{:else}
 									여행 완료 처리
@@ -406,9 +417,12 @@
 							<button
 								onclick={markTripCompleted}
 								disabled={isMarkingCompleted}
-								class="w-full flex items-center justify-center gap-2 rounded-md bg-orange-600 px-4 py-2 text-white transition-colors hover:bg-orange-700 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
+								class="flex w-full items-center justify-center gap-2 rounded-md bg-orange-600 px-4 py-2 text-white transition-colors hover:bg-orange-700 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+							>
 								{#if isMarkingCompleted}
-									<span class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+									<span
+										class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+									></span>
 									처리 중...
 								{:else}
 									여행 조기 완료 (테스트용)
@@ -422,9 +436,12 @@
 					<button
 						onclick={requestReview}
 						disabled={isRequestingReview}
-						class="w-full flex items-center justify-center gap-2 rounded-md bg-yellow-600 px-4 py-2 text-white transition-colors hover:bg-yellow-700 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
+						class="flex w-full items-center justify-center gap-2 rounded-md bg-yellow-600 px-4 py-2 text-white transition-colors hover:bg-yellow-700 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+					>
 						{#if isRequestingReview}
-							<span class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+							<span
+								class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+							></span>
 							요청 중...
 						{:else}
 							<Star class="h-5 w-5" />
@@ -435,7 +452,8 @@
 
 				<button
 					onclick={() => goto('/my-offers')}
-					class="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-700 transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none">
+					class="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-700 transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+				>
 					목록으로 돌아가기
 				</button>
 			</div>

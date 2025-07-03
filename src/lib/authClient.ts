@@ -25,8 +25,4 @@ export const authClient = createAuthClient({
 	baseURL // dynamically determine the base URL
 });
 
-export const { 
-	signIn, 
-	signOut, 
-	useSession
-} = authClient;
+export const { signIn, signOut, useSession } = authClient;

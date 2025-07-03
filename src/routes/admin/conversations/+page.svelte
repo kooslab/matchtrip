@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { 
-		MessageSquare, 
-		Calendar, 
-		Users, 
-		MapPin, 
+	import {
+		MessageSquare,
+		Calendar,
+		Users,
+		MapPin,
 		DollarSign,
 		Clock,
 		CheckCircle,
@@ -73,47 +73,48 @@
 		return message.substring(0, maxLength) + '...';
 	}
 
-	let filteredConversations = $derived(data.conversations
-		.filter(conversation => {
-			// Activity filter
-			if (activityFilter === 'active' && conversation.totalMessages === 0) return false;
-			if (activityFilter === 'inactive' && conversation.totalMessages > 0) return false;
-			if (activityFilter === 'unread' && conversation.unreadCount === 0) return false;
-			
-			// Status filter (offer status)
-			if (statusFilter !== 'all' && conversation.offerStatus !== statusFilter) return false;
-			
-			// Search filter
-			if (searchQuery) {
-				const query = searchQuery.toLowerCase();
-				return (
-					conversation.tripDestination?.toLowerCase().includes(query) ||
-					conversation.travelerName?.toLowerCase().includes(query) ||
-					conversation.travelerEmail?.toLowerCase().includes(query) ||
-					conversation.guideName?.toLowerCase().includes(query) ||
-					conversation.guideEmail?.toLowerCase().includes(query) ||
-					conversation.lastMessage?.toLowerCase().includes(query)
-				);
-			}
-			return true;
-		})
-		.sort((a, b) => {
-			if (sortBy === 'recent') {
-				const dateA = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
-				const dateB = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
-				return dateB - dateA;
-			} else if (sortBy === 'oldest') {
-				const dateA = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
-				const dateB = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
-				return dateA - dateB;
-			} else if (sortBy === 'messages') {
-				return (b.totalMessages || 0) - (a.totalMessages || 0);
-			} else if (sortBy === 'unread') {
-				return (b.unreadCount || 0) - (a.unreadCount || 0);
-			}
-			return 0;
-		}));
+	let filteredConversations = $derived(
+		data.conversations
+			.filter((conversation) => {
+				// Activity filter
+				if (activityFilter === 'active' && conversation.totalMessages === 0) return false;
+				if (activityFilter === 'inactive' && conversation.totalMessages > 0) return false;
+				if (activityFilter === 'unread' && conversation.unreadCount === 0) return false;
 
+				// Status filter (offer status)
+				if (statusFilter !== 'all' && conversation.offerStatus !== statusFilter) return false;
+
+				// Search filter
+				if (searchQuery) {
+					const query = searchQuery.toLowerCase();
+					return (
+						conversation.tripDestination?.toLowerCase().includes(query) ||
+						conversation.travelerName?.toLowerCase().includes(query) ||
+						conversation.travelerEmail?.toLowerCase().includes(query) ||
+						conversation.guideName?.toLowerCase().includes(query) ||
+						conversation.guideEmail?.toLowerCase().includes(query) ||
+						conversation.lastMessage?.toLowerCase().includes(query)
+					);
+				}
+				return true;
+			})
+			.sort((a, b) => {
+				if (sortBy === 'recent') {
+					const dateA = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
+					const dateB = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
+					return dateB - dateA;
+				} else if (sortBy === 'oldest') {
+					const dateA = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
+					const dateB = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
+					return dateA - dateB;
+				} else if (sortBy === 'messages') {
+					return (b.totalMessages || 0) - (a.totalMessages || 0);
+				} else if (sortBy === 'unread') {
+					return (b.unreadCount || 0) - (a.unreadCount || 0);
+				}
+				return 0;
+			})
+	);
 
 	async function exportData() {
 		try {
@@ -134,14 +135,14 @@
 	}
 </script>
 
-<div class="p-8 overflow-auto h-full">
+<div class="h-full overflow-auto p-8">
 	<div class="mb-8">
 		<h1 class="text-3xl font-bold text-gray-900">대화 관리</h1>
 		<p class="mt-2 text-gray-600">여행자와 가이드 간의 모든 대화를 모니터링합니다</p>
 	</div>
 
 	<!-- Statistics Cards -->
-	<div class="grid gap-4 md:grid-cols-7 mb-8">
+	<div class="mb-8 grid gap-4 md:grid-cols-7">
 		<div class="rounded-lg bg-white p-6 shadow">
 			<div class="flex items-center justify-between">
 				<div>
@@ -177,7 +178,7 @@
 				<div>
 					<p class="text-sm text-gray-600">읽지 않음</p>
 					<p class="text-2xl font-bold text-gray-900">{data.stats.withUnread}</p>
-					<p class="text-xs text-gray-500 mt-1">총 {data.stats.totalUnread}개</p>
+					<p class="mt-1 text-xs text-gray-500">총 {data.stats.totalUnread}개</p>
 				</div>
 				<Mail class="h-10 w-10 text-yellow-500" />
 			</div>
@@ -188,17 +189,19 @@
 				<div>
 					<p class="text-sm text-gray-600">최근 활동</p>
 					<p class="text-2xl font-bold text-gray-900">{data.stats.recentlyActive}</p>
-					<p class="text-xs text-gray-500 mt-1">24시간 내</p>
+					<p class="mt-1 text-xs text-gray-500">24시간 내</p>
 				</div>
 				<Activity class="h-10 w-10 text-purple-500" />
 			</div>
 		</div>
 
-		<div class="rounded-lg bg-white p-6 shadow col-span-2">
+		<div class="col-span-2 rounded-lg bg-white p-6 shadow">
 			<div class="flex items-center justify-between">
 				<div>
 					<p class="text-sm text-gray-600">전체 메시지</p>
-					<p class="text-2xl font-bold text-gray-900">{data.stats.totalMessages.toLocaleString()}개</p>
+					<p class="text-2xl font-bold text-gray-900">
+						{data.stats.totalMessages.toLocaleString()}개
+					</p>
 				</div>
 				<FileText class="h-10 w-10 text-indigo-500" />
 			</div>
@@ -206,20 +209,22 @@
 	</div>
 
 	<!-- Filters and Search -->
-	<div class="mb-6 bg-white rounded-lg shadow p-4">
-		<div class="flex flex-wrap gap-4 items-center">
-			<div class="flex-1 min-w-[200px]">
+	<div class="mb-6 rounded-lg bg-white p-4 shadow">
+		<div class="flex flex-wrap items-center gap-4">
+			<div class="min-w-[200px] flex-1">
 				<div class="relative">
-					<Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+					<Search
+						class="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 transform text-gray-400"
+					/>
 					<input
 						type="text"
 						placeholder="여행지, 참가자 또는 메시지 내용 검색..."
 						bind:value={searchQuery}
-						class="w-full rounded-lg border border-gray-300 pl-10 pr-4 py-2 focus:border-blue-500 focus:outline-none"
+						class="w-full rounded-lg border border-gray-300 py-2 pr-4 pl-10 focus:border-blue-500 focus:outline-none"
 					/>
 				</div>
 			</div>
-			
+
 			<div class="flex items-center gap-2">
 				<Filter class="h-5 w-5 text-gray-500" />
 				<select
@@ -265,26 +270,28 @@
 	</div>
 
 	<!-- Conversations List -->
-	<div class="bg-white rounded-lg shadow overflow-hidden">
+	<div class="overflow-hidden rounded-lg bg-white shadow">
 		<div class="divide-y divide-gray-200">
 			{#each filteredConversations as conversation}
-				{@const badge = conversation.offerStatus ? getOfferStatusBadge(conversation.offerStatus) : null}
-				<div class="p-6 hover:bg-gray-50 transition-colors">
+				{@const badge = conversation.offerStatus
+					? getOfferStatusBadge(conversation.offerStatus)
+					: null}
+				<div class="p-6 transition-colors hover:bg-gray-50">
 					<div class="flex items-start justify-between">
 						<div class="flex-1">
 							<div class="flex items-start gap-6">
 								<!-- Participants -->
 								<div class="flex-1">
-									<h3 class="text-sm font-semibold text-gray-900 mb-2">참가자</h3>
+									<h3 class="mb-2 text-sm font-semibold text-gray-900">참가자</h3>
 									<div class="space-y-2">
 										<div class="flex items-center gap-2">
 											<Users class="h-4 w-4 text-gray-400" />
 											<div>
 												<span class="text-sm font-medium text-gray-900">여행자:</span>
-												<span class="text-sm text-gray-600 ml-1">
+												<span class="ml-1 text-sm text-gray-600">
 													{conversation.travelerName || '이름 없음'}
 												</span>
-												<span class="text-xs text-gray-500 ml-1">
+												<span class="ml-1 text-xs text-gray-500">
 													({conversation.travelerEmail})
 												</span>
 											</div>
@@ -293,10 +300,10 @@
 											<Users class="h-4 w-4 text-gray-400" />
 											<div>
 												<span class="text-sm font-medium text-gray-900">가이드:</span>
-												<span class="text-sm text-gray-600 ml-1">
+												<span class="ml-1 text-sm text-gray-600">
 													{conversation.guideName || '이름 없음'}
 												</span>
-												<span class="text-xs text-gray-500 ml-1">
+												<span class="ml-1 text-xs text-gray-500">
 													({conversation.guideEmail})
 												</span>
 											</div>
@@ -306,7 +313,7 @@
 
 								<!-- Trip Info -->
 								<div class="flex-1">
-									<h3 class="text-sm font-semibold text-gray-900 mb-2">여행 정보</h3>
+									<h3 class="mb-2 text-sm font-semibold text-gray-900">여행 정보</h3>
 									<div class="space-y-1">
 										<div class="flex items-center gap-2">
 											<MapPin class="h-4 w-4 text-gray-400" />
@@ -335,7 +342,7 @@
 
 								<!-- Message Info -->
 								<div class="flex-1">
-									<h3 class="text-sm font-semibold text-gray-900 mb-2">대화 상태</h3>
+									<h3 class="mb-2 text-sm font-semibold text-gray-900">대화 상태</h3>
 									<div class="space-y-2">
 										<div class="flex items-center gap-2">
 											<MessageCircle class="h-4 w-4 text-gray-400" />
@@ -360,7 +367,7 @@
 
 							<!-- Last Message Preview -->
 							{#if conversation.lastMessage}
-								<div class="mt-4 p-3 bg-gray-50 rounded-lg">
+								<div class="mt-4 rounded-lg bg-gray-50 p-3">
 									<p class="text-sm text-gray-600 italic">
 										"{truncateMessage(conversation.lastMessage)}"
 									</p>
@@ -371,11 +378,13 @@
 						<!-- Actions and Status -->
 						<div class="ml-6 flex flex-col items-end gap-3">
 							{#if badge}
-								<span class="inline-flex rounded-full px-2 text-xs font-semibold leading-5 {badge.bg} {badge.text}">
+								<span
+									class="inline-flex rounded-full px-2 text-xs leading-5 font-semibold {badge.bg} {badge.text}"
+								>
 									{badge.label}
 								</span>
 							{/if}
-							
+
 							<div class="flex items-center gap-2">
 								<a
 									href="/admin/conversations/{conversation.id}"
@@ -401,8 +410,8 @@
 				<div class="px-6 py-12 text-center">
 					<MessageSquare class="h-12 w-12 text-gray-400 mx-auto mb-4" />
 					<p class="text-gray-500">
-						{searchQuery || activityFilter !== 'all' || statusFilter !== 'all' 
-							? '검색 결과가 없습니다.' 
+						{searchQuery || activityFilter !== 'all' || statusFilter !== 'all'
+							? '검색 결과가 없습니다.'
 							: '등록된 대화가 없습니다.'}
 					</p>
 				</div>

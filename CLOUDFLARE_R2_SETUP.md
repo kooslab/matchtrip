@@ -35,14 +35,15 @@ This guide will help you set up Cloudflare R2 storage for handling file uploads 
 2. Click on "Settings" tab
 3. Under "Public access", click "Allow public access"
 4. Add the following CORS policy:
+
 ```json
 [
-  {
-    "AllowedOrigins": ["*"],
-    "AllowedMethods": ["GET"],
-    "AllowedHeaders": ["*"],
-    "MaxAgeSeconds": 3600
-  }
+	{
+		"AllowedOrigins": ["*"],
+		"AllowedMethods": ["GET"],
+		"AllowedHeaders": ["*"],
+		"MaxAgeSeconds": 3600
+	}
 ]
 ```
 
@@ -133,11 +134,13 @@ For public read access to uploaded files, you can set bucket policies:
 The upload API organizes files by type and bucket:
 
 **Private Bucket (`matchtrip-uploads`)**:
+
 - `profile/` - Profile images
 - `id/` - ID documents and passports
 - `certification/` - Guide certifications
 
 **Public Bucket (`matchtrip-public`)**:
+
 - `destination/` - Destination images for landing page display
 
 ## Security Considerations

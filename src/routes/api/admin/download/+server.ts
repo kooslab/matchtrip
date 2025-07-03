@@ -75,7 +75,7 @@ export const GET: RequestHandler = async ({ request, url }) => {
 	try {
 		// For private files, we need to construct the key with the upload type prefix
 		const key = `${file.uploadType}/${file.filename}`;
-		
+
 		console.log('Generating presigned URL for:', {
 			bucket: R2_BUCKET_NAME,
 			key: key,
@@ -90,7 +90,7 @@ export const GET: RequestHandler = async ({ request, url }) => {
 		});
 
 		// Generate presigned URL that expires in 5 minutes
-		const presignedUrl = await getSignedUrl(s3Client, command, { 
+		const presignedUrl = await getSignedUrl(s3Client, command, {
 			expiresIn: 300 // 5 minutes
 		});
 
@@ -100,7 +100,7 @@ export const GET: RequestHandler = async ({ request, url }) => {
 		return new Response(null, {
 			status: 302,
 			headers: {
-				'Location': presignedUrl
+				Location: presignedUrl
 			}
 		});
 	} catch (err) {
