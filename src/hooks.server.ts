@@ -190,27 +190,15 @@ const authorizationHandler = (async ({ event, resolve }) => {
 		}
 		// Check if user hasn't selected a role yet
 		else if (!event.locals.user.role) {
-			redirect(302, '/select-role');
+			redirect(302, '/onboarding/role');
 		}
 		// Check if user hasn't completed profile (name, phone, birthDate)
 		else if (!event.locals.user.name || !event.locals.user.phone || !event.locals.user.birthDate) {
-			// Redirect to the appropriate onboarding step
-			if (!event.locals.user.name) {
-				redirect(302, '/onboarding/name');
-			} else if (!event.locals.user.phone) {
-				// Guides go to a different phone page (no verification)
-				if (event.locals.user.role === 'guide') {
-					redirect(302, '/onboarding/guide-phone');
-				} else {
-					redirect(302, '/onboarding/phone');
-				}
-			} else if (!event.locals.user.birthDate) {
-				// Guides go to profile page for birthdate entry
-				if (event.locals.user.role === 'guide') {
-					redirect(302, '/onboarding/guide-profile');
-				} else {
-					redirect(302, '/onboarding/birthdate');
-				}
+			// Redirect to role-specific onboarding
+			if (event.locals.user.role === 'guide') {
+				redirect(302, '/onboarding/guide');
+			} else {
+				redirect(302, '/onboarding/traveler');
 			}
 		}
 	}
@@ -233,10 +221,10 @@ const authorizationHandler = (async ({ event, resolve }) => {
 		event.locals.user &&
 		event.locals.hasAgreedToTerms &&
 		!event.locals.user.role &&
-		routeId !== '/select-role' &&
+		routeId !== '/onboarding/role' &&
 		!routeId?.startsWith('/api')
 	) {
-		redirect(302, '/select-role');
+		redirect(302, '/onboarding/role');
 	}
 
 	// Handle protected app routes that require authentication

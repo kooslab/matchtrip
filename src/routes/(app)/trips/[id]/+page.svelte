@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { formatKoreanDate, formatKoreanDateRange } from '$lib/utils/dateFormatter';
+	import { colors } from '$lib/constants/colors';
 	import arrowLeftUrl from '$lib/icons/icon-arrow-left-small-mono.svg';
 	import arrowRightUrl from '$lib/icons/icon-arrow-right-small-mono.svg';
 
@@ -234,7 +235,10 @@
 			{:else}
 				<button
 					onclick={handleMakeOffer}
-					class="w-full rounded-lg bg-[#2B2D5B] py-3.5 text-base font-semibold text-white transition-all hover:bg-[#1F2147] active:scale-[0.98]"
+					class="w-full rounded-lg py-3.5 text-base font-semibold text-white transition-all active:scale-[0.98]"
+					style="background-color: {colors.primary}"
+					onmouseover="this.style.backgroundColor='{colors.primaryHover}'"
+					onmouseout="this.style.backgroundColor='{colors.primary}'"
 				>
 					제안하기
 				</button>
