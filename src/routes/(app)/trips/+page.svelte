@@ -10,6 +10,10 @@
 	import chevronRightIconUrl from '$lib/icons/icon-arrow-right-small-mono.svg';
 	import CitySelector from '$lib/components/CitySelector.svelte';
 	import type { City } from '$lib/components/CitySelector.svelte';
+	import { DateRangePicker } from 'bits-ui';
+	import CalendarBlank from 'phosphor-svelte/lib/CalendarBlank';
+	import CaretLeft from 'phosphor-svelte/lib/CaretLeft';
+	import CaretRight from 'phosphor-svelte/lib/CaretRight';
 
 	let { data } = $props();
 
@@ -31,6 +35,11 @@
 	let showCitySearchModal = $state(false);
 	let selectedCityIds = $state<Set<string>>(new Set());
 	let citySelectorRef: CitySelector;
+
+	// Date range picker state
+	let showDateRangePicker = $state(false);
+	let selectedDateRange = $state<{ start?: Date; end?: Date }>({});
+	let dateRangeOpen = $state(false);
 
 	// Get unique destinations count
 	let uniqueDestinations = $derived(
@@ -115,6 +124,47 @@
 		showCitySearchModal = true;
 		selectedFilters.destination = true;
 	}
+
+	// Date range functions
+	function openDateRangePicker() {
+		showDateRangePicker = true;
+		dateRangeOpen = true;
+		selectedFilters.dates = true;
+	}
+
+	function applyDateFilter() {
+		if (selectedDateRange.start && selectedDateRange.end) {
+			selectedFilters.dates = true;
+			// Convert to Date objects if needed and format
+			const startDate = new Date(selectedDateRange.start);
+			const endDate = new Date(selectedDateRange.end);
+			
+			// Format dates as YYYY-MM-DD
+			const formatDateString = (date: Date) => {
+				const year = date.getFullYear();
+				const month = String(date.getMonth() + 1).padStart(2, '0');
+				const day = String(date.getDate()).padStart(2, '0');
+				return `${year}-${month}-${day}`;
+			};
+			
+			const startDateStr = formatDateString(startDate);
+			const endDateStr = formatDateString(endDate);
+			
+			goto(`/trips?startDate=${startDateStr}&endDate=${endDateStr}`);
+		}
+		showDateRangePicker = false;
+		dateRangeOpen = false;
+	}
+
+	// Format date range for display
+	const dateRangeDisplay = $derived(() => {
+		if (selectedDateRange.start && selectedDateRange.end) {
+			const start = new Date(selectedDateRange.start);
+			const end = new Date(selectedDateRange.end);
+			return `${formatDate(start, { format: 'short' })} - ${formatDate(end, { format: 'short' })}`;
+		}
+		return '';
+	});
 </script>
 
 <svelte:head>
@@ -138,11 +188,11 @@
 						class="h-4 w-4 {selectedFilters.destination ? 'brightness-0 invert' : ''}" />
 				</button>
 				<button
-					onclick={() => (selectedFilters.dates = !selectedFilters.dates)}
+					onclick={openDateRangePicker}
 					class="flex flex-shrink-0 items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition-all {selectedFilters.dates
 						? 'border-gray-900 bg-gray-900 text-white'
 						: 'border border-gray-300 bg-white text-gray-700 hover:border-gray-400'}">
-					<span>일정</span>
+					<span>{dateRangeDisplay() || '일정'}</span>
 					<img
 						src={chevronRightIconUrl}
 						alt=""
@@ -194,6 +244,124 @@
 					submitText={`${selectedCityIds.size}개 지역`}
 					showBackButton={true}
 				/>
+				
+				<!-- Bottom indicator for swipe -->
+				<div class="absolute bottom-0 left-0 right-0 flex justify-center pb-2 pointer-events-none">
+					<div class="w-[134px] h-[5px] bg-[#052236] rounded-[100px]"></div>
+				</div>
+			</div>
+		</div>
+	{/if}
+
+	<!-- Date Range Picker Modal -->
+	{#if showDateRangePicker}
+		<div class="fixed inset-0 z-50 flex items-end justify-center">
+			<!-- Backdrop -->
+			<div 
+				class="absolute inset-0 bg-black bg-opacity-50"
+				onclick={() => showDateRangePicker = false}
+			></div>
+			
+			<!-- Modal Content -->
+			<div class="relative w-full max-w-lg bg-white rounded-t-[40px] shadow-xl animate-slide-up">
+				<div class="px-6 pt-6 pb-8">
+					<h2 class="text-lg font-semibold mb-6 text-center">여행 일정 선택</h2>
+					
+					<DateRangePicker.Root bind:value={selectedDateRange}>
+						<!-- Calendar displayed directly -->
+						<DateRangePicker.Calendar class="w-full">
+							{#snippet children({ months, weekdays })}
+								<DateRangePicker.Header class="mb-4 flex items-center justify-between px-4">
+									<DateRangePicker.PrevButton
+										class="inline-flex size-10 items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+									>
+										<CaretLeft class="size-5" />
+									</DateRangePicker.PrevButton>
+									<DateRangePicker.Heading class="text-base font-medium" />
+									<DateRangePicker.NextButton
+										class="inline-flex size-10 items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+									>
+										<CaretRight class="size-5" />
+									</DateRangePicker.NextButton>
+								</DateRangePicker.Header>
+								
+								<DateRangePicker.Grid class="w-full px-4">
+									<DateRangePicker.GridHead>
+										<DateRangePicker.GridRow class="mb-2 flex w-full justify-between">
+											{#each weekdays as day}
+												<DateRangePicker.HeadCell
+													class="w-10 text-center text-sm font-medium text-gray-500"
+												>
+													{day.slice(0, 1)}
+												</DateRangePicker.HeadCell>
+											{/each}
+										</DateRangePicker.GridRow>
+									</DateRangePicker.GridHead>
+									<DateRangePicker.GridBody>
+										{#each months[0].weeks as weekDates}
+											<DateRangePicker.GridRow class="flex w-full justify-between mb-1">
+												{#each weekDates as date}
+													<DateRangePicker.Cell
+														{date}
+														month={months[0].value}
+														class="relative size-10 p-0 text-center"
+													>
+														<DateRangePicker.Day
+															class="size-full rounded-lg text-sm text-gray-900 hover:bg-gray-100 transition-colors
+																data-[selected]:bg-blue-500 data-[selected]:font-medium data-[selected]:text-white 
+																data-[unavailable]:text-gray-300 data-[unavailable]:hover:bg-transparent
+																data-[in-range]:bg-blue-100 data-[in-range]:text-gray-900
+																data-[outside-month]:text-gray-400"
+														>
+															{date.day}
+														</DateRangePicker.Day>
+													</DateRangePicker.Cell>
+												{/each}
+											</DateRangePicker.GridRow>
+										{/each}
+									</DateRangePicker.GridBody>
+								</DateRangePicker.Grid>
+							{/snippet}
+						</DateRangePicker.Calendar>
+
+						<!-- Selected date display -->
+						{#if selectedDateRange.start || selectedDateRange.end}
+							<div class="mt-6 px-6 grid grid-cols-2 gap-4">
+								<div>
+									<label class="block text-xs text-gray-500 mb-1">출발일</label>
+									<div class="text-sm font-medium">
+										{selectedDateRange.start ? formatDate(selectedDateRange.start, { format: 'medium' }) : '-'}
+									</div>
+								</div>
+								<div>
+									<label class="block text-xs text-gray-500 mb-1">도착일</label>
+									<div class="text-sm font-medium">
+										{selectedDateRange.end ? formatDate(selectedDateRange.end, { format: 'medium' }) : '-'}
+									</div>
+								</div>
+							</div>
+						{/if}
+
+						<div class="mt-6 px-6 grid grid-cols-2 gap-3">
+							<button
+								onclick={() => showDateRangePicker = false}
+								class="py-3 border border-gray-200 rounded-xl text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+							>
+								취소
+							</button>
+							<button
+								onclick={applyDateFilter}
+								disabled={!selectedDateRange.start || !selectedDateRange.end}
+								class="py-3 rounded-xl font-medium transition-colors
+									{selectedDateRange.start && selectedDateRange.end 
+										? 'bg-blue-500 text-white hover:bg-blue-600' 
+										: 'bg-gray-200 text-gray-400 cursor-not-allowed'}"
+							>
+								적용
+							</button>
+						</div>
+					</DateRangePicker.Root>
+				</div>
 				
 				<!-- Bottom indicator for swipe -->
 				<div class="absolute bottom-0 left-0 right-0 flex justify-center pb-2 pointer-events-none">
