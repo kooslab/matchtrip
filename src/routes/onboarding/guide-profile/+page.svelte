@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { Camera } from 'lucide-svelte';
+	import DatePickerModal from '$lib/components/DatePickerModal.svelte';
 
 	let selectedYear = $state(1990);
 	let selectedMonth = $state(1);
@@ -12,19 +13,7 @@
 	let uploadingImage = $state(false);
 	let residenceArea = $state('');
 	let showDatePicker = $state(false);
-
-	// Visual selection states (what appears centered)
-	let visualYear = $state(1990);
-	let visualMonth = $state(1);
-	let visualDay = $state(1);
-
-	// Track which items are in the selection area
-	let inSelectionYear = $state<number | null>(null);
-	let inSelectionMonth = $state<number | null>(null);
-	let inSelectionDay = $state<number | null>(null);
-
-	// Prevent recursive scroll updates
-	let isSnapping = false;
+	let username = $state('');
 
 	// Get current date for validation
 	const currentYear = new Date().getFullYear();
@@ -35,18 +24,9 @@
 	const years = Array.from({ length: maxYear - minYear + 1 }, (_, i) => maxYear - i);
 	const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
-	const days = $derived(() => {
-		const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
-		return Array.from({ length: daysInMonth }, (_, i) => i + 1);
-	});
 
-	// Format display date
-	const displayDate = $derived(() => {
-		const year = selectedYear;
-		const month = String(selectedMonth).padStart(2, '0');
-		const day = String(selectedDay).padStart(2, '0');
-		return `${year}년 ${month}월 ${day}일`;
-	});
+	// Simple reactive date display
+	const displayDate = $derived(`${selectedYear}년 ${String(selectedMonth).padStart(2, '0')}월 ${String(selectedDay).padStart(2, '0')}일`);
 
 	// Generate avatar placeholder
 	function getAvatarUrl(name: string) {
@@ -65,9 +45,6 @@
 			selectedYear = date.getFullYear();
 			selectedMonth = date.getMonth() + 1;
 			selectedDay = date.getDate();
-			visualYear = selectedYear;
-			visualMonth = selectedMonth;
-			visualDay = selectedDay;
 		}
 
 		// Pre-fill profile image if exists
@@ -76,151 +53,17 @@
 		}
 	});
 
-	// Scroll to selected values on mount
-	$effect(() => {
-		// Small delay to ensure DOM is ready
-		setTimeout(() => {
-			visualYear = selectedYear;
-			visualMonth = selectedMonth;
-			visualDay = selectedDay;
-			inSelectionYear = selectedYear;
-			inSelectionMonth = selectedMonth;
-			inSelectionDay = selectedDay;
-			scrollToSelected();
-
-			// Update initial styles
-			setTimeout(() => {
-				const yearPicker = document.getElementById('year-picker');
-				const monthPicker = document.getElementById('month-picker');
-				const dayPicker = document.getElementById('day-picker');
-
-				if (yearPicker) updateItemStyles(yearPicker, 'year');
-				if (monthPicker) updateItemStyles(monthPicker, 'month');
-				if (dayPicker) updateItemStyles(dayPicker, 'day');
-			}, 200);
-		}, 100);
-	});
-
-	function scrollToSelected() {
-		const itemHeight = 40;
-		const padding = 96;
-
-		// Scroll year picker
-		const yearPicker = document.getElementById('year-picker');
-		const yearIndex = years.indexOf(selectedYear);
-		if (yearPicker && yearIndex !== -1) {
-			const centerPosition = yearPicker.clientHeight / 2;
-			yearPicker.scrollTop = yearIndex * itemHeight - centerPosition + padding + itemHeight / 2;
-		}
-
-		// Scroll month picker
-		const monthPicker = document.getElementById('month-picker');
-		if (monthPicker) {
-			const centerPosition = monthPicker.clientHeight / 2;
-			monthPicker.scrollTop =
-				(selectedMonth - 1) * itemHeight - centerPosition + padding + itemHeight / 2;
-		}
-
-		// Scroll day picker
-		const dayPicker = document.getElementById('day-picker');
-		if (dayPicker) {
-			const centerPosition = dayPicker.clientHeight / 2;
-			dayPicker.scrollTop =
-				(selectedDay - 1) * itemHeight - centerPosition + padding + itemHeight / 2;
-		}
+	// Handle date picker confirm
+	function handleDateConfirm(year: number, month: number, day: number) {
+		selectedYear = year;
+		selectedMonth = month;
+		selectedDay = day;
+		showDatePicker = false;
 	}
 
-	function updateItemStyles(container: HTMLElement, type: 'year' | 'month' | 'day') {
-		const items = container.querySelectorAll('.picker-item');
-		const containerRect = container.getBoundingClientRect();
-		const centerY = containerRect.top + containerRect.height / 2;
-		const threshold = 40; // Height of each item
-
-		items.forEach((item) => {
-			const itemRect = item.getBoundingClientRect();
-			const itemCenterY = itemRect.top + itemRect.height / 2;
-			const distance = Math.abs(centerY - itemCenterY);
-
-			if (distance < threshold / 2) {
-				// Item is in selection area - make it large and dark
-				item.classList.remove('text-gray-400', 'text-base');
-				item.classList.add('text-gray-900', 'text-xl', 'font-medium');
-
-				// Update the in-selection state
-				const value = parseInt(item.getAttribute(`data-${type}`) || '0');
-				if (type === 'year') inSelectionYear = value;
-				else if (type === 'month') inSelectionMonth = value;
-				else if (type === 'day') inSelectionDay = value;
-			} else {
-				// Item is outside selection area - keep it small and light
-				item.classList.remove('text-gray-900', 'text-xl', 'font-medium');
-				item.classList.add('text-gray-400', 'text-base');
-			}
-		});
-	}
-
-	function handleScroll(e: Event, type: 'year' | 'month' | 'day') {
-		if (isSnapping) return;
-
-		const container = e.target as HTMLElement;
-		updateItemStyles(container, type);
-
-		// Clear existing timeout
-		clearTimeout((container as any).scrollTimeout);
-
-		// Set new timeout for snapping
-		(container as any).scrollTimeout = setTimeout(() => {
-			snapToNearest(container, type);
-		}, 150);
-	}
-
-	function snapToNearest(container: HTMLElement, type: 'year' | 'month' | 'day') {
-		isSnapping = true;
-		const itemHeight = 40;
-		const padding = 96;
-		const scrollTop = container.scrollTop;
-		const centerPosition = container.clientHeight / 2;
-
-		// Calculate which item should be centered
-		const index = Math.round((scrollTop + centerPosition - padding - itemHeight / 2) / itemHeight);
-
-		// Get the actual value for that index
-		let value: number;
-		if (type === 'year') {
-			value = years[Math.max(0, Math.min(index, years.length - 1))];
-			selectedYear = value;
-			visualYear = value;
-		} else if (type === 'month') {
-			value = Math.max(1, Math.min(index + 1, 12));
-			selectedMonth = value;
-			visualMonth = value;
-		} else {
-			value = Math.max(1, Math.min(index + 1, days().length));
-			selectedDay = value;
-			visualDay = value;
-		}
-
-		// Smooth scroll to snap position
-		const targetScrollTop = index * itemHeight - centerPosition + padding + itemHeight / 2;
-		container.scrollTo({
-			top: targetScrollTop,
-			behavior: 'smooth'
-		});
-
-		// Update styles after snap
-		setTimeout(() => {
-			updateItemStyles(container, type);
-			isSnapping = false;
-		}, 300);
-	}
-
-	// Format helpers
-	function formatMonth(month: number): string {
-		return `${month}월`;
-	}
-
-	function formatDay(day: number): string {
-		return `${day}일`;
+	// Handle date picker cancel
+	function handleDateCancel() {
+		showDatePicker = false;
 	}
 
 	// Handle profile image upload
@@ -292,13 +135,16 @@
 				throw new Error('생년월일 저장에 실패했습니다.');
 			}
 
-			// Save guide profile (image and residence)
+			// Save guide profile (image, residence, and username)
 			const profileData: any = {};
 			if (profileImageUrl) {
 				profileData.profileImageUrl = profileImageUrl;
 			}
 			if (residenceArea.trim()) {
 				profileData.location = residenceArea.trim();
+			}
+			if (username.trim()) {
+				profileData.username = username.trim();
 			}
 			
 			if (Object.keys(profileData).length > 0) {
@@ -315,8 +161,8 @@
 				}
 			}
 
-			// Navigate to complete page
-			await goto('/onboarding/complete');
+			// Navigate to guide cities page
+			await goto('/onboarding/guide-cities');
 		} catch (err) {
 			error = err instanceof Error ? err.message : '저장에 실패했습니다.';
 		} finally {
@@ -324,10 +170,6 @@
 		}
 	}
 
-	// Check if form is valid
-	const canSubmit = $derived(() => {
-		return !isLoading && !uploadingImage;
-	});
 </script>
 
 <div class="min-h-screen bg-white px-4 py-12">
@@ -385,6 +227,19 @@
 				{/if}
 			</div>
 
+			<!-- Username -->
+			<div>
+				<label for="username" class="block text-sm font-medium text-gray-700 mb-2">닉네임</label>
+				<input
+					id="username"
+					type="text"
+					bind:value={username}
+					placeholder="사용하실 닉네임을 입력해주세요"
+					class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+					disabled={isLoading}
+				/>
+			</div>
+
 			<!-- Email Display -->
 			<div>
 				<label class="block text-sm font-medium text-gray-700 mb-2">이메일</label>
@@ -412,113 +267,13 @@
 
 				<button
 					type="button"
-					onclick={() => showDatePicker = !showDatePicker}
+					onclick={() => showDatePicker = true}
 					class="w-full rounded-lg border border-gray-200 bg-gray-50 p-4 text-left hover:bg-gray-100 transition-colors"
 				>
-					<div class="text-center text-sm text-gray-600">{displayDate}</div>
-				</button>
-
-				{#if showDatePicker}
-				<!-- iOS-style date picker -->
-				<div class="relative overflow-hidden rounded-lg border border-gray-200 bg-white">
-					<!-- Selection highlight area -->
-					<div
-						class="pointer-events-none absolute inset-x-0 top-1/2 z-10 h-10 -translate-y-1/2 border-y-2 border-blue-400 bg-blue-50/30"
-					></div>
-
-					<div class="flex h-60">
-						<!-- Year picker -->
-						<div class="flex-1 overflow-hidden">
-							<div
-								id="year-picker"
-								class="scrollbar-hide h-full overflow-y-auto px-4"
-								onscroll={(e) => handleScroll(e, 'year')}
-							>
-								<div class="h-24"></div>
-								{#each years as year}
-									<div
-										class="picker-item flex h-10 w-full cursor-pointer items-center justify-center text-base text-gray-400 transition-all"
-										data-year={year}
-										onclick={() => {
-											selectedYear = year;
-											visualYear = year;
-											inSelectionYear = year;
-											scrollToSelected();
-											setTimeout(() => {
-												const yearPicker = document.getElementById('year-picker');
-												if (yearPicker) updateItemStyles(yearPicker, 'year');
-											}, 150);
-										}}
-									>
-										{year}년
-									</div>
-								{/each}
-								<div class="h-24"></div>
-							</div>
-						</div>
-
-						<!-- Month picker -->
-						<div class="flex-1 overflow-hidden border-x border-gray-200">
-							<div
-								id="month-picker"
-								class="scrollbar-hide h-full overflow-y-auto px-4"
-								onscroll={(e) => handleScroll(e, 'month')}
-							>
-								<div class="h-24"></div>
-								{#each months as month}
-									<div
-										class="picker-item flex h-10 w-full cursor-pointer items-center justify-center text-base text-gray-400 transition-all"
-										data-month={month}
-										onclick={() => {
-											selectedMonth = month;
-											visualMonth = month;
-											inSelectionMonth = month;
-											scrollToSelected();
-											setTimeout(() => {
-												const monthPicker = document.getElementById('month-picker');
-												if (monthPicker) updateItemStyles(monthPicker, 'month');
-											}, 150);
-										}}
-									>
-										{formatMonth(month)}
-									</div>
-								{/each}
-								<div class="h-24"></div>
-							</div>
-						</div>
-
-						<!-- Day picker -->
-						<div class="flex-1 overflow-hidden">
-							<div
-								id="day-picker"
-								class="scrollbar-hide h-full overflow-y-auto px-4"
-								onscroll={(e) => handleScroll(e, 'day')}
-							>
-								<div class="h-24"></div>
-								{#each days() as day}
-									<div
-										class="picker-item flex h-10 w-full cursor-pointer items-center justify-center text-base text-gray-400 transition-all"
-										data-day={day}
-										onclick={() => {
-											selectedDay = day;
-											visualDay = day;
-											inSelectionDay = day;
-											scrollToSelected();
-											setTimeout(() => {
-												const dayPicker = document.getElementById('day-picker');
-												if (dayPicker) updateItemStyles(dayPicker, 'day');
-											}, 150);
-										}}
-									>
-										{formatDay(day)}
-									</div>
-								{/each}
-								<div class="h-24"></div>
-							</div>
-						</div>
+					<div class="text-center text-sm text-gray-600">
+						{displayDate}
 					</div>
-				</div>
-				{/if}
+				</button>
 			</div>
 
 			{#if error}
@@ -530,8 +285,8 @@
 			<!-- Submit button -->
 			<button
 				onclick={handleSubmit}
-				disabled={!canSubmit()}
-				class="w-full rounded-lg py-3 font-medium text-white transition-colors {canSubmit()
+				disabled={isLoading || uploadingImage}
+				class="w-full rounded-lg py-3 font-medium text-white transition-colors {!isLoading && !uploadingImage
 					? 'bg-blue-600 hover:bg-blue-700'
 					: 'cursor-not-allowed bg-gray-300'}"
 			>
@@ -546,12 +301,12 @@
 	</div>
 </div>
 
-<style>
-	.scrollbar-hide {
-		-ms-overflow-style: none;
-		scrollbar-width: none;
-	}
-	.scrollbar-hide::-webkit-scrollbar {
-		display: none;
-	}
-</style>
+<!-- Date Picker Modal -->
+<DatePickerModal 
+	showModal={showDatePicker}
+	{selectedYear}
+	{selectedMonth}
+	{selectedDay}
+	onConfirm={handleDateConfirm}
+	onCancel={handleDateCancel}
+/>

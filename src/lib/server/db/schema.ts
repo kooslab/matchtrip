@@ -60,6 +60,7 @@ export const guideProfiles = pgTable('guide_profiles', {
 		.notNull()
 		.references(() => users.id, { onDelete: 'cascade' })
 		.unique(),
+	username: text('username'),
 	currentLocation: text('current_location'),
 	guideAreas: text('guide_areas'),
 	activityAreas: jsonb('activity_areas').$type<string[]>(),
@@ -83,6 +84,7 @@ export const travelerProfiles = pgTable('traveler_profiles', {
 		.notNull()
 		.references(() => users.id, { onDelete: 'cascade' })
 		.unique(),
+	username: text('username'),
 	nationality: text('nationality'),
 	travelStyle: text('travel_style'),
 	budgetRange: text('budget_range'),
