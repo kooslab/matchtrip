@@ -41,6 +41,18 @@
 	let selectedDateRange = $state<{ start?: Date; end?: Date }>({});
 	let dateRangeOpen = $state(false);
 
+	// People count selector state
+	let showPeopleSelector = $state(false);
+	let peopleCount = $state({
+		adults: 2,
+		children: 0,
+		infants: 0
+	});
+
+	// Budget selector state
+	let showBudgetSelector = $state(false);
+	let selectedBudget = $state<string>('100-200');
+
 	// Get unique destinations count
 	let uniqueDestinations = $derived(
 		new Set(trips.map((trip) => `${trip.destination.city}, ${trip.destination.country}`)).size
@@ -165,6 +177,78 @@
 		}
 		return '';
 	});
+
+	// People selector functions
+	function openPeopleSelector() {
+		showPeopleSelector = true;
+		selectedFilters.people = true;
+	}
+
+	function applyPeopleFilter() {
+		selectedFilters.people = true;
+		const totalPeople = peopleCount.adults + peopleCount.children + peopleCount.infants;
+		goto(`/trips?adults=${peopleCount.adults}&children=${peopleCount.children}&infants=${peopleCount.infants}`);
+		showPeopleSelector = false;
+	}
+
+	// Format people count for display
+	const peopleCountDisplay = $derived(() => {
+		const total = peopleCount.adults + peopleCount.children + peopleCount.infants;
+		if (total > 0) {
+			const parts = [];
+			if (peopleCount.adults > 0) parts.push(`성인 ${peopleCount.adults}명`);
+			if (peopleCount.children > 0) parts.push(`어린이 ${peopleCount.children}명`);
+			if (peopleCount.infants > 0) parts.push(`유아 ${peopleCount.infants}명`);
+			return parts.join(', ');
+		}
+		return '';
+	});
+
+	// Increment/decrement functions
+	function incrementCount(type: 'adults' | 'children' | 'infants') {
+		if (type === 'adults' && peopleCount.adults < 10) {
+			peopleCount.adults++;
+		} else if (type === 'children' && peopleCount.children < 10) {
+			peopleCount.children++;
+		} else if (type === 'infants' && peopleCount.infants < 10) {
+			peopleCount.infants++;
+		}
+	}
+
+	function decrementCount(type: 'adults' | 'children' | 'infants') {
+		if (type === 'adults' && peopleCount.adults > 1) {
+			peopleCount.adults--;
+		} else if (type === 'children' && peopleCount.children > 0) {
+			peopleCount.children--;
+		} else if (type === 'infants' && peopleCount.infants > 0) {
+			peopleCount.infants--;
+		}
+	}
+
+	// Budget selector functions
+	function openBudgetSelector() {
+		showBudgetSelector = true;
+		selectedFilters.budget = true;
+	}
+
+	function applyBudgetFilter() {
+		selectedFilters.budget = true;
+		goto(`/trips?budget=${selectedBudget}`);
+		showBudgetSelector = false;
+	}
+
+	// Budget options
+	const budgetOptions = [
+		{ value: '50-100', label: '50-100만원' },
+		{ value: '100-200', label: '100-200만원' },
+		{ value: '200-500', label: '200-500만원' }
+	];
+
+	// Format budget for display
+	const budgetDisplay = $derived(() => {
+		const option = budgetOptions.find(opt => opt.value === selectedBudget);
+		return option?.label || '';
+	});
 </script>
 
 <svelte:head>
@@ -174,51 +258,51 @@
 <div class="min-h-screen bg-gray-50">
 	<!-- Filter Bar -->
 	<div class="sticky top-0 z-10 border-b border-gray-200 bg-white">
-		<div class="container mx-auto px-4 py-3">
-			<div class="scrollbar-hide flex gap-2 overflow-x-auto">
+		<div class="container mx-auto px-4 py-2">
+			<div class="scrollbar-hide flex gap-1.5 overflow-x-auto">
 				<button
 					onclick={openCitySearchModal}
-					class="flex flex-shrink-0 items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition-all {selectedFilters.destination
+					class="flex flex-shrink-0 items-center gap-0.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all {selectedFilters.destination
 						? 'border-gray-900 bg-gray-900 text-white'
 						: 'border border-gray-300 bg-white text-gray-700 hover:border-gray-400'}">
 					<span>여행지 {selectedCityIds.size > 0 ? `${selectedCityIds.size}곳` : uniqueDestinations > 0 ? `${uniqueDestinations}곳` : ''}</span>
 					<img
 						src={chevronRightIconUrl}
 						alt=""
-						class="h-4 w-4 {selectedFilters.destination ? 'brightness-0 invert' : ''}" />
+						class="h-3 w-3 {selectedFilters.destination ? 'brightness-0 invert' : ''}" />
 				</button>
 				<button
 					onclick={openDateRangePicker}
-					class="flex flex-shrink-0 items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition-all {selectedFilters.dates
+					class="flex flex-shrink-0 items-center gap-0.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all {selectedFilters.dates
 						? 'border-gray-900 bg-gray-900 text-white'
 						: 'border border-gray-300 bg-white text-gray-700 hover:border-gray-400'}">
 					<span>{dateRangeDisplay() || '일정'}</span>
 					<img
 						src={chevronRightIconUrl}
 						alt=""
-						class="h-4 w-4 {selectedFilters.dates ? 'brightness-0 invert' : ''}" />
+						class="h-3 w-3 {selectedFilters.dates ? 'brightness-0 invert' : ''}" />
 				</button>
 				<button
-					onclick={() => (selectedFilters.people = !selectedFilters.people)}
-					class="flex flex-shrink-0 items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition-all {selectedFilters.people
+					onclick={openPeopleSelector}
+					class="flex flex-shrink-0 items-center gap-0.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all {selectedFilters.people
 						? 'border-gray-900 bg-gray-900 text-white'
 						: 'border border-gray-300 bg-white text-gray-700 hover:border-gray-400'}">
-					<span>인원</span>
+					<span>{peopleCountDisplay() || '인원'}</span>
 					<img
 						src={chevronRightIconUrl}
 						alt=""
-						class="h-4 w-4 {selectedFilters.people ? 'brightness-0 invert' : ''}" />
+						class="h-3 w-3 {selectedFilters.people ? 'brightness-0 invert' : ''}" />
 				</button>
 				<button
-					onclick={() => (selectedFilters.budget = !selectedFilters.budget)}
-					class="flex flex-shrink-0 items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition-all {selectedFilters.budget
+					onclick={openBudgetSelector}
+					class="flex flex-shrink-0 items-center gap-0.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all {selectedFilters.budget
 						? 'border-gray-900 bg-gray-900 text-white'
 						: 'border border-gray-300 bg-white text-gray-700 hover:border-gray-400'}">
-					<span>예산</span>
+					<span>{budgetDisplay() || '예산'}</span>
 					<img
 						src={chevronRightIconUrl}
 						alt=""
-						class="h-4 w-4 {selectedFilters.budget ? 'brightness-0 invert' : ''}" />
+						class="h-3 w-3 {selectedFilters.budget ? 'brightness-0 invert' : ''}" />
 				</button>
 			</div>
 		</div>
@@ -361,6 +445,216 @@
 							</button>
 						</div>
 					</DateRangePicker.Root>
+				</div>
+				
+				<!-- Bottom indicator for swipe -->
+				<div class="absolute bottom-0 left-0 right-0 flex justify-center pb-2 pointer-events-none">
+					<div class="w-[134px] h-[5px] bg-[#052236] rounded-[100px]"></div>
+				</div>
+			</div>
+		</div>
+	{/if}
+
+	<!-- People Selector Modal -->
+	{#if showPeopleSelector}
+		<div class="fixed inset-0 z-50 flex items-end justify-center">
+			<!-- Backdrop -->
+			<div 
+				class="absolute inset-0 bg-black bg-opacity-50"
+				onclick={() => showPeopleSelector = false}
+			></div>
+			
+			<!-- Modal Content -->
+			<div class="relative w-full max-w-lg bg-white rounded-t-[40px] shadow-xl animate-slide-up">
+				<div class="px-6 pt-6 pb-8">
+					<div class="flex items-center justify-between mb-6">
+						<h2 class="text-lg font-semibold">인원</h2>
+						<button
+							onclick={() => {
+								// Reset to defaults
+								peopleCount.adults = 2;
+								peopleCount.children = 0;
+								peopleCount.infants = 0;
+							}}
+							class="text-gray-400 hover:text-gray-600"
+						>
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+							</svg>
+						</button>
+					</div>
+					
+					<div class="space-y-6">
+						<!-- Adults -->
+						<div class="flex items-center justify-between">
+							<div>
+								<div class="font-medium text-gray-900">어른 {peopleCount.adults}명</div>
+								<div class="text-sm text-gray-500">만 13세 이상</div>
+							</div>
+							<div class="flex items-center gap-3">
+								<button
+									onclick={() => decrementCount('adults')}
+									disabled={peopleCount.adults <= 1}
+									class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center transition-colors
+										{peopleCount.adults > 1 ? 'hover:bg-gray-100 text-gray-700' : 'opacity-50 cursor-not-allowed text-gray-400'}"
+								>
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+									</svg>
+								</button>
+								<span class="w-8 text-center font-medium">{peopleCount.adults}</span>
+								<button
+									onclick={() => incrementCount('adults')}
+									disabled={peopleCount.adults >= 10}
+									class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center transition-colors
+										{peopleCount.adults < 10 ? 'hover:bg-gray-100 text-gray-700' : 'opacity-50 cursor-not-allowed text-gray-400'}"
+								>
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+									</svg>
+								</button>
+							</div>
+						</div>
+
+						<!-- Children -->
+						<div class="flex items-center justify-between">
+							<div>
+								<div class="font-medium text-gray-900">어린이</div>
+								<div class="text-sm text-gray-500">만 6세 ~ 만 12세</div>
+							</div>
+							<div class="flex items-center gap-3">
+								<button
+									onclick={() => decrementCount('children')}
+									disabled={peopleCount.children <= 0}
+									class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center transition-colors
+										{peopleCount.children > 0 ? 'hover:bg-gray-100 text-gray-700' : 'opacity-50 cursor-not-allowed text-gray-400'}"
+								>
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+									</svg>
+								</button>
+								<span class="w-8 text-center font-medium">{peopleCount.children}</span>
+								<button
+									onclick={() => incrementCount('children')}
+									disabled={peopleCount.children >= 10}
+									class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center transition-colors
+										{peopleCount.children < 10 ? 'hover:bg-gray-100 text-gray-700' : 'opacity-50 cursor-not-allowed text-gray-400'}"
+								>
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+									</svg>
+								</button>
+							</div>
+						</div>
+
+						<!-- Infants -->
+						<div class="flex items-center justify-between">
+							<div>
+								<div class="font-medium text-gray-900">유아</div>
+								<div class="text-sm text-gray-500">만 6세 미만</div>
+							</div>
+							<div class="flex items-center gap-3">
+								<button
+									onclick={() => decrementCount('infants')}
+									disabled={peopleCount.infants <= 0}
+									class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center transition-colors
+										{peopleCount.infants > 0 ? 'hover:bg-gray-100 text-gray-700' : 'opacity-50 cursor-not-allowed text-gray-400'}"
+								>
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+									</svg>
+								</button>
+								<span class="w-8 text-center font-medium">{peopleCount.infants}</span>
+								<button
+									onclick={() => incrementCount('infants')}
+									disabled={peopleCount.infants >= 10}
+									class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center transition-colors
+										{peopleCount.infants < 10 ? 'hover:bg-gray-100 text-gray-700' : 'opacity-50 cursor-not-allowed text-gray-400'}"
+								>
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+									</svg>
+								</button>
+							</div>
+						</div>
+					</div>
+
+					<div class="mt-8">
+						<button
+							onclick={applyPeopleFilter}
+							class="w-full py-4 bg-blue-500 text-white font-medium rounded-xl hover:bg-blue-600 transition-colors"
+						>
+							선택
+						</button>
+					</div>
+				</div>
+				
+				<!-- Bottom indicator for swipe -->
+				<div class="absolute bottom-0 left-0 right-0 flex justify-center pb-2 pointer-events-none">
+					<div class="w-[134px] h-[5px] bg-[#052236] rounded-[100px]"></div>
+				</div>
+			</div>
+		</div>
+	{/if}
+
+	<!-- Budget Selector Modal -->
+	{#if showBudgetSelector}
+		<div class="fixed inset-0 z-50 flex items-end justify-center">
+			<!-- Backdrop -->
+			<div 
+				class="absolute inset-0 bg-black bg-opacity-50"
+				onclick={() => showBudgetSelector = false}
+			></div>
+			
+			<!-- Modal Content -->
+			<div class="relative w-full max-w-lg bg-white rounded-t-[40px] shadow-xl animate-slide-up">
+				<div class="px-6 pt-6 pb-8">
+					<div class="flex items-center justify-between mb-6">
+						<h2 class="text-lg font-semibold">예산</h2>
+						<button
+							onclick={() => showBudgetSelector = false}
+							class="text-gray-400 hover:text-gray-600"
+						>
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+							</svg>
+						</button>
+					</div>
+					
+					<div class="space-y-3">
+						{#each budgetOptions as option}
+							<button
+								onclick={() => selectedBudget = option.value}
+								class="w-full flex items-center justify-between p-4 rounded-xl border transition-all
+									{selectedBudget === option.value 
+										? 'border-blue-500 bg-blue-50' 
+										: 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'}"
+							>
+								<span class="text-base font-medium {selectedBudget === option.value ? 'text-blue-600' : 'text-gray-900'}">
+									{option.label}
+								</span>
+								<div class="w-6 h-6 rounded-full border-2 flex items-center justify-center
+									{selectedBudget === option.value 
+										? 'border-blue-500 bg-blue-500' 
+										: 'border-gray-300'}">
+									{#if selectedBudget === option.value}
+										<svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+										</svg>
+									{/if}
+								</div>
+							</button>
+						{/each}
+					</div>
+
+					<div class="mt-8">
+						<button
+							onclick={applyBudgetFilter}
+							class="w-full py-4 bg-blue-500 text-white font-medium rounded-xl hover:bg-blue-600 transition-colors"
+						>
+							선택
+						</button>
+					</div>
 				</div>
 				
 				<!-- Bottom indicator for swipe -->
