@@ -12,6 +12,14 @@
 	let visualYear = $state(1990);
 	let visualMonth = $state(1);
 	let visualDay = $state(1);
+	
+	// Track which items are in the selection area
+	let inSelectionYear = $state<number | null>(null);
+	let inSelectionMonth = $state<number | null>(null);
+	let inSelectionDay = $state<number | null>(null);
+	
+	// Prevent recursive scroll updates
+	let isSnapping = false;
 
 	// Get current date for validation
 	const currentYear = new Date().getFullYear();
@@ -55,55 +63,114 @@
 			visualYear = selectedYear;
 			visualMonth = selectedMonth;
 			visualDay = selectedDay;
+			inSelectionYear = selectedYear;
+			inSelectionMonth = selectedMonth;
+			inSelectionDay = selectedDay;
 			scrollToSelected();
+			
+			// Update initial styles
+			setTimeout(() => {
+				const yearPicker = document.getElementById('year-picker');
+				const monthPicker = document.getElementById('month-picker');
+				const dayPicker = document.getElementById('day-picker');
+				
+				if (yearPicker) updateItemStyles(yearPicker, 'year');
+				if (monthPicker) updateItemStyles(monthPicker, 'month');
+				if (dayPicker) updateItemStyles(dayPicker, 'day');
+			}, 200);
 		}, 100);
 	});
 
 	function scrollToSelected() {
 		const itemHeight = 40;
+		const padding = 96;
 		
 		// Scroll year picker
 		const yearPicker = document.getElementById('year-picker');
 		const yearIndex = years.indexOf(selectedYear);
 		if (yearPicker && yearIndex !== -1) {
-			const centerOffset = yearPicker.clientHeight / 2;
-			yearPicker.scrollTop = yearIndex * itemHeight - centerOffset;
+			const centerPosition = yearPicker.clientHeight / 2;
+			yearPicker.scrollTop = yearIndex * itemHeight - centerPosition + padding + itemHeight / 2;
 		}
 
 		// Scroll month picker
 		const monthPicker = document.getElementById('month-picker');
 		if (monthPicker) {
-			const centerOffset = monthPicker.clientHeight / 2;
-			monthPicker.scrollTop = (selectedMonth - 1) * itemHeight - centerOffset;
+			const centerPosition = monthPicker.clientHeight / 2;
+			monthPicker.scrollTop = (selectedMonth - 1) * itemHeight - centerPosition + padding + itemHeight / 2;
 		}
 
 		// Scroll day picker
 		const dayPicker = document.getElementById('day-picker');
 		if (dayPicker) {
-			const centerOffset = dayPicker.clientHeight / 2;
-			dayPicker.scrollTop = (selectedDay - 1) * itemHeight - centerOffset;
+			const centerPosition = dayPicker.clientHeight / 2;
+			dayPicker.scrollTop = (selectedDay - 1) * itemHeight - centerPosition + padding + itemHeight / 2;
 		}
+	}
+	
+	// Update item styles based on what's in selection
+	function updateItemStyles(container: HTMLElement, type: 'year' | 'month' | 'day') {
+		const items = container.querySelectorAll('.picker-item');
+		items.forEach((item) => {
+			const element = item as HTMLElement;
+			let value: number | null = null;
+			
+			if (type === 'year') {
+				value = parseInt(element.dataset.year || '0');
+				if (value === inSelectionYear) {
+					element.className = 'picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer text-black font-bold text-lg';
+				} else {
+					element.className = 'picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer text-gray-400 text-base';
+				}
+			} else if (type === 'month') {
+				value = parseInt(element.dataset.month || '0');
+				if (value === inSelectionMonth) {
+					element.className = 'picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer text-black font-bold text-lg';
+				} else {
+					element.className = 'picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer text-gray-400 text-base';
+				}
+			} else if (type === 'day') {
+				value = parseInt(element.dataset.day || '0');
+				if (value === inSelectionDay) {
+					element.className = 'picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer text-black font-bold text-lg';
+				} else {
+					element.className = 'picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer text-gray-400 text-base';
+				}
+			}
+		});
 	}
 
 	// Handle scroll snap
 	function handlePickerScroll(e: Event, type: 'year' | 'month' | 'day') {
+		if (isSnapping) return; // Prevent handling scroll during snap
+		
 		const target = e.target as HTMLElement;
 		const itemHeight = 40;
+		const padding = 96; // py-24 = 96px
 		const containerHeight = target.clientHeight;
-		const centerOffset = containerHeight / 2;
-		const scrollTop = target.scrollTop + centerOffset;
-		const index = Math.round(scrollTop / itemHeight);
+		const centerPosition = containerHeight / 2;
+		const scrollTop = target.scrollTop;
 		
-		// Update visual selection immediately
+		// Calculate which item is at the center, accounting for padding
+		const adjustedScrollTop = scrollTop + centerPosition - padding;
+		const index = Math.round(adjustedScrollTop / itemHeight);
+		
+		// Update which item is in the selection area
 		if (type === 'year' && years[index]) {
+			inSelectionYear = years[index];
 			visualYear = years[index];
 		} else if (type === 'month' && index >= 0 && index < 12) {
+			inSelectionMonth = index + 1;
 			visualMonth = index + 1;
 		} else if (type === 'day') {
 			const maxDay = days().length;
 			const dayIndex = Math.min(Math.max(0, index), maxDay - 1);
+			inSelectionDay = dayIndex + 1;
 			visualDay = dayIndex + 1;
 		}
+		
+		// Update all items' styles
+		updateItemStyles(target, type);
 		
 		// Clear any existing timeout
 		if (target.dataset.scrollTimeout) {
@@ -112,18 +179,29 @@
 		
 		// Set a new timeout for snap and final selection
 		const timeoutId = setTimeout(() => {
+			isSnapping = true;
+			
+			// Calculate the exact position to center the item in selection area
+			const targetScrollTop = index * itemHeight - centerPosition + padding + itemHeight / 2;
+			
+			// Update the actual selected values based on what's centered
 			if (type === 'year' && years[index]) {
 				selectedYear = years[index];
-				target.scrollTop = index * itemHeight - centerOffset;
+				target.scrollTop = targetScrollTop;
 			} else if (type === 'month' && index >= 0 && index < 12) {
 				selectedMonth = index + 1;
-				target.scrollTop = index * itemHeight - centerOffset;
+				target.scrollTop = targetScrollTop;
 			} else if (type === 'day') {
 				const maxDay = days().length;
 				const dayIndex = Math.min(Math.max(0, index), maxDay - 1);
 				selectedDay = dayIndex + 1;
-				target.scrollTop = dayIndex * itemHeight - centerOffset;
+				target.scrollTop = dayIndex * itemHeight - centerPosition + padding + itemHeight / 2;
 			}
+			
+			// Reset the flag after animation
+			setTimeout(() => {
+				isSnapping = false;
+			}, 300);
 		}, 100);
 		
 		target.dataset.scrollTimeout = timeoutId.toString();
@@ -198,20 +276,26 @@
 				<div class="flex gap-1 h-52 overflow-hidden">
 					<!-- Year Picker -->
 					<div class="flex-1 relative">
-						<div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-10 bg-white/60 rounded-lg pointer-events-none z-10"></div>
+						<div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-10 bg-transparent border-2 border-blue-400 rounded-lg pointer-events-none z-10"></div>
 						<div 
 							class="overflow-y-auto h-full picker-scroll" 
 							id="year-picker"
 							onscroll={(e) => handlePickerScroll(e, 'year')}
 						>
-							<div class="py-24">
+							<div class="py-24" style="padding-top: 96px; padding-bottom: 96px;">
 								{#each years as year}
 									<div
-										class="picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer {visualYear === year ? 'text-black font-medium text-lg' : 'text-gray-400 text-base'}"
+										class="picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer text-gray-400 text-base"
+										data-year={year}
 										onclick={() => {
 											selectedYear = year;
 											visualYear = year;
+											inSelectionYear = year;
 											scrollToSelected();
+											setTimeout(() => {
+												const yearPicker = document.getElementById('year-picker');
+												if (yearPicker) updateItemStyles(yearPicker, 'year');
+											}, 150);
 										}}
 									>
 										{year}년
@@ -223,20 +307,26 @@
 
 					<!-- Month Picker -->
 					<div class="flex-1 relative">
-						<div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-10 bg-white/60 rounded-lg pointer-events-none z-10"></div>
+						<div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-10 bg-transparent border-2 border-blue-400 rounded-lg pointer-events-none z-10"></div>
 						<div 
 							class="overflow-y-auto h-full picker-scroll" 
 							id="month-picker"
 							onscroll={(e) => handlePickerScroll(e, 'month')}
 						>
-							<div class="py-24">
+							<div class="py-24" style="padding-top: 96px; padding-bottom: 96px;">
 								{#each months as month}
 									<div
-										class="picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer {visualMonth === month ? 'text-black font-medium text-lg' : 'text-gray-400 text-base'}"
+										class="picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer text-gray-400 text-base"
+										data-month={month}
 										onclick={() => {
 											selectedMonth = month;
 											visualMonth = month;
+											inSelectionMonth = month;
 											scrollToSelected();
+											setTimeout(() => {
+												const monthPicker = document.getElementById('month-picker');
+												if (monthPicker) updateItemStyles(monthPicker, 'month');
+											}, 150);
 										}}
 									>
 										{formatMonth(month)}
@@ -248,20 +338,26 @@
 
 					<!-- Day Picker -->
 					<div class="flex-1 relative">
-						<div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-10 bg-white/60 rounded-lg pointer-events-none z-10"></div>
+						<div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-10 bg-transparent border-2 border-blue-400 rounded-lg pointer-events-none z-10"></div>
 						<div 
 							class="overflow-y-auto h-full picker-scroll" 
 							id="day-picker"
 							onscroll={(e) => handlePickerScroll(e, 'day')}
 						>
-							<div class="py-24">
+							<div class="py-24" style="padding-top: 96px; padding-bottom: 96px;">
 								{#each days() as day}
 									<div
-										class="picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer {visualDay === day ? 'text-black font-medium text-lg' : 'text-gray-400 text-base'}"
+										class="picker-item w-full h-10 flex items-center justify-center transition-all cursor-pointer text-gray-400 text-base"
+										data-day={day}
 										onclick={() => {
 											selectedDay = day;
 											visualDay = day;
+											inSelectionDay = day;
 											scrollToSelected();
+											setTimeout(() => {
+												const dayPicker = document.getElementById('day-picker');
+												if (dayPicker) updateItemStyles(dayPicker, 'day');
+											}, 150);
 										}}
 									>
 										{formatDay(day)}
