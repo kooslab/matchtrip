@@ -71,60 +71,72 @@
 
 <div class="min-h-screen bg-gray-50">
 	<!-- Header -->
-	<header class="sticky top-0 z-10 border-b border-gray-200 bg-white">
-		<div class="flex h-14 items-center px-4">
-			<button onclick={() => goto('/trips')} class="mr-4">
-				<img src={arrowLeftUrl} alt="Back" class="h-6 w-6" />
-			</button>
-			<h1 class="text-lg font-semibold text-gray-900">
-				{trip.destination?.city || '목적지'}, {trip.destination?.country || ''}
-			</h1>
+	<header class="sticky top-0 z-10 bg-white shadow-sm">
+		<div class="flex h-14 items-center justify-between px-4">
+			<div class="flex items-center">
+				<button onclick={() => goto('/trips')} class="mr-3 p-2 -ml-2 hover:bg-gray-100 rounded-lg transition-colors">
+					<img src={arrowLeftUrl} alt="Back" class="h-5 w-5" />
+				</button>
+				<h1 class="text-lg font-semibold text-gray-900">
+					{trip.destination?.city || '목적지'}{trip.destination?.country ? `, ${trip.destination.country}` : ''}
+				</h1>
+			</div>
 		</div>
 	</header>
 
 	<!-- Content -->
-	<div class="px-4 py-6 pb-24">
-		<!-- Trip Summary -->
-		<div class="mb-6">
-			<h2 class="mb-1 text-sm font-medium text-gray-600">여행 정보</h2>
-			<h3 class="mb-4 text-2xl font-bold text-gray-900">
-				200 ~500 만원 <span class="text-sm font-normal text-gray-500">예산 범위</span>
-			</h3>
+	<div class="container mx-auto max-w-3xl px-4 py-6 pb-40">
+		<!-- Trip Summary Card -->
+		<div class="mb-6 rounded-lg bg-white p-5 shadow-sm">
+			<div class="mb-4 flex items-center justify-between">
+				<h2 class="text-lg font-semibold text-gray-900">여행 정보</h2>
+				<span class="{trip.status === 'submitted' ? 'bg-blue-100 text-blue-700' : trip.status === 'accepted' ? 'bg-green-100 text-green-700' : trip.status === 'completed' ? 'bg-gray-100 text-gray-700' : 'bg-yellow-100 text-yellow-700'} inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium">
+					{getStatusText(trip.status)}
+				</span>
+			</div>
+			<div class="mb-5">
+				<p class="text-sm text-gray-600 mb-1">예산</p>
+				<p class="text-2xl font-bold text-gray-900">
+					{trip.budgetMin ? `${(trip.budgetMin / 10000).toLocaleString()}` : '0'} ~ {trip.budgetMax ? `${(trip.budgetMax / 10000).toLocaleString()}` : '0'}만원
+				</p>
+			</div>
 
-			<div class="space-y-2">
-				<div class="flex items-center text-sm">
-					<span class="w-16 text-gray-600">여행 상태</span>
-					<span
-						class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700"
-					>
-						{getStatusText(trip.status)}
-					</span>
+			<div class="space-y-3">
+				<div class="flex items-start">
+					<span class="w-20 flex-shrink-0 text-sm text-gray-600">일정</span>
+					<div class="flex-1">
+						<p class="text-sm font-medium text-gray-900">
+							{formatKoreanDateRange(trip.startDate, trip.endDate)}
+						</p>
+						<p class="text-sm text-gray-600">
+							{calculateNightsAndDays(trip.startDate, trip.endDate)}
+						</p>
+					</div>
 				</div>
-				<div class="flex items-center text-sm">
-					<span class="w-16 text-gray-600">여행 일정</span>
-					<span class="text-gray-900"
-						>{formatKoreanDateRange(trip.startDate, trip.endDate)}
-						{calculateNightsAndDays(trip.startDate, trip.endDate)}</span
-					>
+				<div class="flex items-start">
+					<span class="w-20 flex-shrink-0 text-sm text-gray-600">인원</span>
+					<p class="text-sm font-medium text-gray-900">
+						성인 {trip.adultsCount}명{trip.childrenCount > 0 ? `, 아동 ${trip.childrenCount}명` : ''}
+					</p>
 				</div>
-				<div class="flex items-center text-sm">
-					<span class="w-16 text-gray-600">인원</span>
-					<span class="text-gray-900"
-						>성인 {trip.adultsCount}명{trip.childrenCount > 0
-							? `, 아동 ${trip.childrenCount}명`
-							: ''}</span
-					>
+				<div class="flex items-start">
+					<span class="w-20 flex-shrink-0 text-sm text-gray-600">이동수단</span>
+					<p class="text-sm font-medium text-gray-900">
+						{trip.travelMethod ? formatTravelMethod(trip.travelMethod) : '미정'}
+					</p>
 				</div>
-				<div class="flex items-center text-sm">
-					<span class="w-16 text-gray-600">여행 스타일</span>
-					<span class="text-gray-900"
-						>{trip.travelMethod ? formatTravelMethod(trip.travelMethod) : '모험적인 여행'}</span
-					>
-				</div>
-				<div class="flex items-center text-sm">
-					<span class="w-16 text-gray-600">관심 활동</span>
-					<span class="text-gray-900">자연 / 아웃도어</span>
-				</div>
+				{#if trip.interests && trip.interests.length > 0}
+					<div class="flex items-start">
+						<span class="w-20 flex-shrink-0 text-sm text-gray-600">관심사</span>
+						<div class="flex flex-wrap gap-1.5">
+							{#each trip.interests as interest}
+								<span class="rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700">
+									{interest}
+								</span>
+							{/each}
+						</div>
+					</div>
+				{/if}
 			</div>
 		</div>
 
@@ -153,73 +165,76 @@
 		</div>
 
 		<!-- Files Section -->
-		<div class="mb-6 rounded-lg bg-white">
+		<div class="mb-6 overflow-hidden rounded-lg bg-white shadow-sm transition-all duration-200">
 			<button
 				onclick={() => (isFilesOpen = !isFilesOpen)}
-				class="flex w-full items-center justify-between px-4 py-3"
+				class="flex w-full items-center justify-between p-4 hover:bg-gray-50 transition-colors"
 			>
-				<span class="text-sm font-medium text-gray-900">첨부 파일</span>
+				<span class="text-base font-medium text-gray-900">첨부 파일</span>
 				<img
 					src={arrowRightUrl}
 					alt={isFilesOpen ? 'Close' : 'Open'}
-					class="h-5 w-5 transition-transform {isFilesOpen ? '-rotate-90' : 'rotate-90'}"
+					class="h-5 w-5 transition-transform duration-200 {isFilesOpen ? 'rotate-90' : '0'}"
 				/>
 			</button>
 			{#if isFilesOpen}
 				<div class="border-t border-gray-100 px-4 pb-4">
-					<div class="mt-3 flex items-center gap-3">
-						<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100">
-							<span class="text-xs font-semibold text-red-600">PDF</span>
+					{#if trip.attachments && trip.attachments.length > 0}
+						<div class="mt-3 space-y-3">
+							{#each trip.attachments as file}
+								<div class="flex items-center gap-3 rounded-lg border border-gray-200 p-3 hover:bg-gray-50 transition-colors">
+									<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100">
+										<span class="text-xs font-semibold text-red-600">PDF</span>
+									</div>
+									<div class="flex-1">
+										<p class="text-sm font-medium text-gray-900">{file.name}</p>
+										<p class="text-xs text-gray-500">{file.size}</p>
+									</div>
+									<button class="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+										<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+											/>
+										</svg>
+									</button>
+								</div>
+							{/each}
 						</div>
-						<div class="flex-1">
-							<p class="text-sm font-medium text-gray-900">여행계획표.pdf</p>
-							<p class="text-xs text-gray-500">2MB</p>
-						</div>
-						<button class="text-gray-400">
-							<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-								/>
-							</svg>
-						</button>
-					</div>
+					{:else}
+						<p class="mt-3 text-sm text-gray-500">첨부된 파일이 없습니다.</p>
+					{/if}
 				</div>
 			{/if}
 		</div>
 
-		<!-- What is Lorem Ipsum Section -->
-		<div class="rounded-lg bg-blue-50 p-4">
-			<h3 class="mb-2 text-sm font-medium text-blue-900">What is Lorem Ipsum</h3>
-			<p class="text-xs text-blue-700">
-				Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has
-				been the industry's standard dummy text ever since the 1500s.
-			</p>
-			<button class="mt-3 flex items-center gap-1 text-sm font-medium text-blue-600">
-				Go detail
-				<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-				</svg>
-			</button>
-		</div>
+		<!-- Info Section -->
+		{#if trip.additionalInfo}
+			<div class="rounded-lg bg-blue-50 p-5">
+				<h3 class="mb-2 text-base font-semibold text-blue-900">추가 정보</h3>
+				<p class="text-sm leading-relaxed text-blue-800">
+					{trip.additionalInfo}
+				</p>
+			</div>
+		{/if}
 	</div>
 
 	<!-- Bottom Buttons -->
-	<div class="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-white">
-		<div class="px-4 py-3">
+	<div class="fixed right-0 bottom-16 left-0 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+		<div class="container mx-auto max-w-3xl px-4 py-4">
 			{#if hasExistingOffer}
 				<button
 					onclick={handleViewOffer}
-					class="w-full rounded-lg bg-gray-500 py-3 font-medium text-white"
+					class="w-full rounded-lg bg-gray-500 py-3.5 text-base font-semibold text-white transition-all hover:bg-gray-600"
 				>
 					이미 제안함
 				</button>
 			{:else}
 				<button
 					onclick={handleMakeOffer}
-					class="w-full rounded-lg bg-blue-600 py-3 font-medium text-white transition-colors hover:bg-blue-700"
+					class="w-full rounded-lg bg-[#2B2D5B] py-3.5 text-base font-semibold text-white transition-all hover:bg-[#1F2147] active:scale-[0.98]"
 				>
 					제안하기
 				</button>
