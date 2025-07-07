@@ -112,7 +112,7 @@
 
 			if (response.ok) {
 				const data = await response.json();
-				goto(`/conversations/${data.conversation.id}`);
+				goto(`/chat/${data.conversation.id}`);
 			} else {
 				console.error('Failed to create conversation');
 			}

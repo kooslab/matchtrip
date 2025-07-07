@@ -14,7 +14,7 @@
 		{ href: '/', icon: HomeIcon, label: '홈' },
 		{ href: '/my-trips', icon: FlagMapIcon, label: '나의 여행' },
 		{ href: '/order-history', icon: DirectionsIcon, label: '주문 내역' },
-		{ href: '/conversations', icon: ChatIcon, label: '대 화' },
+		{ href: '/chat', icon: ChatIcon, label: '대 화' },
 		{ href: '/profile/traveler', icon: UserIcon, label: '내 프로필' }
 	];
 

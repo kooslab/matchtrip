@@ -757,14 +757,7 @@
 						class="flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
 					>
 						최신순
-						<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M19 9l-7 7-7-7"
-							/>
-						</svg>
+						<img src={arrowDownIconUrl} alt="" class="h-4 w-4" />
 					</button>
 				</div>
 			</div>
@@ -964,7 +957,7 @@
 															e.stopPropagation();
 															// Navigate to conversation if exists
 															if (trip.conversationId) {
-																goto(`/conversations/${trip.conversationId}`);
+																goto(`/chat/${trip.conversationId}`);
 															}
 														}}
 														disabled={!trip.conversationId}

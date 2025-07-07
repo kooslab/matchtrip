@@ -140,6 +140,10 @@
 				messages = mergedMessages.sort(
 					(a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
 				);
+				
+				// Mark messages as read when conversation is viewed
+				await markMessagesAsRead();
+				
 				await tick();
 				scrollToBottom();
 			} else if (response.status === 404) {
@@ -238,6 +242,18 @@
 					input.focus();
 				}
 			}, 0);
+		}
+	}
+
+	async function markMessagesAsRead() {
+		try {
+			await fetch(`/api/conversations/${conversationId}/mark-read`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' }
+			});
+		} catch (err) {
+			// Silently fail - not critical for user experience
+			console.warn('Failed to mark messages as read:', err);
 		}
 	}
 
@@ -457,7 +473,7 @@
 			<div class="text-center">
 				<p class="text-red-600">{error}</p>
 				<button
-					onclick={() => goto('/conversations')}
+					onclick={() => goto('/chat')}
 					class="mt-4 rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
 				>
 					목록으로 돌아가기

@@ -57,12 +57,13 @@ export const GET: RequestHandler = async ({ locals }) => {
 			)
 			.orderBy(desc(conversations.lastMessageAt));
 
-		// Get unread count for each conversation
+		// Get unread count and last message for each conversation
 		const conversationsWithUnread = await Promise.all(
 			userConversations.map(async (conv) => {
 				const isGuide = conv.guideId === session.user.id;
 				const lastReadAt = isGuide ? conv.guideLastReadAt : conv.travelerLastReadAt;
 
+				// Get unread count
 				const unreadConditions = [eq(messages.conversationId, conv.id)];
 				if (lastReadAt) {
 					unreadConditions.push(gt(messages.createdAt, lastReadAt));
@@ -73,9 +74,22 @@ export const GET: RequestHandler = async ({ locals }) => {
 					.from(messages)
 					.where(and(...unreadConditions));
 
+				// Get last message content
+				const lastMessage = await db
+					.select({
+						content: messages.content,
+						createdAt: messages.createdAt
+					})
+					.from(messages)
+					.where(eq(messages.conversationId, conv.id))
+					.orderBy(desc(messages.createdAt))
+					.limit(1);
+
 				return {
 					...conv,
-					unreadCount: unreadResult[0]?.count || 0
+					unreadCount: unreadResult[0]?.count || 0,
+					lastMessageContent: lastMessage[0]?.content || null,
+					hasUnread: (unreadResult[0]?.count || 0) > 0
 				};
 			})
 		);
