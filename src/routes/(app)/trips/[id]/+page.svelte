@@ -244,7 +244,7 @@
 	</div>
 
 	<!-- Bottom Buttons -->
-	<div class="fixed right-0 bottom-16 left-0 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+	<div class="fixed right-0 bottom-20 left-0 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
 		<div class="container mx-auto max-w-3xl px-4 py-4">
 			{#if hasExistingOffer}
 				<button

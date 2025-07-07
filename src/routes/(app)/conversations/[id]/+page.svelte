@@ -3,19 +3,17 @@
 	import { goto } from '$app/navigation';
 	import { onMount, onDestroy } from 'svelte';
 	import { tick } from 'svelte';
-	import { Send, ArrowLeft, ExternalLink } from 'lucide-svelte';
+	import { Send, MoreHorizontal } from 'lucide-svelte';
 	import SkeletonLoader from '$lib/components/SkeletonLoader.svelte';
 	import { formatDate, formatTime, isToday, isYesterday } from '$lib/utils/dateFormatter';
 	import { userTimezone, userLocale } from '$lib/stores/location';
 
-	let { data = $page.data } = $props();
+	// Import custom icons
+	import ArrowBackIcon from '$lib/icons/icon-arrow-back-android-mono.svg?raw';
+	import ArrowRightSmallIcon from '$lib/icons/icon-arrow-right-small-mono.svg?raw';
+	import PlayIcon from '$lib/icons/icon-play-mono.svg?raw';
 
-	// Debug logging
-	console.log('Conversation component mounted');
-	console.log('Props data:', data);
-	console.log('Page data:', $page.data);
-	console.log('Session from props:', data?.session);
-	console.log('Session from page:', $page.data?.session);
+	let { data = $page.data } = $props();
 
 	interface Message {
 		id: string;
@@ -98,9 +96,6 @@
 	}
 
 	onMount(async () => {
-		console.log('Current user ID:', currentUserId);
-		console.log('Session data:', data?.session);
-		console.log('User role:', data?.session?.user?.role);
 		await loadConversation();
 		// Poll for new messages every 5 seconds
 		pollingInterval = setInterval(loadConversation, 5000);
@@ -114,13 +109,10 @@
 
 	async function loadConversation() {
 		try {
-			console.log('Loading conversation:', conversationId);
 			const response = await fetch(`/api/conversations/${conversationId}`);
-			console.log('Response status:', response.status);
 
 			if (response.ok) {
 				const data = await response.json();
-				console.log('Conversation data:', data);
 				conversation = data.conversation;
 				offer = data.offer || null;
 
@@ -148,13 +140,6 @@
 				messages = mergedMessages.sort(
 					(a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
 				);
-
-				console.log('Messages set:', messages);
-				console.log('Conversation set:', conversation);
-				console.log('Conversation status:', conversation?.status);
-				console.log('Conversation active check:', conversation && conversation.status === 'active');
-				console.log('Should show input:', !!conversation && conversation.status === 'active');
-				console.log('Offer set:', offer);
 				await tick();
 				scrollToBottom();
 			} else if (response.status === 404) {
@@ -164,15 +149,12 @@
 				goto('/signin');
 			} else {
 				const errorData = await response.json();
-				console.error('Error response:', errorData);
 				error = errorData.error || '대화를 불러오는데 실패했습니다.';
 			}
 		} catch (err) {
-			console.error('Fetch error:', err);
 			error = '대화를 불러오는데 실패했습니다.';
 		} finally {
 			loading = false;
-			console.log('Loading set to false, loading state:', loading);
 		}
 	}
 
@@ -295,86 +277,164 @@
 			history.back();
 		}
 	}
+
+	// Get the other person's info in the conversation
+	let otherPerson = $derived(
+		(() => {
+			if (!conversation || !currentUserId) return null;
+
+			// Determine who the other person is based on the conversation
+			const otherUserId =
+				conversation.travelerId === currentUserId ? conversation.guideId : conversation.travelerId;
+
+			// Find any message from the other person to get their details
+			if (messages.length > 0) {
+				const otherPersonMessage = messages.find((msg) => msg.senderId === otherUserId);
+				if (otherPersonMessage) {
+					return otherPersonMessage.sender;
+				}
+
+				// If no message from other person, but we have messages, get info from any message
+				// This handles the case where only current user has sent messages
+				const anyMessage = messages.find((msg) => msg.sender);
+				if (anyMessage && anyMessage.senderId !== currentUserId) {
+					return anyMessage.sender;
+				}
+			}
+
+			return null;
+		})()
+	);
+
+	let otherPersonName = $derived(otherPerson?.name || 'User');
+
+	// Get status badge color and text
+	let statusInfo = $derived(
+		(() => {
+			if (!offer) return null;
+			switch (offer.status) {
+				case 'accepted':
+					return { text: '수락됨', bgColor: '#19b989', textColor: '#ffffff' };
+				case 'rejected':
+					return { text: '거절됨', bgColor: '#f72b2b', textColor: '#ffffff' };
+				case 'pending':
+					return { text: '검토중', bgColor: '#19b989', textColor: '#ffffff' };
+				default:
+					return { text: offer.status, bgColor: '#e8e8e8', textColor: '#052236' };
+			}
+		})()
+	);
 </script>
 
-<div class="fixed inset-0 flex flex-col bg-gray-50 pt-16 md:pt-20">
-	<!-- Header -->
-	<div class="safe-area-top border-b bg-white px-4 py-3">
-		<div class="flex items-center gap-4">
-			<button onclick={handleBackButton} class="rounded-lg p-2 hover:bg-gray-100">
-				<ArrowLeft class="h-5 w-5" />
-			</button>
-			<div class="flex-1">
-				<div class="flex items-center justify-between">
-					<div>
-						<h1 class="text-lg font-semibold">대화</h1>
-						{#if offer}
-							<div class="text-sm text-gray-600">
-								{offer.destination.city}, {offer.destination.country}
-							</div>
-						{/if}
+<div class="fixed inset-0 flex flex-col bg-white pt-16 pb-20 md:pt-20">
+	{#if !loading}
+		<!-- Header -->
+		<div class="safe-area-top border-b border-gray-100 bg-white/95 backdrop-blur-sm">
+			<div class="flex items-center justify-between px-4 py-2.5">
+				<button onclick={handleBackButton} class="h-5 w-5 p-0">
+					<div class="h-5 w-5" style="color: #1095f4;">
+						{@html ArrowBackIcon.replace('fill="#8B95A1"', 'fill="currentColor"')}
 					</div>
-					{#if offer}
-						<div class="flex items-center gap-3 text-sm">
-							<span class="font-medium text-gray-900">{offer.price.toLocaleString('ko-KR')}원</span>
-							<span
-								class={`rounded-full px-2 py-1 text-xs font-medium ${
-									offer.status === 'accepted'
-										? 'bg-green-100 text-green-700'
-										: offer.status === 'rejected'
-											? 'bg-red-100 text-red-700'
-											: offer.status === 'pending'
-												? 'bg-yellow-100 text-yellow-700'
-												: 'bg-gray-100 text-gray-700'
-								}`}
-							>
-								{offer.status === 'accepted'
-									? '수락됨'
-									: offer.status === 'rejected'
-										? '거절됨'
-										: offer.status === 'pending'
-											? '검토중'
-											: offer.status}
+				</button>
+
+				<div class="flex items-center gap-1">
+					{#if otherPerson?.image}
+						<img
+							src={otherPerson.image}
+							alt={otherPersonName}
+							class="h-7 w-7 rounded-full border border-gray-100 object-cover"
+						/>
+					{:else}
+						<div
+							class="flex h-7 w-7 items-center justify-center rounded-full border border-gray-100 bg-[#003e8114]"
+						>
+							<span class="text-primary text-xs font-medium">
+								{otherPersonName.charAt(0).toUpperCase()}
 							</span>
 						</div>
 					{/if}
+					<span class="text-primary text-base font-bold">{otherPersonName}</span>
 				</div>
+
+				<button class="h-5 w-5 p-0">
+					<MoreHorizontal class="text-primary h-5 w-5" />
+				</button>
 			</div>
 		</div>
-	</div>
+
+		<!-- Offer Details Bar -->
+		{#if offer}
+			<div class="border-b border-gray-100 bg-white/95 backdrop-blur-sm">
+				<div class="px-4 py-3">
+					<div class="flex items-center justify-between">
+						<div class="flex flex-col gap-1">
+							<span class="text-secondary text-[10px] leading-3 font-medium">나의 제안 금액</span>
+							<div class="flex items-center gap-1">
+								<span class="text-primary text-base font-bold"
+									>{offer.price.toLocaleString('ko-KR')}원</span
+								>
+								<div class="text-primary h-3 w-3 rotate-90">
+									{@html ArrowRightSmallIcon}
+								</div>
+							</div>
+						</div>
+						{#if statusInfo}
+							<div
+								class="rounded border px-2 py-0.5"
+								style="background-color: {statusInfo.bgColor}; border-color: {statusInfo.bgColor};"
+							>
+								<span
+									class="text-[11px] leading-4 font-medium"
+									style="color: {statusInfo.textColor}"
+								>
+									{statusInfo.text}
+								</span>
+							</div>
+						{/if}
+					</div>
+				</div>
+			</div>
+		{/if}
+	{:else}
+		<!-- Loading header skeleton -->
+		<div class="safe-area-top border-b border-gray-100 bg-white/95 backdrop-blur-sm">
+			<div class="flex items-center justify-between px-4 py-2.5">
+				<div class="h-5 w-5 animate-pulse rounded bg-gray-200"></div>
+				<div class="flex items-center gap-1">
+					<div class="h-7 w-7 animate-pulse rounded-full bg-gray-200"></div>
+					<div class="h-4 w-20 animate-pulse rounded bg-gray-200"></div>
+				</div>
+				<div class="h-5 w-5 animate-pulse rounded bg-gray-200"></div>
+			</div>
+		</div>
+	{/if}
 
 	{#if loading}
 		<div class="flex flex-1 flex-col">
 			<!-- Messages skeleton -->
 			<div class="flex-1 overflow-y-auto px-4 py-4">
-				<!-- Date separator skeleton -->
-				<div class="my-4 text-center">
-					<div class="inline-block h-6 w-32 animate-pulse rounded-full bg-gray-200"></div>
-				</div>
-
-				<!-- Message skeletons -->
 				{#each Array(5) as _, i}
-					<div class={`mb-4 flex ${i % 2 === 0 ? 'justify-start' : 'justify-end'}`}>
-						<div class="max-w-[70%] space-y-2">
-							<!-- Sender name and time skeleton -->
-							<div class="flex items-center gap-2">
-								<div class="h-3 w-16 animate-pulse rounded bg-gray-200"></div>
-								<div class="h-3 w-12 animate-pulse rounded bg-gray-200"></div>
-							</div>
-							<!-- Message content skeleton -->
-							<div class={`rounded-lg px-4 py-2 ${i % 2 === 0 ? 'bg-gray-100' : 'bg-blue-100'}`}>
-								<SkeletonLoader rows={Math.floor(Math.random() * 2) + 1} height="h-4" />
-							</div>
+					<div class={`mb-3 flex flex-col ${i % 2 === 0 ? 'items-start' : 'items-end'}`}>
+						<div class="mb-1 h-3 w-16 animate-pulse rounded bg-gray-200"></div>
+						<div
+							class={`rounded-xl px-3 py-3 ${i % 2 === 0 ? 'rounded-tl-md bg-[#003e8105]' : 'bg-color-primary rounded-tr-md'}`}
+						>
+							<SkeletonLoader
+								rows={Math.floor(Math.random() * 2) + 1}
+								height="h-4"
+								width="w-[200px]"
+							/>
 						</div>
+						<div class="mt-1 h-3 w-12 animate-pulse rounded bg-gray-200"></div>
 					</div>
 				{/each}
 			</div>
 
 			<!-- Input skeleton -->
-			<div class="mb-2 border-t bg-white p-4">
-				<div class="flex gap-2">
-					<div class="h-10 flex-1 animate-pulse rounded-lg bg-gray-200"></div>
-					<div class="h-10 w-10 animate-pulse rounded-lg bg-gray-200"></div>
+			<div class="border-t border-gray-100 bg-white/95 p-4 backdrop-blur-sm">
+				<div class="flex gap-3">
+					<div class="h-9 flex-1 animate-pulse rounded-[20px] bg-gray-200"></div>
+					<div class="h-9 w-9 animate-pulse rounded-[20px] bg-gray-200"></div>
 				</div>
 			</div>
 		</div>
@@ -394,41 +454,40 @@
 		<!-- Main content area with flex to ensure input stays at bottom -->
 		<div class="flex flex-1 flex-col overflow-hidden">
 			<!-- Messages -->
-			<div bind:this={messagesContainer} class="flex-1 overflow-y-auto px-4 py-4">
+			<div bind:this={messagesContainer} class="flex-1 overflow-y-auto px-4 py-2">
 				{#each messages as message, i}
-					{#if isNewDay(message, i > 0 ? messages[i - 1] : null)}
-						<div class="my-4 text-center">
-							<span class="rounded-full bg-gray-200 px-3 py-1 text-xs text-gray-600">
-								{formatMessageDate(message.createdAt)}
-							</span>
-						</div>
-					{/if}
-
 					<div
-						class={`mb-4 flex ${message.senderId === currentUserId ? 'justify-start' : 'justify-end'}`}
+						class="mb-3 flex flex-col gap-1 {message.senderId !== currentUserId
+							? 'items-start'
+							: 'items-end'}"
 					>
-						<div class={`max-w-[70%]`}>
-							<div class="mb-1 flex items-center gap-2">
-								<span class="text-xs font-medium text-gray-600">
-									{message.sender.name}
-								</span>
-								<span class="text-xs text-gray-500">
-									{formatMessageTime(message.createdAt)}
-								</span>
-								{#if message.isEdited}
-									<span class="text-xs text-gray-400">(수정됨)</span>
-								{/if}
-							</div>
+						{#if message.senderId !== currentUserId}
+							<span class="px-2 text-xs font-semibold" style="color: #052236;">
+								{message.sender.name}
+							</span>
+						{/if}
 
-							<div
-								class={`rounded-lg px-4 py-2 ${
-									message.senderId === currentUserId
-										? 'bg-blue-500 text-white'
-										: 'bg-gray-100 text-gray-900'
-								}`}
+						<div
+							class="max-w-[212px] px-3 py-3 {message.senderId !== currentUserId
+								? 'rounded-tl-md rounded-tr-xl rounded-br-xl rounded-bl-xl'
+								: 'rounded-tl-xl rounded-tr-md rounded-br-xl rounded-bl-xl'}"
+							style="background-color: {message.senderId !== currentUserId ? '#003e8105' : '#1095f4'};"
+						>
+							<p
+								class="text-[13px] leading-5"
+								style="color: {message.senderId === currentUserId ? '#ffffff' : '#052236'};"
 							>
-								<p class="text-sm whitespace-pre-wrap">{message.content}</p>
-							</div>
+								{message.content}
+							</p>
+						</div>
+
+						<div class="flex items-center gap-1 px-2">
+							<span class="text-secondary text-[11px] font-medium">
+								{formatMessageTime(message.createdAt)}
+							</span>
+							{#if message.isEdited}
+								<span class="text-secondary text-[11px]">(수정됨)</span>
+							{/if}
 						</div>
 					</div>
 				{/each}
@@ -436,35 +495,44 @@
 
 			<!-- Input -->
 			{#if conversation.status === 'active'}
-				<div class="safe-area-bottom mb-2 border-t bg-white p-4">
-					{#if warningMessage}
-						<div class="mb-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2">
-							<p class="text-sm text-red-700">{warningMessage}</p>
-						</div>
-					{/if}
-					<form onsubmit={sendMessage} class="flex gap-2">
-						<input
-							type="text"
-							bind:value={newMessage}
-							placeholder="메시지를 입력하세요..."
-							disabled={sending}
-							oninput={() => {
-								if (warningMessage) warningMessage = '';
-							}}
-							class="flex-1 rounded-lg border px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-						/>
-						<button
-							type="submit"
-							disabled={!newMessage.trim() || sending}
-							class="rounded-lg bg-blue-500 p-2 text-white hover:bg-blue-600 disabled:opacity-50"
-						>
-							<Send class="h-5 w-5" />
-						</button>
-					</form>
+				<div
+					class="safe-area-bottom rounded-t-[20px] border-t border-gray-100 bg-[#fefefe]/95 shadow-[0px_-5px_20px_0px_rgba(0,0,0,0.02)] backdrop-blur-sm"
+				>
+					<div class="px-4 py-2">
+						{#if warningMessage}
+							<div class="mb-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2">
+								<p class="text-sm text-red-700">{warningMessage}</p>
+							</div>
+						{/if}
+						<form onsubmit={sendMessage} class="flex items-end gap-3">
+							<div class="flex-1 py-2">
+								<input
+									type="text"
+									bind:value={newMessage}
+									placeholder="메시지를 입력하세요"
+									disabled={sending}
+									oninput={() => {
+										if (warningMessage) warningMessage = '';
+									}}
+									class="text-primary placeholder:text-primary/60 w-full bg-transparent text-base leading-6 outline-none"
+								/>
+							</div>
+							<button
+								type="submit"
+								disabled={!newMessage.trim() || sending}
+								class="flex h-9 w-9 items-center justify-center rounded-[20px] p-1 transition-opacity disabled:opacity-50"
+								style="background-color: #1095f4; background-image: linear-gradient(157.454deg, rgba(54, 41, 241, 0) 0%, rgba(220, 220, 220, 0.4) 100%)"
+							>
+								<div class="h-7 w-7" style="color: white;">
+									{@html PlayIcon.replace('fill="#8B95A1"', 'fill="currentColor"')}
+								</div>
+							</button>
+						</form>
+					</div>
 				</div>
 			{:else}
 				<div
-					class="safe-area-bottom mb-2 border-t bg-gray-100 p-4 text-center text-sm text-gray-500"
+					class="safe-area-bottom rounded-t-[20px] border-t border-gray-100 bg-[#fefefe]/95 p-4 text-center text-sm text-gray-500 backdrop-blur-sm"
 				>
 					이 대화는 종료되었습니다. (상태: {conversation.status})
 				</div>
@@ -480,5 +548,11 @@
 	}
 	.safe-area-bottom {
 		padding-bottom: env(safe-area-inset-bottom);
+	}
+
+	/* Ensure SVG icons fill their container */
+	:global(div svg) {
+		width: 100%;
+		height: 100%;
 	}
 </style>

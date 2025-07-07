@@ -30,6 +30,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Components**: Svelte 5 runes syntax
 - **Database**: Drizzle ORM with PostgreSQL
 - **Authentication**: better-auth library with session management
+- use svelte 5 and runes always. Use onclick and runes.
+- use $props() instead of export let, use onclick instead of on:click
 
 ## Typography System
 

@@ -14,10 +14,12 @@
 
 	// Calculate total price
 	const totalTravelers = $derived((trip.adultsCount || 0) + (trip.childrenCount || 0));
-	const totalPrice = $derived((() => {
-		const pricePerPerson = parseInt(formData.pricePerPerson) || 0;
-		return pricePerPerson * totalTravelers;
-	})());
+	const totalPrice = $derived(
+		(() => {
+			const pricePerPerson = parseInt(formData.pricePerPerson) || 0;
+			return pricePerPerson * totalTravelers;
+		})()
+	);
 
 	// Format price for display
 	function formatPrice(price: number): string {
@@ -164,7 +166,7 @@
 						</button>
 					</div>
 					<!-- Display HTML content with inline images -->
-					<div 
+					<div
 						class="prose prose-sm max-w-none text-gray-700 [&>img]:my-4 [&>img]:max-w-full [&>img]:rounded-lg"
 						contenteditable="false"
 					>
@@ -215,7 +217,7 @@
 
 <!-- Bottom Button -->
 <div
-	class="fixed right-0 bottom-16 left-0 bg-white px-4 py-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
+	class="fixed right-0 bottom-20 left-0 bg-white px-4 py-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
 >
 	<button
 		onclick={handleSubmit}

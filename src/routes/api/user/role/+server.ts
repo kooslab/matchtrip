@@ -54,3 +54,38 @@ export async function GET({ request }) {
 		return json({ error: 'Internal server error' }, { status: 500 });
 	}
 }
+
+export async function POST({ request }) {
+	console.log('[API USER ROLE POST] Request received');
+	
+	try {
+		const session = await auth.api.getSession({ headers: request.headers });
+		
+		if (!session?.user?.id) {
+			console.log('[API USER ROLE POST] No authenticated user');
+			return json({ error: 'Not authenticated' }, { status: 401 });
+		}
+
+		const { role } = await request.json();
+		
+		// Validate role
+		if (!role || !['traveler', 'guide'].includes(role)) {
+			return json({ error: 'Invalid role' }, { status: 400 });
+		}
+
+		// Update user role
+		await db
+			.update(users)
+			.set({ 
+				role,
+				updatedAt: new Date()
+			})
+			.where(eq(users.id, session.user.id));
+
+		console.log(`[API USER ROLE POST] Updated user ${session.user.id} role to ${role}`);
+		return json({ success: true, role });
+	} catch (error) {
+		console.error('[API USER ROLE POST] Error:', error);
+		return json({ error: 'Internal server error' }, { status: 500 });
+	}
+}

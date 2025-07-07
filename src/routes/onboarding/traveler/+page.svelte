@@ -2,14 +2,10 @@
 	import { goto } from '$app/navigation';
 	import { colors } from '$lib/constants/colors';
 	import { onMount } from 'svelte';
-	import arrowLeftUrl from '$lib/icons/icon-arrow-left-small-mono.svg';
+	import arrowLeftUrl from '$lib/icons/icon-arrow-back-android-mono.svg';
+	import { onboardingStore } from '$lib/stores/onboardingStore';
 
 	let { data } = $props();
-
-	// Stack management
-	type Step = 'name' | 'phone' | 'birthdate' | 'complete';
-	let currentStep = $state<Step>('name');
-	let completedSteps = $state<Step[]>([]);
 
 	// Form data
 	let formData = $state({
@@ -25,104 +21,53 @@
 	let isVerificationSent = $state(false);
 	let verificationTimer = $state(0);
 	let timerInterval: number | null = null;
+	let isVerified = $state(false);
 
 	// Loading states
 	let isLoading = $state(false);
+	let isSendingCode = $state(false);
+
+	// Step visibility
+	let showPhoneStep = $state(false);
+	let showVerificationStep = $state(false);
+	let nameCompleted = $state(false);
+	let phoneCompleted = $state(false);
 
 	// Form validation
-	function canProceed(): boolean {
-		switch (currentStep) {
-			case 'name':
-				return formData.name.trim().length >= 2;
-			case 'phone':
-				return formData.phone.length === 11 && verificationCode.length === 6;
-			case 'birthdate':
-				return (
-					formData.birthYear.length === 4 &&
-					formData.birthMonth.length > 0 &&
-					formData.birthDay.length > 0
-				);
-			default:
-				return false;
-		}
+	function canProceedName(): boolean {
+		return formData.name.trim().length >= 2;
 	}
 
-	// Handle next step
-	async function handleNext() {
-		if (!canProceed()) return;
+	function canProceedPhone(): boolean {
+		return formData.phone.length === 11;
+	}
 
-		isLoading = true;
+	function canProceedVerification(): boolean {
+		return verificationCode.length === 6;
+	}
 
-		try {
-			switch (currentStep) {
-				case 'name':
-					// Just move to next step for name
-					completedSteps = [...completedSteps, 'name'];
-					currentStep = 'phone';
-					break;
-
-				case 'phone':
-					// Verify phone code
-					const verifyResponse = await fetch('/api/auth/verify-phone', {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({
-							phone: formData.phone,
-							code: verificationCode
-						})
-					});
-
-					if (verifyResponse.ok) {
-						completedSteps = [...completedSteps, 'phone'];
-						currentStep = 'birthdate';
-					} else {
-						alert('인증번호가 올바르지 않습니다.');
-					}
-					break;
-
-				case 'birthdate':
-					// Save all data
-					const birthDate = `${formData.birthYear}-${formData.birthMonth.padStart(2, '0')}-${formData.birthDay.padStart(2, '0')}`;
-
-					const response = await fetch('/api/user/profile', {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({
-							name: formData.name,
-							phone: formData.phone,
-							birthDate: birthDate
-						})
-					});
-
-					if (response.ok) {
-						completedSteps = [...completedSteps, 'birthdate'];
-						currentStep = 'complete';
-						// Redirect after a short delay
-						setTimeout(() => {
-							goto('/');
-						}, 2000);
-					} else {
-						alert('프로필 저장에 실패했습니다.');
-					}
-					break;
-			}
-		} catch (error) {
-			console.error('Error:', error);
-			alert('오류가 발생했습니다.');
-		} finally {
-			isLoading = false;
-		}
+	// Handle name completion
+	function handleNameComplete() {
+		if (!canProceedName()) return;
+		nameCompleted = true;
+		showPhoneStep = true;
+		// Focus on phone input after a short delay
+		setTimeout(() => {
+			document.getElementById('phone')?.focus();
+		}, 100);
 	}
 
 	// Send verification code
 	async function sendVerificationCode() {
-		if (formData.phone.length !== 11) {
+		if (!canProceedPhone()) {
 			alert('올바른 휴대폰 번호를 입력해주세요.');
 			return;
 		}
 
+		isSendingCode = true;
+
 		try {
-			const response = await fetch('/api/auth/send-verification', {
+			const response = await fetch('/api/phone/send-verification', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ phone: formData.phone })
@@ -130,13 +75,60 @@
 
 			if (response.ok) {
 				isVerificationSent = true;
+				showVerificationStep = true;
 				startTimer();
+				// Focus on verification input
+				setTimeout(() => {
+					document.getElementById('code')?.focus();
+				}, 100);
 			} else {
 				alert('인증번호 전송에 실패했습니다.');
 			}
 		} catch (error) {
 			console.error('Error:', error);
 			alert('오류가 발생했습니다.');
+		} finally {
+			isSendingCode = false;
+		}
+	}
+
+	// Verify code and complete
+	async function verifyCode() {
+		if (!canProceedVerification()) return;
+
+		isLoading = true;
+
+		try {
+			const verifyResponse = await fetch('/api/phone/verify', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					phone: formData.phone,
+					code: verificationCode
+				})
+			});
+
+			if (verifyResponse.ok) {
+				phoneCompleted = true;
+				// Clear timer
+				if (timerInterval) {
+					clearInterval(timerInterval);
+					timerInterval = null;
+				}
+				// Save data to store and redirect to profile page
+				onboardingStore.setData({
+					name: formData.name,
+					phone: formData.phone
+				});
+				await goto('/onboarding/traveler/profile');
+			} else {
+				alert('인증번호가 올바르지 않습니다.');
+			}
+		} catch (error) {
+			console.error('Error:', error);
+			alert('오류가 발생했습니다.');
+		} finally {
+			isLoading = false;
 		}
 	}
 
@@ -167,43 +159,116 @@
 			}
 		};
 	});
+
+	// Handle back
+	function handleBack() {
+		history.back();
+	}
+
+	// Edit name
+	function editName() {
+		nameCompleted = false;
+		showPhoneStep = false;
+		showVerificationStep = false;
+		isVerificationSent = false;
+		verificationCode = '';
+		isVerified = false;
+		if (timerInterval) {
+			clearInterval(timerInterval);
+			timerInterval = null;
+		}
+		setTimeout(() => {
+			document.getElementById('name')?.focus();
+		}, 100);
+	}
+
+	// Edit phone
+	function editPhone() {
+		isVerificationSent = false;
+		showVerificationStep = false;
+		verificationCode = '';
+		isVerified = false;
+		if (timerInterval) {
+			clearInterval(timerInterval);
+			timerInterval = null;
+		}
+		setTimeout(() => {
+			document.getElementById('phone')?.focus();
+		}, 100);
+	}
 </script>
 
 <div class="min-h-screen bg-gray-50">
 	<!-- Header -->
 	<header class="sticky top-0 z-10 bg-white shadow-sm">
 		<div class="flex h-14 items-center px-4">
-			<h1 class="text-lg font-semibold text-gray-900">프로필 설정</h1>
+			<button onclick={handleBack} class="mr-4 -ml-2 p-2">
+				<img src={arrowLeftUrl} alt="뒤로가기" class="h-5 w-5" style="filter: invert(37%) sepia(94%) saturate(2831%) hue-rotate(196deg) brightness(101%) contrast(91%);" />
+			</button>
 		</div>
 	</header>
 
 	<!-- Content -->
 	<div class="px-4 py-6">
-		<div class="mx-auto max-w-sm space-y-4">
-			<!-- Current Step -->
-			{#if currentStep === 'name'}
-				<div class="rounded-lg bg-white p-6 shadow-sm">
-					<h2 class="mb-6 text-lg font-semibold text-gray-900">이름을 입력해주세요</h2>
+		<div class="mx-auto max-w-sm">
+			<!-- Title -->
+			<div class="mb-6">
+				<h2 class="mb-2 text-lg font-semibold text-gray-900">회원가입</h2>
+				<p class="text-sm text-gray-500">사용자 정보를 입력해주세요</p>
+			</div>
 
-					<div>
-						<label for="name" class="mb-2 block text-sm font-medium text-gray-700"> 이름 </label>
-						<input
-							id="name"
-							type="text"
-							bind:value={formData.name}
-							placeholder="홍길동"
-							class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-1 focus:outline-none"
-							style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1;"
-							onfocus={(e) => (e.target.style.borderColor = colors.primary)}
-							onblur={(e) => (e.target.style.borderColor = '')}
-						/>
+			<!-- Steps Stack (Reversed Order - New on Top) -->
+			<div class="space-y-4">
+				<!-- Verification Step (Shows at top when active) -->
+				{#if showVerificationStep && !phoneCompleted}
+					<div class="rounded-lg bg-white p-6 shadow-sm">
+						<div>
+							<label for="code" class="mb-2 block text-sm font-medium text-gray-700">
+								인증번호
+							</label>
+							<div class="flex items-center gap-2">
+								<input
+									id="code"
+									type="text"
+									bind:value={verificationCode}
+									placeholder="6자리 숫자"
+									maxlength="6"
+									class="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-1 focus:outline-none"
+									style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1;"
+									onfocus={(e) => (e.target.style.borderColor = colors.primary)}
+									onblur={(e) => (e.target.style.borderColor = '')}
+									oninput={(e) => {
+										if (verificationCode.length === 6) {
+											isVerified = true;
+										} else {
+											isVerified = false;
+										}
+									}}
+									onkeydown={(e) => {
+										if (e.key === 'Enter' && canProceedVerification()) {
+											verifyCode();
+										}
+									}}
+								/>
+								{#if isVerified}
+									<span class="flex h-8 w-8 items-center justify-center rounded-full bg-green-500">
+										<svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+										</svg>
+									</span>
+								{:else if verificationTimer > 0}
+									<span class="text-sm" style="color: {colors.primary}">
+										{formatTimer(verificationTimer)}
+									</span>
+								{/if}
+							</div>
+						</div>
 					</div>
-				</div>
-			{:else if currentStep === 'phone'}
-				<div class="rounded-lg bg-white p-6 shadow-sm">
-					<h2 class="mb-6 text-lg font-semibold text-gray-900">휴대폰 번호를 인증해주세요</h2>
+				{/if}
 
-					<div class="space-y-4">
+				<!-- Phone Step (Shows at top when active, moves down when verification shows) -->
+				{#if showPhoneStep && nameCompleted}
+					<div class="rounded-lg bg-white p-6 shadow-sm">
 						<div>
 							<label for="phone" class="mb-2 block text-sm font-medium text-gray-700">
 								휴대폰 번호
@@ -220,205 +285,136 @@
 									style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1;"
 									onfocus={(e) => (e.target.style.borderColor = colors.primary)}
 									onblur={(e) => (e.target.style.borderColor = '')}
+									onkeydown={(e) => {
+										if (e.key === 'Enter' && canProceedPhone() && !isVerificationSent && !isSendingCode) {
+											sendVerificationCode();
+										}
+									}}
+								/>
+								{#if !isVerificationSent}
+									<button
+										onclick={sendVerificationCode}
+										disabled={isSendingCode || !canProceedPhone()}
+										class="rounded-lg px-4 py-3 text-sm font-medium text-white transition-colors disabled:opacity-50"
+										style="background-color: {isSendingCode || !canProceedPhone()
+											? '#CBD5E1'
+											: colors.primary}"
+									>
+										{isSendingCode ? '전송중...' : '인증번호'}
+									</button>
+								{:else}
+									<button
+										onclick={editPhone}
+										class="rounded-lg px-4 py-3 text-sm font-medium transition-colors"
+										style="background-color: #f3f4f6; color: #6b7280;"
+									>
+										재전송
+									</button>
+								{/if}
+							</div>
+						</div>
+					</div>
+				{/if}
+
+				<!-- Name Step (Always visible, at top initially, moves down as new steps appear) -->
+				{#if !nameCompleted}
+					<div class="rounded-lg bg-white p-6 shadow-sm">
+						<div>
+							<label for="name" class="mb-2 block text-sm font-medium text-gray-700">
+								이름을 입력해주세요
+							</label>
+							<div class="flex gap-2">
+								<input
+									id="name"
+									type="text"
+									bind:value={formData.name}
+									placeholder="홍길동"
+									class="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-1 focus:outline-none"
+									style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1;"
+									onfocus={(e) => (e.target.style.borderColor = colors.primary)}
+									onblur={(e) => (e.target.style.borderColor = '')}
+									onkeydown={(e) => {
+										if (e.key === 'Enter' && canProceedName()) {
+											handleNameComplete();
+										}
+									}}
 								/>
 								<button
-									onclick={sendVerificationCode}
-									disabled={isVerificationSent || formData.phone.length !== 11}
+									onclick={handleNameComplete}
+									disabled={!canProceedName()}
 									class="rounded-lg px-4 py-3 text-sm font-medium text-white transition-colors disabled:opacity-50"
-									style="background-color: {isVerificationSent || formData.phone.length !== 11
-										? '#CBD5E1'
-										: colors.primary}"
+									style="background-color: {canProceedName() ? colors.primary : '#CBD5E1'}"
 								>
-									{isVerificationSent ? '재전송' : '인증번호'}
+									확인
 								</button>
 							</div>
 						</div>
-
-						{#if isVerificationSent}
-							<div>
-								<label for="code" class="mb-2 block text-sm font-medium text-gray-700">
-									인증번호
-								</label>
-								<div class="flex items-center gap-2">
-									<input
-										id="code"
-										type="text"
-										bind:value={verificationCode}
-										placeholder="6자리 숫자"
-										maxlength="6"
-										class="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-1 focus:outline-none"
-										style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1;"
-										onfocus={(e) => (e.target.style.borderColor = colors.primary)}
-										onblur={(e) => (e.target.style.borderColor = '')}
-									/>
-									{#if verificationTimer > 0}
-										<span class="text-sm" style="color: {colors.primary}">
-											{formatTimer(verificationTimer)}
-										</span>
-									{/if}
-								</div>
-							</div>
-						{/if}
 					</div>
-				</div>
-			{:else if currentStep === 'birthdate'}
-				<div class="rounded-lg bg-white p-6 shadow-sm">
-					<h2 class="mb-6 text-lg font-semibold text-gray-900">생년월일을 입력해주세요</h2>
+				{/if}
 
-					<div class="flex gap-2">
-						<div class="flex-1">
-							<label for="year" class="mb-2 block text-sm font-medium text-gray-700"> 년 </label>
-							<input
-								id="year"
-								type="text"
-								bind:value={formData.birthYear}
-								placeholder="1990"
-								maxlength="4"
-								class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-1 focus:outline-none"
-								style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1;"
-								onfocus={(e) => (e.target.style.borderColor = colors.primary)}
-								onblur={(e) => (e.target.style.borderColor = '')}
-							/>
-						</div>
-						<div class="w-24">
-							<label for="month" class="mb-2 block text-sm font-medium text-gray-700"> 월 </label>
-							<input
-								id="month"
-								type="text"
-								bind:value={formData.birthMonth}
-								placeholder="1"
-								maxlength="2"
-								class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-1 focus:outline-none"
-								style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1;"
-								onfocus={(e) => (e.target.style.borderColor = colors.primary)}
-								onblur={(e) => (e.target.style.borderColor = '')}
-							/>
-						</div>
-						<div class="w-24">
-							<label for="day" class="mb-2 block text-sm font-medium text-gray-700"> 일 </label>
-							<input
-								id="day"
-								type="text"
-								bind:value={formData.birthDay}
-								placeholder="1"
-								maxlength="2"
-								class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-1 focus:outline-none"
-								style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1;"
-								onfocus={(e) => (e.target.style.borderColor = colors.primary)}
-								onblur={(e) => (e.target.style.borderColor = '')}
-							/>
-						</div>
-					</div>
-				</div>
-			{:else if currentStep === 'complete'}
-				<div class="rounded-lg bg-white p-12 text-center shadow-sm">
-					<div class="mb-4">
-						<div
-							class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full"
-							style="background-color: {colors.primary}"
-						>
-							<svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M5 13l4 4L19 7"
+				<!-- Completed Steps (Shows at bottom) -->
+				{#if nameCompleted && showPhoneStep}
+					<div class="rounded-lg bg-white p-6 shadow-sm opacity-75">
+						<div>
+							<label class="mb-2 block text-sm font-medium text-gray-700">
+								이름
+							</label>
+							<div class="flex gap-2">
+								<input
+									type="text"
+									value={formData.name}
+									disabled
+									class="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-base"
 								/>
-							</svg>
+								<button
+									onclick={editName}
+									class="rounded-lg px-4 py-3 text-sm font-medium transition-colors"
+									style="background-color: #f3f4f6; color: #6b7280;"
+								>
+									수정
+								</button>
+							</div>
 						</div>
 					</div>
-					<h2 class="mb-2 text-xl font-bold text-gray-900">프로필 설정 완료!</h2>
-					<p class="text-gray-600">잠시 후 홈 화면으로 이동합니다.</p>
-				</div>
+				{/if}
+
+				{#if isVerificationSent && showVerificationStep}
+					<div class="rounded-lg bg-white p-6 shadow-sm opacity-75">
+						<div>
+							<label class="mb-2 block text-sm font-medium text-gray-700">
+								휴대폰 번호
+							</label>
+							<div class="flex gap-2">
+								<input
+									type="tel"
+									value={formData.phone}
+									disabled
+									class="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-base"
+								/>
+								<button
+									onclick={editPhone}
+									class="rounded-lg px-4 py-3 text-sm font-medium transition-colors"
+									style="background-color: #f3f4f6; color: #6b7280;"
+								>
+									재전송
+								</button>
+							</div>
+						</div>
+					</div>
+				{/if}
+			</div>
+
+			<!-- Action Button -->
+			{#if showVerificationStep && !phoneCompleted}
+				<button
+					onclick={verifyCode}
+					disabled={!canProceedVerification() || isLoading}
+					class="mt-6 w-full rounded-lg py-4 text-base font-medium text-white transition-colors disabled:opacity-50"
+					style="background-color: {canProceedVerification() && !isLoading ? colors.primary : '#CBD5E1'}"
+				>
+					{isLoading ? '확인중...' : '다음'}
+				</button>
 			{/if}
-
-			<!-- Completed Steps Stack (below current step) -->
-			{#each completedSteps as step}
-				<div class="rounded-lg bg-white p-4 shadow-sm">
-					{#if step === 'name'}
-						<div class="flex items-center justify-between">
-							<div>
-								<p class="text-xs text-gray-500">이름</p>
-								<p class="font-medium text-gray-900">{formData.name}</p>
-							</div>
-							<svg
-								class="h-5 w-5 text-green-500"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M5 13l4 4L19 7"
-								/>
-							</svg>
-						</div>
-					{:else if step === 'phone'}
-						<div class="flex items-center justify-between">
-							<div>
-								<p class="text-xs text-gray-500">휴대폰 번호</p>
-								<p class="font-medium text-gray-900">
-									{formData.phone.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3')}
-								</p>
-							</div>
-							<svg
-								class="h-5 w-5 text-green-500"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M5 13l4 4L19 7"
-								/>
-							</svg>
-						</div>
-					{:else if step === 'birthdate'}
-						<div class="flex items-center justify-between">
-							<div>
-								<p class="text-xs text-gray-500">생년월일</p>
-								<p class="font-medium text-gray-900">
-									{formData.birthYear}년 {formData.birthMonth}월 {formData.birthDay}일
-								</p>
-							</div>
-							<svg
-								class="h-5 w-5 text-green-500"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M5 13l4 4L19 7"
-								/>
-							</svg>
-						</div>
-					{/if}
-				</div>
-			{/each}
 		</div>
 	</div>
-
-	<!-- Bottom Button -->
-	{#if currentStep !== 'complete'}
-		<div
-			class="fixed right-0 bottom-0 left-0 bg-white px-4 py-4 shadow-[0_-1px_3px_rgba(0,0,0,0.1)]"
-		>
-			<button
-				onclick={handleNext}
-				disabled={!canProceed() || isLoading}
-				class="w-full rounded-lg py-3.5 text-base font-semibold text-white transition-all
-					{canProceed() && !isLoading ? '' : 'cursor-not-allowed opacity-50'}"
-				style="background-color: {canProceed() && !isLoading ? colors.primary : '#CBD5E1'}"
-			>
-				{isLoading ? '처리중...' : '다음'}
-			</button>
-		</div>
-	{/if}
 </div>

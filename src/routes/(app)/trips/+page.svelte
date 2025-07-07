@@ -20,7 +20,6 @@
 	let trips = $derived(data.trips);
 	let userRole = $derived(data.userRole);
 
-
 	// Filter states
 	let selectedFilters = $state({
 		destination: false,
@@ -99,7 +98,6 @@
 
 		return methodMap[method] || method;
 	}
-
 
 	// City search functions
 	function toggleCitySelection(cityId: string) {
@@ -807,7 +805,7 @@
 					>
 						<div class="p-4">
 							<!-- Clickable upper section -->
-							<div 
+							<div
 								onclick={() => goto(`/trips/${trip.id}`)}
 								role="button"
 								tabindex="0"
@@ -970,7 +968,9 @@
 															}
 														}}
 														disabled={!trip.conversationId}
-														class="w-full rounded-lg border border-gray-300 bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-700 {trip.conversationId ? 'hover:bg-gray-200' : 'cursor-default'}"
+														class="w-full rounded-lg border border-gray-300 bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-700 {trip.conversationId
+															? 'hover:bg-gray-200'
+															: 'cursor-default'}"
 													>
 														{#if trip.offerStatus === 'pending'}
 															검토 중

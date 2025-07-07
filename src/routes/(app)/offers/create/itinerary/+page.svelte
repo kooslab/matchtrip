@@ -17,7 +17,12 @@
 	// Load existing data if any
 	$effect(() => {
 		const currentItinerary = $offerFormStore.itinerary;
-		if (currentItinerary && currentItinerary[0] && currentItinerary[0].timeSlots[0] && isInitialLoad) {
+		if (
+			currentItinerary &&
+			currentItinerary[0] &&
+			currentItinerary[0].timeSlots[0] &&
+			isInitialLoad
+		) {
 			// Load existing content
 			const existingContent = currentItinerary[0].timeSlots[0].title;
 			if (existingContent && editorRef) {
@@ -38,11 +43,13 @@
 			offerFormStore.updateItineraryDay(0, {
 				day: 1,
 				imageUrl: '', // Not used anymore since images are inline
-				timeSlots: [{
-					time: '',
-					title: itineraryContent, // Store HTML content
-					description: ''
-				}]
+				timeSlots: [
+					{
+						time: '',
+						title: itineraryContent, // Store HTML content
+						description: ''
+					}
+				]
 			});
 		}
 	}
@@ -58,10 +65,10 @@
 	function handleInput() {
 		if (editorRef) {
 			itineraryContent = editorRef.innerHTML;
-			
+
 			// Clear existing timer
 			clearTimeout(updateTimer);
-			
+
 			// Set new timer to update store after 300ms of no typing
 			updateTimer = setTimeout(() => {
 				updateStore();
@@ -88,14 +95,14 @@
 				img.src = imageUrl;
 				img.className = 'my-4 max-w-full rounded-lg';
 				img.alt = '일정 이미지';
-				
+
 				// Add a new paragraph after image
 				const p = document.createElement('p');
 				p.innerHTML = '<br>';
-				
+
 				editorRef.appendChild(img);
 				editorRef.appendChild(p);
-				
+
 				// Move cursor to the new paragraph
 				const range = document.createRange();
 				range.selectNodeContents(p);
@@ -107,29 +114,29 @@
 		}
 
 		const range = selection.getRangeAt(0);
-		
+
 		// Create image element
 		const img = document.createElement('img');
 		img.src = imageUrl;
 		img.className = 'my-4 max-w-full rounded-lg';
 		img.alt = '일정 이미지';
-		
+
 		// Insert image at cursor position
 		range.deleteContents();
 		range.insertNode(img);
-		
+
 		// Add line breaks around image for better editing experience
 		const br1 = document.createElement('br');
 		const br2 = document.createElement('br');
 		img.parentNode?.insertBefore(br1, img);
 		img.parentNode?.insertBefore(br2, img.nextSibling);
-		
+
 		// Move cursor after the image
 		range.setStartAfter(br2);
 		range.collapse(true);
 		selection.removeAllRanges();
 		selection.addRange(range);
-		
+
 		// Update content
 		handleInput();
 	}
@@ -139,33 +146,33 @@
 		const input = event.target as HTMLInputElement;
 		if (input.files && input.files[0]) {
 			const file = input.files[0];
-			
+
 			try {
 				// Show loading state (you could add a loading indicator)
 				const tempUrl = URL.createObjectURL(file);
-				
+
 				// Focus editor to ensure we have a cursor position
 				editorRef?.focus();
-				
+
 				// Insert temporary image immediately for better UX
 				insertImageAtCursor(tempUrl, true);
-				
+
 				// Upload to server
 				const formData = new FormData();
 				formData.append('file', file);
 				formData.append('type', 'itinerary');
-				
+
 				const response = await fetch('/api/upload', {
 					method: 'POST',
 					body: formData
 				});
-				
+
 				if (response.ok) {
 					const data = await response.json();
 					// Replace temporary URL with permanent URL
 					if (editorRef) {
 						const imgs = editorRef.querySelectorAll('img');
-						imgs.forEach(img => {
+						imgs.forEach((img) => {
 							if (img.src === tempUrl) {
 								img.src = data.url;
 							}
@@ -179,7 +186,7 @@
 					// Remove the temporary image on error
 					if (editorRef) {
 						const imgs = editorRef.querySelectorAll('img');
-						imgs.forEach(img => {
+						imgs.forEach((img) => {
 							if (img.src === tempUrl) {
 								img.remove();
 							}
@@ -193,7 +200,7 @@
 				console.error('Image upload error:', error);
 				alert('이미지 업로드 중 오류가 발생했습니다.');
 			}
-			
+
 			// Clear the input so the same file can be selected again
 			input.value = '';
 		}
@@ -204,9 +211,9 @@
 		// Save current selection before file dialog opens
 		const selection = window.getSelection();
 		const range = selection?.getRangeAt(0);
-		
+
 		fileInput?.click();
-		
+
 		// Restore selection after a brief delay
 		setTimeout(() => {
 			if (range && selection) {
@@ -266,7 +273,7 @@
 				onpaste={handlePaste}
 				onfocus={handleFocus}
 				onblur={handleBlur}
-				class="min-h-[300px] w-full rounded-lg border border-gray-300 px-4 py-3 text-base leading-relaxed transition-colors focus:border-opacity-100 focus:ring-1 focus:outline-none [&>img]:my-4 [&>img]:max-w-full [&>img]:rounded-lg"
+				class="focus:border-opacity-100 min-h-[300px] w-full rounded-lg border border-gray-300 px-4 py-3 text-base leading-relaxed transition-colors focus:ring-1 focus:outline-none [&>img]:my-4 [&>img]:max-w-full [&>img]:rounded-lg"
 				style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1;"
 				onfocusin={(e) => (e.currentTarget.style.borderColor = colors.primary)}
 				onfocusout={(e) => (e.currentTarget.style.borderColor = '')}
@@ -279,7 +286,9 @@
 			<ul class="space-y-1 text-sm text-gray-600">
 				<li>• 시간대별로 구체적인 일정을 작성해주세요</li>
 				<li>• 이동 수단과 소요 시간을 포함하면 좋습니다</li>
-				<li>• 텍스트 중간에 이미지를 추가하려면 원하는 위치에 커서를 놓고 카메라 버튼을 클릭하세요</li>
+				<li>
+					• 텍스트 중간에 이미지를 추가하려면 원하는 위치에 커서를 놓고 카메라 버튼을 클릭하세요
+				</li>
 			</ul>
 		</div>
 	</div>
@@ -287,12 +296,12 @@
 
 <!-- Fixed Image Upload Button -->
 <div class="fixed right-4 bottom-36 z-50">
-	<input 
+	<input
 		bind:this={fileInput}
-		type="file" 
-		accept="image/*" 
-		onchange={handleImageUpload} 
-		class="hidden" 
+		type="file"
+		accept="image/*"
+		onchange={handleImageUpload}
+		class="hidden"
 	/>
 	<button
 		onclick={handleImageButtonClick}
@@ -300,9 +309,9 @@
 		title="이미지 추가"
 		type="button"
 	>
-		<img 
-			src={cameraUrl} 
-			alt="이미지 추가" 
+		<img
+			src={cameraUrl}
+			alt="이미지 추가"
 			class="h-6 w-6"
 			style="filter: brightness(0) saturate(100%) invert(60%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(70%) contrast(100%);"
 		/>
@@ -311,7 +320,7 @@
 
 <!-- Bottom Button -->
 <div
-	class="fixed right-0 bottom-16 left-0 bg-white px-4 py-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
+	class="fixed right-0 bottom-20 left-0 bg-white px-4 py-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
 >
 	<button
 		onclick={handleNext}
@@ -329,7 +338,7 @@
 		word-wrap: break-word;
 		white-space: pre-wrap;
 	}
-	
+
 	/* Ensure images in the editor are responsive */
 	[contenteditable] img {
 		display: block;
@@ -339,12 +348,12 @@
 		border-radius: 0.5rem;
 		cursor: default;
 	}
-	
+
 	/* Remove the outline on contenteditable focus (we're using border instead) */
 	[contenteditable]:focus {
 		outline: none;
 	}
-	
+
 	/* Style placeholder text */
 	[contenteditable]:empty:before {
 		content: attr(placeholder);
