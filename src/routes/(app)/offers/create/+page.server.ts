@@ -5,13 +5,15 @@ import { trips } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-	const session = await locals.auth.getSession();
-	if (!session?.user) {
-		redirect(302, '/auth/signin');
+	const session = locals.session;
+	const user = locals.user;
+
+	if (!session?.user || !user) {
+		redirect(302, '/signin');
 	}
 
 	// Check if user is a guide
-	if (session.user.role !== 'guide') {
+	if (user.role !== 'guide') {
 		redirect(302, '/trips');
 	}
 

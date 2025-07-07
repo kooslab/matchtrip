@@ -34,7 +34,7 @@ export const PATCH: RequestHandler = async ({ request, locals }) => {
 		// Validate phone if provided
 		if ('phone' in filteredUpdates) {
 			const phone = filteredUpdates.phone?.trim();
-			
+
 			// Check if it starts with + (international format)
 			if (phone && phone.startsWith('+')) {
 				// For international numbers, just ensure it has country code + number

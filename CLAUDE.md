@@ -31,6 +31,46 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Database**: Drizzle ORM with PostgreSQL
 - **Authentication**: better-auth library with session management
 
+## Typography System
+
+### Font Family
+
+- **Primary Font**: Pretendard (already configured in app.css)
+- **Font Weights**: Bold (700), SemiBold (600), Medium (500), Regular (400)
+
+### Color Usage
+
+- **Primary Text**: Use `text-primary` (--color-text-primary: #052236)
+- **Secondary Text**: Use `text-secondary` (--color-text-secondary: #666666)
+- **Brand Colors**: `text-color-primary` (#1095f4), `text-color-secondary` (#8ea0ac)
+- **Alert Colors**: `text-color-success` (#19b989), `text-color-error` (#f72b2b)
+
+### Typography Classes
+
+- **Headings**: h1-h6 are styled by default
+- **Body Text**:
+  - `.text-body-large` (13px/20px)
+  - `.text-body-medium` (12px/18px) - default
+  - `.text-body-small` (11px/16px)
+  - `.text-body-xsmall` (10px/12px)
+  - `.text-label` (9px/12px, semibold)
+- **Font Weights**: `.font-bold`, `.font-semibold`, `.font-medium`, `.font-regular`
+
+### Spacing System
+
+- Uses 8-point grid system with 4pt for small elements
+- Spacing utilities: `.spacing-4` through `.spacing-40`
+- CSS variables: `--spacing-4` through `--spacing-40`
+
+### Background Colors
+
+- `.bg-primary`, `.bg-secondary`, `.bg-light`, `.bg-white`
+- `.bg-gray-f1`, `.bg-gray-f7`
+
+### Border Colors
+
+- `.border-gray-e1`, `.border-gray-c8`
+
 ## Tech Stack
 
 - 🚀 **[SvelteKit 2.0+](https://svelte.dev/docs/kit)** - Latest version
@@ -130,9 +170,10 @@ Required environment variables (see `.env.example`):
 
 ## Icons to Use
 
-- Use custom icons from `src/lib/icons/` when available (designer resources)
-- Fallback to lucide-svelte icons if not found in custom icons
-- Additional icon libraries available: phosphor-svelte
+- **ALWAYS** check `src/lib/icons/` FIRST for any icon needs
+- Only use lucide-svelte icons if the required icon is not found in custom icons
+- Additional icon libraries available: phosphor-svelte (use only as last resort)
+- When an icon is needed, ask the user if they want to use an alternative if not found in custom icons
 
 ## Common Development Tasks
 

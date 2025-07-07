@@ -5,12 +5,12 @@
 	import arrowLeftUrl from '$lib/icons/icon-arrow-left-small-mono.svg';
 
 	let { data } = $props();
-	
+
 	// Stack management
 	type Step = 'name' | 'mobile' | 'profile' | 'destinations' | 'documents' | 'complete';
 	let currentStep = $state<Step>('name');
 	let completedSteps = $state<Step[]>([]);
-	
+
 	// Form data
 	let formData = $state({
 		name: '',
@@ -29,7 +29,7 @@
 		destinations: [] as string[],
 		certificationFiles: [] as File[]
 	});
-	
+
 	// Country codes for mobile
 	const countryCodes = [
 		{ code: '+82', flag: '🇰🇷', country: 'KR', name: '대한민국' },
@@ -40,25 +40,50 @@
 		{ code: '+33', flag: '🇫🇷', country: 'FR', name: '프랑스' },
 		{ code: '+49', flag: '🇩🇪', country: 'DE', name: '독일' }
 	];
-	
+
 	// Available destinations
 	const availableDestinations = [
-		'서울', '부산', '제주도', '경주', '강릉', '전주', '인천', '대구', '광주', '대전',
-		'울산', '수원', '춘천', '속초', '여수', '목포', '안동', '통영', '남해', '거제'
+		'서울',
+		'부산',
+		'제주도',
+		'경주',
+		'강릉',
+		'전주',
+		'인천',
+		'대구',
+		'광주',
+		'대전',
+		'울산',
+		'수원',
+		'춘천',
+		'속초',
+		'여수',
+		'목포',
+		'안동',
+		'통영',
+		'남해',
+		'거제'
 	];
-	
+
 	// Available languages
 	const availableLanguages = [
-		'한국어', '영어', '일본어', '중국어', '스페인어', 
-		'프랑스어', '독일어', '러시아어', '아랍어'
+		'한국어',
+		'영어',
+		'일본어',
+		'중국어',
+		'스페인어',
+		'프랑스어',
+		'독일어',
+		'러시아어',
+		'아랍어'
 	];
-	
+
 	// Loading states
 	let isLoading = $state(false);
-	
+
 	// Custom dropdown state (fallback if Bits UI doesn't work)
 	let isDropdownOpen = $state(false);
-	
+
 	// Form validation
 	function canProceed(): boolean {
 		switch (currentStep) {
@@ -68,9 +93,11 @@
 				const mobileLength = getMobileLength(formData.countryCode);
 				return formData.mobile.length === mobileLength;
 			case 'profile':
-				return formData.name.trim().length >= 2 && 
-					   formData.frequentArea.trim().length > 0 && 
-					   formData.birthDate.length > 0;
+				return (
+					formData.name.trim().length >= 2 &&
+					formData.frequentArea.trim().length > 0 &&
+					formData.birthDate.length > 0
+				);
 			case 'destinations':
 				return formData.destinations.length > 0;
 			case 'documents':
@@ -79,35 +106,51 @@
 				return false;
 		}
 	}
-	
+
 	// Get expected mobile number length for country (without leading zero)
 	function getMobileLength(countryCode: string): number {
 		switch (countryCode) {
-			case '+82': return 10; // Korea: 1012345678 (no leading 0)
-			case '+1': return 10;  // US: 1234567890
-			case '+81': return 10; // Japan: 9012345678 (no leading 0)
-			case '+86': return 11; // China: 13812345678
-			case '+44': return 10; // UK: 7123456789
-			case '+33': return 10; // France: 612345678
-			case '+49': return 11; // Germany: 15123456789
-			default: return 10;
+			case '+82':
+				return 10; // Korea: 1012345678 (no leading 0)
+			case '+1':
+				return 10; // US: 1234567890
+			case '+81':
+				return 10; // Japan: 9012345678 (no leading 0)
+			case '+86':
+				return 11; // China: 13812345678
+			case '+44':
+				return 10; // UK: 7123456789
+			case '+33':
+				return 10; // France: 612345678
+			case '+49':
+				return 11; // Germany: 15123456789
+			default:
+				return 10;
 		}
 	}
-	
+
 	// Get maximum formatted length including separators
 	function getFormattedMaxLength(countryCode: string): number {
 		switch (countryCode) {
-			case '+82': return 12; // Korea: 10-1234-5678 (12 chars)
-			case '+1': return 14;  // US: (123) 456-7890 (14 chars)
-			case '+81': return 12; // Japan: 90-1234-5678 (12 chars)
-			case '+86': return 13; // China: 138-1234-5678 (13 chars)
-			case '+44': return 12; // UK: 71-2345-6789 (12 chars)
-			case '+33': return 14; // France: 61-23-45-67-89 (14 chars)
-			case '+49': return 13; // Germany: 151-2345-6789 (13 chars)
-			default: return 15;
+			case '+82':
+				return 12; // Korea: 10-1234-5678 (12 chars)
+			case '+1':
+				return 14; // US: (123) 456-7890 (14 chars)
+			case '+81':
+				return 12; // Japan: 90-1234-5678 (12 chars)
+			case '+86':
+				return 13; // China: 138-1234-5678 (13 chars)
+			case '+44':
+				return 12; // UK: 71-2345-6789 (12 chars)
+			case '+33':
+				return 14; // France: 61-23-45-67-89 (14 chars)
+			case '+49':
+				return 13; // Germany: 151-2345-6789 (13 chars)
+			default:
+				return 15;
 		}
 	}
-	
+
 	// Format mobile number for display in completed steps
 	function getFormattedMobile(mobile: string, countryCode: string): string {
 		if (!mobile) return '';
@@ -122,16 +165,16 @@
 				return mobile;
 		}
 	}
-	
+
 	// Handle next step
 	async function handleNext() {
 		if (!canProceed()) return;
-		
+
 		isLoading = true;
-		
+
 		try {
 			completedSteps = [...completedSteps, currentStep];
-			
+
 			// Move to next step
 			switch (currentStep) {
 				case 'name':
@@ -158,12 +201,12 @@
 			isLoading = false;
 		}
 	}
-	
+
 	// Save profile
 	async function saveProfile() {
 		const birthDate = `${formData.birthYear}-${formData.birthMonth.padStart(2, '0')}-${formData.birthDay.padStart(2, '0')}`;
 		const fullMobile = `${formData.countryCode}${formData.mobile}`;
-		
+
 		// Create FormData for file upload
 		const profileData = new FormData();
 		profileData.append('name', formData.name);
@@ -173,17 +216,17 @@
 		profileData.append('languages', JSON.stringify(formData.languages));
 		profileData.append('bio', formData.bio);
 		profileData.append('destinations', JSON.stringify(formData.destinations));
-		
+
 		// Add certification files
 		formData.certificationFiles.forEach((file, index) => {
 			profileData.append(`documents`, file);
 		});
-		
+
 		const response = await fetch('/api/user/guide-profile', {
 			method: 'POST',
 			body: profileData
 		});
-		
+
 		if (response.ok) {
 			currentStep = 'complete';
 			// Redirect after a short delay
@@ -194,43 +237,43 @@
 			alert('프로필 저장에 실패했습니다.');
 		}
 	}
-	
+
 	// Toggle language selection
 	function toggleLanguage(language: string) {
 		if (formData.languages.includes(language)) {
-			formData.languages = formData.languages.filter(l => l !== language);
+			formData.languages = formData.languages.filter((l) => l !== language);
 		} else {
 			formData.languages = [...formData.languages, language];
 		}
 	}
-	
+
 	// Toggle destination selection
 	function toggleDestination(destination: string) {
 		if (formData.destinations.includes(destination)) {
-			formData.destinations = formData.destinations.filter(d => d !== destination);
+			formData.destinations = formData.destinations.filter((d) => d !== destination);
 		} else {
 			formData.destinations = [...formData.destinations, destination];
 		}
 	}
-	
+
 	// Handle mobile input formatting
 	function handleMobileInput(e: Event) {
 		const input = e.target as HTMLInputElement;
 		// Remove non-digits
 		let value = input.value.replace(/\D/g, '');
-		
+
 		// Remove leading zero for international format
 		if (value.startsWith('0')) {
 			value = value.substring(1);
 		}
-		
+
 		// Limit to expected length
 		const maxLength = getMobileLength(formData.countryCode);
 		value = value.substring(0, maxLength);
-		
+
 		// Store raw digits for validation
 		formData.mobile = value;
-		
+
 		// Format with separators based on country
 		let formattedValue = '';
 		switch (formData.countryCode) {
@@ -290,11 +333,11 @@
 			default:
 				formattedValue = value;
 		}
-		
+
 		// Store formatted value and update display
 		formData.mobileFormatted = formattedValue;
 	}
-	
+
 	// Handle file upload
 	function handleFileUpload(event: Event) {
 		const input = event.target as HTMLInputElement;
@@ -302,11 +345,11 @@
 			formData.certificationFiles = [...formData.certificationFiles, ...Array.from(input.files)];
 		}
 	}
-	
+
 	function removeFile(index: number) {
 		formData.certificationFiles = formData.certificationFiles.filter((_, i) => i !== index);
 	}
-	
+
 	// Close dropdown when clicking outside
 	function handleClickOutside(event: MouseEvent) {
 		const target = event.target as HTMLElement;
@@ -314,7 +357,6 @@
 			isDropdownOpen = false;
 		}
 	}
-	
 </script>
 
 <svelte:window onclick={handleClickOutside} />
@@ -324,8 +366,9 @@
 	<header class="sticky top-0 z-10 bg-white">
 		<div class="flex h-14 items-center px-4">
 			<button onclick={() => goto(-1)} class="mr-4">
-				<svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+				<svg class="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"
+					></path>
 				</svg>
 			</button>
 		</div>
@@ -339,58 +382,72 @@
 			{#if currentStep === 'name'}
 				<div class="rounded-lg bg-white p-6 shadow-sm">
 					<h2 class="mb-6 text-lg font-semibold text-gray-900">이름을 입력해주세요</h2>
-					
+
 					<div>
-						<label for="name" class="mb-2 block text-sm font-medium text-gray-700">
-							이름
-						</label>
+						<label for="name" class="mb-2 block text-sm font-medium text-gray-700"> 이름 </label>
 						<input
 							id="name"
 							type="text"
 							bind:value={formData.name}
 							placeholder="홍길동"
-							class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-1"
+							class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-1 focus:outline-none"
 							style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1;"
-							onfocus={(e) => e.target.style.borderColor = colors.primary}
-							onblur={(e) => e.target.style.borderColor = ''}
+							onfocus={(e) => (e.target.style.borderColor = colors.primary)}
+							onblur={(e) => (e.target.style.borderColor = '')}
 						/>
 					</div>
 				</div>
 			{:else if currentStep === 'mobile'}
 				<div class="rounded-lg bg-white p-6 shadow-sm">
 					<h2 class="mb-6 text-lg font-semibold text-gray-900">휴대폰 번호를 입력해주세요</h2>
-					
+
 					<div>
 						<label for="mobile" class="mb-2 block text-sm font-medium text-gray-700">
 							휴대폰 번호
 						</label>
 						<div class="flex gap-2">
 							<!-- Custom Dropdown -->
-							<div class="relative country-dropdown">
+							<div class="country-dropdown relative">
 								<button
 									type="button"
-									onclick={() => isDropdownOpen = !isDropdownOpen}
-									class="w-24 rounded-lg border border-gray-300 px-2 py-3 text-sm focus:outline-none focus:ring-1 bg-white flex items-center justify-between hover:border-gray-400"
+									onclick={() => (isDropdownOpen = !isDropdownOpen)}
+									class="flex w-24 items-center justify-between rounded-lg border border-gray-300 bg-white px-2 py-3 text-sm hover:border-gray-400 focus:ring-1 focus:outline-none"
 									style="--tw-ring-color: {colors.primary};"
 								>
-									<span class="text-sm">{countryCodes.find(c => c.code === formData.countryCode)?.flag} {formData.countryCode}</span>
-									<svg class="w-3 h-3 text-gray-500 transition-transform" class:rotate-180={isDropdownOpen} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+									<span class="text-sm"
+										>{countryCodes.find((c) => c.code === formData.countryCode)?.flag}
+										{formData.countryCode}</span
+									>
+									<svg
+										class="h-3 w-3 text-gray-500 transition-transform"
+										class:rotate-180={isDropdownOpen}
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M19 9l-7 7-7-7"
+										></path>
 									</svg>
 								</button>
-								
+
 								{#if isDropdownOpen}
-									<div class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+									<div
+										class="absolute top-full right-0 left-0 z-50 mt-1 max-h-60 overflow-y-auto rounded-lg border border-gray-300 bg-white shadow-lg"
+									>
 										{#each countryCodes as country}
 											<button
 												type="button"
-												onclick={() => { 
-													formData.countryCode = country.code; 
-													formData.mobile = ''; 
-													formData.mobileFormatted = ''; 
-													isDropdownOpen = false; 
+												onclick={() => {
+													formData.countryCode = country.code;
+													formData.mobile = '';
+													formData.mobileFormatted = '';
+													isDropdownOpen = false;
 												}}
-												class="w-full px-3 py-2 text-left hover:bg-gray-50 cursor-pointer flex items-center gap-2 border-b border-gray-100 last:border-b-0 text-sm"
+												class="flex w-full cursor-pointer items-center gap-2 border-b border-gray-100 px-3 py-2 text-left text-sm last:border-b-0 hover:bg-gray-50"
 											>
 												<span class="text-base">{country.flag}</span>
 												<span class="font-medium text-gray-900">{country.code}</span>
@@ -405,115 +462,155 @@
 								value={formData.mobileFormatted}
 								maxlength={getFormattedMaxLength(formData.countryCode)}
 								oninput={handleMobileInput}
-								placeholder={
-									formData.countryCode === '+82' ? '10-1234-5678' :
-									formData.countryCode === '+1' ? '(123) 456-7890' :
-									formData.countryCode === '+81' ? '90-1234-5678' :
-									formData.countryCode === '+86' ? '138-1234-5678' :
-									formData.countryCode === '+44' ? '71-2345-6789' :
-									formData.countryCode === '+33' ? '61-23-45-67-89' :
-									formData.countryCode === '+49' ? '151-2345-6789' :
-									'1234567890'
-								}
-								class="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-base focus:outline-none focus:ring-1"
+								placeholder={formData.countryCode === '+82'
+									? '10-1234-5678'
+									: formData.countryCode === '+1'
+										? '(123) 456-7890'
+										: formData.countryCode === '+81'
+											? '90-1234-5678'
+											: formData.countryCode === '+86'
+												? '138-1234-5678'
+												: formData.countryCode === '+44'
+													? '71-2345-6789'
+													: formData.countryCode === '+33'
+														? '61-23-45-67-89'
+														: formData.countryCode === '+49'
+															? '151-2345-6789'
+															: '1234567890'}
+								class="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-1 focus:outline-none"
 								style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1;"
-								onfocus={(e) => e.target.style.borderColor = colors.primary}
-								onblur={(e) => e.target.style.borderColor = ''}
+								onfocus={(e) => (e.target.style.borderColor = colors.primary)}
+								onblur={(e) => (e.target.style.borderColor = '')}
 							/>
 						</div>
 					</div>
 				</div>
 			{:else if currentStep === 'profile'}
-				<div class="bg-white min-h-screen">
+				<div class="min-h-screen bg-white">
 					<!-- Title Section -->
 					<div class="px-4 pt-6 pb-8">
-						<h1 class="text-xl font-bold text-gray-900 mb-2">기본 정보</h1>
+						<h1 class="mb-2 text-xl font-bold text-gray-900">기본 정보</h1>
 						<p class="text-sm text-gray-500">사용자를 파악할 수 있는 정보를 입력해주세요</p>
 					</div>
-					
+
 					<!-- Profile Image -->
-					<div class="px-4 mb-8">
+					<div class="mb-8 px-4">
 						<div class="flex justify-center">
 							<div class="relative">
-								<div class="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+								<div
+									class="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-gray-200"
+								>
 									{#if formData.profileImage}
-										<img src={formData.profileImage} alt="Profile" class="w-full h-full object-cover" />
+										<img
+											src={formData.profileImage}
+											alt="Profile"
+											class="h-full w-full object-cover"
+										/>
 									{:else}
-										<img src="/api/placeholder/96/96" alt="Default profile" class="w-full h-full object-cover" />
+										<img
+											src="/api/placeholder/96/96"
+											alt="Default profile"
+											class="h-full w-full object-cover"
+										/>
 									{/if}
 								</div>
-								<button class="absolute bottom-0 right-0 w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center">
-									<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+								<button
+									class="absolute right-0 bottom-0 flex h-6 w-6 items-center justify-center rounded-full bg-gray-600"
+								>
+									<svg
+										class="h-3 w-3 text-white"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+										></path>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+										></path>
 									</svg>
 								</button>
 							</div>
 						</div>
 					</div>
-					
+
 					<!-- Form Fields -->
-					<div class="px-4 space-y-6">
+					<div class="space-y-6 px-4">
 						<!-- Nickname -->
 						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-2">닉네임</label>
+							<label class="mb-2 block text-sm font-medium text-gray-700">닉네임</label>
 							<div class="relative">
 								<input
 									type="text"
 									bind:value={formData.name}
 									placeholder="메치트립"
-									class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+									class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none"
 								/>
 								{#if formData.name}
-									<button 
-										onclick={() => formData.name = ''}
-										class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+									<button
+										onclick={() => (formData.name = '')}
+										class="absolute top-1/2 right-3 -translate-y-1/2 transform text-gray-400"
 									>
-										<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-											<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+										<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+											<path
+												fill-rule="evenodd"
+												d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+												clip-rule="evenodd"
+											></path>
 										</svg>
 									</button>
 								{/if}
 							</div>
 						</div>
-						
+
 						<!-- Frequent Area -->
 						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-2">자주 지역</label>
+							<label class="mb-2 block text-sm font-medium text-gray-700">자주 지역</label>
 							<div class="relative">
 								<input
 									type="text"
 									bind:value={formData.frequentArea}
 									placeholder="베를린, 독일"
-									class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+									class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none"
 								/>
 							</div>
 						</div>
-						
+
 						<!-- Email -->
 						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-2">이메일</label>
+							<label class="mb-2 block text-sm font-medium text-gray-700">이메일</label>
 							<input
 								type="email"
 								value="hjep@matchtrip.com"
 								readonly
-								class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
+								class="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-gray-500"
 							/>
 						</div>
-						
+
 						<!-- Birth Date -->
 						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-2">생년월일</label>
+							<label class="mb-2 block text-sm font-medium text-gray-700">생년월일</label>
 							<div class="relative">
 								<input
 									type="text"
 									bind:value={formData.birthDate}
 									placeholder="1990.01.01"
-									class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+									class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none"
 								/>
-								<button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-500">
-									<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-										<path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
+								<button class="absolute top-1/2 right-3 -translate-y-1/2 transform text-blue-500">
+									<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+										<path
+											fill-rule="evenodd"
+											d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+											clip-rule="evenodd"
+										></path>
 									</svg>
 								</button>
 							</div>
@@ -522,8 +619,10 @@
 				</div>
 			{:else if currentStep === 'destinations'}
 				<div class="rounded-lg bg-white p-6 shadow-sm">
-					<h2 class="mb-6 text-lg font-semibold text-gray-900">가이드 가능한 지역을 선택해주세요</h2>
-					
+					<h2 class="mb-6 text-lg font-semibold text-gray-900">
+						가이드 가능한 지역을 선택해주세요
+					</h2>
+
 					<div>
 						<label class="mb-3 block text-sm font-medium text-gray-700">
 							주요 가이드 지역 (복수 선택 가능)
@@ -533,17 +632,17 @@
 								<button
 									onclick={() => toggleDestination(destination)}
 									type="button"
-									class="rounded-lg border-2 px-4 py-3 text-sm font-medium transition-all text-left
-										{formData.destinations.includes(destination) 
-											? 'border-blue-500 bg-blue-50 text-blue-700' 
-											: 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'}"
+									class="rounded-lg border-2 px-4 py-3 text-left text-sm font-medium transition-all
+										{formData.destinations.includes(destination)
+										? 'border-blue-500 bg-blue-50 text-blue-700'
+										: 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'}"
 								>
 									{destination}
 								</button>
 							{/each}
 						</div>
 						{#if formData.destinations.length > 0}
-							<div class="mt-4 p-3 bg-gray-50 rounded-lg">
+							<div class="mt-4 rounded-lg bg-gray-50 p-3">
 								<p class="text-sm text-gray-600">선택된 지역:</p>
 								<p class="text-sm font-medium text-gray-900">{formData.destinations.join(', ')}</p>
 							</div>
@@ -553,16 +652,16 @@
 			{:else if currentStep === 'documents'}
 				<div class="rounded-lg bg-white p-6 shadow-sm">
 					<h2 class="mb-6 text-lg font-semibold text-gray-900">자격 서류를 업로드해주세요</h2>
-					
+
 					<div class="space-y-6">
-						<div class="text-sm text-gray-600 space-y-2">
+						<div class="space-y-2 text-sm text-gray-600">
 							<p>• 신분증 (운전면허증, 주민등록증 등)</p>
 							<p>• 관광통역안내사 자격증 (보유 시)</p>
 							<p>• 기타 관련 자격증 (어학 인증서, 전문 분야 자격증 등)</p>
 						</div>
-						
+
 						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-3">
+							<label class="mb-3 block text-sm font-medium text-gray-700">
 								파일 업로드 (JPG, PNG, PDF 지원)
 							</label>
 							<label class="block">
@@ -573,32 +672,59 @@
 									onchange={handleFileUpload}
 									class="hidden"
 								/>
-								<div class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 transition-colors">
-									<svg class="w-12 h-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+								<div
+									class="flex h-40 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 transition-colors hover:border-gray-400"
+								>
+									<svg
+										class="mb-3 h-12 w-12 text-gray-400"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+										/>
 									</svg>
 									<p class="text-sm font-medium text-gray-900">파일을 클릭하여 업로드</p>
-									<p class="text-xs text-gray-500 mt-1">또는 파일을 여기로 드래그하세요</p>
+									<p class="mt-1 text-xs text-gray-500">또는 파일을 여기로 드래그하세요</p>
 								</div>
 							</label>
-							
+
 							{#if formData.certificationFiles.length > 0}
 								<div class="mt-4 space-y-3">
 									<p class="text-sm font-medium text-gray-700">업로드된 파일:</p>
 									{#each formData.certificationFiles as file, index}
-										<div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+										<div class="flex items-center justify-between rounded-lg bg-gray-50 p-3">
 											<div class="flex items-center">
-												<svg class="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+												<svg
+													class="mr-3 h-5 w-5 text-gray-400"
+													fill="none"
+													stroke="currentColor"
+													viewBox="0 0 24 24"
+												>
+													<path
+														stroke-linecap="round"
+														stroke-linejoin="round"
+														stroke-width="2"
+														d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+													/>
 												</svg>
-												<span class="text-sm text-gray-700 truncate">{file.name}</span>
+												<span class="truncate text-sm text-gray-700">{file.name}</span>
 											</div>
 											<button
 												onclick={() => removeFile(index)}
-												class="text-gray-400 hover:text-red-500 transition-colors"
+												class="text-gray-400 transition-colors hover:text-red-500"
 											>
-												<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+												<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path
+														stroke-linecap="round"
+														stroke-linejoin="round"
+														stroke-width="2"
+														d="M6 18L18 6M6 6l12 12"
+													/>
 												</svg>
 											</button>
 										</div>
@@ -606,21 +732,29 @@
 								</div>
 							{/if}
 						</div>
-						
-						<div class="p-4 bg-blue-50 rounded-lg">
+
+						<div class="rounded-lg bg-blue-50 p-4">
 							<p class="text-xs text-blue-800">
-								<strong>참고:</strong> 업로드된 서류는 가이드 승인 과정에서 검토됩니다. 
-								개인정보는 안전하게 보호되며, 승인 완료 후 즉시 삭제됩니다.
+								<strong>참고:</strong> 업로드된 서류는 가이드 승인 과정에서 검토됩니다. 개인정보는 안전하게
+								보호되며, 승인 완료 후 즉시 삭제됩니다.
 							</p>
 						</div>
 					</div>
 				</div>
 			{:else if currentStep === 'complete'}
-				<div class="rounded-lg bg-white p-12 shadow-sm text-center">
+				<div class="rounded-lg bg-white p-12 text-center shadow-sm">
 					<div class="mb-4">
-						<div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full" style="background-color: {colors.primary}">
+						<div
+							class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full"
+							style="background-color: {colors.primary}"
+						>
 							<svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M5 13l4 4L19 7"
+								/>
 							</svg>
 						</div>
 					</div>
@@ -628,7 +762,7 @@
 					<p class="text-gray-600">잠시 후 홈 화면으로 이동합니다.</p>
 				</div>
 			{/if}
-			
+
 			<!-- Completed Steps Stack (below current step) -->
 			{#each completedSteps as step}
 				<div class="rounded-lg bg-white p-4 shadow-sm">
@@ -638,8 +772,18 @@
 								<p class="text-xs text-gray-500">이름</p>
 								<p class="font-medium text-gray-900">{formData.name}</p>
 							</div>
-							<svg class="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+							<svg
+								class="h-5 w-5 text-green-500"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M5 13l4 4L19 7"
+								/>
 							</svg>
 						</div>
 					{:else if step === 'mobile'}
@@ -647,26 +791,47 @@
 							<div>
 								<p class="text-xs text-gray-500">휴대폰 번호</p>
 								<p class="font-medium text-gray-900">
-									{formData.countryCode} {formData.mobileFormatted}
+									{formData.countryCode}
+									{formData.mobileFormatted}
 								</p>
 							</div>
-							<svg class="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+							<svg
+								class="h-5 w-5 text-green-500"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M5 13l4 4L19 7"
+								/>
 							</svg>
 						</div>
 					{:else if step === 'profile'}
 						<div class="flex items-center justify-between">
-							<div class="flex-1 mr-3">
+							<div class="mr-3 flex-1">
 								<p class="text-xs text-gray-500">기본 프로필</p>
-								<p class="font-medium text-gray-900 text-sm">
-									{formData.birthYear}년 {formData.birthMonth}월 {formData.birthDay}일 • 
-									{formData.gender === 'male' ? '남성' : '여성'} • 
+								<p class="text-sm font-medium text-gray-900">
+									{formData.birthYear}년 {formData.birthMonth}월 {formData.birthDay}일 •
+									{formData.gender === 'male' ? '남성' : '여성'} •
 									{formData.languages.join(', ')}
 								</p>
-								<p class="text-sm text-gray-600 line-clamp-1 mt-1">{formData.bio}</p>
+								<p class="mt-1 line-clamp-1 text-sm text-gray-600">{formData.bio}</p>
 							</div>
-							<svg class="h-5 w-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+							<svg
+								class="h-5 w-5 flex-shrink-0 text-green-500"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M5 13l4 4L19 7"
+								/>
 							</svg>
 						</div>
 					{:else if step === 'destinations'}
@@ -675,8 +840,18 @@
 								<p class="text-xs text-gray-500">가이드 지역</p>
 								<p class="font-medium text-gray-900">{formData.destinations.join(', ')}</p>
 							</div>
-							<svg class="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+							<svg
+								class="h-5 w-5 text-green-500"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M5 13l4 4L19 7"
+								/>
 							</svg>
 						</div>
 					{:else if step === 'documents'}
@@ -684,13 +859,23 @@
 							<div>
 								<p class="text-xs text-gray-500">업로드된 서류</p>
 								<p class="font-medium text-gray-900">
-									{formData.certificationFiles.length > 0 
-										? `${formData.certificationFiles.length}개 파일` 
+									{formData.certificationFiles.length > 0
+										? `${formData.certificationFiles.length}개 파일`
 										: '선택 사항'}
 								</p>
 							</div>
-							<svg class="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+							<svg
+								class="h-5 w-5 text-green-500"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M5 13l4 4L19 7"
+								/>
 							</svg>
 						</div>
 					{/if}
@@ -698,15 +883,17 @@
 			{/each}
 		</div>
 	</div>
-	
+
 	<!-- Bottom Button -->
 	{#if currentStep !== 'complete'}
-		<div class="fixed right-0 bottom-0 left-0 bg-white px-4 py-4 shadow-[0_-1px_3px_rgba(0,0,0,0.1)]">
+		<div
+			class="fixed right-0 bottom-0 left-0 bg-white px-4 py-4 shadow-[0_-1px_3px_rgba(0,0,0,0.1)]"
+		>
 			{#if currentStep === 'documents'}
 				<div class="flex gap-3">
 					<button
 						onclick={() => handleNext()}
-						class="flex-1 rounded-lg py-3.5 text-base font-medium border border-gray-300 text-gray-700 bg-white"
+						class="flex-1 rounded-lg border border-gray-300 bg-white py-3.5 text-base font-medium text-gray-700"
 					>
 						건너뛰기
 					</button>
@@ -714,7 +901,7 @@
 						onclick={handleNext}
 						disabled={isLoading}
 						class="flex-1 rounded-lg py-3.5 text-base font-semibold text-white transition-all
-							{!isLoading ? '' : 'opacity-50 cursor-not-allowed'}"
+							{!isLoading ? '' : 'cursor-not-allowed opacity-50'}"
 						style="background-color: {!isLoading ? colors.primary : '#CBD5E1'}"
 					>
 						{isLoading ? '처리중...' : '완료'}
@@ -725,7 +912,7 @@
 					onclick={handleNext}
 					disabled={!canProceed() || isLoading}
 					class="w-full rounded-lg py-3.5 text-base font-semibold text-white transition-all
-						{canProceed() && !isLoading ? '' : 'opacity-50 cursor-not-allowed'}"
+						{canProceed() && !isLoading ? '' : 'cursor-not-allowed opacity-50'}"
 					style="background-color: {canProceed() && !isLoading ? colors.primary : '#CBD5E1'}"
 				>
 					{isLoading ? '처리중...' : '다음'}

@@ -8,7 +8,8 @@
 		onCancel: () => void;
 	}
 
-	let { showModal, selectedYear, selectedMonth, selectedDay, onConfirm, onCancel }: Props = $props();
+	let { showModal, selectedYear, selectedMonth, selectedDay, onConfirm, onCancel }: Props =
+		$props();
 
 	// Temporary values for modal
 	let tempYear = $state(selectedYear);
@@ -47,18 +48,18 @@
 		const yearPicker = document.getElementById('year-picker');
 		const monthPicker = document.getElementById('month-picker');
 		const dayPicker = document.getElementById('day-picker');
-		
+
 		if (yearPicker) {
 			const yearIndex = years.indexOf(tempYear);
 			if (yearIndex !== -1) {
 				yearPicker.scrollTop = yearIndex * 40 - yearPicker.clientHeight / 2 + 20;
 			}
 		}
-		
+
 		if (monthPicker) {
 			monthPicker.scrollTop = (tempMonth - 1) * 40 - monthPicker.clientHeight / 2 + 20;
 		}
-		
+
 		if (dayPicker) {
 			dayPicker.scrollTop = (tempDay - 1) * 40 - dayPicker.clientHeight / 2 + 20;
 		}
@@ -75,9 +76,9 @@
 		const scrollTop = target.scrollTop;
 		const itemHeight = 40;
 		const offset = target.clientHeight / 2 - 20;
-		
+
 		const index = Math.round((scrollTop + offset) / itemHeight);
-		
+
 		// Update temp values immediately for visual feedback
 		if (type === 'year') {
 			const year = years[Math.max(0, Math.min(index, years.length - 1))];
@@ -111,9 +112,9 @@
 		isSnapping = true;
 		const itemHeight = 40;
 		const offset = container.clientHeight / 2 - 20;
-		
+
 		let targetIndex: number;
-		
+
 		if (type === 'year') {
 			targetIndex = years.indexOf(tempYear);
 		} else if (type === 'month') {
@@ -121,9 +122,9 @@
 		} else {
 			targetIndex = tempDay - 1;
 		}
-		
+
 		const targetScrollTop = targetIndex * itemHeight - offset;
-		
+
 		container.scrollTo({
 			top: targetScrollTop,
 			behavior: 'smooth'
@@ -153,26 +154,25 @@
 {#if showModal}
 	<div class="fixed inset-0 z-50 flex items-end justify-center">
 		<!-- Backdrop -->
-		<div 
-			class="absolute inset-0 bg-black/50" 
-			onclick={onCancel}
-		></div>
-		
+		<div class="absolute inset-0 bg-black/50" onclick={onCancel}></div>
+
 		<!-- Modal Content -->
-		<div class="relative w-full max-w-md rounded-t-2xl bg-white p-4 animate-slide-up">
+		<div class="animate-slide-up relative w-full max-w-md rounded-t-2xl bg-white p-4">
 			<!-- Modal Header -->
 			<div class="mb-4 flex items-center justify-between">
 				<h3 class="text-lg font-semibold text-gray-900">생년월일 선택</h3>
-				<button
-					onclick={onCancel}
-					class="text-gray-400 hover:text-gray-600"
-				>
+				<button onclick={onCancel} class="text-gray-400 hover:text-gray-600">
 					<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M6 18L18 6M6 6l12 12"
+						/>
 					</svg>
 				</button>
 			</div>
-			
+
 			<!-- iOS-style date picker -->
 			<div class="relative overflow-hidden rounded-lg border border-gray-200 bg-white">
 				<!-- Selection highlight area -->
@@ -191,7 +191,10 @@
 							<div class="h-24"></div>
 							{#each years as year}
 								<div
-									class="picker-item flex h-10 w-full cursor-pointer items-center justify-center text-base transition-all {tempYear === year ? 'text-gray-900 text-xl font-medium' : 'text-gray-400'}"
+									class="picker-item flex h-10 w-full cursor-pointer items-center justify-center text-base transition-all {tempYear ===
+									year
+										? 'text-xl font-medium text-gray-900'
+										: 'text-gray-400'}"
 									onclick={() => {
 										tempYear = year;
 										const picker = document.getElementById('year-picker');
@@ -218,7 +221,10 @@
 							<div class="h-24"></div>
 							{#each months as month}
 								<div
-									class="picker-item flex h-10 w-full cursor-pointer items-center justify-center text-base transition-all {tempMonth === month ? 'text-gray-900 text-xl font-medium' : 'text-gray-400'}"
+									class="picker-item flex h-10 w-full cursor-pointer items-center justify-center text-base transition-all {tempMonth ===
+									month
+										? 'text-xl font-medium text-gray-900'
+										: 'text-gray-400'}"
 									onclick={() => {
 										tempMonth = month;
 										const picker = document.getElementById('month-picker');
@@ -244,7 +250,10 @@
 							<div class="h-24"></div>
 							{#each days() as day}
 								<div
-									class="picker-item flex h-10 w-full cursor-pointer items-center justify-center text-base transition-all {tempDay === day ? 'text-gray-900 text-xl font-medium' : 'text-gray-400'}"
+									class="picker-item flex h-10 w-full cursor-pointer items-center justify-center text-base transition-all {tempDay ===
+									day
+										? 'text-xl font-medium text-gray-900'
+										: 'text-gray-400'}"
 									onclick={() => {
 										tempDay = day;
 										const picker = document.getElementById('day-picker');
@@ -261,7 +270,7 @@
 					</div>
 				</div>
 			</div>
-			
+
 			<!-- Modal Footer -->
 			<div class="mt-4 flex gap-2">
 				<button
@@ -291,13 +300,13 @@
 	.scrollbar-hide::-webkit-scrollbar {
 		display: none;
 	}
-	
+
 	.picker-item {
 		height: 40px;
 		scroll-snap-align: center;
 		scroll-snap-stop: always;
 	}
-	
+
 	@keyframes slide-up {
 		from {
 			transform: translateY(100%);
@@ -306,7 +315,7 @@
 			transform: translateY(0);
 		}
 	}
-	
+
 	.animate-slide-up {
 		animation: slide-up 0.3s ease-out;
 	}

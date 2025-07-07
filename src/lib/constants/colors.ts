@@ -7,5 +7,5 @@ export const colors = {
 	secondaryActive: '#667680',
 	dark: '#2B2D5B',
 	darkHover: '#1F2147',
-	darkActive: '#161835',
+	darkActive: '#161835'
 } as const;

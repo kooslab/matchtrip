@@ -56,8 +56,8 @@
 	}
 
 	function handleMakeOffer() {
-		// Navigate to create offer page with tripId
-		goto(`/offers/create?tripId=${trip.id}`);
+		// Navigate to the first step of the new offer creation flow
+		goto(`/offers/create/trip-info?tripId=${trip.id}`);
 	}
 
 	function handleViewOffer() {
@@ -75,11 +75,16 @@
 	<header class="sticky top-0 z-10 bg-white shadow-sm">
 		<div class="flex h-14 items-center justify-between px-4">
 			<div class="flex items-center">
-				<button onclick={() => goto('/trips')} class="mr-3 p-2 -ml-2 hover:bg-gray-100 rounded-lg transition-colors">
+				<button
+					onclick={() => goto('/trips')}
+					class="mr-3 -ml-2 rounded-lg p-2 transition-colors hover:bg-gray-100"
+				>
 					<img src={arrowLeftUrl} alt="Back" class="h-5 w-5" />
 				</button>
 				<h1 class="text-lg font-semibold text-gray-900">
-					{trip.destination?.city || '목적지'}{trip.destination?.country ? `, ${trip.destination.country}` : ''}
+					{trip.destination?.city || '목적지'}{trip.destination?.country
+						? `, ${trip.destination.country}`
+						: ''}
 				</h1>
 			</div>
 		</div>
@@ -91,14 +96,24 @@
 		<div class="mb-6 rounded-lg bg-white p-5 shadow-sm">
 			<div class="mb-4 flex items-center justify-between">
 				<h2 class="text-lg font-semibold text-gray-900">여행 정보</h2>
-				<span class="{trip.status === 'submitted' ? 'bg-blue-100 text-blue-700' : trip.status === 'accepted' ? 'bg-green-100 text-green-700' : trip.status === 'completed' ? 'bg-gray-100 text-gray-700' : 'bg-yellow-100 text-yellow-700'} inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium">
+				<span
+					class="{trip.status === 'submitted'
+						? 'bg-blue-100 text-blue-700'
+						: trip.status === 'accepted'
+							? 'bg-green-100 text-green-700'
+							: trip.status === 'completed'
+								? 'bg-gray-100 text-gray-700'
+								: 'bg-yellow-100 text-yellow-700'} inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium"
+				>
 					{getStatusText(trip.status)}
 				</span>
 			</div>
 			<div class="mb-5">
-				<p class="text-sm text-gray-600 mb-1">예산</p>
+				<p class="mb-1 text-sm text-gray-600">예산</p>
 				<p class="text-2xl font-bold text-gray-900">
-					{trip.budgetMin ? `${(trip.budgetMin / 10000).toLocaleString()}` : '0'} ~ {trip.budgetMax ? `${(trip.budgetMax / 10000).toLocaleString()}` : '0'}만원
+					{trip.budgetMin ? `${(trip.budgetMin / 10000).toLocaleString()}` : '0'} ~ {trip.budgetMax
+						? `${(trip.budgetMax / 10000).toLocaleString()}`
+						: '0'}만원
 				</p>
 			</div>
 
@@ -117,7 +132,9 @@
 				<div class="flex items-start">
 					<span class="w-20 flex-shrink-0 text-sm text-gray-600">인원</span>
 					<p class="text-sm font-medium text-gray-900">
-						성인 {trip.adultsCount}명{trip.childrenCount > 0 ? `, 아동 ${trip.childrenCount}명` : ''}
+						성인 {trip.adultsCount}명{trip.childrenCount > 0
+							? `, 아동 ${trip.childrenCount}명`
+							: ''}
 					</p>
 				</div>
 				<div class="flex items-start">
@@ -169,7 +186,7 @@
 		<div class="mb-6 overflow-hidden rounded-lg bg-white shadow-sm transition-all duration-200">
 			<button
 				onclick={() => (isFilesOpen = !isFilesOpen)}
-				class="flex w-full items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+				class="flex w-full items-center justify-between p-4 transition-colors hover:bg-gray-50"
 			>
 				<span class="text-base font-medium text-gray-900">첨부 파일</span>
 				<img
@@ -183,7 +200,9 @@
 					{#if trip.attachments && trip.attachments.length > 0}
 						<div class="mt-3 space-y-3">
 							{#each trip.attachments as file}
-								<div class="flex items-center gap-3 rounded-lg border border-gray-200 p-3 hover:bg-gray-50 transition-colors">
+								<div
+									class="flex items-center gap-3 rounded-lg border border-gray-200 p-3 transition-colors hover:bg-gray-50"
+								>
 									<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100">
 										<span class="text-xs font-semibold text-red-600">PDF</span>
 									</div>
@@ -191,7 +210,9 @@
 										<p class="text-sm font-medium text-gray-900">{file.name}</p>
 										<p class="text-xs text-gray-500">{file.size}</p>
 									</div>
-									<button class="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+									<button
+										class="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+									>
 										<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path
 												stroke-linecap="round"
@@ -237,8 +258,8 @@
 					onclick={handleMakeOffer}
 					class="w-full rounded-lg py-3.5 text-base font-semibold text-white transition-all active:scale-[0.98]"
 					style="background-color: {colors.primary}"
-					onmouseover={(e) => e.currentTarget.style.backgroundColor = colors.primaryHover}
-					onmouseout={(e) => e.currentTarget.style.backgroundColor = colors.primary}
+					onmouseover={(e) => (e.currentTarget.style.backgroundColor = colors.primaryHover)}
+					onmouseout={(e) => (e.currentTarget.style.backgroundColor = colors.primary)}
 				>
 					제안하기
 				</button>
