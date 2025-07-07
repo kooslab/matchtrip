@@ -32,6 +32,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Authentication**: better-auth library with session management
 - use svelte 5 and runes always. Use onclick and runes.
 - use $props() instead of export let, use onclick instead of on:click
+- use tailwindcss all the time
 
 ## Typography System
 

@@ -170,9 +170,9 @@
 				// We might need to update it in the user record
 			}
 
-			// Clear store and redirect
+			// Clear store and redirect to completion page
 			onboardingStore.reset();
-			await goto('/my-trips');
+			await goto('/onboarding/traveler/complete');
 		} catch (error) {
 			console.error('Error:', error);
 			alert('오류가 발생했습니다.');

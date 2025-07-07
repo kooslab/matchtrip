@@ -170,6 +170,13 @@
 			setTimeout(() => {
 				warningMessage = '';
 			}, 5000);
+			// Keep focus on input
+			setTimeout(() => {
+				const input = document.getElementById('message-input') as HTMLInputElement;
+				if (input) {
+					input.focus();
+				}
+			}, 0);
 			return;
 		}
 
@@ -224,6 +231,13 @@
 			newMessage = messageContent;
 		} finally {
 			sending = false;
+			// Return focus to the input field
+			setTimeout(() => {
+				const input = document.getElementById('message-input') as HTMLInputElement;
+				if (input) {
+					input.focus();
+				}
+			}, 0);
 		}
 	}
 
@@ -507,6 +521,7 @@
 						<form onsubmit={sendMessage} class="flex items-end gap-3">
 							<div class="flex-1 py-2">
 								<input
+									id="message-input"
 									type="text"
 									bind:value={newMessage}
 									placeholder="메시지를 입력하세요"
