@@ -7,6 +7,10 @@ interface OnboardingData {
 	email?: string;
 	birthDate?: string;
 	profileImage?: string;
+	profileImageUrl?: string;
+	frequentArea?: string;
+	gender?: string;
+	destinations?: string[];
 }
 
 function createOnboardingStore() {

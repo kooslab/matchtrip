@@ -10,8 +10,39 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	}
 
 	try {
-		const body = await request.json();
-		const { introduction, profileImageUrl, username, location, activityAreas } = body;
+		const formData = await request.formData();
+		
+		// Extract form fields
+		const name = formData.get('name')?.toString();
+		const phone = formData.get('phone')?.toString();
+		const nickname = formData.get('nickname')?.toString();
+		const frequentArea = formData.get('frequentArea')?.toString();
+		const birthDate = formData.get('birthDate')?.toString();
+		const destinationsStr = formData.get('destinations')?.toString();
+		
+		let destinations: string[] = [];
+		if (destinationsStr) {
+			try {
+				destinations = JSON.parse(destinationsStr);
+			} catch (e) {
+				console.error('Error parsing destinations:', e);
+			}
+		}
+
+		// Handle file uploads - for now we'll just log them
+		// In a real implementation, you'd upload these to S3/R2 and store URLs
+		const documentFiles: Record<string, File[]> = {};
+		for (const [key, value] of formData.entries()) {
+			if (key.startsWith('documents_') && value instanceof File) {
+				const categoryId = key.replace('documents_', '');
+				if (!documentFiles[categoryId]) {
+					documentFiles[categoryId] = [];
+				}
+				documentFiles[categoryId].push(value);
+			}
+		}
+
+		console.log('Uploaded documents:', Object.keys(documentFiles).map(cat => `${cat}: ${documentFiles[cat].length} files`));
 
 		// Create or update guide profile
 		const existingProfile = await db
@@ -20,12 +51,13 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			.where(eq(guideProfiles.userId, userId))
 			.limit(1);
 
-		const profileData: any = {};
-		if (introduction !== undefined) profileData.introduction = introduction;
-		if (profileImageUrl !== undefined) profileData.profileImageUrl = profileImageUrl;
-		if (username !== undefined) profileData.username = username;
-		if (location !== undefined) profileData.currentLocation = location;
-		if (activityAreas !== undefined) profileData.activityAreas = activityAreas;
+		const profileData: any = {
+			username: nickname,
+			currentLocation: frequentArea,
+			activityAreas: destinations,
+			// You would store document URLs here after uploading to S3/R2
+			// documents: documentUrls
+		};
 
 		if (existingProfile.length > 0) {
 			// Update existing profile

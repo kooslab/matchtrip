@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { colors } from '$lib/constants/colors';
 	import { onMount } from 'svelte';
+	import { onboardingStore } from '$lib/stores/onboardingStore';
 	import arrowLeftUrl from '$lib/icons/icon-arrow-left-small-mono.svg';
 
 	let { data } = $props();
@@ -181,11 +182,14 @@
 					currentStep = 'mobile';
 					break;
 				case 'mobile':
-					currentStep = 'profile';
-					break;
-				case 'profile':
-					currentStep = 'destinations';
-					break;
+					// Store data in onboarding store
+					onboardingStore.setData({
+						name: formData.name,
+						phone: formData.countryCode + formData.mobile
+					});
+					// Navigate to separate profile page
+					await goto('/onboarding/guide/profile');
+					return;
 				case 'destinations':
 					currentStep = 'documents';
 					break;
@@ -357,9 +361,25 @@
 			isDropdownOpen = false;
 		}
 	}
+
+	// Handle Enter key press
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.key === 'Enter' && currentStep !== 'complete') {
+			// Prevent form submission if inside a form
+			event.preventDefault();
+			
+			// Check if the dropdown is open - if so, don't trigger next
+			if (isDropdownOpen) return;
+			
+			// Only proceed if the button would be enabled
+			if (canProceed() && !isLoading) {
+				handleNext();
+			}
+		}
+	}
 </script>
 
-<svelte:window onclick={handleClickOutside} />
+<svelte:window onclick={handleClickOutside} onkeydown={handleKeydown} />
 
 <div class="min-h-screen bg-white">
 	<!-- Header -->
@@ -482,138 +502,6 @@
 								onfocus={(e) => (e.target.style.borderColor = colors.primary)}
 								onblur={(e) => (e.target.style.borderColor = '')}
 							/>
-						</div>
-					</div>
-				</div>
-			{:else if currentStep === 'profile'}
-				<div class="min-h-screen bg-white">
-					<!-- Title Section -->
-					<div class="px-4 pt-6 pb-8">
-						<h1 class="mb-2 text-xl font-bold text-gray-900">기본 정보</h1>
-						<p class="text-sm text-gray-500">사용자를 파악할 수 있는 정보를 입력해주세요</p>
-					</div>
-
-					<!-- Profile Image -->
-					<div class="mb-8 px-4">
-						<div class="flex justify-center">
-							<div class="relative">
-								<div
-									class="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-gray-200"
-								>
-									{#if formData.profileImage}
-										<img
-											src={formData.profileImage}
-											alt="Profile"
-											class="h-full w-full object-cover"
-										/>
-									{:else}
-										<img
-											src="/api/placeholder/96/96"
-											alt="Default profile"
-											class="h-full w-full object-cover"
-										/>
-									{/if}
-								</div>
-								<button
-									class="absolute right-0 bottom-0 flex h-6 w-6 items-center justify-center rounded-full bg-gray-600"
-								>
-									<svg
-										class="h-3 w-3 text-white"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-										></path>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-										></path>
-									</svg>
-								</button>
-							</div>
-						</div>
-					</div>
-
-					<!-- Form Fields -->
-					<div class="space-y-6 px-4">
-						<!-- Nickname -->
-						<div>
-							<label class="mb-2 block text-sm font-medium text-gray-700">닉네임</label>
-							<div class="relative">
-								<input
-									type="text"
-									bind:value={formData.name}
-									placeholder="메치트립"
-									class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none"
-								/>
-								{#if formData.name}
-									<button
-										onclick={() => (formData.name = '')}
-										class="absolute top-1/2 right-3 -translate-y-1/2 transform text-gray-400"
-									>
-										<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-											<path
-												fill-rule="evenodd"
-												d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-												clip-rule="evenodd"
-											></path>
-										</svg>
-									</button>
-								{/if}
-							</div>
-						</div>
-
-						<!-- Frequent Area -->
-						<div>
-							<label class="mb-2 block text-sm font-medium text-gray-700">자주 지역</label>
-							<div class="relative">
-								<input
-									type="text"
-									bind:value={formData.frequentArea}
-									placeholder="베를린, 독일"
-									class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none"
-								/>
-							</div>
-						</div>
-
-						<!-- Email -->
-						<div>
-							<label class="mb-2 block text-sm font-medium text-gray-700">이메일</label>
-							<input
-								type="email"
-								value="hjep@matchtrip.com"
-								readonly
-								class="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-gray-500"
-							/>
-						</div>
-
-						<!-- Birth Date -->
-						<div>
-							<label class="mb-2 block text-sm font-medium text-gray-700">생년월일</label>
-							<div class="relative">
-								<input
-									type="text"
-									bind:value={formData.birthDate}
-									placeholder="1990.01.01"
-									class="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:outline-none"
-								/>
-								<button class="absolute top-1/2 right-3 -translate-y-1/2 transform text-blue-500">
-									<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-										<path
-											fill-rule="evenodd"
-											d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-											clip-rule="evenodd"
-										></path>
-									</svg>
-								</button>
-							</div>
 						</div>
 					</div>
 				</div>
