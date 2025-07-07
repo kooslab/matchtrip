@@ -17,6 +17,30 @@ import {
 export const userRoleEnum = pgEnum('user_role', ['traveler', 'guide', 'admin']);
 export type UserRole = (typeof userRoleEnum.enumValues)[number];
 
+// Admin tables - separate from regular users
+export const admins = pgTable('admins', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	email: text('email').notNull().unique(),
+	name: text('name'),
+	passwordHash: text('password_hash'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Admin sessions - separate from user sessions
+export const adminSessions = pgTable('admin_sessions', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	adminId: uuid('admin_id')
+		.notNull()
+		.references(() => admins.id, { onDelete: 'cascade' }),
+	expiresAt: timestamp('expires_at').notNull(),
+	token: text('token').notNull().unique(),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull(),
+	ipAddress: text('ip_address'),
+	userAgent: text('user_agent')
+});
+
 export const users = pgTable(
 	'users',
 	{
@@ -437,3 +461,7 @@ export const reviews = pgTable(
 		uniqueTripReview: index('reviews_trip_traveler_unique').on(table.tripId, table.travelerId)
 	})
 );
+
+// Type exports for admin tables
+export type Admin = typeof admins.$inferSelect;
+export type AdminSession = typeof adminSessions.$inferSelect;
