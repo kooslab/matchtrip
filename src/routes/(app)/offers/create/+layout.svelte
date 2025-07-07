@@ -104,28 +104,6 @@
 					<div class="w-6"></div>
 				{/if}
 			</div>
-
-			<!-- Progress indicator -->
-			<div class="bg-gray-100 px-4 py-2">
-				<div class="flex items-center justify-between">
-					{#each steps.slice(0, -1) as step}
-						{@const isCurrent = currentStepInfo().number === step.number}
-						{@const isPast = currentStepInfo().number > step.number}
-						<div class="flex items-center">
-							<div
-								class="flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium transition-colors
-									{isCurrent ? 'text-white' : isPast ? 'bg-gray-300 text-white' : 'bg-gray-200 text-gray-500'}"
-								style={isCurrent ? `background-color: ${colors.primary}` : ''}
-							>
-								{step.number}
-							</div>
-							{#if step.number < steps.length - 1}
-								<div class="mx-1 h-0.5 w-8 bg-gray-200"></div>
-							{/if}
-						</div>
-					{/each}
-				</div>
-			</div>
 		</header>
 	{/if}
 

@@ -76,7 +76,7 @@
 	</div>
 
 	<!-- Bottom CTA -->
-	<div class="fixed right-0 bottom-20 left-0 bg-white px-4 py-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+	<div class="fixed right-0 bottom-16 left-0 bg-white px-4 py-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
 		<button
 			onclick={goToHome}
 			class="w-full rounded-lg py-3.5 text-base font-semibold text-white transition-all hover:opacity-90"

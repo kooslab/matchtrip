@@ -14,10 +14,10 @@
 
 	// Calculate total price
 	const totalTravelers = $derived((trip.adultsCount || 0) + (trip.childrenCount || 0));
-	const totalPrice = $derived(() => {
+	const totalPrice = $derived((() => {
 		const pricePerPerson = parseInt(formData.pricePerPerson) || 0;
 		return pricePerPerson * totalTravelers;
-	});
+	})());
 
 	// Format price for display
 	function formatPrice(price: number): string {
@@ -53,12 +53,8 @@
 				},
 				body: JSON.stringify({
 					tripId: formData.tripId,
-					title: `${formatPrice(parseInt(formData.pricePerPerson))}원 제안`,
-					description: formData.description,
-					price: totalPrice,
-					itinerary: JSON.stringify(itineraryData),
-					includes: [],
-					excludes: []
+					pricePerPerson: parseInt(formData.pricePerPerson),
+					itinerary: formData.itinerary[0]?.timeSlots[0]?.title || ''
 				})
 			});
 
@@ -155,7 +151,7 @@
 			</div>
 
 			<!-- Itinerary -->
-			{#if formData.itinerary.some((day) => day.timeSlots.length > 0)}
+			{#if formData.itinerary[0]?.timeSlots[0]?.title}
 				<div class="rounded-lg border border-gray-200 bg-white p-4">
 					<div class="mb-3 flex items-center justify-between">
 						<h3 class="font-medium text-gray-900">일정</h3>
@@ -167,22 +163,12 @@
 							수정
 						</button>
 					</div>
-					<div class="space-y-3">
-						{#each formData.itinerary as day}
-							{#if day.timeSlots.length > 0}
-								<div class="text-sm">
-									<p class="mb-2 font-medium text-gray-900">Day {day.day}</p>
-									<div class="space-y-1">
-										{#each day.timeSlots as slot}
-											<div class="flex gap-2 text-gray-600">
-												<span class="font-medium">{slot.time}</span>
-												<span>{slot.title}</span>
-											</div>
-										{/each}
-									</div>
-								</div>
-							{/if}
-						{/each}
+					<!-- Display HTML content with inline images -->
+					<div 
+						class="prose prose-sm max-w-none text-gray-700 [&>img]:my-4 [&>img]:max-w-full [&>img]:rounded-lg"
+						contenteditable="false"
+					>
+						{@html formData.itinerary[0].timeSlots[0].title}
 					</div>
 				</div>
 			{/if}
@@ -229,7 +215,7 @@
 
 <!-- Bottom Button -->
 <div
-	class="fixed right-0 bottom-20 left-0 bg-white px-4 py-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
+	class="fixed right-0 bottom-16 left-0 bg-white px-4 py-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
 >
 	<button
 		onclick={handleSubmit}
