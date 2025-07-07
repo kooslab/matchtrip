@@ -23,6 +23,9 @@ export const admins = pgTable('admins', {
 	email: text('email').notNull().unique(),
 	name: text('name'),
 	passwordHash: text('password_hash'),
+	isApproved: boolean('is_approved').notNull().default(false),
+	approvedAt: timestamp('approved_at'),
+	approvedBy: uuid('approved_by'),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at').defaultNow().notNull()
 });

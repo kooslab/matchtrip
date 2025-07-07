@@ -141,6 +141,13 @@
       "when": 1751909244287,
       "tag": "0019_absent_supreme_intelligence",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1751910663820,
+      "tag": "0020_abnormal_whiplash",
+      "breakpoints": true
     }
   ]
 }
