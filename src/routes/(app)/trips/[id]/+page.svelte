@@ -237,8 +237,8 @@
 					onclick={handleMakeOffer}
 					class="w-full rounded-lg py-3.5 text-base font-semibold text-white transition-all active:scale-[0.98]"
 					style="background-color: {colors.primary}"
-					onmouseover="this.style.backgroundColor='{colors.primaryHover}'"
-					onmouseout="this.style.backgroundColor='{colors.primary}'"
+					onmouseover={(e) => e.currentTarget.style.backgroundColor = colors.primaryHover}
+					onmouseout={(e) => e.currentTarget.style.backgroundColor = colors.primary}
 				>
 					제안하기
 				</button>
