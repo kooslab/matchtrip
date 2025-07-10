@@ -22,7 +22,21 @@ const baseURL = getBaseUrl();
 console.log('[AUTH CLIENT] Creating auth client with baseURL:', baseURL);
 
 export const authClient = createAuthClient({
-	baseURL // dynamically determine the base URL
+	baseURL, // dynamically determine the base URL
+	// Add cookie configuration for better session handling
+	fetchOptions: {
+		credentials: 'include',
+		headers: {
+			'Content-Type': 'application/json'
+		}
+	}
+});
+
+// Add session debugging
+authClient.getSession().then((session) => {
+	console.log('[AUTH CLIENT] Initial session check:', session);
+}).catch((error) => {
+	console.error('[AUTH CLIENT] Session check error:', error);
 });
 
 export const { signIn, signOut, useSession } = authClient;

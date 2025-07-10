@@ -160,24 +160,43 @@ const authorizationHandler = (async ({ event, resolve }) => {
 	}
 
 	// Handle OAuth callback redirects - when coming from Google OAuth
+	const referer = event.request.headers.get('referer');
+	const isOAuthCallback = referer?.includes('/api/auth/callback/google');
+	
+	console.log('[HOOKS] OAuth callback check:', {
+		routeId,
+		hasSession: !!session,
+		hasUser: !!event.locals.user,
+		referer,
+		isOAuthCallback,
+		userRole: event.locals.user?.role,
+		hasAgreedToTerms: event.locals.hasAgreedToTerms
+	});
+	
 	if (
 		routeId === '/' &&
 		session &&
 		event.locals.user &&
-		event.request.headers.get('referer')?.includes('/api/auth/callback/google')
+		isOAuthCallback
 	) {
+		console.log('[HOOKS] Handling OAuth callback redirect');
 		// First check if user has agreed to terms
 		if (!event.locals.hasAgreedToTerms) {
+			console.log('[HOOKS] Redirecting to agreement page');
 			redirect(302, '/agreement');
 		}
 		// Then check if user has a role (Google OAuth users might not have one)
 		else if (!event.locals.user.role) {
+			console.log('[HOOKS] Redirecting to select-role page');
 			redirect(302, '/select-role');
 		} else if (event.locals.user.role === 'admin') {
+			console.log('[HOOKS] Redirecting to admin page');
 			redirect(302, '/admin');
 		} else if (event.locals.user.role === 'guide') {
+			console.log('[HOOKS] Redirecting to my-offers page');
 			redirect(302, '/my-offers');
 		} else {
+			console.log('[HOOKS] Redirecting to my-trips page');
 			redirect(302, '/my-trips');
 		}
 	}

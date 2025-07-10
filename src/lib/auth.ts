@@ -54,12 +54,14 @@ export const auth = betterAuth({
 			// Map Google profile data to our user schema
 			mapProfileToUser: (profile) => {
 				console.log('[GOOGLE OAUTH] Mapping profile:', JSON.stringify(profile, null, 2));
-				return {
+				const mappedUser = {
 					name: profile.name || profile.email,
 					email: profile.email,
 					emailVerified: true, // Google accounts are pre-verified
 					image: profile.picture || profile.image
 				};
+				console.log('[GOOGLE OAUTH] Mapped user data:', JSON.stringify(mappedUser, null, 2));
+				return mappedUser;
 			}
 		}
 	},
@@ -67,7 +69,15 @@ export const auth = betterAuth({
 		storage: 'memory'
 	},
 	user: { modelName: 'users' },
-	session: { modelName: 'sessions' },
+	session: { 
+		modelName: 'sessions',
+		expiresIn: 60 * 60 * 24 * 30, // 30 days
+		updateAge: 60 * 60 * 24, // Update session every 24 hours
+		cookieCache: {
+			enabled: true,
+			maxAge: 60 * 5 // Cache for 5 minutes
+		}
+	},
 	account: { modelName: 'accounts' },
 	verification: { modelName: 'verifications' },
 	trustedOrigins: [
@@ -100,6 +110,18 @@ export const auth = betterAuth({
 	// Add response logging
 	onResponse: async (response) => {
 		console.log('[AUTH RESPONSE] Status:', response.status);
+		console.log('[AUTH RESPONSE] Headers:', Object.fromEntries(response.headers.entries()));
+		
+		// Log successful responses too for debugging
+		if (response.status >= 200 && response.status < 300) {
+			try {
+				const body = await response.clone().json();
+				console.log('[AUTH RESPONSE] Success body:', JSON.stringify(body, null, 2));
+			} catch (e) {
+				console.log('[AUTH RESPONSE] Response is not JSON');
+			}
+		}
+		
 		if (response.status >= 400) {
 			try {
 				const body = await response.clone().json();
