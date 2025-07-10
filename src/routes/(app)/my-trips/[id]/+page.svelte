@@ -2,11 +2,13 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import PaymentModal from '$lib/components/PaymentModal.svelte';
+	import OfferSummaryCard from '$lib/components/OfferSummaryCard.svelte';
+	import BackButton from '$lib/components/BackButton.svelte';
 	import { MessageSquare, Star, ArrowLeft, ChevronDown } from 'lucide-svelte';
 	import { formatKoreanDate, formatKoreanDateRange } from '$lib/utils/dateFormatter';
-	import arrowLeftUrl from '$lib/icons/icon-arrow-left-small-mono.svg';
 	import pdfIconUrl from '$lib/icons/icon-document-mono.svg';
 	import downloadIconUrl from '$lib/icons/icon-download-mono.svg';
+	import dotsIconUrl from '$lib/icons/icon-dots-four-horizontal-mono.svg';
 
 	let { data } = $props();
 	let trip = $derived(data.trip);
@@ -180,19 +182,12 @@
 	<header class="sticky top-0 z-10 border-b border-gray-200 bg-white">
 		<div class="flex h-14 items-center justify-between px-4">
 			<div class="flex items-center">
-				<button onclick={() => goto('/my-trips')} class="mr-4">
-					<img src={arrowLeftUrl} alt="Back" class="h-6 w-6" />
-				</button>
+				<BackButton href="/my-trips" class="mr-4" />
 				<h1 class="text-lg font-semibold text-gray-900">
 					{trip.destination?.city || '목적지'}, {trip.destination?.country || ''}
 				</h1>
 			</div>
-			<div class="flex items-center gap-2">
-				<span class="text-sm text-gray-500">받은 제안</span>
-				<span class="rounded-full bg-gray-100 px-2 py-0.5 text-sm font-medium"
-					>{offers.length || 0}</span
-				>
-			</div>
+			
 		</div>
 
 		<!-- Tabs -->
@@ -334,17 +329,47 @@
 				</div>
 			</div>
 
-			<!-- Bottom Button - Only show when no offers -->
-			{#if offers.length === 0}
-				<div class="fixed right-0 bottom-14 left-0 border-t border-gray-200 bg-white p-4">
-					<button
-						onclick={() => goto(`/my-trips/${trip.id}/edit`)}
-						class="w-full rounded-lg bg-blue-500 py-3 font-medium text-white transition-colors hover:bg-blue-600"
+			<!-- Bottom Button -->
+			<div class="fixed right-0 bottom-14 left-0 border-t border-gray-200 bg-white">
+				<div class="box-border content-stretch flex flex-row gap-4 items-center justify-start pl-5 pr-4 py-2 relative w-full">
+					<button 
+						class="opacity-40 overflow-clip relative shrink-0 size-5 -rotate-90"
+						onclick={() => {/* Handle dots menu */}}
 					>
-						계획 변경하기
+						<div class="absolute bottom-[13.454%] left-[13.454%] right-[13.454%] top-[13.454%]">
+							<img
+								alt=""
+								class="block max-w-none size-full"
+								src={dotsIconUrl}
+							/>
+						</div>
 					</button>
+					{#if offers.length === 0}
+						<button
+							onclick={() => goto(`/my-trips/${trip.id}/edit`)}
+							class="basis-0 bg-[#1095f4] grow h-12 min-h-px min-w-px relative rounded-[9px] shrink-0 flex flex-row items-center justify-center"
+						>
+							<div class="box-border content-stretch flex flex-row gap-2.5 h-12 items-center justify-center px-6 py-3.5 relative w-full">
+								<div class="font-semibold leading-[0] not-italic relative shrink-0 text-[#ffffff] text-[14px] text-center text-nowrap">
+									<p class="block leading-[20px] whitespace-pre">계획 변경하기</p>
+								</div>
+							</div>
+						</button>
+					{:else if acceptedOffer}
+						<button
+							onclick={() => startConversation(acceptedOffer.id)}
+							class="basis-0 bg-[#1095f4] grow h-12 min-h-px min-w-px relative rounded-[9px] shrink-0 flex flex-row items-center justify-center"
+						>
+							<div class="box-border content-stretch flex flex-row gap-2.5 h-12 items-center justify-center px-6 py-3.5 relative w-full">
+								<MessageSquare class="h-4 w-4 text-white" />
+								<div class="font-semibold leading-[0] not-italic relative shrink-0 text-[#ffffff] text-[14px] text-center text-nowrap">
+									<p class="block leading-[20px] whitespace-pre">대화하기</p>
+								</div>
+							</div>
+						</button>
+					{/if}
 				</div>
-			{/if}
+			</div>
 		{:else}
 			<!-- Offers Tab -->
 			<div class="px-4 py-4">
@@ -356,62 +381,40 @@
 					</div>
 				{:else}
 					<div class="space-y-4">
-						{#each offers as offer}
-							<div class="rounded-lg border border-gray-200 bg-white p-4">
-								<div class="mb-3 flex items-start justify-between">
-									<div>
-										<h3 class="font-medium text-gray-900">
-											{offer.guide?.name || '알 수 없는 가이드'} 가이드
-										</h3>
-										<p class="text-sm text-gray-600">{offer.guide?.email || ''}</p>
-									</div>
-									<div class="text-right">
-										<span
-											class="inline-block rounded-md px-2 py-1 text-xs font-medium {getOfferStatusColor(
-												offer.status
-											)}"
-										>
-											{getOfferStatusText(offer.status)}
-										</span>
-										<p class="mt-1 text-lg font-semibold text-gray-900">
-											{offer.price.toLocaleString()}원
-										</p>
-									</div>
-								</div>
-
-								{#if offer.itinerary}
-									<div class="mb-3">
-										<h4 class="mb-2 text-sm font-medium text-gray-900">여행 일정</h4>
-										<div class="rounded bg-gray-50 p-3 text-sm text-gray-700">
-											{@html offer.itinerary}
+						<div class="box-border content-stretch flex flex-col gap-1 items-start justify-start p-0 relative shrink-0 w-full">
+							<div class="box-border content-stretch flex flex-row items-center justify-between pb-0 pt-3 px-0 relative shrink-0 w-full">
+								<div class="box-border content-stretch flex flex-row gap-2 items-center justify-start p-0 relative shrink-0">
+									<div class="box-border content-stretch flex flex-row font-bold gap-1 items-center justify-start leading-[0] not-italic p-0 relative shrink-0 text-[12px] text-left text-nowrap">
+										<div class="relative shrink-0 text-[#052236]">
+											<p class="block leading-[16px] text-nowrap whitespace-pre">전체</p>
+										</div>
+										<div class="relative shrink-0 text-[#1095f4]">
+											<p class="block leading-[16px] text-nowrap whitespace-pre">{offers.length}</p>
 										</div>
 									</div>
-								{/if}
-
-								<div class="mt-4 flex gap-2">
-									<button
-										onclick={() => goto(`/guide/${offer.guideId}`)}
-										class="flex-1 rounded bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
-									>
-										가이드 프로필
-									</button>
-									<button
-										onclick={() => startConversation(offer.id)}
-										class="flex-1 rounded bg-blue-100 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-200"
-									>
-										대화하기
-									</button>
-									{#if offer.status === 'pending'}
-										<button
-											onclick={() => handleOfferAction(offer.id, 'accept')}
-											disabled={processingOfferId === offer.id}
-											class="flex-1 rounded bg-green-100 px-3 py-2 text-sm font-medium text-green-700 hover:bg-green-200 disabled:opacity-50"
-										>
-											{processingOfferId === offer.id ? '처리 중...' : '수락'}
-										</button>
-									{/if}
+								</div>
+								<div class="box-border content-stretch flex flex-row gap-2 items-center justify-end p-0 relative shrink-0">
+									<div class="box-border content-stretch flex flex-row gap-1 items-center justify-end p-0 relative shrink-0">
+										<div class="font-medium leading-[0] not-italic relative shrink-0 text-[#052236] text-[12px] text-nowrap text-right">
+											<p class="block leading-[18px] whitespace-pre">최신순</p>
+										</div>
+										<div class="flex h-[0px] items-center justify-center relative shrink-0 w-[0px]">
+											<div class="flex-none rotate-[90deg]">
+												<ChevronDown class="h-3 w-3" />
+											</div>
+										</div>
+									</div>
 								</div>
 							</div>
+						</div>
+						{#each offers as offer, index}
+							<OfferSummaryCard 
+								{offer} 
+								onclick={() => goto(`/my-trips/${trip.id}/offers/${offer.id}`)}
+								showBadge={index === 0}
+								badgeText={index === 0 ? '가장 저렴한 가격' : ''}
+								badgeColor="#4daeeb"
+							/>
 						{/each}
 					</div>
 				{/if}
