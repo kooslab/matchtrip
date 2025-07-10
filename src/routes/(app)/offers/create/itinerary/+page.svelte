@@ -253,7 +253,7 @@
 	}
 </script>
 
-<div class="flex-1 px-4 py-6 pb-40">
+<div class="flex-1 px-4 py-6 pb-20">
 	<div class="space-y-6">
 		<!-- Title -->
 		<div>
@@ -295,7 +295,7 @@
 </div>
 
 <!-- Fixed Image Upload Button -->
-<div class="fixed right-4 bottom-36 z-50">
+<div class="fixed right-4 bottom-24 z-50">
 	<input
 		bind:this={fileInput}
 		type="file"
@@ -320,7 +320,7 @@
 
 <!-- Bottom Button -->
 <div
-	class="fixed right-0 bottom-20 left-0 bg-white px-4 py-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
+	class="fixed right-0 bottom-0 left-0 bg-white px-4 py-4 pb-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
 >
 	<button
 		onclick={handleNext}

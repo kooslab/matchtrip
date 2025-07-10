@@ -14,8 +14,25 @@ export const GET: RequestHandler = async ({ url, setHeaders }) => {
 		'cdn-cache-control': 'max-age=300'
 	});
 
-	if (!q) {
-		return json({ results: [] });
+	// If no query, return all destinations
+	if (!q || q.length === 0) {
+		try {
+			const results = await db
+				.select({
+					id: destinations.id,
+					city: destinations.city,
+					country: destinations.country,
+					imageUrl: destinations.imageUrl
+				})
+				.from(destinations)
+				.orderBy(destinations.city)
+				.limit(50);
+			
+			return json({ results });
+		} catch (error) {
+			console.error('Error fetching all destinations:', error);
+			return json({ results: [], error: 'Database error' }, { status: 500 });
+		}
 	}
 
 	if (q.length < 2) {

@@ -2,27 +2,34 @@
 	import TopNav from '$lib/components/TopNav.svelte';
 	import BottomNav from '$lib/components/BottomNav.svelte';
 	import GuideBottomNav from '$lib/components/GuideBottomNav.svelte';
+	import { page } from '$app/stores';
 
 	let { data } = $props();
 
 	let userRole = $derived(data?.userRole);
 	let isGuide = $derived(userRole === 'guide');
 	let isTraveler = $derived(userRole === 'traveler');
+	
+	// Hide bottom nav for offers/create routes and trips detail pages
+	let hideBottomNav = $derived(
+		$page.url.pathname.startsWith('/offers/create') ||
+		$page.url.pathname.match(/^\/trips\/[^\/]+$/)
+	);
 </script>
 
 <!-- Top Navigation -->
 <TopNav />
 
-<div class="flex min-h-screen flex-col {isTraveler || isGuide ? 'pb-20' : ''}">
+<div class="flex min-h-screen flex-col {(isTraveler || isGuide) && !hideBottomNav ? 'pb-20' : ''}">
 	<slot />
 
 	<!-- Bottom Navigation for Travelers -->
-	{#if isTraveler}
+	{#if isTraveler && !hideBottomNav}
 		<BottomNav />
 	{/if}
 
 	<!-- Bottom Navigation for Guides -->
-	{#if isGuide}
+	{#if isGuide && !hideBottomNav}
 		<GuideBottomNav />
 	{/if}
 </div>

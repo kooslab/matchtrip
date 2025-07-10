@@ -91,7 +91,7 @@
 	</header>
 
 	<!-- Content -->
-	<div class="container mx-auto max-w-3xl px-4 py-6 pb-40">
+	<div class="container mx-auto max-w-3xl px-4 py-6 pb-20">
 		<!-- Trip Summary Card -->
 		<div class="mb-6 rounded-lg bg-white p-5 shadow-sm">
 			<div class="mb-4 flex items-center justify-between">
@@ -244,7 +244,7 @@
 	</div>
 
 	<!-- Bottom Buttons -->
-	<div class="fixed right-0 bottom-20 left-0 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+	<div class="fixed right-0 bottom-0 left-0 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
 		<div class="container mx-auto max-w-3xl px-4 py-4">
 			{#if hasExistingOffer}
 				<button

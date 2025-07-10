@@ -19,6 +19,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Code Style Guidelines
 
+- **DRY Principle**: Always follow Don't Repeat Yourself - extract reusable code into functions, components, or utilities
+- **SOLID Principles**:
+  - **Single Responsibility**: Each function/component should have one clear purpose
+  - **Open/Closed**: Code should be open for extension but closed for modification
+  - **Liskov Substitution**: Derived classes must be substitutable for their base classes
+  - **Interface Segregation**: Prefer many specific interfaces over one general interface
+  - **Dependency Inversion**: Depend on abstractions, not concrete implementations
 - **Imports**: Group by external/internal dependencies, sort alphabetically
 - **Formatting**: Uses Prettier with TailwindCSS plugin
 - **TypeScript**: Strict mode enabled, prefer explicit types over `any`. Let typescript infer types when possible, don't create types for everything.
@@ -170,6 +177,13 @@ Required environment variables (see `.env.example`):
 - **Scroll behavior**: SvelteKit handles scroll restoration by default, but you can customize it in `handle` hooks if needed.
 - **Error boundaries**: Use `+error.svelte` files to handle navigation errors gracefully.
 - **Route guards**: Protect routes using hooks or layout logic (e.g., check authentication in `+layout.server.ts`).
+
+## UI Layout Rules
+
+- **Bottom Navigation Spacing**: ALWAYS add `pb-24` (96px bottom padding) to any fixed bottom elements when BottomNav is present
+  - Apply to action buttons, floating buttons, or any fixed bottom UI elements
+  - This prevents the BottomNav from covering important UI elements
+  - Example: `<div class="fixed bottom-0 left-0 right-0 p-4 pb-24">`
 
 ## Icons to Use
 

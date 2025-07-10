@@ -152,7 +152,7 @@
 			</div>
 
 			<!-- Action Buttons -->
-			<div class="fixed right-0 bottom-0 left-0 flex gap-3 border-t border-gray-200 bg-white p-4">
+			<div class="fixed right-0 bottom-0 left-0 flex gap-3 border-t border-gray-200 bg-white p-4 pb-24">
 				<button
 					type="button"
 					onclick={handleCancel}

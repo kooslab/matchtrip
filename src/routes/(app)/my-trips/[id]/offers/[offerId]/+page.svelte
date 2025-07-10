@@ -127,7 +127,7 @@
 	</header>
 
 	<!-- Content -->
-	<div class="box-border content-stretch flex flex-col gap-3 items-start justify-start pb-[200px] pt-2 px-0 relative shrink-0 w-full">
+	<div class="box-border content-stretch flex flex-col gap-3 items-start justify-start pb-20 pt-2 px-0 relative shrink-0 w-full">
 		<div class="box-border content-stretch flex flex-col gap-1 items-start justify-start p-0 relative shrink-0 w-full">
 			<!-- Price and Status Section -->
 			<div class="relative shrink-0 w-full">
@@ -405,9 +405,8 @@
 	</div>
 
 	<!-- Bottom Fixed Section -->
-	<div class="fixed bottom-0 left-0 right-0 bg-[rgba(254,254,254,0.96)] z-50" style="padding-bottom: env(safe-area-inset-bottom, 0);">
-		<div class="box-border content-stretch flex flex-row gap-4 items-center justify-start pl-5 pr-4 py-2 rounded-tl-[16px] rounded-tr-[16px] w-full">
-			<div class="absolute border-[#f1f1f1] border-[1px_0px_0px] border-solid inset-0 pointer-events-none rounded-tl-[16px] rounded-tr-[16px] shadow-[0px_-5px_20px_0px_rgba(0,0,0,0.02)]" />
+	<div class="fixed bottom-0 left-0 right-0 bg-white z-50">
+		<div class="box-border content-stretch flex flex-row gap-4 items-center justify-start pl-5 pr-4 py-4 w-full shadow-[0px_-4px_6px_-1px_rgba(0,0,0,0.1)]">
 			<button 
 				class="opacity-40 overflow-clip relative shrink-0 size-5 -rotate-90"
 				onclick={() => {/* Handle dots menu */}}
@@ -441,13 +440,6 @@
 					</div>
 				</div>
 			</button>
-		</div>
-		
-		<!-- Home Indicator -->
-		<div class="bg-[rgba(254,254,254,0.96)] h-[34px] w-full">
-			<div class="flex items-center justify-center pt-[21px]">
-				<div class="bg-[#052236] h-[5px] rounded-[100px] w-[134px]" />
-			</div>
 		</div>
 	</div>
 </div>

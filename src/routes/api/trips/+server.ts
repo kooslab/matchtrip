@@ -14,28 +14,38 @@ export async function POST({ request, locals }) {
 
 		const tripData = await request.json();
 
-		// Use the existing destination ID from the search
-		if (!tripData.destination.id) {
-			return json({ error: 'Invalid destination data' }, { status: 400 });
+		// Validate required fields
+		if (!tripData.destinationId) {
+			return json({ error: 'Destination is required' }, { status: 400 });
 		}
 
-		// Insert trip with existing destination ID
+		// Insert trip with all new fields
 		const [trip] = await db
 			.insert(trips)
 			.values({
 				userId: session.user.id,
-				destinationId: tripData.destination.id,
+				destinationId: tripData.destinationId,
 				startDate: new Date(tripData.startDate),
 				endDate: new Date(tripData.endDate),
-				adultsCount: tripData.adultsCount,
-				childrenCount: tripData.childrenCount,
-				travelMethod: tripData.travelMethod,
-				customRequest: tripData.customRequest,
+				adultsCount: tripData.adultsCount || 1,
+				childrenCount: tripData.childrenCount || 0,
+				babiesCount: tripData.babiesCount || 0,
+				budgetMin: tripData.budget?.min || null,
+				budgetMax: tripData.budget?.max || null,
+				travelStyle: tripData.travelStyle?.id || null,
+				activities: tripData.activities || [],
+				additionalRequest: tripData.additionalRequest || null,
 				status: 'submitted'
 			})
 			.returning();
 
-		return json({ trip });
+		// TODO: Handle file upload if present
+		if (tripData.file) {
+			// Upload file to S3/R2 and store URL
+			console.log('File upload not yet implemented');
+		}
+
+		return json({ success: true, trip });
 	} catch (error) {
 		console.error('Error creating trip:', error);
 		return json({ error: 'Failed to create trip' }, { status: 500 });

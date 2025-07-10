@@ -171,6 +171,7 @@
 			processingOfferId = null;
 		}
 	}
+	
 </script>
 
 <svelte:head>
