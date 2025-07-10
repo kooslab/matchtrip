@@ -159,9 +159,11 @@ const authorizationHandler = (async ({ event, resolve }) => {
 		}
 	}
 
-	// Handle OAuth callback redirects - when coming from Google OAuth
+	// Handle OAuth callback redirects - check both referer and cookie
 	const referer = event.request.headers.get('referer');
-	const isOAuthCallback = referer?.includes('/api/auth/callback/google');
+	const cookies = event.cookies;
+	const oauthFlowCookie = cookies.get('oauth_flow');
+	const isOAuthCallback = referer?.includes('/api/auth/callback/google') || oauthFlowCookie === 'google';
 	
 	console.log('[HOOKS] OAuth callback check:', {
 		routeId,
@@ -169,10 +171,12 @@ const authorizationHandler = (async ({ event, resolve }) => {
 		hasUser: !!event.locals.user,
 		referer,
 		isOAuthCallback,
+		oauthFlowCookie,
 		userRole: event.locals.user?.role,
 		hasAgreedToTerms: event.locals.hasAgreedToTerms
 	});
 	
+	// Handle OAuth completion
 	if (
 		routeId === '/' &&
 		session &&
@@ -180,25 +184,17 @@ const authorizationHandler = (async ({ event, resolve }) => {
 		isOAuthCallback
 	) {
 		console.log('[HOOKS] Handling OAuth callback redirect');
-		// First check if user has agreed to terms
-		if (!event.locals.hasAgreedToTerms) {
-			console.log('[HOOKS] Redirecting to agreement page');
-			redirect(302, '/agreement');
-		}
-		// Then check if user has a role (Google OAuth users might not have one)
-		else if (!event.locals.user.role) {
-			console.log('[HOOKS] Redirecting to select-role page');
-			redirect(302, '/select-role');
-		} else if (event.locals.user.role === 'admin') {
-			console.log('[HOOKS] Redirecting to admin page');
-			redirect(302, '/admin');
-		} else if (event.locals.user.role === 'guide') {
-			console.log('[HOOKS] Redirecting to my-offers page');
-			redirect(302, '/my-offers');
-		} else {
-			console.log('[HOOKS] Redirecting to my-trips page');
-			redirect(302, '/my-trips');
-		}
+		
+		// Clear the OAuth flow cookie
+		cookies.delete('oauth_flow', { path: '/' });
+		
+		// Add a query parameter to trigger client-side handling
+		const url = new URL(event.request.url);
+		url.searchParams.set('oauth_complete', '1');
+		url.searchParams.set('user_role', event.locals.user.role || '');
+		
+		// Redirect to the same page with parameters
+		redirect(302, url.toString());
 	}
 
 	// Handle first-time users landing on home page - redirect to onboarding

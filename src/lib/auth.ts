@@ -51,6 +51,8 @@ export const auth = betterAuth({
 			clientSecret: GOOGLE_CLIENT_SECRET,
 			redirectURI: `${getAuthUrl()}/api/auth/callback/google`,
 			prompt: 'select_account', // Force account selection on each login
+			// Add state parameter to track OAuth flow
+			scope: ['openid', 'email', 'profile'],
 			// Map Google profile data to our user schema
 			mapProfileToUser: (profile) => {
 				console.log('[GOOGLE OAUTH] Mapping profile:', JSON.stringify(profile, null, 2));

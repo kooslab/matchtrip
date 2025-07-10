@@ -22,11 +22,63 @@
 		console.log('[CLIENT] UserRole:', userRole);
 		console.log('[CLIENT] $page store:', $page);
 	});
+	
+	// Check if we're coming back from OAuth callback
+	$effect(() => {
+		if (browser) {
+			const urlParams = new URLSearchParams(window.location.search);
+			const oauthComplete = urlParams.get('oauth_complete');
+			const userRoleParam = urlParams.get('user_role');
+			
+			console.log('[CLIENT] Checking OAuth callback:', { 
+				oauthComplete, 
+				userRoleParam, 
+				user, 
+				userRole,
+				urlParams: urlParams.toString() 
+			});
+			
+			// If we have oauth_complete parameter, handle the redirect
+			if (oauthComplete === '1') {
+				console.log('[CLIENT] OAuth complete detected, handling redirect');
+				
+				// Clean up URL
+				urlParams.delete('oauth_complete');
+				urlParams.delete('user_role');
+				const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+				window.history.replaceState({}, '', newUrl);
+				
+				// Wait a moment for session to stabilize, then redirect based on role
+				setTimeout(async () => {
+					console.log('[CLIENT] Redirecting after OAuth, role:', userRoleParam);
+					
+					// First invalidate to ensure fresh data
+					await invalidateAll();
+					
+					// Then redirect based on role
+					if (userRoleParam === 'admin') {
+						await goto('/admin');
+					} else if (userRoleParam === 'guide') {
+						await goto('/my-offers');
+					} else if (userRoleParam === 'traveler') {
+						await goto('/my-trips');
+					} else if (!userRoleParam) {
+						// No role yet, go to role selection
+						await goto('/select-role');
+					}
+				}, 500); // Small delay to ensure session is stable
+			}
+		}
+	});
 
 	async function handleGoogleLogin() {
 		loading = true;
 		try {
 			console.log('[CLIENT] Starting Google login');
+			
+			// Set a cookie to track OAuth flow
+			document.cookie = 'oauth_flow=google; path=/; max-age=60'; // 60 second expiry
+			
 			await signIn.social({
 				provider: 'google'
 			});
