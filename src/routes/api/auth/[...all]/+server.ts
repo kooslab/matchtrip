@@ -41,6 +41,20 @@ export const POST: RequestHandler = async (event) => {
 			error instanceof Error ? error.stack : 'No stack'
 		);
 		console.error('[AUTH HANDLER] POST error details:', JSON.stringify(error, null, 2));
-		throw error;
+		
+		// Return a proper error response instead of throwing
+		return new Response(
+			JSON.stringify({
+				error: 'Authentication failed',
+				message: error instanceof Error ? error.message : 'Unknown error',
+				details: process.env.NODE_ENV === 'development' ? error : undefined
+			}),
+			{
+				status: 500,
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			}
+		);
 	}
 };

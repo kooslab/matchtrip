@@ -27,19 +27,10 @@
 		loading = true;
 		try {
 			console.log('[CLIENT] Starting Google login');
-			const result = await signIn.social({
-				provider: 'google',
-				callbackURL: '/' // Explicitly set callback URL
+			await signIn.social({
+				provider: 'google'
 			});
-			console.log('[CLIENT] Google login result:', result);
-			
-			// After successful login, manually invalidate and refresh
-			if (result?.error === false) {
-				console.log('[CLIENT] Login successful, invalidating all data');
-				await invalidateAll();
-				// Force a hard refresh to ensure session is loaded
-				window.location.href = '/';
-			}
+			console.log('[CLIENT] Google login initiated');
 		} catch (err) {
 			console.error('Google sign in error:', err);
 			// Don't show error to user, just log it
