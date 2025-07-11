@@ -150,7 +150,7 @@
 				error = '대화를 찾을 수 없습니다.';
 			} else if (response.status === 401) {
 				error = '로그인이 필요합니다.';
-				goto('/signin');
+				goto('/');
 			} else {
 				const errorData = await response.json();
 				error = errorData.error || '대화를 불러오는데 실패했습니다.';

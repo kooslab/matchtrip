@@ -11,7 +11,7 @@
 	$effect(() => {
 		// If user is not logged in, redirect to signin
 		if (!$page.data.user) {
-			goto('/signin');
+			goto('/');
 		}
 	});
 

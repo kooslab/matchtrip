@@ -94,7 +94,7 @@
 						// Invalidate all cached data
 						await invalidateAll();
 						// Navigate to signin page
-						await goto('/signin');
+						await goto('/');
 					}
 				}}
 				class="flex w-full items-center gap-3 text-left text-gray-700 hover:text-red-600"

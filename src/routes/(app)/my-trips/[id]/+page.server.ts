@@ -41,6 +41,10 @@ export const load = async ({ params, request, locals }) => {
 			customRequest: trips.customRequest,
 			status: trips.status,
 			createdAt: trips.createdAt,
+			budgetMin: trips.budgetMin,
+			budgetMax: trips.budgetMax,
+			travelStyle: trips.travelStyle,
+			activities: trips.activities,
 			destination: {
 				id: destinations.id,
 				city: destinations.city,

@@ -10,8 +10,30 @@
 	import downloadIconUrl from '$lib/icons/icon-download-mono.svg';
 	import dotsIconUrl from '$lib/icons/icon-dots-four-horizontal-mono.svg';
 
+	interface TripData {
+		id: string;
+		userId: string;
+		adultsCount: number;
+		childrenCount: number | null;
+		startDate: string;
+		endDate: string;
+		travelMethod: string | null;
+		customRequest: string | null;
+		status: string;
+		createdAt: string;
+		budgetMin: number | null;
+		budgetMax: number | null;
+		travelStyle: string | null;
+		activities: string[] | null;
+		destination: {
+			id: string;
+			city: string;
+			country: string;
+		} | null;
+	}
+
 	let { data } = $props();
-	let trip = $derived(data.trip);
+	let trip = $derived(data.trip as TripData);
 	let offers = $derived(data.offers);
 	let acceptedOffer = $derived(offers.find((o) => o.status === 'accepted'));
 
@@ -108,6 +130,58 @@
 			withdrawn: 'bg-gray-100 text-gray-800'
 		};
 		return colorMap[status] || 'bg-gray-100 text-gray-800';
+	}
+
+	function formatTravelStyle(style: string | null) {
+		if (!style) return '미정';
+		
+		const styleMap: Record<string, string> = {
+			friends: '친구들과 함께 하는 여행',
+			parents: '부모님과 함께 하는 여행',
+			children: '자녀와 함께 하는 여행',
+			business: '직장동료와 함께하는 비즈니스 여행',
+			other: '기타여행'
+		};
+		
+		return styleMap[style] || style;
+	}
+
+	function formatActivities(activities: string[] | null) {
+		if (!activities || activities.length === 0) return '미정';
+		
+		const activityMap: Record<string, string> = {
+			'city-tour': '시내투어',
+			'suburb-tour': '근교투어',
+			'snap-photo': '스냅사진',
+			'vehicle-tour': '차량투어',
+			'airport-pickup': '공항픽업',
+			'bus-charter': '버스대절',
+			'interpretation': '통역 서비스',
+			'accommodation': '숙박(민박)',
+			'organization-visit': '기관방문',
+			'other-tour': '기타투어'
+		};
+		
+		return activities.map(activity => activityMap[activity] || activity).join(' / ');
+	}
+
+	function formatBudget(amount: number | null): string {
+		if (!amount) return '';
+		
+		// If 10,000 or more, show in 만원
+		if (amount >= 10000) {
+			const manWon = amount / 10000;
+			// If it's a whole number, show without decimals
+			if (manWon % 1 === 0) {
+				return `${manWon.toLocaleString()}만원`;
+			} else {
+				// Show with one decimal place
+				return `${manWon.toFixed(1)}만원`;
+			}
+		} else {
+			// Less than 10,000, show in 원 with comma formatting
+			return `${amount.toLocaleString()}원`;
+		}
 	}
 
 	async function startConversation(offerId: string) {
@@ -224,7 +298,11 @@
 						<div class="flex items-center justify-between">
 							<div>
 								<p class="text-2xl font-bold text-gray-900">
-									{trip.minBudget || '200'} ~{trip.maxBudget || '500'} 만원
+									{#if trip.budgetMin || trip.budgetMax}
+										{formatBudget(trip.budgetMin)}{#if trip.budgetMin && trip.budgetMax} ~ {/if}{formatBudget(trip.budgetMax)}
+									{:else}
+										미정
+									{/if}
 								</p>
 								<p class="mt-1 text-sm text-gray-500">예산 범위</p>
 							</div>
@@ -265,13 +343,13 @@
 						<div class="flex items-center justify-between">
 							<span class="text-sm text-gray-600">선호 스타일</span>
 							<span class="text-sm text-gray-900">
-								{trip.travelMethod ? formatTravelMethod(trip.travelMethod) : '모험적인 여행'}
+								{formatTravelStyle(trip.travelStyle)}
 							</span>
 						</div>
 
 						<div class="flex items-center justify-between">
 							<span class="text-sm text-gray-600">관심 활동</span>
-							<span class="text-sm text-gray-900">자연 / 아웃도어</span>
+							<span class="text-sm text-gray-900">{formatActivities(trip.activities)}</span>
 						</div>
 					</div>
 				</div>

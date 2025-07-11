@@ -17,7 +17,7 @@
 	// Check if user is authenticated, redirect to signin if not
 	$effect(() => {
 		if (!$session.isPending && !$session.data) {
-			goto('/signin');
+			goto('/');
 		}
 	});
 
