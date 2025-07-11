@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { DateRangePicker } from 'bits-ui';
+	import { CalendarDate } from '@internationalized/date';
 	import CalendarBlank from 'phosphor-svelte/lib/CalendarBlank';
 	import CaretLeft from 'phosphor-svelte/lib/CaretLeft';
 	import CaretRight from 'phosphor-svelte/lib/CaretRight';
@@ -11,9 +12,11 @@
 	
 	let { formData, onUpdate }: Props = $props();
 	
-	// Initialize dates
-	let startDate = $state(null);
-	let endDate = $state(null);
+	// Initialize dates as CalendarDate objects for bits-ui
+	let value = $state<{ start: CalendarDate | undefined; end: CalendarDate | undefined }>({
+		start: undefined,
+		end: undefined
+	});
 	
 	// Initialize from formData
 	$effect(() => {
@@ -22,7 +25,11 @@
 				? new Date(formData.startDate) 
 				: formData.startDate;
 			if (date instanceof Date && !isNaN(date.getTime())) {
-				startDate = date;
+				value.start = new CalendarDate(
+					date.getFullYear(),
+					date.getMonth() + 1, // CalendarDate months are 1-indexed
+					date.getDate()
+				);
 			}
 		}
 		if (formData.endDate) {
@@ -30,7 +37,11 @@
 				? new Date(formData.endDate) 
 				: formData.endDate;
 			if (date instanceof Date && !isNaN(date.getTime())) {
-				endDate = date;
+				value.end = new CalendarDate(
+					date.getFullYear(),
+					date.getMonth() + 1, // CalendarDate months are 1-indexed
+					date.getDate()
+				);
 			}
 		}
 	});
@@ -38,19 +49,18 @@
 	// Update parent when dates change
 	function handleDateChange(dates: any) {
 		console.log('Date change event:', dates);
+		value = dates;
 		
 		// Handle calendar date objects from bits-ui
 		if (dates.start) {
 			// Convert calendar date to JS Date
 			const jsDate = new Date(dates.start.year, dates.start.month - 1, dates.start.day);
-			startDate = jsDate;
 			// Store as ISO string to ensure proper serialization
 			onUpdate('startDate', jsDate.toISOString());
 		}
 		if (dates.end) {
 			// Convert calendar date to JS Date
 			const jsDate = new Date(dates.end.year, dates.end.month - 1, dates.end.day);
-			endDate = jsDate;
 			// Store as ISO string to ensure proper serialization
 			onUpdate('endDate', jsDate.toISOString());
 		}
@@ -58,7 +68,7 @@
 	
 	// Validation
 	export function validate() {
-		if (!startDate || !endDate) {
+		if (!value.start || !value.end) {
 			alert('여행 날짜를 모두 선택해주세요.');
 			return false;
 		}
@@ -66,22 +76,21 @@
 	}
 	
 	// Format date for display
-	function formatDate(date: Date | null) {
-		if (!date) return '';
+	function formatDate(calendarDate: CalendarDate | undefined) {
+		if (!calendarDate) return '';
 		
-		// Ensure we have a valid Date object
-		const dateObj = date instanceof Date ? date : new Date(date);
-		
-		// Check if the date is valid
-		if (isNaN(dateObj.getTime())) {
-			return '';
-		}
+		// Convert CalendarDate to JS Date for formatting
+		const jsDate = new Date(
+			calendarDate.year,
+			calendarDate.month - 1, // JS Date months are 0-indexed
+			calendarDate.day
+		);
 		
 		return new Intl.DateTimeFormat('ko-KR', {
 			year: 'numeric',
 			month: 'long',
 			day: 'numeric'
-		}).format(dateObj);
+		}).format(jsDate);
 	}
 </script>
 
@@ -97,14 +106,14 @@
 			<div class="flex-1">
 				<p class="text-sm text-gray-600">출발일</p>
 				<p class="mt-1 font-medium text-gray-900">
-					{startDate ? formatDate(startDate) : '날짜 선택'}
+					{value.start ? formatDate(value.start) : '날짜 선택'}
 				</p>
 			</div>
 			<div class="mx-4 text-gray-400">→</div>
 			<div class="flex-1 text-right">
 				<p class="text-sm text-gray-600">도착일</p>
 				<p class="mt-1 font-medium text-gray-900">
-					{endDate ? formatDate(endDate) : '날짜 선택'}
+					{value.end ? formatDate(value.end) : '날짜 선택'}
 				</p>
 			</div>
 		</div>
@@ -113,7 +122,7 @@
 	<!-- Calendar -->
 	<div class="px-4 pb-6">
 		<DateRangePicker.Root
-			value={{ start: startDate, end: endDate }}
+			bind:value={value}
 			onValueChange={handleDateChange}
 			weekdayFormat="short"
 			fixedWeeks={true}

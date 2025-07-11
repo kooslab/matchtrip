@@ -5,26 +5,36 @@
 	
 	let { children } = $props();
 	
-	// Define the steps
+	// Define the steps - matching actual implemented routes
 	const steps = [
 		{ path: 'destination', label: '목적지', number: 1 },
 		{ path: 'dates', label: '여행 날짜', number: 2 },
 		{ path: 'travelers', label: '여행자', number: 3 },
 		{ path: 'travel-style', label: '여행 스타일', number: 4 },
 		{ path: 'budget', label: '예산', number: 5 },
-		{ path: 'transportation', label: '교통수단', number: 6 },
-		{ path: 'accommodation', label: '숙박', number: 7 },
-		{ path: 'activities', label: '활동', number: 8 },
-		{ path: 'review', label: '검토', number: 9 }
+		{ path: 'activity', label: '활동', number: 6 },
+		{ path: 'additional-request', label: '추가 요청', number: 7 },
+		{ path: 'files', label: '파일 첨부', number: 8 }
 	];
 	
 	// Get current step from URL
 	let currentPath = $derived($page.url.pathname.split('/').pop());
 	let currentStep = $derived(steps.find(s => s.path === currentPath));
-	let currentStepIndex = $derived(currentStep ? currentStep.number - 1 : 0);
+	// For 'complete' page, show full progress
+	let currentStepIndex = $derived(
+		currentPath === 'complete' 
+			? steps.length - 1 
+			: currentStep 
+				? currentStep.number - 1 
+				: 0
+	);
 	
 	function handleBack() {
-		if (currentStepIndex > 0) {
+		// Special handling for complete page
+		if (currentPath === 'complete') {
+			// Go back to the last step (files)
+			goto(`/my-trips/create/${steps[steps.length - 1].path}`);
+		} else if (currentStepIndex > 0) {
 			// Go to previous step
 			const prevStep = steps[currentStepIndex - 1];
 			goto(`/my-trips/create/${prevStep.path}`);
