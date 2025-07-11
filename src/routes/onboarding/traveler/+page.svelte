@@ -7,13 +7,16 @@
 
 	let { data } = $props();
 
-	// Form data
+	// Get initial data from store
+	let storeData = onboardingStore.get();
+	
+	// Form data - initialize with store data if available
 	let formData = $state({
-		name: '',
-		phone: '',
-		birthYear: '',
-		birthMonth: '',
-		birthDay: ''
+		name: storeData.name || '',
+		phone: storeData.phone || '',
+		birthYear: storeData.birthYear || '',
+		birthMonth: storeData.birthMonth || '',
+		birthDay: storeData.birthDay || ''
 	});
 
 	// Phone verification
@@ -49,6 +52,16 @@
 	// Handle name completion
 	function handleNameComplete() {
 		if (!canProceedName()) return;
+		
+		// Save to store
+		onboardingStore.setData({
+			name: formData.name,
+			phone: formData.phone,
+			birthYear: formData.birthYear,
+			birthMonth: formData.birthMonth,
+			birthDay: formData.birthDay
+		});
+		
 		nameCompleted = true;
 		showPhoneStep = true;
 		// Focus on phone input after a short delay
@@ -63,6 +76,15 @@
 			alert('올바른 휴대폰 번호를 입력해주세요.');
 			return;
 		}
+		
+		// Save to store before sending verification
+		onboardingStore.setData({
+			name: formData.name,
+			phone: formData.phone,
+			birthYear: formData.birthYear,
+			birthMonth: formData.birthMonth,
+			birthDay: formData.birthDay
+		});
 
 		isSendingCode = true;
 
@@ -118,7 +140,10 @@
 				// Save data to store and redirect to profile page
 				onboardingStore.setData({
 					name: formData.name,
-					phone: formData.phone
+					phone: formData.phone,
+					birthYear: formData.birthYear,
+					birthMonth: formData.birthMonth,
+					birthDay: formData.birthDay
 				});
 				await goto('/onboarding/traveler/profile');
 			} else {
@@ -151,8 +176,20 @@
 		return `${mins}:${secs.toString().padStart(2, '0')}`;
 	}
 
-	// Clean up timer on unmount
+	// Load data from store and set initial state
 	onMount(() => {
+		// If we have name data, show it as completed
+		if (formData.name) {
+			nameCompleted = true;
+			showPhoneStep = true;
+			
+			// If we also have phone data, show it as completed
+			if (formData.phone) {
+				phoneCompleted = true;
+				showVerificationStep = false;
+			}
+		}
+		
 		return () => {
 			if (timerInterval) {
 				clearInterval(timerInterval);
@@ -162,11 +199,28 @@
 
 	// Handle back
 	function handleBack() {
+		// Save current data to store before going back
+		onboardingStore.setData({
+			name: formData.name,
+			phone: formData.phone,
+			birthYear: formData.birthYear,
+			birthMonth: formData.birthMonth,
+			birthDay: formData.birthDay
+		});
 		history.back();
 	}
 
 	// Edit name
 	function editName() {
+		// Save current data to store before editing
+		onboardingStore.setData({
+			name: formData.name,
+			phone: formData.phone,
+			birthYear: formData.birthYear,
+			birthMonth: formData.birthMonth,
+			birthDay: formData.birthDay
+		});
+		
 		nameCompleted = false;
 		showPhoneStep = false;
 		showVerificationStep = false;
@@ -184,6 +238,15 @@
 
 	// Edit phone
 	function editPhone() {
+		// Save current data to store before editing
+		onboardingStore.setData({
+			name: formData.name,
+			phone: formData.phone,
+			birthYear: formData.birthYear,
+			birthMonth: formData.birthMonth,
+			birthDay: formData.birthDay
+		});
+		
 		isVerificationSent = false;
 		showVerificationStep = false;
 		verificationCode = '';

@@ -13,17 +13,25 @@
 
 	let { data }: { data: PageData } = $props();
 
-	// Get data from store
-	let storeData = $state({ name: '', phone: '' });
+	// Get initial data from store
+	let storeData = onboardingStore.get();
+	
+	// Form data - initialize with store data if available
+	let formData = $state({
+		nickname: storeData.nickname || '',
+		email: data.user?.email || storeData.email || '',
+		birthDate: storeData.birthDate || ''
+	});
+
+	// Also restore profile image if it exists
+	let profileImageUrl = $state(storeData.profileImageUrl || '');
 	
 	onMount(() => {
-		const unsubscribe = onboardingStore.subscribe(data => {
-			storeData = data;
-			// If no data in store, redirect back
-			if (!data.name || !data.phone) {
-				goto('/onboarding/traveler');
-			}
-		});
+		// Check if required data exists
+		if (!storeData.name || !storeData.phone) {
+			goto('/onboarding/traveler');
+			return;
+		}
 		
 		// Initialize dateValue if birthDate exists
 		if (formData.birthDate) {
@@ -34,26 +42,53 @@
 					parseInt(parts[1]), 
 					parseInt(parts[2])
 				);
+				// Update calendar placeholder to show the correct month/year
+				calendarPlaceholder = dateValue;
 			}
 		}
 		
-		return unsubscribe;
+		// Update traveler profile completion percentage if birth date exists
+		if (formData.birthDate) {
+			travelerProfileComplete = 100;
+		}
+		
+		// Clean up save timer on unmount
+		return () => {
+			if (saveTimer) clearTimeout(saveTimer);
+		};
 	});
-
-	// Form data
-	let formData = $state({
-		nickname: '',
-		email: data.user?.email || '',
-		birthDate: ''
-	});
-
-	let profileImageUrl = $state('');
 	let uploadingImage = $state(false);
 
 	let isLoading = $state(false);
 	let dateValue = $state<CalendarDate | undefined>(undefined);
 	let dateDialogOpen = $state(false);
 	let calendarPlaceholder = $state<CalendarDate>(today(getLocalTimeZone()));
+	
+	// Auto-save timer
+	let saveTimer: number | null = null;
+	
+	// Auto-save function with debounce
+	function autoSave() {
+		if (saveTimer) clearTimeout(saveTimer);
+		saveTimer = setTimeout(() => {
+			onboardingStore.setData({
+				nickname: formData.nickname,
+				email: formData.email,
+				birthDate: formData.birthDate,
+				profileImageUrl: profileImageUrl
+			});
+		}, 500); // Save after 500ms of no typing
+	}
+	
+	// Watch for form changes and auto-save
+	$effect(() => {
+		// Trigger auto-save when form data changes
+		formData.nickname;
+		formData.email;
+		formData.birthDate;
+		profileImageUrl;
+		autoSave();
+	});
 
 	// Validation
 	function isValidEmail(email: string): boolean {
@@ -170,6 +205,9 @@
 				// We might need to update it in the user record
 			}
 
+			// Clear auto-save timer
+			if (saveTimer) clearTimeout(saveTimer);
+			
 			// Clear store and redirect to completion page
 			onboardingStore.reset();
 			await goto('/onboarding/traveler/complete');
