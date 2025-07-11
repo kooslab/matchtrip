@@ -11,6 +11,7 @@ interface OnboardingData {
 	frequentArea?: string;
 	gender?: string;
 	destinations?: string[];
+	uploadedFiles?: Record<string, File[]>;
 }
 
 function createOnboardingStore() {
@@ -19,8 +20,16 @@ function createOnboardingStore() {
 		phone: ''
 	});
 
+	let currentValue: OnboardingData = { name: '', phone: '' };
+
+	// Subscribe to store changes to keep currentValue updated
+	subscribe(value => {
+		currentValue = value;
+	});
+
 	return {
 		subscribe,
+		get: () => currentValue,
 		setField: <K extends keyof OnboardingData>(field: K, value: OnboardingData[K]) => {
 			update(data => ({ ...data, [field]: value }));
 		},

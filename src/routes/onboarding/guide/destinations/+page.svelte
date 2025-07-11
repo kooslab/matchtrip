@@ -4,19 +4,20 @@
 	import { onboardingStore } from '$lib/stores/onboardingStore';
 	import iconArrowBack from '$lib/icons/icon-arrow-back-android-mono.svg';
 
-	// Get data from store
-	let storeData = $state({ name: '', phone: '', nickname: '', frequentArea: '', birthDate: '', profileImageUrl: '' });
+	// Get initial data from store
+	let storeData = onboardingStore.get();
 	
 	onMount(() => {
-		const unsubscribe = onboardingStore.subscribe(data => {
-			storeData = data;
-			// If no data in store, redirect back
-			if (!data.name || !data.phone || !data.nickname) {
-				goto('/onboarding/guide');
-			}
-		});
+		// Check if required data exists
+		if (!storeData.name || !storeData.phone || !storeData.nickname) {
+			goto('/onboarding/guide');
+			return;
+		}
 		
-		return unsubscribe;
+		// Restore selected destinations if they exist
+		if (storeData.destinations && Array.isArray(storeData.destinations)) {
+			selectedDestinations = storeData.destinations;
+		}
 	});
 
 	// Available destinations by region
@@ -106,6 +107,11 @@
 
 	// Handle back
 	function handleBack() {
+		// Save current selections to store before going back
+		onboardingStore.setData({
+			destinations: selectedDestinations
+		});
+		
 		goto('/onboarding/guide/profile');
 	}
 

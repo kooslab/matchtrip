@@ -61,6 +61,7 @@ export const load = async ({ locals }) => {
 
 	return {
 		trips: availableTrips,
-		userRole: user?.role || null
+		userRole: user?.role || null,
+		isGuideVerified: (user as any)?.guideProfile?.isVerified || false
 	};
 };

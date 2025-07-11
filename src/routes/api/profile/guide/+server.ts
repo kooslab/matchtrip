@@ -2,6 +2,7 @@ import type { RequestHandler } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { guideProfiles } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
+import { sendGuideOnboardingEmail } from '$lib/server/email/guideOnboarding';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
 	const userId = locals.user?.id;
@@ -74,6 +75,18 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				userId,
 				...profileData
 			});
+			
+			// Send onboarding confirmation email
+			try {
+				await sendGuideOnboardingEmail({
+					guideName: locals.user?.name || nickname || 'Guide',
+					guideEmail: locals.user?.email || '',
+					submittedAt: new Date()
+				});
+			} catch (emailError) {
+				// Log error but don't fail the request
+				console.error('Failed to send onboarding email:', emailError);
+			}
 		}
 
 		return new Response(JSON.stringify({ success: true }));

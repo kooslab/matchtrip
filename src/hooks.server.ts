@@ -3,7 +3,7 @@ import { sequence } from '@sveltejs/kit/hooks';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
 import { redirect, type Handle } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { users, userAgreements } from '$lib/server/db/schema';
+import { users, userAgreements, guideProfiles } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { dev } from '$app/environment';
 import { authErrorLogger } from '$lib/utils/authErrorLogger';
@@ -72,7 +72,7 @@ const authHandler = (async ({ event, resolve }) => {
 		// If user is logged in, fetch their full user data including role
 		if (session?.user?.id) {
 			try {
-				// Fetch user from database
+				// Fetch user from database with guide profile if they are a guide
 				const user = await db.query.users.findFirst({
 					where: eq(users.id, session.user.id),
 					columns: {
@@ -83,6 +83,9 @@ const authHandler = (async ({ event, resolve }) => {
 						emailVerified: true,
 						phone: true,
 						birthDate: true
+					},
+					with: {
+						guideProfile: true
 					}
 				});
 
@@ -94,7 +97,9 @@ const authHandler = (async ({ event, resolve }) => {
 						'Role:',
 						user.role,
 						'EmailVerified:',
-						user.emailVerified
+						user.emailVerified,
+						'Guide Verified:',
+						user.guideProfile?.isVerified
 					);
 
 					// Check if user has agreed to terms
@@ -160,7 +165,12 @@ const authHandler = (async ({ event, resolve }) => {
 		} else if (event.locals.user.role === 'admin') {
 			redirect(302, '/admin');
 		} else if (event.locals.user.role === 'guide') {
-			redirect(302, '/trips');
+			// Check if guide is verified
+			if (!(event.locals.user as any).guideProfile?.isVerified) {
+				redirect(302, '/guide/pending-approval');
+			} else {
+				redirect(302, '/trips');
+			}
 		} else {
 			redirect(302, '/my-trips');
 		}
@@ -180,7 +190,7 @@ const authHandler = (async ({ event, resolve }) => {
 			redirect(302, '/onboarding/role');
 		}
 		// Check if user hasn't completed profile (name, phone, birthDate)
-		else if (!event.locals.user.name || !event.locals.user.phone || !event.locals.user.birthDate) {
+		else if (!event.locals.user.name || !(event.locals.user as any).phone || !(event.locals.user as any).birthDate) {
 			// Redirect to role-specific onboarding
 			if (event.locals.user.role === 'guide') {
 				redirect(302, '/onboarding/guide');
@@ -224,10 +234,23 @@ const authHandler = (async ({ event, resolve }) => {
 	const guideOnlyRoutes = ['/(app)/trips', '/(app)/offers', '/(app)/my-offers'];
 	const isGuideOnlyRoute = guideOnlyRoutes.some((route) => routeId?.includes(route));
 	const isAdminRoute = routeId?.startsWith('/admin');
+	const isPendingApprovalRoute = routeId === '/(app)/guide/pending-approval';
 
 	// Allow admin users to access any route
 	if (event.locals.user?.role === 'admin') {
 		return resolve(event);
+	}
+
+	// Check if guide is trying to access guide routes but is not verified
+	if (
+		isGuideOnlyRoute &&
+		!isAdminRoute &&
+		!routeId?.startsWith('/api') &&
+		event.locals.user?.role === 'guide' &&
+		!(event.locals.user as any).guideProfile?.isVerified
+	) {
+		console.log('Hooks - Unverified guide trying to access guide routes. Redirecting to pending approval.');
+		redirect(302, '/guide/pending-approval');
 	}
 
 	if (

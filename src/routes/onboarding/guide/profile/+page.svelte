@@ -13,17 +13,28 @@
 
 	let { data }: { data: PageData } = $props();
 
-	// Get data from store
-	let storeData = $state({ name: '', phone: '' });
+	// Get initial data from store
+	let storeData = onboardingStore.get();
+	
+	// Form data - initialize with store data if available
+	let formData = $state({
+		nickname: storeData.nickname || '',
+		frequentArea: storeData.frequentArea || '',
+		email: data.user?.email || storeData.email || '',
+		birthDate: storeData.birthDate || '',
+		gender: storeData.gender || ''
+	});
+	
+	// Also restore profile image if it exists
+	let profileImageUrl = $state(storeData.profileImageUrl || '');
+	let uploadingImage = $state(false);
 	
 	onMount(() => {
-		const unsubscribe = onboardingStore.subscribe(data => {
-			storeData = data;
-			// If no data in store, redirect back
-			if (!data.name || !data.phone) {
-				goto('/onboarding/guide');
-			}
-		});
+		// Check if required data exists
+		if (!storeData.name || !storeData.phone) {
+			goto('/onboarding/guide');
+			return;
+		}
 		
 		// Initialize dateValue if birthDate exists
 		if (formData.birthDate) {
@@ -34,23 +45,11 @@
 					parseInt(parts[1]), 
 					parseInt(parts[2])
 				);
+				// Update calendar placeholder to show the correct month/year
+				calendarPlaceholder = dateValue;
 			}
 		}
-		
-		return unsubscribe;
 	});
-
-	// Form data
-	let formData = $state({
-		nickname: '',
-		frequentArea: '',
-		email: data.user?.email || '',
-		birthDate: '',
-		gender: ''
-	});
-
-	let profileImageUrl = $state('');
-	let uploadingImage = $state(false);
 
 	let isLoading = $state(false);
 	let dateValue = $state<CalendarDate | undefined>(undefined);
@@ -158,6 +157,16 @@
 
 	// Handle back
 	function handleBack() {
+		// Save current form data to store before going back
+		onboardingStore.setData({
+			nickname: formData.nickname,
+			frequentArea: formData.frequentArea,
+			email: formData.email,
+			birthDate: formData.birthDate,
+			gender: formData.gender,
+			profileImageUrl: profileImageUrl
+		});
+		
 		goto('/onboarding/guide');
 	}
 
@@ -523,6 +532,16 @@
 								
 								// Adjust age if birthday hasn't occurred this year
 								const actualAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
+								
+								console.log('Age validation:', {
+									selectedDate: `${value.year}-${value.month}-${value.day}`,
+									birthDate: birthDate.toISOString(),
+									today: today.toISOString(),
+									age,
+									monthDiff,
+									dayDiff,
+									actualAge
+								});
 								
 								if (actualAge < 14) {
 									alert('가이드는 만 14세 이상이어야 합니다. 다시 선택해주세요.');

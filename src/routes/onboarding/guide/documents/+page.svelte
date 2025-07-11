@@ -4,19 +4,14 @@
 	import { onboardingStore } from '$lib/stores/onboardingStore';
 	import iconArrowBack from '$lib/icons/icon-arrow-back-android-mono.svg';
 
-	// Get data from store
-	let storeData = $state({ name: '', phone: '', nickname: '', frequentArea: '', birthDate: '', profileImageUrl: '', destinations: [] });
+	// Get initial data from store
+	let storeData = onboardingStore.get();
 	
 	onMount(() => {
-		const unsubscribe = onboardingStore.subscribe(data => {
-			storeData = data;
-			// If no data in store, redirect back
-			if (!data.name || !data.phone || !data.nickname || !data.destinations?.length) {
-				goto('/onboarding/guide');
-			}
-		});
-		
-		return unsubscribe;
+		// Check if required data exists
+		if (!storeData.name || !storeData.phone || !storeData.nickname || !storeData.destinations?.length) {
+			goto('/onboarding/guide');
+		}
 	});
 
 	// Document categories
@@ -43,7 +38,8 @@
 		}
 	];
 
-	let uploadedFiles = $state<Record<string, File[]>>({});
+	// Initialize uploaded files from store if they exist
+	let uploadedFiles = $state<Record<string, File[]>>(storeData.uploadedFiles || {});
 	let isLoading = $state(false);
 
 	// Check if all required documents are uploaded
@@ -151,6 +147,11 @@
 
 	// Handle back
 	function handleBack() {
+		// Save current uploaded files to store before going back
+		onboardingStore.setData({
+			uploadedFiles: uploadedFiles
+		});
+		
 		goto('/onboarding/guide/destinations');
 	}
 

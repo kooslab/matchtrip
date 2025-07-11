@@ -85,6 +85,33 @@
 	// Custom dropdown state (fallback if Bits UI doesn't work)
 	let isDropdownOpen = $state(false);
 
+	// Load data from store on mount
+	onMount(() => {
+		const storeData = onboardingStore.get();
+		if (storeData.name) {
+			formData.name = storeData.name;
+			completedSteps = ['name'];
+			currentStep = 'mobile';
+		}
+		if (storeData.phone) {
+			// Extract country code and mobile number
+			const phone = storeData.phone;
+			for (const country of countryCodes) {
+				if (phone.startsWith(country.code)) {
+					formData.countryCode = country.code;
+					formData.mobile = phone.substring(country.code.length);
+					// Format the mobile number
+					handleMobileInput({ target: { value: formData.mobile } } as any);
+					break;
+				}
+			}
+			if (formData.mobile) {
+				completedSteps = ['name', 'mobile'];
+				// Since profile and beyond are separate pages, we don't advance further
+			}
+		}
+	});
+
 	// Form validation
 	function canProceed(): boolean {
 		switch (currentStep) {

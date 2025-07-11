@@ -4,16 +4,18 @@
 	import seeImage from '$lib/images/see.png';
 
 	onMount(() => {
-		// Redirect to trips after 3 seconds
+		// Redirect to pending approval page after 3 seconds
+		// Since new guides are not verified by default, they go to pending page
 		const timeout = setTimeout(() => {
-			goto('/trips');
+			goto('/guide/pending-approval');
 		}, 3000);
 
 		return () => clearTimeout(timeout);
 	});
 
 	function handleGoToTrips() {
-		goto('/trips');
+		// Redirect to pending approval page instead of trips
+		goto('/guide/pending-approval');
 	}
 </script>
 
@@ -105,9 +107,9 @@
 		<p class="subtitle">가이드 승인 검토 후 알림을 보내드릴게요</p>
 		
 		<button class="home-button" onclick={handleGoToTrips}>
-			여행 보러가기
+			승인 상태 확인하기
 		</button>
 		
-		<div class="auto-redirect-text">3초 후 자동으로 여행 페이지로 이동합니다</div>
+		<div class="auto-redirect-text">3초 후 자동으로 승인 대기 페이지로 이동합니다</div>
 	</div>
 </div>

@@ -741,6 +741,28 @@
 		</div>
 	{/if}
 
+	<!-- Unverified Guide Banner -->
+	{#if userRole === 'guide' && !data.isGuideVerified}
+		<div class="bg-yellow-50 border-b border-yellow-200">
+			<div class="container mx-auto px-4 py-3">
+				<div class="flex items-center justify-between">
+					<div class="flex items-center gap-3">
+						<svg class="w-5 h-5 text-yellow-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+						</svg>
+						<div class="text-sm text-yellow-800">
+							<p class="font-medium">가이드 승인 대기 중</p>
+							<p class="text-xs mt-0.5">승인 완료 후 여행자에게 제안을 보낼 수 있습니다</p>
+						</div>
+					</div>
+					<a href="/guide/pending-approval" class="text-sm font-medium text-yellow-700 hover:text-yellow-800">
+						자세히 보기
+					</a>
+				</div>
+			</div>
+		</div>
+	{/if}
+
 	<div class="container mx-auto px-4 py-6">
 		<div class="mb-6">
 			<div class="mb-4 flex items-center justify-between">
