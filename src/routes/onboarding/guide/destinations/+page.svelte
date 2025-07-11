@@ -22,22 +22,6 @@
 	// Available destinations by region
 	const destinationRegions = [
 		{
-			name: '한국',
-			nameEn: 'Korea',
-			cities: [
-				{ name: '서울', nameEn: 'Seoul' },
-				{ name: '부산', nameEn: 'Busan' },
-				{ name: '제주도', nameEn: 'Jeju' },
-				{ name: '경주', nameEn: 'Gyeongju' },
-				{ name: '강릉', nameEn: 'Gangneung' },
-				{ name: '전주', nameEn: 'Jeonju' },
-				{ name: '인천', nameEn: 'Incheon' },
-				{ name: '대구', nameEn: 'Daegu' },
-				{ name: '광주', nameEn: 'Gwangju' },
-				{ name: '대전', nameEn: 'Daejeon' }
-			]
-		},
-		{
 			name: '유럽',
 			nameEn: 'Europe',
 			cities: [
@@ -52,10 +36,26 @@
 				{ name: '취리히', nameEn: 'Zurich' },
 				{ name: '뮌헨', nameEn: 'Munich' }
 			]
+		},
+		{
+			name: '한국',
+			nameEn: 'Korea',
+			cities: [
+				{ name: '서울', nameEn: 'Seoul' },
+				{ name: '부산', nameEn: 'Busan' },
+				{ name: '제주도', nameEn: 'Jeju' },
+				{ name: '경주', nameEn: 'Gyeongju' },
+				{ name: '강릉', nameEn: 'Gangneung' },
+				{ name: '전주', nameEn: 'Jeonju' },
+				{ name: '인천', nameEn: 'Incheon' },
+				{ name: '대구', nameEn: 'Daegu' },
+				{ name: '광주', nameEn: 'Gwangju' },
+				{ name: '대전', nameEn: 'Daejeon' }
+			]
 		}
 	];
 
-	let expandedRegions = $state<string[]>(['한국']); // Start with Korea expanded
+	let expandedRegions = $state<string[]>(['유럽']); // Start with Europe expanded
 	let selectedDestinations = $state<string[]>([]);
 	let isLoading = $state(false);
 

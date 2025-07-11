@@ -55,7 +55,14 @@
 	let isLoading = $state(false);
 	let dateValue = $state<CalendarDate | undefined>(undefined);
 	let dateDialogOpen = $state(false);
-	let calendarPlaceholder = $state<CalendarDate>(today(getLocalTimeZone()));
+	
+	// Calculate the maximum year (user must be at least 14 years old)
+	const currentYear = new Date().getFullYear();
+	const maxYear = currentYear - 14;
+	const minYear = currentYear - 100;
+	
+	// Set placeholder to a valid date for 14+ year olds
+	let calendarPlaceholder = $state<CalendarDate>(new CalendarDate(maxYear, 1, 1));
 
 	// Validation
 	function isValidEmail(email: string): boolean {
@@ -435,7 +442,7 @@
 
 			<!-- Birth Date -->
 			<div class="flex flex-col gap-2">
-				<label for="birthdate" class="font-medium text-[11px] leading-4 text-primary">생년월일</label>
+				<label for="birthdate" class="font-medium text-[11px] leading-4 text-primary">생년월일 <span class="font-normal text-secondary">(만 14세 이상)</span></label>
 				<div class="relative w-full">
 					<input
 						id="birthdate"
@@ -483,7 +490,7 @@
 					<div class="w-16 bg-gray-50 border-r border-gray-100 flex flex-col">
 						<div class="px-[8px] py-[12px] text-xs font-semibold text-primary text-center border-b border-gray-100 bg-white">연도 선택</div>
 						<div class="flex-1 overflow-y-auto py-2 scrollbar-hide">
-							{#each Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i) as year}
+							{#each Array.from({ length: maxYear - minYear + 1 }, (_, i) => maxYear - i) as year}
 								<button
 									type="button"
 									class="w-full py-2 px-1 text-center text-[13px] font-normal text-primary bg-transparent border-none cursor-pointer transition-all duration-200 hover:bg-blue-50 hover:text-color-primary {calendarPlaceholder.year === year ? 'bg-color-primary text-white font-semibold hover:bg-color-primary hover:text-white' : ''}"
@@ -507,6 +514,24 @@
 						weekStartsOn={0}
 						onValueChange={(value) => {
 							if (value) {
+								// Check if user is at least 14 years old
+								const today = new Date();
+								const birthDate = new Date(value.year, value.month - 1, value.day);
+								const age = today.getFullYear() - birthDate.getFullYear();
+								const monthDiff = today.getMonth() - birthDate.getMonth();
+								const dayDiff = today.getDate() - birthDate.getDate();
+								
+								// Adjust age if birthday hasn't occurred this year
+								const actualAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
+								
+								if (actualAge < 14) {
+									alert('가이드는 만 14세 이상이어야 합니다. 다시 선택해주세요.');
+									// Reset the date value
+									dateValue = undefined;
+									formData.birthDate = '';
+									return;
+								}
+								
 								// Update form data immediately when date is selected
 								formData.birthDate = `${value.year}-${String(value.month).padStart(2, '0')}-${String(value.day).padStart(2, '0')}`;
 								// Update the dateValue state as well
