@@ -197,14 +197,9 @@ const authHandler = (async ({ event, resolve }) => {
 			if (event.locals.user.role === 'admin') {
 				redirect(302, '/admin');
 			} else if (event.locals.user.role === 'guide') {
-				// For guides on the main route, allow access even if not verified
-				// They will see the appropriate UI based on their verification status
+				// For guides on the main route, allow access regardless of verification status
 				// The main route can handle showing different content for verified/unverified guides
-				// We'll only redirect to trips if they're verified
-				if (event.locals.user.guideProfile?.isVerified) {
-					redirect(302, '/trips');
-				}
-				// If not verified, let them stay on the main route
+				// No redirect needed - let them access the main page
 			} else {
 				redirect(302, '/my-trips');
 			}
@@ -267,11 +262,21 @@ const authHandler = (async ({ event, resolve }) => {
 		isGuideOnlyRoute &&
 		!isAdminRoute &&
 		!routeId?.startsWith('/api') &&
-		event.locals.user?.role === 'guide' &&
-		!(event.locals.user as any).guideProfile?.isVerified
+		event.locals.user?.role === 'guide'
 	) {
-		console.log('Hooks - Unverified guide trying to access guide routes. Redirecting to pending approval.');
-		redirect(302, '/guide/pending-approval');
+		// Debug logging
+		console.log('Guide route access check:', {
+			route: routeId,
+			userRole: event.locals.user?.role,
+			hasGuideProfile: !!(event.locals.user as any).guideProfile,
+			isVerified: (event.locals.user as any).guideProfile?.isVerified,
+			fullUser: event.locals.user
+		});
+		
+		if (!(event.locals.user as any).guideProfile?.isVerified) {
+			console.log('Hooks - Unverified guide trying to access guide routes. Redirecting to pending approval.');
+			redirect(302, '/guide/pending-approval');
+		}
 	}
 
 	if (

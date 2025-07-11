@@ -56,7 +56,17 @@
 	);
 
 	// Get status display info
-	function getStatusInfo(status: string) {
+	function getStatusInfo(status: string, hasOffer: boolean = false) {
+		// For guide users viewing trips
+		if (userRole === 'guide' && status === 'submitted') {
+			if (hasOffer) {
+				return { label: '제안중', class: 'bg-blue-500 text-white' };
+			} else {
+				return { label: '제안 전', class: 'bg-gray-500 text-white' };
+			}
+		}
+		
+		// Default status labels
 		switch (status) {
 			case 'submitted':
 				return { label: '제안중', class: 'bg-blue-500 text-white' };
@@ -837,10 +847,11 @@
 										<div class="mb-1 flex items-center gap-2">
 											<span
 												class="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium {getStatusInfo(
-													trip.status
+													trip.status,
+													!!trip.hasOffer
 												).class}"
 											>
-												{getStatusInfo(trip.status).label}
+												{getStatusInfo(trip.status, !!trip.hasOffer).label}
 											</span>
 										</div>
 										<h3 class="mb-2 text-base font-semibold text-gray-900">

@@ -43,6 +43,9 @@ export const load = async ({ request, locals }) => {
 						name: true,
 						email: true,
 						emailVerified: true
+					},
+					with: {
+						guideProfile: true
 					}
 				});
 
@@ -57,7 +60,8 @@ export const load = async ({ request, locals }) => {
 						role: user.role,
 						name: user.name,
 						email: user.email,
-						emailVerified: user.emailVerified
+						emailVerified: user.emailVerified,
+						guideProfile: user.guideProfile
 					};
 					locals.session = session;
 					console.log('Layout server - User cached in locals:', user.email, 'Role:', user.role);
