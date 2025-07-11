@@ -82,6 +82,9 @@
 			profileData.append('frequentArea', storeData.frequentArea);
 			profileData.append('birthDate', storeData.birthDate);
 			profileData.append('destinations', JSON.stringify(storeData.destinations));
+			if (storeData.profileImageUrl) {
+				profileData.append('profileImageUrl', storeData.profileImageUrl);
+			}
 
 			// Add certification files by category
 			Object.entries(uploadedFiles).forEach(([categoryId, files]) => {

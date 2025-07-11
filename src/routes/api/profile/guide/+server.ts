@@ -3,6 +3,33 @@ import { db } from '$lib/server/db';
 import { guideProfiles } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { sendGuideOnboardingEmail } from '$lib/server/email/guideOnboarding';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { env } from '$env/dynamic/private';
+import { dev } from '$app/environment';
+import { devImageStorage } from '$lib/server/devImageStorage';
+
+// Cloudflare R2 configuration
+const R2_ACCOUNT_ID = env.R2_ACCOUNT_ID;
+const R2_ACCESS_KEY_ID = env.R2_ACCESS_KEY_ID;
+const R2_SECRET_ACCESS_KEY = env.R2_SECRET_ACCESS_KEY;
+const R2_BUCKET_NAME = env.R2_BUCKET_NAME;
+const R2_PUBLIC_BUCKET_NAME = env.R2_PUBLIC_BUCKET_NAME;
+const R2_PUBLIC_URL = env.R2_PUBLIC_URL;
+
+let r2Client: S3Client | null = null;
+
+// Initialize R2 client only if credentials are available
+if (R2_ACCOUNT_ID && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY) {
+	r2Client = new S3Client({
+		region: 'auto',
+		endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+		credentials: {
+			accessKeyId: R2_ACCESS_KEY_ID,
+			secretAccessKey: R2_SECRET_ACCESS_KEY
+		},
+		forcePathStyle: true
+	});
+}
 
 export const POST: RequestHandler = async ({ request, locals }) => {
 	const userId = locals.user?.id;
@@ -20,6 +47,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		const frequentArea = formData.get('frequentArea')?.toString();
 		const birthDate = formData.get('birthDate')?.toString();
 		const destinationsStr = formData.get('destinations')?.toString();
+		const profileImageUrl = formData.get('profileImageUrl')?.toString();
 		
 		let destinations: string[] = [];
 		if (destinationsStr) {
@@ -30,20 +58,72 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			}
 		}
 
-		// Handle file uploads - for now we'll just log them
-		// In a real implementation, you'd upload these to S3/R2 and store URLs
-		const documentFiles: Record<string, File[]> = {};
+		// Handle file uploads
+		const documentUrls: Record<string, string[]> = {};
+		let idDocumentUrl: string | null = null;
+		const certificationUrls: string[] = [];
+		
+		// Process file uploads
 		for (const [key, value] of formData.entries()) {
 			if (key.startsWith('documents_') && value instanceof File) {
 				const categoryId = key.replace('documents_', '');
-				if (!documentFiles[categoryId]) {
-					documentFiles[categoryId] = [];
+				
+				try {
+					// Generate unique filename
+					const timestamp = Date.now();
+					const randomString = Math.random().toString(36).substring(2, 15);
+					const extension = value.name.split('.').pop();
+					const filename = `guide-document-${categoryId}/${timestamp}-${randomString}.${extension}`;
+					
+					// Convert file to buffer
+					const buffer = await value.arrayBuffer();
+					
+					let fileUrl: string;
+					
+					// Upload to R2 if configured
+					if (r2Client && R2_BUCKET_NAME) {
+						const bucketName = R2_BUCKET_NAME; // Guide documents go to private bucket
+						
+						const uploadCommand = new PutObjectCommand({
+							Bucket: bucketName,
+							Key: filename,
+							Body: new Uint8Array(buffer),
+							ContentType: value.type,
+							ContentLength: value.size
+						});
+						
+						await r2Client.send(uploadCommand);
+						
+						// Use API endpoint for private bucket files
+						fileUrl = `/api/images/${filename}`;
+					} else if (dev) {
+						// For development, store in memory
+						console.log('[Guide Upload] Storing in dev storage:', filename);
+						devImageStorage.set(filename, { buffer, contentType: value.type });
+						fileUrl = `/api/images/${filename}`;
+					} else {
+						throw new Error('Storage not configured');
+					}
+					
+					// Organize URLs by category
+					if (!documentUrls[categoryId]) {
+						documentUrls[categoryId] = [];
+					}
+					documentUrls[categoryId].push(fileUrl);
+					
+					// Store specific document types
+					if (categoryId === 'identity') {
+						idDocumentUrl = fileUrl;
+					} else if (categoryId === 'guide-license' || categoryId === 'license-certification' || categoryId === 'insurance') {
+						certificationUrls.push(fileUrl);
+					}
+				} catch (uploadError) {
+					console.error(`Failed to upload file for category ${categoryId}:`, uploadError);
 				}
-				documentFiles[categoryId].push(value);
 			}
 		}
 
-		console.log('Uploaded documents:', Object.keys(documentFiles).map(cat => `${cat}: ${documentFiles[cat].length} files`));
+		console.log('Uploaded documents:', Object.keys(documentUrls).map(cat => `${cat}: ${documentUrls[cat].length} files`));
 
 		// Create or update guide profile
 		const existingProfile = await db
@@ -56,8 +136,9 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			username: nickname,
 			currentLocation: frequentArea,
 			activityAreas: destinations,
-			// You would store document URLs here after uploading to S3/R2
-			// documents: documentUrls
+			profileImageUrl: profileImageUrl,
+			idDocumentUrl: idDocumentUrl,
+			certificationUrls: certificationUrls
 		};
 
 		if (existingProfile.length > 0) {

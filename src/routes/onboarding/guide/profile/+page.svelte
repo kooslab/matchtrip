@@ -77,13 +77,13 @@
 	);
 	
 	// Debug logging for canProceed
-	$effect(() => {
-		console.log('canProceed updated:', canProceed, {
-			nickname: formData.nickname,
-			frequentArea: formData.frequentArea,
-			birthDate: formData.birthDate
-		});
-	});
+	// $effect(() => {
+	// 	console.log('canProceed updated:', canProceed, {
+	// 		nickname: formData.nickname,
+	// 		frequentArea: formData.frequentArea,
+	// 		birthDate: formData.birthDate
+	// 	});
+	// });
 
 	// Handle profile image upload
 	function handleImageClick() {

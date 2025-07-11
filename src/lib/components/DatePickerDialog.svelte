@@ -38,13 +38,17 @@
 		}
 	});
 
-	// Prevent context menu globally when dialog is open
+	// Prevent context menu only within dialog when open
 	$effect(() => {
 		if (open) {
 			const handleContextMenu = (e: MouseEvent) => {
-				e.preventDefault();
-				e.stopPropagation();
-				return false;
+				// Only prevent context menu if it's within the dialog
+				const target = e.target as Element;
+				if (target.closest('[role="dialog"]')) {
+					e.preventDefault();
+					e.stopPropagation();
+					return false;
+				}
 			};
 			
 			document.addEventListener('contextmenu', handleContextMenu);
@@ -106,7 +110,11 @@
 		<Dialog.Overlay 
 			class="fixed inset-0 bg-black/60 z-50" 
 			style="animation: fadeIn 0.2s ease-out"
-			onclick={() => open = false}
+			onclick={(e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				open = false;
+			}}
 		/>
 		<Dialog.Content class="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[51] w-[calc(100vw-32px)] max-w-[540px] bg-transparent" style="animation: slideUp 0.3s ease-out">
 			<div 
@@ -123,11 +131,14 @@
 						return false;
 					}
 				}}
+				onclick={(e) => {
+					e.stopPropagation();
+				}}
 				role="dialog" 
 				tabindex="-1"
 			>
 				<!-- Year selector (left side) -->
-				<div class="w-[80px] bg-[rgba(0,62,129,0.02)] border-r border-[rgba(0,62,129,0.08)] flex flex-col">
+				<div class="w-[60px] bg-[rgba(0,62,129,0.02)] border-r border-[rgba(0,62,129,0.08)] flex flex-col">
 					<div class="p-4 text-[13px] font-semibold text-primary text-center border-b border-[rgba(0,62,129,0.08)] bg-white">연도</div>
 					<div class="flex-1 overflow-y-auto py-2 scrollbar-hide">
 						{#each Array.from({ length: yearRange }, (_, i) => {
