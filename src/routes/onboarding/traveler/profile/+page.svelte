@@ -29,16 +29,15 @@
 	// Also restore profile image if it exists
 	let profileImageUrl = $state(storeData.profileImageUrl || '');
 	
-	onMount(() => {
-		// Check if required data exists
-		if (!storeData.name || !storeData.phone) {
-			goto('/onboarding/traveler');
-			return;
-		}
-		
-		// Mark as initialized after validation
+	// Check required data immediately and redirect if missing
+	if (!storeData.name || !storeData.phone) {
+		// Redirect immediately without showing any content
+		goto('/onboarding/traveler');
+	} else {
 		isInitialized = true;
-		
+	}
+	
+	onMount(() => {
 		// Initialize dateValue if birthDate exists
 		if (formData.birthDate) {
 			const parts = formData.birthDate.split('-');
@@ -53,10 +52,6 @@
 			}
 		}
 		
-		// Update traveler profile completion percentage if birth date exists
-		if (formData.birthDate) {
-			travelerProfileComplete = 100;
-		}
 		
 		// Clean up save timer on unmount
 		return () => {
@@ -68,7 +63,14 @@
 	let isLoading = $state(false);
 	let dateValue = $state<CalendarDate | undefined>(undefined);
 	let dateDialogOpen = $state(false);
-	let calendarPlaceholder = $state<CalendarDate>(today(getLocalTimeZone()));
+	
+	// Calculate the maximum year (user must be at least 14 years old)
+	const currentYear = new Date().getFullYear();
+	const maxYear = currentYear - 14;
+	const minYear = currentYear - 100;
+	
+	// Set placeholder to a valid date for 14+ year olds
+	let calendarPlaceholder = $state<CalendarDate>(new CalendarDate(maxYear, 1, 1));
 	
 	// Auto-save timer
 	let saveTimer: number | null = null;
@@ -390,7 +392,7 @@
 
 			<!-- Birth Date -->
 			<div class="flex flex-col gap-2">
-				<label for="birthdate" class="font-medium text-[11px] leading-4 text-primary">생년월일</label>
+				<label for="birthdate" class="font-medium text-[11px] leading-4 text-primary">생년월일 <span class="font-normal text-secondary">(만 14세 이상)</span></label>
 				<div class="relative w-full">
 					<input
 						id="birthdate"
@@ -415,10 +417,11 @@
 	</div>
 
 	<!-- Bottom Section -->
-	<div class="fixed bottom-0 left-0 right-0 bg-[rgba(254,254,254,0.96)] backdrop-blur-[10px] border-t border-gray-100 shadow-[0px_-5px_20px_rgba(0,0,0,0.02)] z-40">
-		<div class="p-2 px-4 pb-[calc(8px+env(safe-area-inset-bottom))]">
+	<div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0px_-5px_20px_rgba(0,0,0,0.05)] z-40">
+		<div class="p-4 pb-[calc(16px+env(safe-area-inset-bottom))]">
 			<button 
-				class="w-full h-12 border-none rounded-[9px] font-semibold text-sm leading-5 text-white cursor-pointer transition-colors duration-200 {canProceed() && !isLoading ? 'bg-color-primary' : 'bg-[#8ea0ac]'} disabled:cursor-not-allowed" 
+				class="w-full h-12 border-none rounded-[9px] font-semibold text-sm leading-5 text-white cursor-pointer transition-colors duration-200 disabled:cursor-not-allowed"
+				style="background-color: {canProceed() && !isLoading ? '#1095f4' : '#8ea0ac'}" 
 				disabled={!canProceed() || isLoading}
 				onclick={handleNext}
 			>
@@ -432,7 +435,7 @@
 		bind:open={dateDialogOpen}
 		bind:value={dateValue}
 		bind:placeholder={calendarPlaceholder}
-		yearRange={100}
+		yearRange={maxYear - minYear + 1}
 		onSelect={handleDateSelect}
 	/>
 

@@ -497,34 +497,6 @@
 		yearRange={maxYear - minYear + 1}
 		onSelect={(date) => {
 			if (date) {
-				// Check if user is at least 14 years old
-				const today = new Date();
-				const birthDate = new Date(date.year, date.month - 1, date.day);
-				const age = today.getFullYear() - birthDate.getFullYear();
-				const monthDiff = today.getMonth() - birthDate.getMonth();
-				const dayDiff = today.getDate() - birthDate.getDate();
-				
-				// Adjust age if birthday hasn't occurred this year
-				const actualAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
-				
-				console.log('Age validation:', {
-					selectedDate: `${date.year}-${date.month}-${date.day}`,
-					birthDate: birthDate.toISOString(),
-					today: today.toISOString(),
-					age,
-					monthDiff,
-					dayDiff,
-					actualAge
-				});
-				
-				if (actualAge < 14) {
-					alert('가이드는 만 14세 이상이어야 합니다. 다시 선택해주세요.');
-					// Reset the date value
-					dateValue = undefined;
-					formData.birthDate = '';
-					return;
-				}
-				
 				// Update form data immediately when date is selected
 				formData.birthDate = `${date.year}-${String(date.month).padStart(2, '0')}-${String(date.day).padStart(2, '0')}`;
 				// Update the dateValue state as well
