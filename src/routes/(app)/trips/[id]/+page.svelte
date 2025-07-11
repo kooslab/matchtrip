@@ -8,6 +8,7 @@
 
 	let { data } = $props();
 	let trip = $derived(data.trip);
+	console.log('trip', trip);
 	let hasExistingOffer = $derived(data.hasExistingOffer);
 
 	let isTravelInfoOpen = $state(false);
@@ -42,6 +43,51 @@
 		};
 
 		return methodMap[method] || method;
+	}
+
+	function formatActivity(activityId: string) {
+		const activityMap: Record<string, string> = {
+			'city-tour': '시내투어',
+			'suburb-tour': '근교투어',
+			'snap-photo': '스냅사진',
+			'vehicle-tour': '차량투어',
+			'airport-pickup': '공항픽업',
+			'bus-charter': '버스대절',
+			'interpretation': '통역 서비스',
+			'accommodation': '숙박(민박)',
+			'organization-visit': '기관방문',
+			'other-tour': '기타투어'
+		};
+
+		return activityMap[activityId] || activityId;
+	}
+
+	function formatTravelStyle(style: string | null) {
+		if (!style) return '미정';
+
+		// Trip creation travel styles
+		const tripCreationStyles: Record<string, string> = {
+			'friends': '친구들과 함께 하는 여행',
+			'parents': '부모님과 함께 하는 여행',
+			'children': '자녀와 함께 하는 여행',
+			'business': '직장동료와 함께하는 비즈니스 여행',
+			'other': '기타여행'
+		};
+
+		// Trip edit travel styles
+		const tripEditStyles: Record<string, string> = {
+			'relaxation': '휴양/힐링',
+			'adventure': '모험/액티비티',
+			'culture': '문화/역사',
+			'food': '미식/요리',
+			'shopping': '쇼핑',
+			'nature': '자연/생태',
+			'city': '도시 탐방',
+			'family': '가족 여행'
+		};
+
+		// Check both style maps
+		return tripCreationStyles[style] || tripEditStyles[style] || style;
 	}
 
 	function getStatusText(status: string) {
@@ -143,16 +189,24 @@
 						{trip.travelMethod ? formatTravelMethod(trip.travelMethod) : '미정'}
 					</p>
 				</div>
-				{#if trip.interests && trip.interests.length > 0}
+				{#if trip.activities && trip.activities.length > 0}
 					<div class="flex items-start">
-						<span class="w-20 flex-shrink-0 text-sm text-gray-600">관심사</span>
+						<span class="w-20 flex-shrink-0 text-sm text-gray-600">활동</span>
 						<div class="flex flex-wrap gap-1.5">
-							{#each trip.interests as interest}
+							{#each trip.activities as activity}
 								<span class="rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700">
-									{interest}
+									{formatActivity(activity)}
 								</span>
 							{/each}
 						</div>
+					</div>
+				{/if}
+				{#if trip.travelStyle}
+					<div class="flex items-start">
+						<span class="w-20 flex-shrink-0 text-sm text-gray-600">여행 스타일</span>
+						<p class="text-sm font-medium text-gray-900">
+							{formatTravelStyle(trip.travelStyle)}
+						</p>
 					</div>
 				{/if}
 			</div>
@@ -169,14 +223,13 @@
 				<img
 					src={arrowRightUrl}
 					alt={isCustomRequestOpen ? 'Close' : 'Open'}
-					class="h-5 w-5 transition-transform {isCustomRequestOpen ? '-rotate-90' : 'rotate-90'}"
+					class="h-5 w-5 transition-transform {isCustomRequestOpen ? 'rotate-90' : ''}"
 				/>
 			</button>
 			{#if isCustomRequestOpen}
 				<div class="border-t border-gray-100 px-4 pb-4">
 					<p class="mt-3 text-sm text-gray-600">
-						{trip.customRequest ||
-							"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s."}
+						{trip.additionalRequest || "요청 사항이 없습니다."}
 					</p>
 				</div>
 			{/if}
