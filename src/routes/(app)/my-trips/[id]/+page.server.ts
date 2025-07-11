@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { trips, destinations, users, offers } from '$lib/server/db/schema';
+import { trips, destinations, users, offers, guideProfiles } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { redirect } from '@sveltejs/kit';
 import { auth } from '$lib/auth';
@@ -72,10 +72,19 @@ export const load = async ({ params, request, locals }) => {
 				id: users.id,
 				name: users.name,
 				email: users.email
+			},
+			guideProfile: {
+				profileImageUrl: guideProfiles.profileImageUrl,
+				currentLocation: guideProfiles.currentLocation,
+				guideAreas: guideProfiles.guideAreas,
+				languages: guideProfiles.languages,
+				experience: guideProfiles.experience,
+				introduction: guideProfiles.introduction
 			}
 		})
 		.from(offers)
 		.leftJoin(users, eq(offers.guideId, users.id))
+		.leftJoin(guideProfiles, eq(users.id, guideProfiles.userId))
 		.where(eq(offers.tripId, tripId))
 		.orderBy(offers.createdAt);
 

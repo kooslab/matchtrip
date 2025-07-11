@@ -14,6 +14,7 @@
 			};
 			guideProfile?: {
 				avgRating?: number;
+				profileImageUrl?: string;
 			};
 			createdAt: string;
 		};
@@ -77,10 +78,10 @@
 						<div class="grid-cols-[max-content] grid-rows-[max-content] inline-grid leading-[0] place-items-start relative shrink-0">
 							<div
 								class="[background-size:cover,_auto] [grid-area:1_/_1] bg-[#f0f0f0] bg-[position:50%_50%,_0%_0%] ml-0 mt-0 relative rounded-[22px] size-11"
-								style={offer.guide?.profileImage ? `background-image: url('${offer.guide.profileImage}')` : ''}
+								style={offer.guideProfile?.profileImageUrl ? `background-image: url('${offer.guideProfile.profileImageUrl}')` : ''}
 							>
 								<div class="absolute border border-[rgba(0,62,129,0.01)] border-solid inset-0 pointer-events-none rounded-[22px]" />
-								{#if !offer.guide?.profileImage}
+								{#if !offer.guideProfile?.profileImageUrl}
 									<div class="flex items-center justify-center w-full h-full text-gray-500 text-sm">
 										{offer.guide?.name?.charAt(0) || '?'}
 									</div>

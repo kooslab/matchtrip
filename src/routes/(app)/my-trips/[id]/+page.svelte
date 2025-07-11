@@ -3,6 +3,7 @@
 	import { page } from '$app/stores';
 	import PaymentModal from '$lib/components/PaymentModal.svelte';
 	import OfferSummaryCard from '$lib/components/OfferSummaryCard.svelte';
+	import OfferDetailModal from '$lib/components/OfferDetailModal.svelte';
 	import BackButton from '$lib/components/BackButton.svelte';
 	import { MessageSquare, Star, ArrowLeft, ChevronDown } from 'lucide-svelte';
 	import { formatKoreanDate, formatKoreanDateRange } from '$lib/utils/dateFormatter';
@@ -34,13 +35,17 @@
 
 	let { data } = $props();
 	let trip = $derived(data.trip as TripData);
+	console.log('trip', trip);
 	let offers = $derived(data.offers);
+	console.log('offers', offers);
 	let acceptedOffer = $derived(offers.find((o) => o.status === 'accepted'));
 
 	// State for offer actions
 	let processingOfferId = $state<string | null>(null);
 	let showPaymentModal = $state(false);
 	let selectedOffer = $state<any>(null);
+	let showOfferDetailModal = $state(false);
+	let selectedOfferForDetail = $state<any>(null);
 
 	// Tab state
 	let activeTab = $state<'info' | 'offers'>('info');
@@ -203,6 +208,11 @@
 		}
 	}
 
+	function openOfferDetail(offer: any) {
+		selectedOfferForDetail = offer;
+		showOfferDetailModal = true;
+	}
+
 	async function handleOfferAction(offerId: string, action: 'accept' | 'reject') {
 		if (processingOfferId) return;
 
@@ -252,7 +262,7 @@
 	<title>{trip.destination?.city || '여행'} - MatchTrip</title>
 </svelte:head>
 
-<div class="min-h-screen bg-gray-50">
+<div class="min-h-screen bg-white">
 	<!-- Header -->
 	<header class="sticky top-0 z-10 border-b border-gray-200 bg-white">
 		<div class="flex h-14 items-center justify-between px-4">
@@ -489,7 +499,7 @@
 						{#each offers as offer, index}
 							<OfferSummaryCard 
 								{offer} 
-								onclick={() => goto(`/my-trips/${trip.id}/offers/${offer.id}`)}
+								onclick={() => openOfferDetail(offer)}
 								showBadge={index === 0}
 								badgeText={index === 0 ? '가장 저렴한 가격' : ''}
 								badgeColor="#4daeeb"
@@ -512,5 +522,27 @@
 		}}
 		offer={selectedOffer}
 		{trip}
+	/>
+{/if}
+
+<!-- Offer Detail Modal -->
+{#if selectedOfferForDetail}
+	<OfferDetailModal
+		isOpen={showOfferDetailModal}
+		onClose={() => {
+			showOfferDetailModal = false;
+			selectedOfferForDetail = null;
+		}}
+		offer={selectedOfferForDetail}
+		{trip}
+		onAccept={(offerId) => {
+			showOfferDetailModal = false;
+			handleOfferAction(offerId, 'accept');
+		}}
+		onReject={(offerId) => {
+			showOfferDetailModal = false;
+			handleOfferAction(offerId, 'reject');
+		}}
+		onStartChat={startConversation}
 	/>
 {/if}
