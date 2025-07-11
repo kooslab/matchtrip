@@ -92,6 +92,13 @@
 			formData.name = storeData.name;
 			completedSteps = ['name'];
 			currentStep = 'mobile';
+			// Auto-focus on mobile input when starting from mobile step
+			setTimeout(() => {
+				const mobileInput = document.getElementById('mobile-input');
+				if (mobileInput) {
+					mobileInput.focus();
+				}
+			}, 100);
 		}
 		if (storeData.phone) {
 			// Extract country code and mobile number
@@ -207,6 +214,13 @@
 			switch (currentStep) {
 				case 'name':
 					currentStep = 'mobile';
+					// Auto-focus on mobile input after DOM update
+					setTimeout(() => {
+						const mobileInput = document.getElementById('mobile-input');
+						if (mobileInput) {
+							mobileInput.focus();
+						}
+					}, 100);
 					break;
 				case 'mobile':
 					// Store data in onboarding store
@@ -535,7 +549,7 @@
 								{/if}
 							</div>
 							<input
-								id="mobile"
+								id="mobile-input"
 								type="tel"
 								inputmode="numeric"
 								pattern="[0-9\-\(\)\s]*"

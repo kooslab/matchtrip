@@ -55,6 +55,7 @@ export const users = pgTable(
 		role: userRoleEnum('role'),
 		phone: text('phone'),
 		birthDate: date('birth_date'),
+		onboardingCompleted: boolean('onboarding_completed').notNull().default(false),
 		createdAt: timestamp('created_at').defaultNow().notNull(),
 		updatedAt: timestamp('updated_at').defaultNow().notNull()
 	},

@@ -24,12 +24,14 @@
 	});
 	
 	// Subscribe to session changes for real-time updates
-	let currentSession = $state(null);
+	// Use derived instead of effect to avoid loops
+	const currentSession = $derived(browser ? $sessionStore : null);
 	
+	// Only log when session actually changes
 	$effect(() => {
 		if (browser) {
-			currentSession = $sessionStore;
-			console.log('[CLIENT] Session store updated:', currentSession);
+			// Only log if there's a meaningful change
+			console.log('[CLIENT] Session store updated:', currentSession ? 'Session exists' : 'No session');
 		}
 	});
 	

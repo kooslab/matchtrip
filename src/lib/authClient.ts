@@ -1,5 +1,6 @@
 import { createAuthClient } from 'better-auth/svelte';
 import { env } from '$env/dynamic/public';
+import { writable } from 'svelte/store';
 
 // Dynamic base URL that works in both dev and production
 const getBaseUrl = () => {
@@ -21,15 +22,53 @@ const getBaseUrl = () => {
 const baseURL = getBaseUrl();
 console.log('[AUTH CLIENT] Creating auth client with baseURL:', baseURL);
 
+// Create a writable store for the session
+const sessionStore = writable<{ data: any; isPending: boolean }>({ data: null, isPending: true });
+
 export const authClient = createAuthClient({
 	baseURL // dynamically determine the base URL
 });
 
-// Export the session store and methods
-export const { signIn, signOut, useSession } = authClient;
+// Get the original methods
+const originalSignIn = authClient.signIn;
+const originalSignOut = authClient.signOut;
 
-// Export the session store directly for component usage
-export const session = authClient.$session;
+// Create wrapped versions that update our session store
+export const signIn = {
+	social: async (...args: Parameters<typeof originalSignIn.social>) => {
+		const result = await originalSignIn.social(...args);
+		// Update session after sign in
+		if (typeof window !== 'undefined') {
+			const newSession = await authClient.getSession();
+			sessionStore.set({ data: newSession, isPending: false });
+		}
+		return result;
+	}
+};
+
+export const signOut = async (...args: Parameters<typeof originalSignOut>) => {
+	const result = await originalSignOut(...args);
+	// Clear session after sign out
+	if (typeof window !== 'undefined') {
+		sessionStore.set({ data: null, isPending: false });
+	}
+	return result;
+};
+
+export const { useSession } = authClient;
+
+// Initialize session in browser only
+if (typeof window !== 'undefined') {
+	// Get initial session
+	authClient.getSession().then((initialSession) => {
+		sessionStore.set({ data: initialSession, isPending: false });
+	}).catch(() => {
+		sessionStore.set({ data: null, isPending: false });
+	});
+}
+
+// Export the session store for component usage
+export const session = sessionStore;
 
 // Add session debugging only in browser
 if (typeof window !== 'undefined') {

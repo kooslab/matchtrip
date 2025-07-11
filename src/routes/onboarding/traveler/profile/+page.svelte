@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { onboardingStore } from '$lib/stores/onboardingStore';
 	import { DatePicker, Dialog } from 'bits-ui';
@@ -205,11 +205,25 @@
 				// We might need to update it in the user record
 			}
 
+			// Mark onboarding as completed
+			const completeResponse = await fetch('/api/user/complete-onboarding', {
+				method: 'POST'
+			});
+
+			if (!completeResponse.ok) {
+				console.error('Failed to mark onboarding as complete');
+			}
+
+			// Invalidate all cached data to ensure session is refreshed
+			await invalidateAll();
+
 			// Clear auto-save timer
 			if (saveTimer) clearTimeout(saveTimer);
 			
 			// Clear store and redirect to completion page
 			onboardingStore.reset();
+			
+			// Now navigate with fresh session data
 			await goto('/onboarding/traveler/complete');
 		} catch (error) {
 			console.error('Error:', error);

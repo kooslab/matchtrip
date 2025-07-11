@@ -82,7 +82,8 @@ const authHandler = (async ({ event, resolve }) => {
 						email: true,
 						emailVerified: true,
 						phone: true,
-						birthDate: true
+						birthDate: true,
+						onboardingCompleted: true
 					},
 					with: {
 						guideProfile: true
@@ -99,7 +100,9 @@ const authHandler = (async ({ event, resolve }) => {
 						'EmailVerified:',
 						user.emailVerified,
 						'Guide Verified:',
-						user.guideProfile?.isVerified
+						user.guideProfile?.isVerified,
+						'Onboarding Completed:',
+						user.onboardingCompleted
 					);
 
 					// Check if user has agreed to terms
@@ -144,15 +147,7 @@ const authHandler = (async ({ event, resolve }) => {
 		return svelteKitHandler({ event, resolve, auth });
 	}
 	
-	// IMPORTANT: Call svelteKitHandler AFTER setting up event.locals
-	// This ensures Better Auth has access to the session data we've set
-	const response = await svelteKitHandler({ event, resolve, auth });
-	
-	// If svelteKitHandler returned early (e.g., for auth routes), return its response
-	if (response.status !== 200 || event.url.pathname.startsWith('/api/auth/')) {
-		return response;
-	}
-
+	// Handle redirects BEFORE calling svelteKitHandler to ensure we have fresh user data
 	// Handle auth route redirects - redirect to role-based pages
 	if (routeId?.startsWith('/(auth)') && session && event.locals.user) {
 		// First check if user has agreed to terms
@@ -165,22 +160,20 @@ const authHandler = (async ({ event, resolve }) => {
 		} else if (event.locals.user.role === 'admin') {
 			redirect(302, '/admin');
 		} else if (event.locals.user.role === 'guide') {
-			// Check if guide is verified
-			if (!(event.locals.user as any).guideProfile?.isVerified) {
-				redirect(302, '/guide/pending-approval');
-			} else {
-				redirect(302, '/trips');
-			}
+			// For auth routes, redirect guides to main page
+			// The main page will handle showing appropriate content based on verification status
+			redirect(302, '/');
 		} else {
 			redirect(302, '/my-trips');
 		}
 	}
 
-	// Remove the complex OAuth callback detection - let Better Auth handle it
-	// The client-side will detect OAuth parameters and handle the redirect
-
 	// Handle first-time users landing on home page - redirect to onboarding
 	if (routeId === '/' && session && event.locals.user) {
+		console.log('[REDIRECT CHECK] User onboardingCompleted:', event.locals.user.onboardingCompleted);
+		console.log('[REDIRECT CHECK] User role:', event.locals.user.role);
+		console.log('[REDIRECT CHECK] Has agreed to terms:', event.locals.hasAgreedToTerms);
+		
 		// Check if this is a first-time user (no agreements)
 		if (!event.locals.hasAgreedToTerms) {
 			redirect(302, '/agreement');
@@ -189,8 +182,9 @@ const authHandler = (async ({ event, resolve }) => {
 		else if (!event.locals.user.role) {
 			redirect(302, '/onboarding/role');
 		}
-		// Check if user hasn't completed profile (name, phone, birthDate)
-		else if (!event.locals.user.name || !(event.locals.user as any).phone || !(event.locals.user as any).birthDate) {
+		// Check if user hasn't completed onboarding
+		else if (!event.locals.user.onboardingCompleted) {
+			console.log('[REDIRECT] Redirecting to onboarding - onboardingCompleted is false');
 			// Redirect to role-specific onboarding
 			if (event.locals.user.role === 'guide') {
 				redirect(302, '/onboarding/guide');
@@ -198,6 +192,34 @@ const authHandler = (async ({ event, resolve }) => {
 				redirect(302, '/onboarding/traveler');
 			}
 		}
+		// If all onboarding is complete, redirect to appropriate page
+		else {
+			if (event.locals.user.role === 'admin') {
+				redirect(302, '/admin');
+			} else if (event.locals.user.role === 'guide') {
+				// For guides on the main route, allow access even if not verified
+				// They will see the appropriate UI based on their verification status
+				// The main route can handle showing different content for verified/unverified guides
+				// We'll only redirect to trips if they're verified
+				if (event.locals.user.guideProfile?.isVerified) {
+					redirect(302, '/trips');
+				}
+				// If not verified, let them stay on the main route
+			} else {
+				redirect(302, '/my-trips');
+			}
+		}
+	}
+	
+	// IMPORTANT: Call svelteKitHandler AFTER setting up event.locals and handling redirects
+	// This ensures Better Auth has access to the session data we've set
+	console.log('[BEFORE svelteKitHandler] User onboardingCompleted:', event.locals.user?.onboardingCompleted);
+	const response = await svelteKitHandler({ event, resolve, auth });
+	console.log('[AFTER svelteKitHandler] User onboardingCompleted:', event.locals.user?.onboardingCompleted);
+	
+	// If svelteKitHandler returned early (e.g., for auth routes), return its response
+	if (response.status !== 200 || event.url.pathname.startsWith('/api/auth/')) {
+		return response;
 	}
 
 	// Check if user needs to agree to terms first
@@ -234,7 +256,6 @@ const authHandler = (async ({ event, resolve }) => {
 	const guideOnlyRoutes = ['/(app)/trips', '/(app)/offers', '/(app)/my-offers'];
 	const isGuideOnlyRoute = guideOnlyRoutes.some((route) => routeId?.includes(route));
 	const isAdminRoute = routeId?.startsWith('/admin');
-	const isPendingApprovalRoute = routeId === '/(app)/guide/pending-approval';
 
 	// Allow admin users to access any route
 	if (event.locals.user?.role === 'admin') {

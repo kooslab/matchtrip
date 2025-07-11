@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { onboardingStore } from '$lib/stores/onboardingStore';
 	import iconArrowBack from '$lib/icons/icon-arrow-back-android-mono.svg';
@@ -125,8 +125,22 @@
 			});
 
 			if (guideResponse.ok) {
+				// Mark onboarding as completed
+				const completeResponse = await fetch('/api/user/complete-onboarding', {
+					method: 'POST'
+				});
+
+				if (!completeResponse.ok) {
+					console.error('Failed to mark onboarding as complete');
+				}
+
+				// Invalidate all cached data to ensure session is refreshed
+				await invalidateAll();
+
 				// Clear store and redirect to completion page
 				onboardingStore.reset();
+				
+				// Now navigate with fresh session data
 				await goto('/onboarding/guide/complete');
 			} else {
 				const error = await guideResponse.json();

@@ -10,6 +10,12 @@ declare global {
 				name: string;
 				email: string;
 				emailVerified: boolean;
+				phone?: string | null;
+				birthDate?: string | null;
+				onboardingCompleted?: boolean;
+				guideProfile?: {
+					isVerified: boolean;
+				} | null;
 			};
 			session?: any;
 			hasAgreedToTerms?: boolean;

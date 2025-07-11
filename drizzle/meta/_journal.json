@@ -148,6 +148,13 @@
       "when": 1751910663820,
       "tag": "0020_abnormal_whiplash",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1752204928111,
+      "tag": "0021_fast_rumiko_fujikawa",
+      "breakpoints": true
     }
   ]
 }
