@@ -11,6 +11,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 	if (locals.user.profileCompleted) {
 		throw redirect(302, '/app/dashboard');
 	}
+	
+	// Only travelers can access this page
+	if (locals.user?.role && locals.user.role !== 'traveler') {
+		throw redirect(302, '/');
+	}
 
 	return {
 		user: locals.user

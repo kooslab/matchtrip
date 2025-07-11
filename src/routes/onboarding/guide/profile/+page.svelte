@@ -2,9 +2,9 @@
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { onboardingStore } from '$lib/stores/onboardingStore';
-	import { DatePicker, Dialog } from 'bits-ui';
 	import { CalendarDate, CalendarDateTime, ZonedDateTime, now, getLocalTimeZone, parseDate, today } from '@internationalized/date';
-	import { Calendar, ChevronLeft, ChevronRight } from 'lucide-svelte';
+	import { Calendar } from 'lucide-svelte';
+	import DatePickerDialog from '$lib/components/DatePickerDialog.svelte';
 	import iconArrowBack from '$lib/icons/icon-arrow-back-android-mono.svg';
 	import iconUser from '$lib/icons/icon-user-mono.svg';
 	import iconCamera from '$lib/icons/icon-camera-mono.svg';
@@ -490,134 +490,47 @@
 	</div>
 
 	<!-- Date Picker Dialog -->
-	<Dialog.Root bind:open={dateDialogOpen}>
-		<Dialog.Portal>
-			<Dialog.Overlay class="fixed inset-0 bg-black/60 animate-fadeIn" style="z-index: 50;" />
-			<Dialog.Content class="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100vw-32px)] max-w-[540px] bg-transparent animate-slideUp" style="z-index: 51;">
-				<div class="flex bg-white rounded-2xl border border-gray-100 shadow-[0_25px_50px_rgba(0,0,0,0.25)] overflow-hidden h-[440px]">
-					<!-- Year selector (left side) -->
-					<div class="w-16 bg-gray-50 border-r border-gray-100 flex flex-col">
-						<div class="px-[8px] py-[12px] text-xs font-semibold text-primary text-center border-b border-gray-100 bg-white">연도 선택</div>
-						<div class="flex-1 overflow-y-auto py-2 scrollbar-hide">
-							{#each Array.from({ length: maxYear - minYear + 1 }, (_, i) => maxYear - i) as year}
-								<button
-									type="button"
-									class="w-full py-2 px-1 text-center text-[13px] font-normal text-primary bg-transparent border-none cursor-pointer transition-all duration-200 hover:bg-blue-50 hover:text-color-primary {calendarPlaceholder.year === year ? 'bg-color-primary text-white font-semibold hover:bg-color-primary hover:text-white' : ''}"
-									onclick={() => {
-										// Create new CalendarDate with selected year
-										calendarPlaceholder = new CalendarDate(year, calendarPlaceholder.month, calendarPlaceholder.day);
-									}}
-								>
-									{year}
-								</button>
-							{/each}
-						</div>
-					</div>
-					
-					<!-- Calendar (right side) -->
-					<DatePicker.Root 
-						bind:value={dateValue} 
-						bind:placeholder={calendarPlaceholder} 
-						weekdayFormat="short" 
-						fixedWeeks={true} 
-						weekStartsOn={0}
-						onValueChange={(value) => {
-							if (value) {
-								// Check if user is at least 14 years old
-								const today = new Date();
-								const birthDate = new Date(value.year, value.month - 1, value.day);
-								const age = today.getFullYear() - birthDate.getFullYear();
-								const monthDiff = today.getMonth() - birthDate.getMonth();
-								const dayDiff = today.getDate() - birthDate.getDate();
-								
-								// Adjust age if birthday hasn't occurred this year
-								const actualAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
-								
-								console.log('Age validation:', {
-									selectedDate: `${value.year}-${value.month}-${value.day}`,
-									birthDate: birthDate.toISOString(),
-									today: today.toISOString(),
-									age,
-									monthDiff,
-									dayDiff,
-									actualAge
-								});
-								
-								if (actualAge < 14) {
-									alert('가이드는 만 14세 이상이어야 합니다. 다시 선택해주세요.');
-									// Reset the date value
-									dateValue = undefined;
-									formData.birthDate = '';
-									return;
-								}
-								
-								// Update form data immediately when date is selected
-								formData.birthDate = `${value.year}-${String(value.month).padStart(2, '0')}-${String(value.day).padStart(2, '0')}`;
-								// Update the dateValue state as well
-								dateValue = value;
-								// Close dialog after a small delay to ensure state updates
-								setTimeout(() => {
-									dateDialogOpen = false;
-								}, 50);
-							}
-						}}
-					>
-						<DatePicker.Calendar class="date-picker-calendar-split">
-							{#snippet children({ months, weekdays })}
-								<DatePicker.Header class="mb-4">
-									<div class="flex items-center justify-between">
-										<DatePicker.PrevButton class="date-picker-nav-button">
-											<ChevronLeft class="w-5 h-5" />
-										</DatePicker.PrevButton>
-										<DatePicker.Heading class="text-[15px] font-semibold text-primary">
-											{#snippet children({ headingValue })}
-												{headingValue.year}년 {headingValue.month}월
-											{/snippet}
-										</DatePicker.Heading>
-										<DatePicker.NextButton class="date-picker-nav-button">
-											<ChevronRight class="w-5 h-5" />
-										</DatePicker.NextButton>
-									</div>
-								</DatePicker.Header>
-								<div class="flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
-									{#each months as month (month.value)}
-										<DatePicker.Grid class="w-full border-collapse select-none space-y-1">
-											<DatePicker.GridHead>
-												<DatePicker.GridRow class="mb-1 flex w-full gap-0.5">
-													{#each weekdays as day (day)}
-														<DatePicker.HeadCell class="text-secondary font-normal! w-9 rounded-md text-xs">
-															<div>{getKoreanWeekday(day)}</div>
-														</DatePicker.HeadCell>
-													{/each}
-												</DatePicker.GridRow>
-											</DatePicker.GridHead>
-											<DatePicker.GridBody>
-												{#each month.weeks as weekDates (weekDates)}
-													<DatePicker.GridRow class="flex w-full gap-0.5">
-														{#each weekDates as date (date)}
-															<DatePicker.Cell
-																{date}
-																month={month.value}
-																class="p-0! relative size-9 text-center text-sm"
-															>
-																<DatePicker.Day class="date-picker-day">
-																	<div class="bg-color-primary group-data-selected:bg-white group-data-today:block absolute top-[5px] hidden size-1 rounded-full transition-all"></div>
-																	{date.day}
-																</DatePicker.Day>
-															</DatePicker.Cell>
-														{/each}
-													</DatePicker.GridRow>
-												{/each}
-											</DatePicker.GridBody>
-										</DatePicker.Grid>
-									{/each}
-								</div>
-							{/snippet}
-						</DatePicker.Calendar>
-					</DatePicker.Root>
-				</div>
-			</Dialog.Content>
-		</Dialog.Portal>
-	</Dialog.Root>
+	<DatePickerDialog 
+		bind:open={dateDialogOpen}
+		bind:value={dateValue}
+		bind:placeholder={calendarPlaceholder}
+		yearRange={maxYear - minYear + 1}
+		onSelect={(date) => {
+			if (date) {
+				// Check if user is at least 14 years old
+				const today = new Date();
+				const birthDate = new Date(date.year, date.month - 1, date.day);
+				const age = today.getFullYear() - birthDate.getFullYear();
+				const monthDiff = today.getMonth() - birthDate.getMonth();
+				const dayDiff = today.getDate() - birthDate.getDate();
+				
+				// Adjust age if birthday hasn't occurred this year
+				const actualAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
+				
+				console.log('Age validation:', {
+					selectedDate: `${date.year}-${date.month}-${date.day}`,
+					birthDate: birthDate.toISOString(),
+					today: today.toISOString(),
+					age,
+					monthDiff,
+					dayDiff,
+					actualAge
+				});
+				
+				if (actualAge < 14) {
+					alert('가이드는 만 14세 이상이어야 합니다. 다시 선택해주세요.');
+					// Reset the date value
+					dateValue = undefined;
+					formData.birthDate = '';
+					return;
+				}
+				
+				// Update form data immediately when date is selected
+				formData.birthDate = `${date.year}-${String(date.month).padStart(2, '0')}-${String(date.day).padStart(2, '0')}`;
+				// Update the dateValue state as well
+				dateValue = date;
+			}
+		}}
+	/>
 
 </div>

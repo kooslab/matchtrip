@@ -296,11 +296,20 @@
 									bind:value={verificationCode}
 									placeholder="6자리 숫자"
 									maxlength="6"
+									inputmode="numeric"
+									pattern="[0-9]*"
 									class="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-1 focus:outline-none"
 									style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1;"
 									onfocus={(e) => (e.target.style.borderColor = colors.primary)}
 									onblur={(e) => (e.target.style.borderColor = '')}
 									oninput={(e) => {
+										// Remove any non-numeric characters
+										const target = e.currentTarget;
+										const value = target.value.replace(/[^0-9]/g, '');
+										if (value !== target.value) {
+											verificationCode = value;
+										}
+										
 										if (verificationCode.length === 6) {
 											isVerified = true;
 										} else {
@@ -343,11 +352,21 @@
 									bind:value={formData.phone}
 									placeholder="01012345678"
 									maxlength="11"
+									inputmode="numeric"
+									pattern="[0-9]*"
 									disabled={isVerificationSent}
 									class="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-1 focus:outline-none disabled:bg-gray-50"
 									style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1;"
 									onfocus={(e) => (e.target.style.borderColor = colors.primary)}
 									onblur={(e) => (e.target.style.borderColor = '')}
+									oninput={(e) => {
+										// Remove any non-numeric characters
+										const target = e.currentTarget;
+										const value = target.value.replace(/[^0-9]/g, '');
+										if (value !== target.value) {
+											formData.phone = value;
+										}
+									}}
 									onkeydown={(e) => {
 										if (e.key === 'Enter' && canProceedPhone() && !isVerificationSent && !isSendingCode) {
 											sendVerificationCode();
