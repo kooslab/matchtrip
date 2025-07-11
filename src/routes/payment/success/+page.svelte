@@ -65,10 +65,10 @@
 				// Clear pending payment
 				sessionStorage.removeItem('pendingPayment');
 
-				// Redirect to order history after 3 seconds
+				// Redirect to order confirmation page after 2 seconds
 				setTimeout(() => {
-					goto('/order-history');
-				}, 3000);
+					goto(`/order-confirmation/${orderId}`);
+				}, 2000);
 			} else {
 				console.error('Payment confirmation failed:', result);
 				error = result.error || '결제 확인 중 오류가 발생했습니다.';
@@ -92,7 +92,7 @@
 			<div class="flex flex-col items-center">
 				<div class="mb-6">
 					<div
-						class="h-16 w-16 animate-spin rounded-full border-4 border-pink-500 border-t-transparent"
+						class="h-16 w-16 animate-spin rounded-full border-4 border-[#1095f4] border-t-transparent"
 					></div>
 				</div>
 				<h2 class="mb-2 text-xl font-semibold text-gray-900">결제를 처리하고 있습니다</h2>
@@ -118,7 +118,7 @@
 				<h2 class="mb-2 text-xl font-semibold text-gray-900">결제가 완료되었습니다</h2>
 				<p class="mb-6 text-center text-gray-600">
 					여행 제안이 수락되었습니다.<br />
-					곧 주문 내역 페이지로 이동합니다...
+					곧 주문 상세 페이지로 이동합니다...
 				</p>
 				<div class="w-full space-y-2 rounded-lg bg-gray-50 p-4 text-sm">
 					<div class="flex justify-between">
