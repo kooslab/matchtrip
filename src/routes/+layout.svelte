@@ -17,7 +17,7 @@
 </script>
 
 <!-- Global Loading Bar -->
-{#if $navigating}
+{#if typeof window !== 'undefined' && $navigating}
 	<div class="fixed top-0 left-0 z-50 h-1 w-full bg-gray-200">
 		<div class="h-full animate-pulse bg-gradient-to-r from-blue-500 to-pink-500"></div>
 	</div>

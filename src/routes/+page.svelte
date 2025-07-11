@@ -20,15 +20,17 @@
 		console.log('[CLIENT] Data prop:', data);
 		console.log('[CLIENT] User:', user);
 		console.log('[CLIENT] UserRole:', userRole);
-		console.log('[CLIENT] $page store:', $page);
+		console.log('[CLIENT] $page store:', browser ? $page : 'SSR');
 	});
 	
 	// Subscribe to session changes for real-time updates
-	let currentSession = $state($sessionStore);
+	let currentSession = $state(null);
 	
 	$effect(() => {
-		currentSession = $sessionStore;
-		console.log('[CLIENT] Session store updated:', currentSession);
+		if (browser) {
+			currentSession = $sessionStore;
+			console.log('[CLIENT] Session store updated:', currentSession);
+		}
 	});
 	
 	// Check if we're coming back from OAuth callback
@@ -131,7 +133,7 @@
 	}
 </script>
 
-{#if $page?.error}
+{#if browser && $page?.error}
 	<div class="flex min-h-screen items-center justify-center">
 		<div class="text-center">
 			<h1 class="text-2xl font-bold text-red-600">Error</h1>
