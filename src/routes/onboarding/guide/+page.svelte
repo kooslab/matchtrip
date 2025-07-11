@@ -208,6 +208,12 @@
 		isLoading = true;
 
 		try {
+			// Store data in onboarding store before moving to next step
+			onboardingStore.setData({
+				name: formData.name,
+				phone: formData.countryCode + formData.mobile
+			});
+
 			completedSteps = [...completedSteps, currentStep];
 
 			// Move to next step
@@ -223,11 +229,6 @@
 					}, 100);
 					break;
 				case 'mobile':
-					// Store data in onboarding store
-					onboardingStore.setData({
-						name: formData.name,
-						phone: formData.countryCode + formData.mobile
-					});
 					// Navigate to separate profile page
 					await goto('/onboarding/guide/profile');
 					return;
@@ -244,6 +245,38 @@
 			alert('오류가 발생했습니다.');
 		} finally {
 			isLoading = false;
+		}
+	}
+
+	// Handle back navigation
+	function handleBack() {
+		// If we're on the name step, go back to previous page
+		if (currentStep === 'name') {
+			goto(-1);
+			return;
+		}
+
+		// Otherwise, go back to previous step
+		switch (currentStep) {
+			case 'mobile':
+				currentStep = 'name';
+				// Remove mobile from completed steps
+				completedSteps = completedSteps.filter(s => s !== 'name');
+				// Auto-focus on name input after DOM update
+				setTimeout(() => {
+					const nameInput = document.getElementById('name');
+					if (nameInput) {
+						nameInput.focus();
+					}
+				}, 100);
+				break;
+			case 'destinations':
+				// This would be handled by separate page navigation
+				break;
+			case 'documents':
+				currentStep = 'destinations';
+				completedSteps = completedSteps.filter(s => s !== 'destinations');
+				break;
 		}
 	}
 
@@ -457,7 +490,7 @@
 	<!-- Header -->
 	<header class="sticky top-0 z-10 bg-white">
 		<div class="flex h-14 items-center px-4">
-			<button onclick={() => goto(-1)} class="mr-4">
+			<button onclick={handleBack} class="mr-4">
 				<svg class="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"
 					></path>
@@ -758,7 +791,19 @@
 
 			<!-- Completed Steps Stack (below current step) -->
 			{#each completedSteps as step}
-				<div class="rounded-lg bg-white p-4 shadow-sm">
+				<button 
+					class="w-full rounded-lg bg-white p-4 shadow-sm text-left transition-all hover:shadow-md cursor-pointer"
+					onclick={() => {
+						// Allow editing completed steps
+						currentStep = step;
+						// Remove this step and all steps after it from completed
+						const stepIndex = ['name', 'mobile', 'profile', 'destinations', 'documents'].indexOf(step);
+						completedSteps = completedSteps.filter((s) => {
+							const sIndex = ['name', 'mobile', 'profile', 'destinations', 'documents'].indexOf(s);
+							return sIndex < stepIndex;
+						});
+					}}
+				>
 					{#if step === 'name'}
 						<div class="flex items-center justify-between">
 							<div>
@@ -872,7 +917,7 @@
 							</svg>
 						</div>
 					{/if}
-				</div>
+				</button>
 			{/each}
 		</div>
 	</div>

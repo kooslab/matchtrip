@@ -1,6 +1,6 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { guideProfiles } from '$lib/server/db/schema';
+import { guideProfiles, fileUploads } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { sendGuideOnboardingEmail } from '$lib/server/email/guideOnboarding';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
@@ -117,6 +117,17 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 					} else if (categoryId === 'guide-license' || categoryId === 'license-certification' || categoryId === 'insurance') {
 						certificationUrls.push(fileUrl);
 					}
+					
+					// Track file upload in database
+					await db.insert(fileUploads).values({
+						userId,
+						filename: filename,
+						originalName: value.name,
+						fileType: value.type,
+						fileSize: value.size,
+						uploadType: `guide-document-${categoryId}`,
+						url: fileUrl
+					});
 				} catch (uploadError) {
 					console.error(`Failed to upload file for category ${categoryId}:`, uploadError);
 				}

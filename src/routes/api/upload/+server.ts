@@ -4,6 +4,8 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { env } from '$env/dynamic/private';
 import { dev } from '$app/environment';
 import { devImageStorage } from '$lib/server/devImageStorage';
+import { db } from '$lib/server/db';
+import { fileUploads } from '$lib/server/db/schema';
 
 // Cloudflare R2 configuration
 const R2_ACCOUNT_ID = env.R2_ACCOUNT_ID;
@@ -29,7 +31,7 @@ if (R2_ACCOUNT_ID && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY) {
 	});
 }
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
 	try {
 		const formData = await request.formData();
 		const file = formData.get('file') as File;
@@ -102,6 +104,19 @@ export const POST: RequestHandler = async ({ request }) => {
 					publicUrl = `/api/images/${filename}`;
 				}
 
+				// Track file upload in database if user is authenticated
+				if (locals.user?.id) {
+					await db.insert(fileUploads).values({
+						userId: locals.user.id,
+						filename: filename,
+						originalName: file.name,
+						fileType: file.type,
+						fileSize: file.size,
+						uploadType: type,
+						url: publicUrl
+					});
+				}
+
 				return json({
 					success: true,
 					url: publicUrl,
@@ -122,6 +137,19 @@ export const POST: RequestHandler = async ({ request }) => {
 			console.log('[Upload] Storing in dev storage:', filename);
 			devImageStorage.set(filename, { buffer, contentType: file.type });
 			console.log('[Upload] Dev storage now has:', devImageStorage.size, 'images');
+
+			// Track file upload in database if user is authenticated
+			if (locals.user?.id) {
+				await db.insert(fileUploads).values({
+					userId: locals.user.id,
+					filename: filename,
+					originalName: file.name,
+					fileType: file.type,
+					fileSize: file.size,
+					uploadType: type,
+					url: `/api/images/${filename}`
+				});
+			}
 
 			// Return the secure endpoint URL
 			return json({
