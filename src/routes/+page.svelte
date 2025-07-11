@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { signIn, signOut } from '$lib/authClient';
+	import { signIn, signOut, session as sessionStore } from '$lib/authClient';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { resetAllStores } from '$lib/stores/resetStores';
@@ -23,50 +23,57 @@
 		console.log('[CLIENT] $page store:', $page);
 	});
 	
+	// Subscribe to session changes for real-time updates
+	let currentSession = $state($sessionStore);
+	
+	$effect(() => {
+		currentSession = $sessionStore;
+		console.log('[CLIENT] Session store updated:', currentSession);
+	});
+	
 	// Check if we're coming back from OAuth callback
 	$effect(() => {
 		if (browser) {
 			const urlParams = new URLSearchParams(window.location.search);
-			const oauthComplete = urlParams.get('oauth_complete');
-			const userRoleParam = urlParams.get('user_role');
+			const code = urlParams.get('code');
+			const state = urlParams.get('state');
 			
-			console.log('[CLIENT] Checking OAuth callback:', { 
-				oauthComplete, 
-				userRoleParam, 
-				user, 
-				userRole,
-				urlParams: urlParams.toString() 
-			});
+			console.log('[CLIENT] URL params:', { code: !!code, state: !!state });
 			
-			// If we have oauth_complete parameter, handle the redirect
-			if (oauthComplete === '1') {
-				console.log('[CLIENT] OAuth complete detected, handling redirect');
+			// If we have OAuth parameters, we're likely coming back from OAuth
+			if (code && state) {
+				console.log('[CLIENT] OAuth callback detected, waiting for session update');
 				
-				// Clean up URL
-				urlParams.delete('oauth_complete');
-				urlParams.delete('user_role');
-				const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
-				window.history.replaceState({}, '', newUrl);
+				// Clean up URL to remove OAuth parameters
+				window.history.replaceState({}, '', window.location.pathname);
 				
-				// Wait a moment for session to stabilize, then redirect based on role
-				setTimeout(async () => {
-					console.log('[CLIENT] Redirecting after OAuth, role:', userRoleParam);
-					
-					// First invalidate to ensure fresh data
-					await invalidateAll();
-					
-					// Then redirect based on role
-					if (userRoleParam === 'admin') {
-						await goto('/admin');
-					} else if (userRoleParam === 'guide') {
-						await goto('/my-offers');
-					} else if (userRoleParam === 'traveler') {
-						await goto('/my-trips');
-					} else if (!userRoleParam) {
-						// No role yet, go to role selection
-						await goto('/select-role');
+				// Wait for session to be established
+				const checkSession = setInterval(async () => {
+					if (currentSession?.user) {
+						clearInterval(checkSession);
+						console.log('[CLIENT] Session established, redirecting based on role:', currentSession.user);
+						
+						// Refresh all data
+						await invalidateAll();
+						
+						// Redirect based on user role from the session
+						if (userRole === 'admin') {
+							await goto('/admin');
+						} else if (userRole === 'guide') {
+							await goto('/my-offers');
+						} else if (userRole === 'traveler') {
+							await goto('/my-trips');
+						} else if (!userRole) {
+							await goto('/select-role');
+						}
 					}
-				}, 500); // Small delay to ensure session is stable
+				}, 100); // Check every 100ms
+				
+				// Timeout after 5 seconds
+				setTimeout(() => {
+					clearInterval(checkSession);
+					console.log('[CLIENT] Session check timeout');
+				}, 5000);
 			}
 		}
 	});
@@ -76,11 +83,10 @@
 		try {
 			console.log('[CLIENT] Starting Google login');
 			
-			// Set a cookie to track OAuth flow
-			document.cookie = 'oauth_flow=google; path=/; max-age=60'; // 60 second expiry
-			
+			// Use Better Auth's social sign in with explicit callback URL
 			await signIn.social({
-				provider: 'google'
+				provider: 'google',
+				callbackURL: window.location.origin + '/'
 			});
 			console.log('[CLIENT] Google login initiated');
 		} catch (err) {

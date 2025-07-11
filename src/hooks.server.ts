@@ -49,16 +49,14 @@ const corsHandler = (async ({ event, resolve }) => {
 	return resolve(event);
 }) satisfies Handle;
 
-const betterAuthHandler = (async ({ event, resolve }) => {
-	return svelteKitHandler({ event, resolve, auth });
-}) satisfies Handle;
-
-const authorizationHandler = (async ({ event, resolve }) => {
+const authHandler = (async ({ event, resolve }) => {
 	let routeId: string | null = null;
 	let session: any = null;
 
 	try {
 		routeId = event.route.id;
+		
+		// IMPORTANT: Get session BEFORE calling svelteKitHandler
 		session = await auth.api.getSession({ headers: event.request.headers });
 
 		// Clean up locals first to ensure no stale data
@@ -138,7 +136,16 @@ const authorizationHandler = (async ({ event, resolve }) => {
 		event.locals.session = undefined;
 		event.locals.user = undefined;
 		// Don't process route protection if we had an error
-		return resolve(event);
+		return svelteKitHandler({ event, resolve, auth });
+	}
+	
+	// IMPORTANT: Call svelteKitHandler AFTER setting up event.locals
+	// This ensures Better Auth has access to the session data we've set
+	const response = await svelteKitHandler({ event, resolve, auth });
+	
+	// If svelteKitHandler returned early (e.g., for auth routes), return its response
+	if (response.status !== 200 || event.url.pathname.startsWith('/api/auth/')) {
+		return response;
 	}
 
 	// Handle auth route redirects - redirect to role-based pages
@@ -159,43 +166,8 @@ const authorizationHandler = (async ({ event, resolve }) => {
 		}
 	}
 
-	// Handle OAuth callback redirects - check both referer and cookie
-	const referer = event.request.headers.get('referer');
-	const cookies = event.cookies;
-	const oauthFlowCookie = cookies.get('oauth_flow');
-	const isOAuthCallback = referer?.includes('/api/auth/callback/google') || oauthFlowCookie === 'google';
-	
-	console.log('[HOOKS] OAuth callback check:', {
-		routeId,
-		hasSession: !!session,
-		hasUser: !!event.locals.user,
-		referer,
-		isOAuthCallback,
-		oauthFlowCookie,
-		userRole: event.locals.user?.role,
-		hasAgreedToTerms: event.locals.hasAgreedToTerms
-	});
-	
-	// Handle OAuth completion
-	if (
-		routeId === '/' &&
-		session &&
-		event.locals.user &&
-		isOAuthCallback
-	) {
-		console.log('[HOOKS] Handling OAuth callback redirect');
-		
-		// Clear the OAuth flow cookie
-		cookies.delete('oauth_flow', { path: '/' });
-		
-		// Add a query parameter to trigger client-side handling
-		const url = new URL(event.request.url);
-		url.searchParams.set('oauth_complete', '1');
-		url.searchParams.set('user_role', event.locals.user.role || '');
-		
-		// Redirect to the same page with parameters
-		redirect(302, url.toString());
-	}
+	// Remove the complex OAuth callback detection - let Better Auth handle it
+	// The client-side will detect OAuth parameters and handle the redirect
 
 	// Handle first-time users landing on home page - redirect to onboarding
 	if (routeId === '/' && session && event.locals.user) {
@@ -278,7 +250,8 @@ const authorizationHandler = (async ({ event, resolve }) => {
 		redirect(302, '/');
 	}
 
-	return resolve(event);
+	// Return the response from svelteKitHandler
+	return response;
 }) satisfies Handle;
 
-export const handle = sequence(corsHandler, betterAuthHandler, authorizationHandler);
+export const handle = sequence(corsHandler, authHandler);

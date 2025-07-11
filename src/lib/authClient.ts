@@ -25,13 +25,17 @@ export const authClient = createAuthClient({
 	baseURL // dynamically determine the base URL
 });
 
+// Export the session store and methods
+export const { signIn, signOut, useSession } = authClient;
+
+// Export the session store directly for component usage
+export const session = authClient.$session;
+
 // Add session debugging only in browser
 if (typeof window !== 'undefined') {
-	authClient.getSession().then((session) => {
-		console.log('[AUTH CLIENT] Initial session check:', session);
+	authClient.getSession().then((s) => {
+		console.log('[AUTH CLIENT] Initial session check:', s);
 	}).catch((error) => {
 		console.error('[AUTH CLIENT] Session check error:', error);
 	});
 }
-
-export const { signIn, signOut, useSession } = authClient;
