@@ -63,13 +63,21 @@
 		return emailRegex.test(email);
 	}
 
-	function canProceed(): boolean {
-		return (
-			formData.nickname.trim().length >= 2 &&
-			formData.frequentArea.trim().length > 0 &&
-			formData.birthDate.length > 0
-		);
-	}
+	// Make canProceed reactive
+	let canProceed = $derived(
+		formData.nickname.trim().length >= 2 &&
+		formData.frequentArea.trim().length > 0 &&
+		formData.birthDate.length > 0
+	);
+	
+	// Debug logging for canProceed
+	$effect(() => {
+		console.log('canProceed updated:', canProceed, {
+			nickname: formData.nickname,
+			frequentArea: formData.frequentArea,
+			birthDate: formData.birthDate
+		});
+	});
 
 	// Handle profile image upload
 	function handleImageClick() {
@@ -117,7 +125,7 @@
 
 	// Handle next
 	async function handleNext() {
-		if (!canProceed()) return;
+		if (!canProceed) return;
 
 		isLoading = true;
 
@@ -146,15 +154,7 @@
 		goto('/onboarding/guide');
 	}
 
-	// Handle date change
-	$effect(() => {
-		if (dateValue) {
-			// Convert CalendarDate to string format YYYY-MM-DD
-			formData.birthDate = `${dateValue.year}-${String(dateValue.month).padStart(2, '0')}-${String(dateValue.day).padStart(2, '0')}`;
-			// Close dialog when date is selected
-			dateDialogOpen = false;
-		}
-	});
+	// Handle date change is now done directly in the DatePicker onValueChange
 
 	// Auto-scroll to selected year when dialog opens
 	$effect(() => {
@@ -178,6 +178,30 @@
 		return `${year}년 ${month}월 ${day}일`;
 	}
 
+	// Korean weekday names
+	const koreanWeekdays = ['일', '월', '화', '수', '목', '금', '토'];
+	
+	// Convert weekday to Korean
+	function getKoreanWeekday(weekday: string): string {
+		const weekdayMap: Record<string, string> = {
+			'Su': '일',
+			'Mo': '월', 
+			'Tu': '화',
+			'We': '수',
+			'Th': '목',
+			'Fr': '금',
+			'Sa': '토',
+			'Sunday': '일',
+			'Monday': '월',
+			'Tuesday': '화',
+			'Wednesday': '수',
+			'Thursday': '목',
+			'Friday': '금',
+			'Saturday': '토'
+		};
+		return weekdayMap[weekday] || weekday.slice(0, 2);
+	}
+
 	// Handle Enter key press
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === 'Enter') {
@@ -185,7 +209,7 @@
 			event.preventDefault();
 			
 			// Only proceed if the button would be enabled
-			if (canProceed() && !isLoading) {
+			if (canProceed && !isLoading) {
 				handleNext();
 			}
 		}
@@ -195,376 +219,23 @@
 <svelte:window onkeydown={handleKeydown} />
 
 <style>
-	.container {
-		min-height: 100vh;
-		background-color: #ffffff;
-		position: relative;
-		overflow: hidden;
+	/* Custom scrollbar hide utility */
+	.scrollbar-hide {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
 	}
-
-	.header {
-		position: sticky;
-		top: 0;
-		z-index: 10;
-		background-color: rgba(255, 255, 255, 0.92);
-		backdrop-filter: blur(10px);
-		height: 56px;
-		border-bottom: 2px solid rgba(0, 62, 129, 0.08);
-	}
-
-	.header-content {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		height: 100%;
-		padding: 0 16px;
-		position: relative;
-	}
-
-	.back-button {
-		width: 24px;
-		height: 24px;
-		cursor: pointer;
-		background: none;
-		border: none;
-		padding: 0;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.progress-bar {
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		height: 2px;
-		background-color: rgba(0, 62, 129, 0.08);
-	}
-
-	.progress-fill {
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		width: 33%;
-		height: 2px;
-		background-color: #1095f4;
-		transition: width 0.3s ease;
-	}
-
-	.content {
-		padding: 24px 16px 120px;
-	}
-
-	.title-section {
-		margin-bottom: 40px;
-	}
-
-	.title {
-		font-family: 'Pretendard', sans-serif;
-		font-weight: 700;
-		font-size: 22px;
-		line-height: 32px;
-		color: #052236;
-		margin-bottom: 8px;
-	}
-
-	.subtitle {
-		font-family: 'Pretendard', sans-serif;
-		font-weight: 400;
-		font-size: 13px;
-		line-height: 20px;
-		color: #8ea0ac;
-	}
-
-	.profile-image-section {
-		display: flex;
-		justify-content: center;
-		margin-bottom: 40px;
-	}
-
-	.profile-image-container {
-		position: relative;
-		width: 124px;
-		height: 124px;
-		cursor: pointer;
-		transition: transform 0.2s ease;
-	}
-
-	.profile-image-container:hover {
-		transform: scale(1.02);
-	}
-
-	.profile-image-container:active {
-		transform: scale(0.98);
-	}
-
-	.profile-image-circle {
-		width: 124px;
-		height: 124px;
-		border-radius: 62px;
-		background-color: rgba(0, 62, 129, 0.08);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		overflow: hidden;
-		transition: background-color 0.2s ease;
-	}
-
-	.profile-image-container:hover .profile-image-circle {
-		background-color: rgba(0, 62, 129, 0.12);
-	}
-
-	.profile-image-circle img {
-		width: 68px;
-		height: 68px;
-	}
-
-	.profile-image-circle .uploaded-image {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
-
-	.camera-button {
-		position: absolute;
-		bottom: 0;
-		right: 0;
-		width: 32px;
-		height: 32px;
-		background-color: #ffffff;
-		border-radius: 16px;
-		border: 1px solid rgba(0, 62, 129, 0.01);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		cursor: pointer;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-	}
-
-	.camera-button img {
-		width: 16px;
-		height: 16px;
-	}
-
-	.form-section {
-		display: flex;
-		flex-direction: column;
-		gap: 24px;
-	}
-
-	.form-group {
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-	}
-
-	.label {
-		font-family: 'Pretendard', sans-serif;
-		font-weight: 500;
-		font-size: 11px;
-		line-height: 16px;
-		color: #052236;
-	}
-
-	.input-container {
-		position: relative;
-		width: 100%;
-	}
-
-	.input-field {
-		width: 100%;
-		height: 48px;
-		background-color: rgba(0, 62, 129, 0.02);
-		border: 1px solid rgba(0, 62, 129, 0.01);
-		border-radius: 9px;
-		padding: 14px 40px 14px 20px;
-		font-family: 'Pretendard', sans-serif;
-		font-weight: 400;
-		font-size: 13px;
-		line-height: 20px;
-		color: #052236;
-		outline: none;
-		transition: all 0.2s ease;
-	}
-
-	.input-field:focus {
-		border-color: #1095f4;
-		background-color: rgba(16, 149, 244, 0.04);
-	}
-
-	.input-field::placeholder {
-		color: #919fa8;
-	}
-
-	.input-field.has-value {
-		border-color: #1095f4;
-	}
-
-	.input-icon {
-		position: absolute;
-		right: 16px;
-		top: 50%;
-		transform: translateY(-50%);
-		width: 16px;
-		height: 16px;
-		cursor: pointer;
-		background: none;
-		border: none;
-		padding: 0;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.input-icon img {
-		width: 100%;
-		height: 100%;
-	}
-
-	.input-icon svg {
-		width: 16px;
-		height: 16px;
-		color: #8ea0ac;
-	}
-
-	.clear-icon {
-		opacity: 0;
-		transition: opacity 0.2s ease;
-	}
-
-	.input-field.has-value ~ .clear-icon {
-		opacity: 1;
-	}
-
-	.bottom-section {
-		position: fixed;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		background-color: rgba(254, 254, 254, 0.96);
-		backdrop-filter: blur(10px);
-		border-top: 1px solid #f1f1f1;
-		box-shadow: 0px -5px 20px rgba(0, 0, 0, 0.02);
-	}
-
-	.bottom-content {
-		padding: 8px 16px;
-		padding-bottom: calc(8px + env(safe-area-inset-bottom));
-	}
-
-	.next-button {
-		width: 100%;
-		height: 48px;
-		background-color: #8ea0ac;
-		border: none;
-		border-radius: 9px;
-		font-family: 'Pretendard', sans-serif;
-		font-weight: 600;
-		font-size: 14px;
-		line-height: 20px;
-		color: #ffffff;
-		cursor: pointer;
-		transition: background-color 0.2s ease;
-	}
-
-	.next-button:enabled {
-		background-color: #1095f4;
-	}
-
-	.next-button:disabled {
-		cursor: not-allowed;
-	}
-
-	/* Dialog Styles */
-	:global(.dialog-overlay) {
-		position: fixed;
-		inset: 0;
-		background-color: rgba(0, 0, 0, 0.6);
-		z-index: 50;
-		animation: fadeIn 0.2s ease-out;
-	}
-
-	:global(.dialog-content) {
-		position: fixed;
-		left: 50%;
-		top: 50%;
-		transform: translate(-50%, -50%);
-		z-index: 50;
-		width: calc(100vw - 32px);
-		max-width: 540px;
-		background-color: transparent;
-		animation: slideUp 0.3s ease-out;
-	}
-
-	/* Date Picker Container */
-	.date-picker-container {
-		display: flex;
-		background-color: #ffffff;
-		border-radius: 16px;
-		border: 1px solid rgba(0, 62, 129, 0.08);
-		box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
-		overflow: hidden;
-		height: 440px;
-	}
-
-	/* Year Selector Panel */
-	.year-selector-panel {
-		width: 120px;
-		background-color: rgba(0, 62, 129, 0.02);
-		border-right: 1px solid rgba(0, 62, 129, 0.08);
-		display: flex;
-		flex-direction: column;
-	}
-
-	.year-selector-header {
-		padding: 16px;
-		font-size: 13px;
-		font-weight: 600;
-		color: #052236;
-		text-align: center;
-		border-bottom: 1px solid rgba(0, 62, 129, 0.08);
-		background-color: #ffffff;
-	}
-
-	.year-selector-list {
-		flex: 1;
-		overflow-y: auto;
-		-webkit-overflow-scrolling: touch;
-		padding: 8px 0;
-	}
-
-	.year-selector-item {
-		width: 100%;
-		padding: 10px 16px;
-		text-align: center;
-		font-size: 14px;
-		font-weight: 400;
-		color: #052236;
-		background: none;
-		border: none;
-		cursor: pointer;
-		transition: all 0.2s ease;
-	}
-
-	.year-selector-item:hover {
-		background-color: rgba(16, 149, 244, 0.08);
-		color: #1095f4;
-	}
-
-	.year-selector-item.selected {
-		background-color: #1095f4;
-		color: #ffffff;
-		font-weight: 600;
+	.scrollbar-hide::-webkit-scrollbar {
+		display: none;
 	}
 
 	/* Date Picker Calendar Split */
 	:global(.date-picker-calendar-split) {
 		flex: 1;
-		padding: 20px;
 		overflow-y: auto;
+		padding: 20px 16px 20px 0px;
 	}
 
+	/* Custom animations */
 	@keyframes fadeIn {
 		from {
 			opacity: 0;
@@ -585,6 +256,15 @@
 		}
 	}
 
+	.animate-fadeIn {
+		animation: fadeIn 0.2s ease-out;
+	}
+
+	.animate-slideUp {
+		animation: slideUp 0.3s ease-out;
+	}
+
+	/* Date picker button styles */
 	:global(.date-picker-nav-button) {
 		width: 32px;
 		height: 32px;
@@ -595,12 +275,12 @@
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		color: #052236;
+		color: var(--color-text-primary);
 		transition: all 0.2s ease;
 	}
 
 	:global(.date-picker-nav-button:hover) {
-		background-color: rgba(0, 62, 129, 0.04);
+		background-color: rgba(0, 0, 0, 0.04);
 	}
 
 	:global(.date-picker-day) {
@@ -613,7 +293,7 @@
 		position: relative;
 		border: 1px solid transparent;
 		background-color: transparent;
-		color: #052236;
+		color: var(--color-text-primary);
 		font-size: 13px;
 		font-weight: 400;
 		cursor: pointer;
@@ -645,82 +325,67 @@
 		border-color: #1095f4;
 		font-weight: 500;
 	}
-
-
-	.spinner {
-		width: 16px;
-		height: 16px;
-		border: 2px solid #f3f3f3;
-		border-top: 2px solid #1095f4;
-		border-radius: 50%;
-		animation: spin 1s linear infinite;
-	}
-
-	@keyframes spin {
-		0% { transform: rotate(0deg); }
-		100% { transform: rotate(360deg); }
-	}
 </style>
 
-<div class="container">
+<div class="min-h-screen bg-white relative overflow-hidden">
 	<!-- Header -->
-	<header class="header">
-		<div class="header-content">
-			<button class="back-button" onclick={handleBack}>
+	<header class="sticky top-0 z-10 bg-white/92 backdrop-blur-md h-14 border-b-2 border-gray-100">
+		<div class="flex items-center justify-between h-full px-4 relative">
+			<button class="w-6 h-6 cursor-pointer bg-transparent border-none p-0 flex items-center justify-center" onclick={handleBack}>
 				<img src={iconArrowBack} alt="뒤로가기" />
 			</button>
-			<div class="progress-bar">
-				<div class="progress-fill"></div>
+			<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-100">
+				<div class="absolute bottom-0 left-0 w-1/3 h-0.5 bg-color-primary transition-all duration-300"></div>
 			</div>
 		</div>
 	</header>
 
 	<!-- Content -->
-	<div class="content">
+	<div class="px-[16px] pt-[24px] pb-[120px]">
 		<!-- Title -->
-		<div class="title-section">
-			<h1 class="title">기본 정보</h1>
-			<p class="subtitle">사용자를 파악할 수 있는 정보를 입력해주세요</p>
+		<div class="mb-[40px]">
+			<h1 class="font-bold text-[22px] leading-8 text-primary mb-[8px]">기본 정보</h1>
+			<p class="font-normal text-[13px] leading-5 text-secondary">사용자를 파악할 수 있는 정보를 입력해주세요</p>
 		</div>
 
 		<!-- Profile Image -->
-		<div class="profile-image-section">
-			<div class="profile-image-container" onclick={handleImageClick} role="button" tabindex="0" onkeydown={(e) => {
+		<div class="flex justify-center mb-[40px]">
+			<div class="relative w-[124px] h-[124px] cursor-pointer transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]" onclick={handleImageClick} role="button" tabindex="0" onkeydown={(e) => {
 				if (e.key === 'Enter' || e.key === ' ') {
 					e.preventDefault();
 					handleImageClick();
 				}
 			}}>
-				<div class="profile-image-circle">
+				<div class="w-[124px] h-[124px] rounded-[62px] bg-gray-100 flex items-center justify-center overflow-hidden transition-colors duration-200 hover:bg-gray-200">
 					{#if profileImageUrl}
-						<img src={profileImageUrl} alt="프로필 이미지" class="uploaded-image" />
+						<img src={profileImageUrl} alt="프로필 이미지" class="w-full h-full object-cover" />
 					{:else}
-						<img src={iconUser} alt="프로필 이미지" />
+						<img src={iconUser} alt="프로필 이미지" class="w-[68px] h-[68px]" />
 					{/if}
 				</div>
-				<button class="camera-button" onclick={(e) => {
+				<button class="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full border border-gray-50 flex items-center justify-center cursor-pointer shadow-md" onclick={(e) => {
 					e.stopPropagation();
 					handleImageClick();
 				}} disabled={uploadingImage} tabindex="-1">
 					{#if uploadingImage}
-						<div class="spinner"></div>
+						<div class="w-4 h-4 border-2 border-gray-300 border-t-color-primary rounded-full animate-spin"></div>
 					{:else}
-						<img src={iconCamera} alt="사진 추가" />
+						<img src={iconCamera} alt="사진 추가" class="w-4 h-4" />
 					{/if}
 				</button>
 			</div>
 		</div>
 
 		<!-- Form -->
-		<div class="form-section">
+		<div class="flex flex-col gap-6">
 			<!-- Nickname -->
-			<div class="form-group">
-				<label for="nickname" class="label">닉네임</label>
-				<div class="input-container">
+			<div class="flex flex-col gap-2">
+				<label for="nickname" class="font-medium text-[11px] leading-4 text-primary">닉네임</label>
+				<div class="relative w-full">
 					<input
 						id="nickname"
 						type="text"
-						class="input-field {formData.nickname ? 'has-value' : ''}"
+						class="w-full h-12 bg-gray-50 border border-gray-50 rounded-[9px] px-5 pr-10 font-normal text-[13px] leading-5 text-primary outline-none transition-all duration-200 placeholder:text-gray-400 focus:border-color-primary focus:bg-blue-50/40 {formData.nickname ? 'border-color-primary' : ''}"
 						placeholder="메치트립"
 						bind:value={formData.nickname}
 						maxlength="20"
@@ -728,24 +393,24 @@
 					{#if formData.nickname}
 						<button
 							type="button"
-							class="input-icon clear-icon"
+							class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 cursor-pointer bg-transparent border-none p-0 flex items-center justify-center opacity-100 transition-opacity duration-200"
 							onclick={() => formData.nickname = ''}
 							aria-label="닉네임 지우기"
 						>
-							<img src={iconXCircle} alt="" />
+							<img src={iconXCircle} alt="" class="w-full h-full" />
 						</button>
 					{/if}
 				</div>
 			</div>
 
 			<!-- Frequent Area -->
-			<div class="form-group">
-				<label for="frequentArea" class="label">자주 가는 지역</label>
-				<div class="input-container">
+			<div class="flex flex-col gap-2">
+				<label for="frequentArea" class="font-medium text-[11px] leading-4 text-primary">자주 가는 지역</label>
+				<div class="relative w-full">
 					<input
 						id="frequentArea"
 						type="text"
-						class="input-field {formData.frequentArea ? 'has-value' : ''}"
+						class="w-full h-12 bg-gray-50 border border-gray-50 rounded-[9px] px-5 font-normal text-[13px] leading-5 text-primary outline-none transition-all duration-200 placeholder:text-gray-400 focus:border-color-primary focus:bg-blue-50/40 {formData.frequentArea ? 'border-color-primary' : ''}"
 						placeholder="베를린, 독일"
 						bind:value={formData.frequentArea}
 					/>
@@ -753,30 +418,29 @@
 			</div>
 
 			<!-- Email -->
-			<div class="form-group">
-				<label for="email" class="label">이메일</label>
-				<div class="input-container">
+			<div class="flex flex-col gap-2">
+				<label for="email" class="font-medium text-[11px] leading-4 text-primary">이메일</label>
+				<div class="relative w-full">
 					<input
 						id="email"
 						type="email"
-						class="input-field has-value"
+						class="w-full h-12 bg-gray-100 border border-gray-50 rounded-[9px] px-5 font-normal text-[13px] leading-5 text-primary outline-none cursor-not-allowed"
 						placeholder="이메일을 입력해 주세요"
 						value={formData.email}
 						readonly
 						disabled
-						style="background-color: #f5f5f5; cursor: not-allowed;"
 					/>
 				</div>
 			</div>
 
 			<!-- Birth Date -->
-			<div class="form-group">
-				<label for="birthdate" class="label">생년월일</label>
-				<div class="input-container">
+			<div class="flex flex-col gap-2">
+				<label for="birthdate" class="font-medium text-[11px] leading-4 text-primary">생년월일</label>
+				<div class="relative w-full">
 					<input
 						id="birthdate"
 						type="text"
-						class="input-field {formData.birthDate ? 'has-value' : ''}"
+						class="w-full h-12 bg-gray-50 border border-gray-50 rounded-[9px] px-5 pr-10 font-normal text-[13px] leading-5 text-primary outline-none transition-all duration-200 placeholder:text-gray-400 focus:border-color-primary focus:bg-blue-50/40 cursor-pointer {formData.birthDate ? 'border-color-primary' : ''}"
 						placeholder="생년월일을 선택해 주세요"
 						value={formData.birthDate ? formatBirthDate(formData.birthDate) : ''}
 						readonly
@@ -784,11 +448,11 @@
 					/>
 					<button
 						type="button"
-						class="input-icon"
+						class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 cursor-pointer bg-transparent border-none p-0 flex items-center justify-center"
 						onclick={() => dateDialogOpen = true}
 						aria-label="날짜 선택"
 					>
-						<Calendar size={16} />
+						<Calendar size={16} class="text-secondary" />
 					</button>
 				</div>
 			</div>
@@ -796,11 +460,12 @@
 	</div>
 
 	<!-- Bottom Section -->
-	<div class="bottom-section">
-		<div class="bottom-content">
+	<div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200" style="z-index: 40; box-shadow: 0px -5px 20px rgba(0, 0, 0, 0.05); display: block; visibility: visible;">
+		<div style="padding: 8px; padding-bottom: calc(8px + env(safe-area-inset-bottom, 8px));">
 			<button 
-				class="next-button" 
-				disabled={!canProceed() || isLoading}
+				class="w-full font-semibold text-white cursor-pointer transition-colors duration-200" 
+				style="height: 48px; border-radius: 9px; font-size: 14px; line-height: 20px; background-color: {canProceed && !isLoading ? '#1095f4' : '#8ea0ac'}; {canProceed && !isLoading ? '' : 'cursor: not-allowed; opacity: 0.7;'}"
+				disabled={!canProceed || isLoading}
 				onclick={handleNext}
 			>
 				{isLoading ? '처리중...' : '다 음'}
@@ -811,17 +476,17 @@
 	<!-- Date Picker Dialog -->
 	<Dialog.Root bind:open={dateDialogOpen}>
 		<Dialog.Portal>
-			<Dialog.Overlay class="dialog-overlay" />
-			<Dialog.Content class="dialog-content">
-				<div class="date-picker-container">
+			<Dialog.Overlay class="fixed inset-0 bg-black/60 animate-fadeIn" style="z-index: 50;" />
+			<Dialog.Content class="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100vw-32px)] max-w-[540px] bg-transparent animate-slideUp" style="z-index: 51;">
+				<div class="flex bg-white rounded-2xl border border-gray-100 shadow-[0_25px_50px_rgba(0,0,0,0.25)] overflow-hidden h-[440px]">
 					<!-- Year selector (left side) -->
-					<div class="year-selector-panel">
-						<div class="year-selector-header">연도 선택</div>
-						<div class="year-selector-list">
+					<div class="w-16 bg-gray-50 border-r border-gray-100 flex flex-col">
+						<div class="px-[8px] py-[12px] text-xs font-semibold text-primary text-center border-b border-gray-100 bg-white">연도 선택</div>
+						<div class="flex-1 overflow-y-auto py-2 scrollbar-hide">
 							{#each Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i) as year}
 								<button
 									type="button"
-									class="year-selector-item {calendarPlaceholder.year === year ? 'selected' : ''}"
+									class="w-full py-2 px-1 text-center text-[13px] font-normal text-primary bg-transparent border-none cursor-pointer transition-all duration-200 hover:bg-blue-50 hover:text-color-primary {calendarPlaceholder.year === year ? 'bg-color-primary text-white font-semibold hover:bg-color-primary hover:text-white' : ''}"
 									onclick={() => {
 										// Create new CalendarDate with selected year
 										calendarPlaceholder = new CalendarDate(year, calendarPlaceholder.month, calendarPlaceholder.day);
@@ -834,7 +499,25 @@
 					</div>
 					
 					<!-- Calendar (right side) -->
-					<DatePicker.Root bind:value={dateValue} bind:placeholder={calendarPlaceholder} weekdayFormat="short" fixedWeeks={true}>
+					<DatePicker.Root 
+						bind:value={dateValue} 
+						bind:placeholder={calendarPlaceholder} 
+						weekdayFormat="short" 
+						fixedWeeks={true} 
+						weekStartsOn={0}
+						onValueChange={(value) => {
+							if (value) {
+								// Update form data immediately when date is selected
+								formData.birthDate = `${value.year}-${String(value.month).padStart(2, '0')}-${String(value.day).padStart(2, '0')}`;
+								// Update the dateValue state as well
+								dateValue = value;
+								// Close dialog after a small delay to ensure state updates
+								setTimeout(() => {
+									dateDialogOpen = false;
+								}, 50);
+							}
+						}}
+					>
 						<DatePicker.Calendar class="date-picker-calendar-split">
 							{#snippet children({ months, weekdays })}
 								<DatePicker.Header class="mb-4">
@@ -842,7 +525,11 @@
 										<DatePicker.PrevButton class="date-picker-nav-button">
 											<ChevronLeft class="w-5 h-5" />
 										</DatePicker.PrevButton>
-										<DatePicker.Heading class="text-[15px] font-semibold text-primary" />
+										<DatePicker.Heading class="text-[15px] font-semibold text-primary">
+											{#snippet children({ headingValue })}
+												{headingValue.year}년 {headingValue.month}월
+											{/snippet}
+										</DatePicker.Heading>
 										<DatePicker.NextButton class="date-picker-nav-button">
 											<ChevronRight class="w-5 h-5" />
 										</DatePicker.NextButton>
@@ -852,17 +539,17 @@
 									{#each months as month (month.value)}
 										<DatePicker.Grid class="w-full border-collapse select-none space-y-1">
 											<DatePicker.GridHead>
-												<DatePicker.GridRow class="mb-1 flex w-full justify-between">
+												<DatePicker.GridRow class="mb-1 flex w-full gap-0.5">
 													{#each weekdays as day (day)}
 														<DatePicker.HeadCell class="text-secondary font-normal! w-9 rounded-md text-xs">
-															<div>{day.slice(0, 2)}</div>
+															<div>{getKoreanWeekday(day)}</div>
 														</DatePicker.HeadCell>
 													{/each}
 												</DatePicker.GridRow>
 											</DatePicker.GridHead>
 											<DatePicker.GridBody>
 												{#each month.weeks as weekDates (weekDates)}
-													<DatePicker.GridRow class="flex w-full">
+													<DatePicker.GridRow class="flex w-full gap-0.5">
 														{#each weekDates as date (date)}
 															<DatePicker.Cell
 																{date}

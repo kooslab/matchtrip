@@ -263,22 +263,33 @@
 	// Handle mobile input formatting
 	function handleMobileInput(e: Event) {
 		const input = e.target as HTMLInputElement;
-		// Remove non-digits
-		let value = input.value.replace(/\D/g, '');
-
+		const cursorPosition = input.selectionStart || 0;
+		
+		// Extract only digits from the input
+		let digits = input.value.replace(/\D/g, '');
+		
 		// Remove leading zero for international format
-		if (value.startsWith('0')) {
-			value = value.substring(1);
+		if (digits.startsWith('0')) {
+			digits = digits.substring(1);
 		}
-
+		
 		// Limit to expected length
 		const maxLength = getMobileLength(formData.countryCode);
-		value = value.substring(0, maxLength);
-
+		digits = digits.substring(0, maxLength);
+		
 		// Store raw digits for validation
-		formData.mobile = value;
+		formData.mobile = digits;
+		
+		// Count how many digits were before the cursor position in the input
+		let digitsBeforeCursor = 0;
+		for (let i = 0; i < cursorPosition && i < input.value.length; i++) {
+			if (/\d/.test(input.value[i])) {
+				digitsBeforeCursor++;
+			}
+		}
 
 		// Format with separators based on country
+		const value = formData.mobile; // Use the stored mobile digits
 		let formattedValue = '';
 		switch (formData.countryCode) {
 			case '+82': // Korea: 10-1234-5678
@@ -340,6 +351,26 @@
 
 		// Store formatted value and update display
 		formData.mobileFormatted = formattedValue;
+		
+		// Force update the input value to ensure no text remains
+		input.value = formattedValue;
+		
+		// Set cursor position after the same number of digits as before
+		let newPosition = 0;
+		let digitCount = 0;
+		
+		// Find position in formatted string after digitsBeforeCursor digits
+		for (let i = 0; i < formattedValue.length && digitCount < digitsBeforeCursor; i++) {
+			newPosition++;
+			if (/\d/.test(formattedValue[i])) {
+				digitCount++;
+			}
+		}
+		
+		// Use setTimeout to ensure cursor position is set after the value update
+		setTimeout(() => {
+			input.setSelectionRange(newPosition, newPosition);
+		}, 0);
 	}
 
 	// Handle file upload
@@ -479,9 +510,42 @@
 							<input
 								id="mobile"
 								type="tel"
+								inputmode="numeric"
+								pattern="[0-9\-\(\)\s]*"
 								value={formData.mobileFormatted}
 								maxlength={getFormattedMaxLength(formData.countryCode)}
 								oninput={handleMobileInput}
+								onkeydown={(e) => {
+									// Allow special keys
+									const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'Home', 'End', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
+									if (allowedKeys.includes(e.key)) return;
+									
+									// Allow Ctrl/Cmd combinations
+									if (e.ctrlKey || e.metaKey) return;
+									
+									// Block if not a number
+									if (!/^[0-9]$/.test(e.key)) {
+										e.preventDefault();
+									}
+								}}
+								onpaste={(e) => {
+									// Handle paste events to strip non-numeric characters
+									e.preventDefault();
+									const paste = e.clipboardData?.getData('text') || '';
+									const numbersOnly = paste.replace(/\D/g, '');
+									
+									// Manually trigger input event with cleaned data
+									const input = e.target as HTMLInputElement;
+									const start = input.selectionStart || 0;
+									const end = input.selectionEnd || 0;
+									const currentValue = formData.mobile;
+									const newValue = currentValue.substring(0, start) + numbersOnly + currentValue.substring(end);
+									
+									// Create synthetic event
+									const syntheticEvent = new Event('input', { bubbles: true });
+									input.value = newValue;
+									input.dispatchEvent(syntheticEvent);
+								}}
 								placeholder={formData.countryCode === '+82'
 									? '10-1234-5678'
 									: formData.countryCode === '+1'
