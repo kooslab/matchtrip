@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { destinations, users } from '$lib/server/db/schema';
+import { destinations, users, countries } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
 import { auth } from '$lib/auth';
@@ -31,17 +31,26 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 	}
 
 	try {
-		const { city, country, imageUrl } = await request.json();
+		const { city, countryId, imageUrl } = await request.json();
 
-		if (!city || !country) {
-			return json({ error: 'City and country are required' }, { status: 400 });
+		if (!city || !countryId) {
+			return json({ error: 'City and country ID are required' }, { status: 400 });
+		}
+
+		// Verify the country exists
+		const country = await db.query.countries.findFirst({
+			where: eq(countries.id, countryId)
+		});
+
+		if (!country) {
+			return json({ error: 'Invalid country ID' }, { status: 400 });
 		}
 
 		const [updatedDestination] = await db
 			.update(destinations)
 			.set({
 				city,
-				country,
+				countryId,
 				imageUrl,
 				updated_at: new Date()
 			})
@@ -57,8 +66,8 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 		console.error('Error updating destination:', error);
 
 		// Handle unique constraint violation
-		if (error.code === '23505' && error.constraint === 'destinations_city_unique') {
-			return json({ error: 'A destination with this city already exists' }, { status: 409 });
+		if (error.code === '23505' && error.constraint === 'destinations_city_country_unique') {
+			return json({ error: 'A destination with this city already exists in this country' }, { status: 409 });
 		}
 
 		return json({ error: 'Failed to update destination' }, { status: 500 });

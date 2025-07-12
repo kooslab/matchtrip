@@ -1,43 +1,60 @@
 import { db } from '$lib/server/db';
-import { destinations } from '$lib/server/db/schema';
+import { destinations, countries, continents } from '$lib/server/db/schema';
+import { eq } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
 	try {
-		// Fetch all destinations from database
+		// Fetch all destinations from database with country and continent info
 		const allDestinations = await db
 			.select({
 				id: destinations.id,
 				city: destinations.city,
-				country: destinations.country,
-				imageUrl: destinations.imageUrl
+				imageUrl: destinations.imageUrl,
+				country: {
+					id: countries.id,
+					name: countries.name,
+					code: countries.code
+				},
+				continent: {
+					id: continents.id,
+					name: continents.name,
+					code: continents.code
+				}
 			})
 			.from(destinations)
+			.innerJoin(countries, eq(destinations.countryId, countries.id))
+			.innerJoin(continents, eq(countries.continentId, continents.id))
 			.orderBy(destinations.city);
 
-		// Group destinations by region
-		const groupedDestinations: Record<string, typeof allDestinations> = {
-			'국내': [],
-			'유럽': [],
-			'아시아': [],
-			'미주': [],
-			'오세아니아': [],
-			'기타': []
+		// Group destinations by continent
+		const groupedDestinations: Record<string, typeof allDestinations> = {};
+
+		// Continent name mapping
+		const continentNameMap: Record<string, string> = {
+			'Asia': '아시아',
+			'Europe': '유럽',
+			'North America': '북미',
+			'South America': '남미',
+			'Africa': '아프리카',
+			'Oceania': '오세아니아',
+			'Antarctica': '남극'
 		};
 
 		allDestinations.forEach((dest) => {
-			if (dest.country === '대한민국' || dest.country === '한국') {
+			const continentName = continentNameMap[dest.continent.name] || dest.continent.name;
+			
+			// Special handling for Korea - put it in a separate group
+			if (dest.country.code === 'KOR' || dest.country.name === '대한민국') {
+				if (!groupedDestinations['국내']) {
+					groupedDestinations['국내'] = [];
+				}
 				groupedDestinations['국내'].push(dest);
-			} else if (['프랑스', '영국', '스페인', '이탈리아', '독일', '네덜란드', '체코', '오스트리아', '헝가리', '포르투갈'].includes(dest.country)) {
-				groupedDestinations['유럽'].push(dest);
-			} else if (['일본', '중국', '태국', '베트남', '싱가포르', '인도네시아', '필리핀', '말레이시아', '인도'].includes(dest.country)) {
-				groupedDestinations['아시아'].push(dest);
-			} else if (['미국', '캐나다', '멕시코', '브라질'].includes(dest.country)) {
-				groupedDestinations['미주'].push(dest);
-			} else if (['호주', '뉴질랜드'].includes(dest.country)) {
-				groupedDestinations['오세아니아'].push(dest);
 			} else {
-				groupedDestinations['기타'].push(dest);
+				if (!groupedDestinations[continentName]) {
+					groupedDestinations[continentName] = [];
+				}
+				groupedDestinations[continentName].push(dest);
 			}
 		});
 

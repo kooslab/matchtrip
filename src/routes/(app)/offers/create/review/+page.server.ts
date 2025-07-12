@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { trips, destinations } from '$lib/server/db/schema';
+import { trips, destinations, countries } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 
@@ -17,15 +17,16 @@ export const load: PageServerLoad = async ({ url }) => {
 			id: trips.id,
 			destinationId: trips.destinationId,
 			destination: destinations.city,
-			country: destinations.country,
+			countryName: countries.name,
 			departureDate: trips.startDate,
 			returnDate: trips.endDate,
 			adultsCount: trips.adultsCount,
 			childrenCount: trips.childrenCount,
-			infantsCount: 0 // trips table doesn't have infantsCount
+			babiesCount: trips.babiesCount
 		})
 		.from(trips)
 		.leftJoin(destinations, eq(trips.destinationId, destinations.id))
+		.leftJoin(countries, eq(destinations.countryId, countries.id))
 		.where(eq(trips.id, tripId))
 		.limit(1);
 

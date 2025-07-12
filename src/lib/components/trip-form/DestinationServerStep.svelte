@@ -2,8 +2,17 @@
 	interface Destination {
 		id: number;
 		city: string;
-		country: string;
 		imageUrl: string | null;
+		country: {
+			id: number;
+			name: string;
+			code: string;
+		};
+		continent: {
+			id: number;
+			name: string;
+			code: string;
+		};
 	}
 	
 	interface Props {
@@ -25,7 +34,7 @@
 	
 	// Select destination
 	function selectDestination(destination: Destination) {
-		onUpdate('destination', `${destination.city}, ${destination.country}`);
+		onUpdate('destination', `${destination.city}, ${destination.country.name}`);
 		onUpdate('destinationId', destination.id);
 	}
 	
@@ -39,7 +48,7 @@
 		Object.entries(destinations).forEach(([region, dests]) => {
 			const matchingDests = dests.filter((dest) => 
 				dest.city.toLowerCase().includes(query) || 
-				dest.country.toLowerCase().includes(query)
+				dest.country.name.toLowerCase().includes(query)
 			);
 			
 			if (matchingDests.length > 0) {

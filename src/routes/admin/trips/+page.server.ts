@@ -18,7 +18,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		const { db } = await import('$lib/server/db');
 		console.log('[ADMIN TRIPS] db imported');
 
-		const { trips, users, offers } = await import('$lib/server/db/schema');
+		const { trips, users, offers, destinations, countries } = await import('$lib/server/db/schema');
 		console.log('[ADMIN TRIPS] Schema imported');
 
 		const { desc, eq, sql } = await import('drizzle-orm');
@@ -35,13 +35,17 @@ export const load: PageServerLoad = async ({ locals }) => {
 		const tripsWithUsers = await db
 			.select({
 				id: trips.id,
-				destination: trips.destination,
+				destinationCity: destinations.city,
+				destinationCountry: countries.name,
 				startDate: trips.startDate,
 				endDate: trips.endDate,
 				status: trips.status,
-				people: trips.people,
-				tourType: trips.tourType,
-				budget: trips.budget,
+				adultsCount: trips.adultsCount,
+				childrenCount: trips.childrenCount,
+				babiesCount: trips.babiesCount,
+				travelStyle: trips.travelStyle,
+				budgetMin: trips.budgetMin,
+				budgetMax: trips.budgetMax,
 				createdAt: trips.createdAt,
 				updatedAt: trips.updatedAt,
 				userId: trips.userId,
@@ -50,6 +54,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 			})
 			.from(trips)
 			.leftJoin(users, eq(trips.userId, users.id))
+			.leftJoin(destinations, eq(trips.destinationId, destinations.id))
+			.leftJoin(countries, eq(destinations.countryId, countries.id))
 			.orderBy(desc(trips.createdAt));
 
 		console.log('[ADMIN TRIPS] Query with joins completed');
@@ -80,7 +86,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		};
 	} catch (error) {
 		console.error('[ADMIN TRIPS] Error:', error);
-		console.error('[ADMIN TRIPS] Error stack:', error.stack);
+		console.error('[ADMIN TRIPS] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
 
 		// Return minimal data on error
 		return {

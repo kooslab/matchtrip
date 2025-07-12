@@ -60,7 +60,7 @@ export const auth = betterAuth({
 					name: profile.name || profile.email,
 					email: profile.email,
 					emailVerified: true, // Google accounts are pre-verified
-					image: profile.picture || profile.image
+					image: profile.picture
 				};
 				console.log('[GOOGLE OAUTH] Mapped user data:', JSON.stringify(mappedUser, null, 2));
 				return mappedUser;
@@ -92,7 +92,7 @@ export const auth = betterAuth({
 		'https://www.matchtrip.net' // production
 	],
 	// Add request logging
-	onRequest: async (request) => {
+	onRequest: async (request: Request) => {
 		const url = new URL(request.url);
 		console.log('[AUTH REQUEST]', request.method, url.pathname);
 		console.log('[AUTH REQUEST] Search params:', url.searchParams.toString());
@@ -110,7 +110,7 @@ export const auth = betterAuth({
 		}
 	},
 	// Add response logging
-	onResponse: async (response) => {
+	onResponse: async (response: Response) => {
 		console.log('[AUTH RESPONSE] Status:', response.status);
 		console.log('[AUTH RESPONSE] Headers:', Object.fromEntries(response.headers.entries()));
 		

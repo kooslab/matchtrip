@@ -52,7 +52,7 @@
 
 	// Get unique destinations count
 	let uniqueDestinations = $derived(
-		new Set(trips.map((trip) => `${trip.destination.city}, ${trip.destination.country}`)).size
+		new Set(trips.map((trip) => `${trip.destination.city}, ${trip.country.name}`)).size
 	);
 
 	// Get status display info
@@ -855,7 +855,7 @@
 											</span>
 										</div>
 										<h3 class="mb-2 text-base font-semibold text-gray-900">
-											{trip.destination.city}, {trip.destination.country}
+											{trip.destination.city}, {trip.country.name}
 										</h3>
 									</div>
 									<button

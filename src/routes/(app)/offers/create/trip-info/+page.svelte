@@ -47,7 +47,7 @@
 
 	// Calculate total travelers
 	const totalTravelers = $derived(
-		(trip.adultsCount || 0) + (trip.childrenCount || 0) + (trip.infantsCount || 0)
+		(trip.adultsCount || 0) + (trip.childrenCount || 0) + (trip.babiesCount || 0)
 	);
 </script>
 
@@ -100,7 +100,7 @@
 					<p class="text-xs text-gray-500">
 						{#if trip.adultsCount > 0}성인 {trip.adultsCount}명{/if}
 						{#if trip.childrenCount > 0}, 어린이 {trip.childrenCount}명{/if}
-						{#if trip.infantsCount > 0}, 유아 {trip.infantsCount}명{/if}
+						{#if trip.babiesCount > 0}, 유아 {trip.babiesCount}명{/if}
 					</p>
 				</div>
 			</div>

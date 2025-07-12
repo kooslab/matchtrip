@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { trips, destinations, offers } from '$lib/server/db/schema';
+import { trips, destinations, offers, countries, continents } from '$lib/server/db/schema';
 import { eq, count } from 'drizzle-orm';
 
 export const load = async ({ locals, depends, setHeaders }) => {
@@ -36,15 +36,27 @@ export const load = async ({ locals, depends, setHeaders }) => {
 				destination: {
 					id: destinations.id,
 					city: destinations.city,
-					country: destinations.country
+					imageUrl: destinations.imageUrl
+				},
+				country: {
+					id: countries.id,
+					name: countries.name,
+					code: countries.code
+				},
+				continent: {
+					id: continents.id,
+					name: continents.name,
+					code: continents.code
 				},
 				offerCount: count(offers.id)
 			})
 			.from(trips)
 			.leftJoin(destinations, eq(trips.destinationId, destinations.id))
+			.leftJoin(countries, eq(destinations.countryId, countries.id))
+			.leftJoin(continents, eq(countries.continentId, continents.id))
 			.leftJoin(offers, eq(trips.id, offers.tripId))
 			.where(eq(trips.userId, session.user.id))
-			.groupBy(trips.id, destinations.id)
+			.groupBy(trips.id, destinations.id, countries.id, continents.id)
 			.orderBy(trips.createdAt);
 
 		console.log('My-trips page - Fetched trips from DB:', userTrips.length);

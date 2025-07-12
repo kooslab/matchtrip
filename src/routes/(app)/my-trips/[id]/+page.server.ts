@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { trips, destinations, users, offers, guideProfiles } from '$lib/server/db/schema';
+import { trips, destinations, users, offers, guideProfiles, countries, continents } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { redirect } from '@sveltejs/kit';
 import { auth } from '$lib/auth';
@@ -48,11 +48,23 @@ export const load = async ({ params, request, locals }) => {
 			destination: {
 				id: destinations.id,
 				city: destinations.city,
-				country: destinations.country
+				imageUrl: destinations.imageUrl
+			},
+			country: {
+				id: countries.id,
+				name: countries.name,
+				code: countries.code
+			},
+			continent: {
+				id: continents.id,
+				name: continents.name,
+				code: continents.code
 			}
 		})
 		.from(trips)
 		.leftJoin(destinations, eq(trips.destinationId, destinations.id))
+		.leftJoin(countries, eq(destinations.countryId, countries.id))
+		.leftJoin(continents, eq(countries.continentId, continents.id))
 		.where(and(eq(trips.id, tripId), eq(trips.userId, session.user.id)))
 		.limit(1);
 

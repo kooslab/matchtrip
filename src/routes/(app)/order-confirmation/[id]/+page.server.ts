@@ -5,7 +5,7 @@ import { eq, and } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
-	const session = await locals.auth.getSession();
+	const session = locals.session;
 	if (!session?.user?.id) {
 		throw error(401, 'Unauthorized');
 	}
@@ -57,7 +57,8 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		offer,
 		guide: {
 			...guide,
-			phone: guideProfile?.phoneNumber || null
+			phone: guide?.phone || null,
+			guideProfile
 		}
 	};
 };

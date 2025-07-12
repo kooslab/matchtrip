@@ -21,7 +21,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 				amount: payments.amount,
 				currency: payments.currency,
 				status: payments.status,
-				stripePaymentIntentId: payments.stripePaymentIntentId,
+				paymentKey: payments.paymentKey,
+				orderId: payments.orderId,
 				createdAt: payments.createdAt,
 				updatedAt: payments.updatedAt,
 				// Offer info
@@ -60,7 +61,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			refunded: allPayments.filter((p) => p.status === 'refunded').length,
 			totalRevenue: allPayments
 				.filter((p) => p.status === 'completed')
-				.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0)
+				.reduce((sum, p) => sum + (p.amount || 0), 0)
 		};
 
 		// Monthly revenue calculation for the last 6 months

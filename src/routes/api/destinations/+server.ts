@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { destinations, users } from '$lib/server/db/schema';
+import { destinations, users, countries, continents } from '$lib/server/db/schema';
 import { ilike, or, eq, sql } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
 import { auth } from '$lib/auth';
@@ -21,10 +21,21 @@ export const GET: RequestHandler = async ({ url, setHeaders }) => {
 				.select({
 					id: destinations.id,
 					city: destinations.city,
-					country: destinations.country,
-					imageUrl: destinations.imageUrl
+					imageUrl: destinations.imageUrl,
+					country: {
+						id: countries.id,
+						name: countries.name,
+						code: countries.code
+					},
+					continent: {
+						id: continents.id,
+						name: continents.name,
+						code: continents.code
+					}
 				})
 				.from(destinations)
+				.innerJoin(countries, eq(destinations.countryId, countries.id))
+				.innerJoin(continents, eq(countries.continentId, continents.id))
 				.orderBy(destinations.city)
 				.limit(50);
 			
@@ -45,22 +56,33 @@ export const GET: RequestHandler = async ({ url, setHeaders }) => {
 			.select({
 				id: destinations.id,
 				city: destinations.city,
-				country: destinations.country,
-				imageUrl: destinations.imageUrl
+				imageUrl: destinations.imageUrl,
+				country: {
+					id: countries.id,
+					name: countries.name,
+					code: countries.code
+				},
+				continent: {
+					id: continents.id,
+					name: continents.name,
+					code: continents.code
+				}
 			})
 			.from(destinations)
+			.innerJoin(countries, eq(destinations.countryId, countries.id))
+			.innerJoin(continents, eq(countries.continentId, continents.id))
 			.where(
 				sql`
 					${destinations.city} ILIKE ${`${q}%`} 
 					OR ${destinations.city} ILIKE ${`%${q}%`}
-					OR ${destinations.country} ILIKE ${`${q}%`}
+					OR ${countries.name} ILIKE ${`${q}%`}
 				`
 			)
 			.orderBy(
 				sql`
 					CASE 
 						WHEN ${destinations.city} ILIKE ${`${q}%`} THEN 1
-						WHEN ${destinations.country} ILIKE ${`${q}%`} THEN 2
+						WHEN ${countries.name} ILIKE ${`${q}%`} THEN 2
 						ELSE 3
 					END
 				`
@@ -95,17 +117,26 @@ export const POST: RequestHandler = async ({ request }) => {
 	}
 
 	try {
-		const { city, country, imageUrl } = await request.json();
+		const { city, countryId, imageUrl } = await request.json();
 
-		if (!city || !country) {
-			return json({ error: 'City and country are required' }, { status: 400 });
+		if (!city || !countryId) {
+			return json({ error: 'City and country ID are required' }, { status: 400 });
+		}
+
+		// Verify the country exists
+		const country = await db.query.countries.findFirst({
+			where: eq(countries.id, countryId)
+		});
+
+		if (!country) {
+			return json({ error: 'Invalid country ID' }, { status: 400 });
 		}
 
 		const [newDestination] = await db
 			.insert(destinations)
 			.values({
 				city,
-				country,
+				countryId,
 				imageUrl
 			})
 			.returning();

@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 
 export const load = (async ({ params, locals }) => {
-	const session = await locals.auth.getSession();
+	const session = locals.session;
 	
 	if (!session) {
 		throw error(401, 'Unauthorized');

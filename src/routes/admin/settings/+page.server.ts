@@ -5,7 +5,7 @@ import { users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	const session = await locals.auth();
+	const session = locals.session;
 	if (!session?.user) {
 		throw redirect(302, '/signin');
 	}

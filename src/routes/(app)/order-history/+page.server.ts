@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { trips, destinations, users, offers, payments } from '$lib/server/db/schema';
+import { trips, destinations, users, offers, payments, countries } from '$lib/server/db/schema';
 import { eq, and, or } from 'drizzle-orm';
 import { redirect } from '@sveltejs/kit';
 import { auth } from '$lib/auth';
@@ -37,7 +37,7 @@ export const load = async ({ request, locals }) => {
 			tripCreatedAt: trips.createdAt,
 			destinationId: destinations.id,
 			destinationCity: destinations.city,
-			destinationCountry: destinations.country,
+			destinationCountryName: countries.name,
 			offerId: offers.id,
 			offerPrice: offers.price,
 			offerItinerary: offers.itinerary,
@@ -56,6 +56,7 @@ export const load = async ({ request, locals }) => {
 		})
 		.from(trips)
 		.leftJoin(destinations, eq(trips.destinationId, destinations.id))
+		.leftJoin(countries, eq(destinations.countryId, countries.id))
 		.leftJoin(offers, and(eq(offers.tripId, trips.id), eq(offers.status, 'accepted')))
 		.leftJoin(users, eq(offers.guideId, users.id))
 		.leftJoin(payments, and(eq(payments.offerId, offers.id), or(eq(payments.status, 'completed'))))
@@ -79,7 +80,7 @@ export const load = async ({ request, locals }) => {
 				? {
 						id: trip.destinationId,
 						city: trip.destinationCity,
-						country: trip.destinationCountry
+						country: trip.destinationCountryName
 					}
 				: null,
 			offer: trip.offerId

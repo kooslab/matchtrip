@@ -128,8 +128,8 @@
 					<img src={arrowLeftUrl} alt="Back" class="h-5 w-5" />
 				</button>
 				<h1 class="text-lg font-semibold text-gray-900">
-					{trip.destination?.city || '목적지'}{trip.destination?.country
-						? `, ${trip.destination.country}`
+					{trip.destination?.city || '목적지'}{trip.country?.name
+						? `, ${trip.country.name}`
 						: ''}
 				</h1>
 			</div>

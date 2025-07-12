@@ -191,7 +191,7 @@
 							<!-- Trip Info -->
 							<div class="px-4 pb-4">
 								<h3 class="mt-3 text-lg font-semibold text-gray-900">
-									{trip.destination?.city || '목적지'}, {trip.destination?.country || ''}
+									{trip.destination?.city || '목적지'}, {trip.country?.name || ''}
 								</h3>
 
 								<!-- Date and Calendar Icon -->

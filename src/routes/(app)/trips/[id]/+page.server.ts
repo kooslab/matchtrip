@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { error, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { trips, destinations, users, offers } from '$lib/server/db/schema';
+import { trips, destinations, users, offers, countries, continents } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 
 export const load = (async ({ params, locals }) => {
@@ -21,15 +21,19 @@ export const load = (async ({ params, locals }) => {
 	const tripId = params.id;
 
 	try {
-		// Get trip details with destination and user info
+		// Get trip details with destination, country, continent and user info
 		const tripData = await db
 			.select({
 				trip: trips,
 				destination: destinations,
+				country: countries,
+				continent: continents,
 				user: users
 			})
 			.from(trips)
 			.leftJoin(destinations, eq(trips.destinationId, destinations.id))
+			.leftJoin(countries, eq(destinations.countryId, countries.id))
+			.leftJoin(continents, eq(countries.continentId, continents.id))
 			.leftJoin(users, eq(trips.userId, users.id))
 			.where(eq(trips.id, tripId))
 			.limit(1);
@@ -41,6 +45,8 @@ export const load = (async ({ params, locals }) => {
 		const trip = {
 			...tripData[0].trip,
 			destination: tripData[0].destination,
+			country: tripData[0].country,
+			continent: tripData[0].continent,
 			user: tripData[0].user
 				? {
 						id: tripData[0].user.id,

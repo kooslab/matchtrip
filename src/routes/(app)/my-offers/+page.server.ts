@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { trips, destinations, users, offers } from '$lib/server/db/schema';
+import { trips, destinations, users, offers, countries } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 
 export const load = async ({ locals }) => {
@@ -36,7 +36,12 @@ export const load = async ({ locals }) => {
 			// Destination info
 			destination: {
 				city: destinations.city,
-				country: destinations.country
+				imageUrl: destinations.imageUrl
+			},
+			// Country info
+			country: {
+				name: countries.name,
+				code: countries.code
 			},
 			// Traveler info
 			traveler: {
@@ -47,6 +52,7 @@ export const load = async ({ locals }) => {
 		.from(offers)
 		.innerJoin(trips, eq(offers.tripId, trips.id))
 		.innerJoin(destinations, eq(trips.destinationId, destinations.id))
+		.innerJoin(countries, eq(destinations.countryId, countries.id))
 		.innerJoin(users, eq(trips.userId, users.id))
 		.where(eq(offers.guideId, session.user.id))
 		.orderBy(offers.createdAt);

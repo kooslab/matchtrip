@@ -72,7 +72,8 @@ export const load: PageServerLoad = async () => {
 		pending: 0,
 		accepted: 0,
 		rejected: 0,
-		cancelled: 0
+		cancelled: 0,
+		withdrawn: 0
 	};
 
 	offerStats.forEach((stat) => {

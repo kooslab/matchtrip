@@ -516,3 +516,11 @@ export const reviews = pgTable(
 // Type exports for admin tables
 export type Admin = typeof admins.$inferSelect;
 export type AdminSession = typeof adminSessions.$inferSelect;
+
+// Type exports for main tables
+export type User = typeof users.$inferSelect;
+export type Trip = typeof trips.$inferSelect;
+export type Offer = typeof offers.$inferSelect;
+export type Destination = typeof destinations.$inferSelect;
+export type Country = typeof countries.$inferSelect;
+export type Continent = typeof continents.$inferSelect;

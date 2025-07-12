@@ -27,7 +27,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const trip = await db.query.trips.findFirst({
 		where: eq(trips.id, tripId),
 		with: {
-			traveler: true
+			user: true
 		}
 	});
 
