@@ -3,6 +3,8 @@ import {
 	users,
 	trips,
 	offers,
+	continents,
+	countries,
 	destinations,
 	reviews,
 	conversations,
@@ -95,8 +97,26 @@ export const offersRelations = relations(offers, ({ one, many }) => ({
 	payments: many(payments)
 }));
 
+// Continent relations
+export const continentsRelations = relations(continents, ({ many }) => ({
+	countries: many(countries)
+}));
+
+// Country relations
+export const countriesRelations = relations(countries, ({ one, many }) => ({
+	continent: one(continents, {
+		fields: [countries.continentId],
+		references: [continents.id]
+	}),
+	destinations: many(destinations)
+}));
+
 // Destination relations
-export const destinationsRelations = relations(destinations, ({ many }) => ({
+export const destinationsRelations = relations(destinations, ({ one, many }) => ({
+	country: one(countries, {
+		fields: [destinations.countryId],
+		references: [countries.id]
+	}),
 	trips: many(trips)
 }));
 

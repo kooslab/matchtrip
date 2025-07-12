@@ -194,12 +194,51 @@ export const verifications = pgTable('verifications', {
 	updatedAt: timestamp('updated_at')
 });
 
+// Continents table
+export const continents = pgTable(
+	'continents',
+	{
+		id: serial('id').primaryKey(),
+		name: varchar('name', { length: 50 }).notNull().unique(),
+		code: varchar('code', { length: 2 }).notNull().unique(), // AF, AS, EU, NA, SA, OC, AN
+		created_at: timestamp('created_at').defaultNow().notNull(),
+		updated_at: timestamp('updated_at').defaultNow().notNull()
+	},
+	(table) => ({
+		nameIdx: index('continents_name_idx').on(table.name),
+		codeIdx: index('continents_code_idx').on(table.code)
+	})
+);
+
+// Countries table
+export const countries = pgTable(
+	'countries',
+	{
+		id: serial('id').primaryKey(),
+		name: varchar('name', { length: 100 }).notNull().unique(),
+		code: varchar('code', { length: 3 }).notNull().unique(), // ISO 3166-1 alpha-3
+		continentId: integer('continent_id')
+			.notNull()
+			.references(() => continents.id, { onDelete: 'restrict' }),
+		created_at: timestamp('created_at').defaultNow().notNull(),
+		updated_at: timestamp('updated_at').defaultNow().notNull()
+	},
+	(table) => ({
+		nameIdx: index('countries_name_idx').on(table.name),
+		codeIdx: index('countries_code_idx').on(table.code),
+		continentIdIdx: index('countries_continent_id_idx').on(table.continentId)
+	})
+);
+
+// Destinations table - now references countries
 export const destinations = pgTable(
 	'destinations',
 	{
 		id: serial('id').primaryKey(),
-		city: varchar('city', { length: 50 }).notNull().unique(),
-		country: varchar('country', { length: 50 }).notNull(),
+		city: varchar('city', { length: 100 }).notNull(),
+		countryId: integer('country_id')
+			.notNull()
+			.references(() => countries.id, { onDelete: 'restrict' }),
 		imageUrl: text('image_url'),
 		created_at: timestamp('created_at').defaultNow().notNull(),
 		updated_at: timestamp('updated_at').defaultNow().notNull()
@@ -207,7 +246,9 @@ export const destinations = pgTable(
 	(table) => ({
 		// Add indexes for search functionality
 		cityIdx: index('destinations_city_idx').on(table.city),
-		countryIdx: index('destinations_country_idx').on(table.country)
+		countryIdIdx: index('destinations_country_id_idx').on(table.countryId),
+		// Unique constraint on city + country combination
+		uniqueCityCountry: index('destinations_city_country_unique').on(table.city, table.countryId)
 	})
 );
 
