@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { MessageSquare, Star } from 'lucide-svelte';
+	import arrowBackIcon from '$lib/icons/icon-arrow-back-android-mono.svg';
 	let { data } = $props();
 
 	let offer = $derived(data.offer);
@@ -188,9 +189,7 @@
 			onclick={() => goto('/my-offers')}
 			class="flex items-center gap-2 text-gray-600 hover:text-gray-800"
 		>
-			<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-			</svg>
+			<img src={arrowBackIcon} alt="뒤로가기" class="h-5 w-5" />
 			나의 제안으로 돌아가기
 		</button>
 	</div>
@@ -449,13 +448,6 @@
 						{/if}
 					</button>
 				{/if}
-
-				<button
-					onclick={() => goto('/my-offers')}
-					class="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-700 transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
-				>
-					목록으로 돌아가기
-				</button>
 			</div>
 		</div>
 	</div>
