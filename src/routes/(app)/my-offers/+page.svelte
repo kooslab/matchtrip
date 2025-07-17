@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { MessageSquare } from 'lucide-svelte';
 	import { formatDate, formatDateRange } from '$lib/utils/dateFormatter';
 	import { userTimezone, userLocale } from '$lib/stores/location';
+	import chatIcon from '$lib/icons/bubble-chat.svg';
 
 	let { data } = $props();
 
@@ -218,7 +218,7 @@
 												onclick={() => startConversation(offer.id)}
 												class="flex items-center gap-1 rounded-md bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100"
 											>
-												<MessageSquare class="h-3 w-3" />
+												<img src={chatIcon} alt="" class="h-3 w-3" />
 												대화하기
 											</button>
 											<button
@@ -313,7 +313,7 @@
 												onclick={() => startConversation(offer.id)}
 												class="flex items-center gap-1 rounded-md bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100"
 											>
-												<MessageSquare class="h-3 w-3" />
+												<img src={chatIcon} alt="" class="h-3 w-3" />
 												대화하기
 											</button>
 											<button
@@ -408,7 +408,7 @@
 												onclick={() => startConversation(offer.id)}
 												class="flex items-center gap-1 rounded-md bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100"
 											>
-												<MessageSquare class="h-3 w-3" />
+												<img src={chatIcon} alt="" class="h-3 w-3" />
 												대화하기
 											</button>
 											<button

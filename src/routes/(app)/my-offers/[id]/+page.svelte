@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { MessageSquare, Star } from 'lucide-svelte';
-	import arrowBackIcon from '$lib/icons/icon-arrow-back-android-mono.svg';
+	import { Star } from 'lucide-svelte';
+	import arrowBackIcon from '$lib/icons/icon-arrow-left-small-mono.svg';
+	import chatIcon from '$lib/icons/bubble-chat.svg';
+	import bookmarkIcon from '$lib/icons/icon-bookmark-mono.svg';
+	import arrowRightIcon from '$lib/icons/icon-arrow-right-small-mono.svg';
 	let { data } = $props();
 
 	let offer = $derived(data.offer);
@@ -13,134 +16,93 @@
 	let completionError = $state('');
 
 	function formatDate(date: Date | string) {
-		const dateObj = typeof date === 'string' ? new Date(date) : date;
-		return dateObj.toLocaleDateString('ko-KR', {
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric'
-		});
+		const d = new Date(date);
+		return `${d.getFullYear()}. ${String(d.getMonth() + 1).padStart(2, '0')}. ${String(d.getDate()).padStart(2, '0')}`;
 	}
 
-	function formatDateTime(date: Date | string) {
-		const dateObj = typeof date === 'string' ? new Date(date) : date;
-		return dateObj.toLocaleString('ko-KR', {
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit'
-		});
+	function formatDateRange(startDate: Date | string, endDate: Date | string) {
+		const start = new Date(startDate);
+		const end = new Date(endDate);
+		const nights = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+		return `${formatDate(start)} - ${formatDate(end)} ${nights}박 ${nights + 1}일`;
 	}
 
-	function formatTravelMethod(method: string | null) {
-		if (!method) return '미정';
-
-		const methodMap: Record<string, string> = {
+	function formatTravelMethod(method: string) {
+		const methods: Record<string, string> = {
 			walking: '도보',
 			driving: '자동차',
-			public_transport: '대중교통',
-			bike: '자전거',
-			'walking+public_transport': '도보+대중교통',
-			'walking+bike': '도보+자전거',
-			'walking+driving': '도보+자동차',
-			'walking+driving+public_transport': '도보+자동차+대중교통',
-			'walking+driving+bike': '도보+자동차+자전거',
-			'walking+driving+public_transport+bike': '모든 교통수단',
-			other: '기타'
+			publicTransport: '대중교통',
+			mixed: '혼합'
 		};
-
-		return methodMap[method] || method;
-	}
-
-	function getStatusColor(status: string) {
-		switch (status) {
-			case 'pending':
-				return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-			case 'accepted':
-				return 'bg-green-100 text-green-800 border-green-200';
-			case 'rejected':
-				return 'bg-red-100 text-red-800 border-red-200';
-			case 'draft':
-				return 'bg-gray-100 text-gray-800 border-gray-200';
-			case 'submitted':
-				return 'bg-blue-100 text-blue-800 border-blue-200';
-			case 'completed':
-				return 'bg-purple-100 text-purple-800 border-purple-200';
-			case 'cancelled':
-				return 'bg-red-100 text-red-800 border-red-200';
-			default:
-				return 'bg-gray-100 text-gray-800 border-gray-200';
-		}
+		return methods[method] || method;
 	}
 
 	function getStatusText(status: string) {
-		switch (status) {
-			case 'pending':
-				return '검토중';
-			case 'accepted':
-				return '수락됨';
-			case 'rejected':
-				return '거절됨';
-			case 'draft':
-				return '임시저장';
-			case 'submitted':
-				return '제출됨';
-			case 'completed':
-				return '완료됨';
-			case 'cancelled':
-				return '취소됨';
-			default:
-				return status;
-		}
+		const statuses: Record<string, string> = {
+			pending: '검토 완료',
+			accepted: '결제 완료',
+			rejected: '거절됨',
+			completed: '완료',
+			cancelled: '취소됨'
+		};
+		return statuses[status] || status;
 	}
 
-	function formatDuration(hours: number | null) {
-		if (!hours) return '미정';
-		if (hours < 24) return `${hours}시간`;
-		const days = Math.floor(hours / 24);
-		const remainingHours = hours % 24;
-		if (remainingHours === 0) return `${days}일`;
-		return `${days}일 ${remainingHours}시간`;
+	function getStatusColor(status: string) {
+		const colors: Record<string, string> = {
+			pending: 'bg-green-50 text-green-700',
+			accepted: 'bg-blue-50 text-blue-700',
+			rejected: 'bg-red-50 text-red-700',
+			completed: 'bg-gray-50 text-gray-700',
+			cancelled: 'bg-gray-50 text-gray-700'
+		};
+		return colors[status] || 'bg-gray-50 text-gray-700';
 	}
 
 	async function startConversation() {
 		try {
 			const response = await fetch('/api/conversations', {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ offerId: offer.id })
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					offerId: offer.id
+				})
 			});
 
 			if (response.ok) {
-				const data = await response.json();
-				goto(`/chat/${data.conversation.id}`);
+				const { conversationId } = await response.json();
+				goto(`/chat/${conversationId}`);
 			} else {
-				console.error('Failed to create conversation');
+				alert('대화를 시작할 수 없습니다.');
 			}
 		} catch (error) {
-			console.error('Error creating conversation:', error);
+			alert('대화 시작 중 오류가 발생했습니다.');
 		}
 	}
 
 	async function markTripCompleted() {
+		if (!confirm('정말로 여행을 완료 처리하시겠습니까?')) {
+			return;
+		}
+
 		isMarkingCompleted = true;
-		completionError = '';
 		completionMessage = '';
+		completionError = '';
 
 		try {
 			const response = await fetch(`/api/trips/${offer.tripId}/complete`, {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' }
+				headers: {
+					'Content-Type': 'application/json'
+				}
 			});
 
 			const data = await response.json();
 
 			if (response.ok) {
-				completionMessage = '여행이 완료 처리되었습니다!';
-				// Reload the page to update the status
-				setTimeout(() => {
-					location.reload();
-				}, 1500);
+				window.location.reload();
 			} else {
 				completionError = data.error || '여행 완료 처리 중 오류가 발생했습니다.';
 			}
@@ -152,15 +114,20 @@
 	}
 
 	async function requestReview() {
+		if (!confirm('여행자에게 리뷰 요청을 보내시겠습니까?')) {
+			return;
+		}
+
 		isRequestingReview = true;
-		reviewRequestError = '';
 		reviewRequestMessage = '';
+		reviewRequestError = '';
 
 		try {
-			const response = await fetch('/api/reviews/request', {
+			const response = await fetch(`/api/trips/${offer.tripId}/request-review`, {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ tripId: offer.tripId })
+				headers: {
+					'Content-Type': 'application/json'
+				}
 			});
 
 			const data = await response.json();
@@ -179,276 +146,209 @@
 </script>
 
 <svelte:head>
-	<title>제안 상세보기 - MatchTrip</title>
+	<title>{offer.destination.city}, {offer.destination.country} - MatchTrip</title>
 </svelte:head>
 
-<div class="container mx-auto px-4 py-8">
-	<!-- Header with back button -->
-	<div class="mb-6 flex items-center gap-4">
-		<button
-			onclick={() => goto('/my-offers')}
-			class="flex items-center gap-2 text-gray-600 hover:text-gray-800"
-		>
-			<img src={arrowBackIcon} alt="뒤로가기" class="h-5 w-5" />
-			나의 제안으로 돌아가기
-		</button>
+<div class="min-h-screen bg-gray-50">
+	<!-- Header -->
+	<div class="sticky top-0 z-10 bg-white shadow-sm">
+		<div class="flex items-center h-[52px] px-4">
+			<button
+				onclick={() => goto('/my-offers')}
+				class="-ml-1 p-1"
+			>
+				<img src={arrowBackIcon} alt="뒤로가기" class="h-6 w-6" />
+			</button>
+			<h1 class="flex-1 text-center text-[17px] font-semibold text-gray-900">
+				{offer.destination.city}, {offer.destination.country}
+			</h1>
+			<button class="p-1">
+				<img src={bookmarkIcon} alt="북마크" class="h-6 w-6 text-gray-400" />
+			</button>
+		</div>
 	</div>
 
-	<!-- Main Content -->
-	<div class="grid gap-8 lg:grid-cols-3">
-		<!-- Left Column - Trip & Traveler Info -->
-		<div class="space-y-6 lg:col-span-2">
-			<!-- Trip Overview -->
-			<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-				<div class="mb-4 flex items-start justify-between">
-					<div>
-						<h1 class="mb-2 text-2xl font-bold text-gray-900">
-							{offer.destination.city}, {offer.destination.country}
-						</h1>
-						<p class="text-gray-600">{offer.traveler.name}님의 여행</p>
-					</div>
-					<span
-						class="inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium {getStatusColor(
-							offer.status
-						)}"
-					>
-						{getStatusText(offer.status)}
-					</span>
-				</div>
-
-				<div class="grid gap-4 md:grid-cols-2">
-					<div>
-						<h3 class="mb-2 text-sm font-medium text-gray-900">여행 기간</h3>
-						<p class="text-gray-700">
-							📅 {formatDate(offer.trip.startDate)} - {formatDate(offer.trip.endDate)}
-						</p>
-					</div>
-					<div>
-						<h3 class="mb-2 text-sm font-medium text-gray-900">참가자</h3>
-						<p class="text-gray-700">
-							👥 성인 {offer.trip.adultsCount}명
-							{#if offer.trip.childrenCount > 0}
-								, 아동 {offer.trip.childrenCount}명
-							{/if}
-						</p>
-					</div>
-					<div>
-						<h3 class="mb-2 text-sm font-medium text-gray-900">이동 방법</h3>
-						<p class="text-gray-700">🚶 {formatTravelMethod(offer.trip.travelMethod)}</p>
-					</div>
-					<div>
-						<h3 class="mb-2 text-sm font-medium text-gray-900">여행 상태</h3>
-						<p class="text-gray-700">
-							<span
-								class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium {getStatusColor(
-									offer.trip.status
-								)}"
-							>
-								{getStatusText(offer.trip.status)}
-							</span>
-						</p>
-					</div>
-				</div>
-
-				{#if offer.trip.customRequest}
-					<div class="mt-6">
-						<h3 class="mb-2 text-sm font-medium text-gray-900">특별 요청사항</h3>
-						<div class="rounded-md bg-gray-50 p-4">
-							<p class="whitespace-pre-wrap text-gray-700">{offer.trip.customRequest}</p>
-						</div>
-					</div>
-				{/if}
-			</div>
-
-			<!-- Traveler Information -->
-			<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-				<h2 class="mb-4 text-lg font-semibold text-gray-900">여행자 정보</h2>
-				<div class="grid gap-4 md:grid-cols-2">
-					<div>
-						<h3 class="mb-1 text-sm font-medium text-gray-900">이름</h3>
-						<p class="text-gray-700">{offer.traveler.name}</p>
-					</div>
-					<div>
-						<h3 class="mb-1 text-sm font-medium text-gray-900">이메일</h3>
-						<p class="text-gray-700">{offer.traveler.email}</p>
-					</div>
-				</div>
-			</div>
-
-			<!-- Itinerary -->
-			{#if offer.itinerary}
-				<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-					<h2 class="mb-4 text-lg font-semibold text-gray-900">제안한 여행 일정</h2>
-					<div class="prose prose-sm max-w-none rounded-md bg-blue-50 p-4">
-						{@html offer.itinerary}
-					</div>
-				</div>
-			{/if}
+	<!-- Content -->
+	<div class="pb-40">
+		<!-- Status Badge -->
+		<div class="px-4 pt-4">
+			<span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium {getStatusColor(offer.status)}">
+				{getStatusText(offer.status)}
+			</span>
 		</div>
 
-		<!-- Right Column - Offer Details -->
-		<div class="space-y-6">
-			<!-- Offer Summary -->
-			<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-				<h2 class="mb-4 text-lg font-semibold text-gray-900">제안 정보</h2>
-
-				<!-- Price -->
-				<div class="mb-6 rounded-lg bg-blue-50 p-4 text-center">
-					<p class="text-sm text-blue-600">제안 금액</p>
-					<p class="text-3xl font-bold text-blue-900">
-						{offer.price.toLocaleString('ko-KR')}원
-					</p>
-					{#if offer.currency !== 'KRW'}
-						<p class="text-xs text-blue-600">({offer.currency})</p>
-					{/if}
-				</div>
-
-				<div class="space-y-4">
-					<div>
-						<h3 class="mb-1 text-sm font-medium text-gray-900">제안 제목</h3>
-						<p class="text-gray-700">{offer.title}</p>
-					</div>
-
-					{#if offer.description}
-						<div>
-							<h3 class="mb-1 text-sm font-medium text-gray-900">제안 설명</h3>
-							<p class="whitespace-pre-wrap text-gray-700">{offer.description}</p>
-						</div>
-					{/if}
-
-					{#if offer.duration}
-						<div>
-							<h3 class="mb-1 text-sm font-medium text-gray-900">예상 소요시간</h3>
-							<p class="text-gray-700">{formatDuration(offer.duration)}</p>
-						</div>
-					{/if}
-
-					{#if offer.maxParticipants}
-						<div>
-							<h3 class="mb-1 text-sm font-medium text-gray-900">최대 참가자</h3>
-							<p class="text-gray-700">{offer.maxParticipants}명</p>
-						</div>
-					{/if}
-
-					<div>
-						<h3 class="mb-1 text-sm font-medium text-gray-900">제안일</h3>
-						<p class="text-gray-700">{formatDateTime(offer.createdAt)}</p>
-					</div>
-
-					{#if offer.updatedAt !== offer.createdAt}
-						<div>
-							<h3 class="mb-1 text-sm font-medium text-gray-900">수정일</h3>
-							<p class="text-gray-700">{formatDateTime(offer.updatedAt)}</p>
-						</div>
-					{/if}
-
-					{#if offer.validUntil}
-						<div>
-							<h3 class="mb-1 text-sm font-medium text-gray-900">제안 유효기간</h3>
-							<p class="text-gray-700">{formatDateTime(offer.validUntil)}까지</p>
-						</div>
-					{/if}
-				</div>
+		<!-- Price Section -->
+		<div class="px-4 pt-3">
+			<div class="flex items-baseline gap-1">
+				<span class="text-3xl font-bold text-gray-900">{offer.price.toLocaleString()}원</span>
+				<span class="text-sm text-gray-600">/ 전체 금액</span>
 			</div>
+		</div>
 
-			<!-- Status Messages -->
-			{#if completionMessage}
-				<div class="rounded-lg bg-green-50 p-4 text-sm text-green-700">
-					{completionMessage}
+		<!-- Info Grid -->
+		<div class="px-4 pt-6">
+			<dl class="space-y-3">
+				<div class="flex justify-between">
+					<dt class="text-sm text-gray-600">여행 일정</dt>
+					<dd class="text-sm font-medium text-gray-900">
+						{formatDateRange(offer.trip.startDate, offer.trip.endDate)}
+					</dd>
 				</div>
-			{/if}
-
-			{#if completionError}
-				<div class="rounded-lg bg-red-50 p-4 text-sm text-red-700">
-					{completionError}
+				<div class="flex justify-between">
+					<dt class="text-sm text-gray-600">인원</dt>
+					<dd class="text-sm font-medium text-gray-900">
+						성인 {offer.trip.adultsCount || 0}명
+						{#if offer.trip.childrenCount}
+							· 아동 {offer.trip.childrenCount}명
+						{/if}
+					</dd>
 				</div>
-			{/if}
-
-			{#if reviewRequestMessage}
-				<div class="rounded-lg bg-green-50 p-4 text-sm text-green-700">
-					{reviewRequestMessage}
+				<div class="flex justify-between">
+					<dt class="text-sm text-gray-600">선호 스타일</dt>
+					<dd class="text-sm font-medium text-gray-900">모험적인 여행</dd>
 				</div>
-			{/if}
-
-			{#if reviewRequestError}
-				<div class="rounded-lg bg-red-50 p-4 text-sm text-red-700">
-					{reviewRequestError}
+				<div class="flex justify-between">
+					<dt class="text-sm text-gray-600">관심 활동</dt>
+					<dd class="text-sm font-medium text-gray-900">자연 / 아웃도어</dd>
 				</div>
-			{/if}
+			</dl>
+		</div>
 
-			<!-- Action Buttons -->
-			<div class="space-y-3">
-				<!-- Conversation Button -->
+		<!-- Expandable Sections -->
+		<div class="mt-8">
+			<!-- 제안 내용 -->
+			<details class="border-t border-gray-200">
+				<summary class="flex cursor-pointer items-center justify-between px-4 py-4 hover:bg-gray-50">
+					<span class="text-base font-medium text-gray-900">제안 내용</span>
+					<img src={arrowRightIcon} alt="" class="h-3 w-3 rotate-90 transition-transform" />
+				</summary>
+				<div class="px-4 pb-4">
+					<p class="whitespace-pre-wrap text-sm text-gray-700">{offer.description || '제안 내용이 없습니다.'}</p>
+				</div>
+			</details>
+
+			<!-- 첨부 파일 -->
+			<details class="border-t border-gray-200">
+				<summary class="flex cursor-pointer items-center justify-between px-4 py-4 hover:bg-gray-50">
+					<span class="text-base font-medium text-gray-900">첨부 파일</span>
+					<img src={arrowRightIcon} alt="" class="h-3 w-3 rotate-90 transition-transform" />
+				</summary>
+				<div class="px-4 pb-4">
+					<div class="flex items-center gap-3 rounded-lg bg-gray-50 p-3">
+						<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-500">
+							<span class="text-xs font-bold text-white">PDF</span>
+						</div>
+						<div class="flex-1">
+							<p class="text-sm font-medium text-gray-900">여행제안.pdf</p>
+							<p class="text-xs text-gray-500">3MB</p>
+						</div>
+						<button class="p-2">
+							<svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+							</svg>
+						</button>
+					</div>
+				</div>
+			</details>
+
+			<!-- 결제 정보 -->
+			<details class="border-t border-gray-200">
+				<summary class="flex cursor-pointer items-center justify-between px-4 py-4 hover:bg-gray-50">
+					<span class="text-base font-medium text-gray-900">결제 정보</span>
+					<img src={arrowRightIcon} alt="" class="h-3 w-3 rotate-90 transition-transform" />
+				</summary>
+				<div class="px-4 pb-4">
+					<div class="rounded-lg bg-gray-50 p-4">
+						<div class="mb-3 flex justify-between">
+							<span class="text-sm text-gray-600">총 결제금액</span>
+							<span class="text-base font-bold text-gray-900">{offer.price.toLocaleString()}원</span>
+						</div>
+						<button
+							onclick={() => goto(`/my-trips/${offer.tripId}`)}
+							class="w-full rounded-lg bg-gray-200 py-2 text-sm font-medium text-gray-700"
+						>
+							여행 취소하기
+						</button>
+					</div>
+				</div>
+			</details>
+
+			<!-- 취소 / 환불 안내 -->
+			<details class="border-t border-gray-200">
+				<summary class="flex cursor-pointer items-center justify-between px-4 py-4 hover:bg-gray-50">
+					<span class="text-base font-medium text-gray-900">취소 / 환불 안내</span>
+					<img src={arrowRightIcon} alt="" class="h-3 w-3 rotate-90 transition-transform" />
+				</summary>
+				<div class="px-4 pb-4">
+					<p class="text-sm text-gray-700">취소 및 환불 정책 내용이 여기에 표시됩니다.</p>
+				</div>
+			</details>
+
+			<!-- 판매자 정보 및 고시 -->
+			<details class="border-t border-gray-200 border-b">
+				<summary class="flex cursor-pointer items-center justify-between px-4 py-4 hover:bg-gray-50">
+					<span class="text-base font-medium text-gray-900">판매자 정보 및 고시</span>
+					<img src={arrowRightIcon} alt="" class="h-3 w-3 rotate-90 transition-transform" />
+				</summary>
+				<div class="px-4 pb-4">
+					<p class="text-sm text-gray-700">판매자 정보 및 고시 내용이 여기에 표시됩니다.</p>
+				</div>
+			</details>
+		</div>
+
+		<!-- Lorem Ipsum Card -->
+		<div class="mx-4 mt-8 rounded-2xl bg-gradient-to-r from-blue-50 to-purple-50 p-6">
+			<h3 class="mb-2 text-lg font-semibold text-gray-900">What is Lorem Ipsum</h3>
+			<p class="text-sm text-gray-600">What is Lorem Ipsum</p>
+			<div class="mt-4 flex justify-end">
+				<img src="/placeholder-illustration.png" alt="" class="h-24 w-24" />
+			</div>
+		</div>
+	</div>
+
+	<!-- Fixed Bottom Section -->
+	<div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+		<div class="flex items-center gap-3 px-4 py-3 pb-safe">
+			<!-- Price Section -->
+			<div class="flex-1">
+				<p class="text-xs text-gray-600">총 결제금액</p>
+				<p class="text-lg font-bold text-gray-900">{offer.price.toLocaleString()}원</p>
+			</div>
+			
+			<!-- Button Section -->
+			{#if offer.status === 'pending' || offer.status === 'accepted'}
 				<button
 					onclick={startConversation}
-					class="flex w-full items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+					class="flex items-center justify-center gap-2 rounded-xl bg-[#1095f4] px-8 py-3.5 text-base font-semibold text-white"
 				>
-					<MessageSquare class="h-5 w-5" />
+					<img src={chatIcon} alt="" class="h-5 w-5 brightness-0 invert" />
 					대화하기
 				</button>
-
-				{#if offer.status === 'accepted'}
-					<button
-						onclick={() => goto(`/my-trips/${offer.tripId}`)}
-						class="w-full rounded-md bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none"
-					>
-						여행 관리하기
-					</button>
-
-					{#if offer.trip.status === 'accepted'}
-						{#if new Date(offer.trip.endDate) < new Date()}
-							<button
-								onclick={markTripCompleted}
-								disabled={isMarkingCompleted}
-								class="flex w-full items-center justify-center gap-2 rounded-md bg-purple-600 px-4 py-2 text-white transition-colors hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-							>
-								{#if isMarkingCompleted}
-									<span
-										class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
-									></span>
-									처리 중...
-								{:else}
-									여행 완료 처리
-								{/if}
-							</button>
-						{:else}
-							<!-- Show during trip for testing -->
-							<button
-								onclick={markTripCompleted}
-								disabled={isMarkingCompleted}
-								class="flex w-full items-center justify-center gap-2 rounded-md bg-orange-600 px-4 py-2 text-white transition-colors hover:bg-orange-700 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-							>
-								{#if isMarkingCompleted}
-									<span
-										class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
-									></span>
-									처리 중...
-								{:else}
-									여행 조기 완료 (테스트용)
-								{/if}
-							</button>
-						{/if}
+			{:else if offer.status === 'completed'}
+				<button
+					onclick={requestReview}
+					disabled={isRequestingReview}
+					class="flex items-center justify-center gap-2 rounded-xl bg-[#1095f4] px-8 py-3.5 text-base font-semibold text-white disabled:opacity-50"
+				>
+					{#if isRequestingReview}
+						<span class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+						요청 중...
+					{:else}
+						<Star class="h-5 w-5" />
+						리뷰 요청하기
 					{/if}
-				{/if}
-
-				{#if offer.status === 'accepted' && offer.trip.status === 'completed'}
-					<button
-						onclick={requestReview}
-						disabled={isRequestingReview}
-						class="flex w-full items-center justify-center gap-2 rounded-md bg-yellow-600 px-4 py-2 text-white transition-colors hover:bg-yellow-700 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-					>
-						{#if isRequestingReview}
-							<span
-								class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
-							></span>
-							요청 중...
-						{:else}
-							<Star class="h-5 w-5" />
-							리뷰 요청하기
-						{/if}
-					</button>
-				{/if}
-			</div>
+				</button>
+			{/if}
 		</div>
 	</div>
 </div>
+
+<style>
+	details[open] summary img {
+		transform: rotate(-90deg);
+	}
+	
+	details summary::-webkit-details-marker {
+		display: none;
+	}
+</style>

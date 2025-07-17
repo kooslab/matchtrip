@@ -10,10 +10,11 @@
 	let isGuide = $derived(userRole === 'guide');
 	let isTraveler = $derived(userRole === 'traveler');
 	
-	// Hide bottom nav for offers/create routes and trips detail pages
+	// Hide bottom nav for offers/create routes, trips detail pages, and my-offers detail pages
 	let hideBottomNav = $derived(
 		$page.url.pathname.startsWith('/offers/create') ||
-		$page.url.pathname.match(/^\/trips\/[^\/]+$/)
+		$page.url.pathname.match(/^\/trips\/[^\/]+$/) ||
+		$page.url.pathname.match(/^\/my-offers\/[^\/]+$/)
 	);
 </script>
 
