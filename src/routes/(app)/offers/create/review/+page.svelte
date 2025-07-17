@@ -8,6 +8,7 @@
 	let { data } = $props();
 	let trip = $derived(data.trip);
 	let tripId = $derived($page.url.searchParams.get('tripId'));
+	let isSubmitting = $state(false);
 
 	// Get form data from store
 	const formData = $derived($offerFormStore);
@@ -38,15 +39,10 @@
 
 	// Submit offer
 	async function handleSubmit() {
-		if (!$offerFormValidation.canSubmit) return;
+		if (!$offerFormValidation.canSubmit || isSubmitting) return;
 
+		isSubmitting = true;
 		try {
-			// Prepare itinerary data
-			const itineraryData = formData.itinerary.map((day) => ({
-				day: day.day,
-				imageUrl: day.imageUrl || null,
-				timeSlots: day.timeSlots
-			}));
 
 			const response = await fetch('/api/offers', {
 				method: 'POST',
@@ -56,7 +52,7 @@
 				body: JSON.stringify({
 					tripId: formData.tripId,
 					pricePerPerson: parseInt(formData.pricePerPerson),
-					itinerary: formData.itinerary[0]?.timeSlots[0]?.title || ''
+					description: formData.description
 				})
 			});
 
@@ -66,10 +62,12 @@
 			} else {
 				const error = await response.json();
 				alert(error.message || '제안서 작성에 실패했습니다.');
+				isSubmitting = false;
 			}
 		} catch (error) {
 			console.error('Error submitting offer:', error);
 			alert('제안서 작성 중 오류가 발생했습니다.');
+			isSubmitting = false;
 		}
 	}
 
@@ -152,28 +150,6 @@
 				<p class="text-sm whitespace-pre-wrap text-gray-700">{formData.description}</p>
 			</div>
 
-			<!-- Itinerary -->
-			{#if formData.itinerary[0]?.timeSlots[0]?.title}
-				<div class="rounded-lg border border-gray-200 bg-white p-4">
-					<div class="mb-3 flex items-center justify-between">
-						<h3 class="font-medium text-gray-900">일정</h3>
-						<button
-							onclick={() => handleEdit('itinerary')}
-							class="text-sm font-medium transition-colors"
-							style="color: {colors.primary}"
-						>
-							수정
-						</button>
-					</div>
-					<!-- Display HTML content with inline images -->
-					<div
-						class="prose prose-sm max-w-none text-gray-700 [&>img]:my-4 [&>img]:max-w-full [&>img]:rounded-lg"
-						contenteditable="false"
-					>
-						{@html formData.itinerary[0].timeSlots[0].title}
-					</div>
-				</div>
-			{/if}
 
 			<!-- Files -->
 			{#if formData.additionalFiles.length > 0}
@@ -221,11 +197,19 @@
 >
 	<button
 		onclick={handleSubmit}
-		disabled={!$offerFormValidation.canSubmit}
-		class="w-full rounded-lg py-3.5 text-base font-semibold text-white transition-all
-			{$offerFormValidation.canSubmit ? 'hover:opacity-90' : 'cursor-not-allowed opacity-50'}"
-		style="background-color: {$offerFormValidation.canSubmit ? colors.primary : '#CBD5E1'}"
+		disabled={!$offerFormValidation.canSubmit || isSubmitting}
+		class="w-full rounded-lg py-3.5 text-base font-semibold text-white transition-all flex items-center justify-center gap-2
+			{$offerFormValidation.canSubmit && !isSubmitting ? 'hover:opacity-90' : 'cursor-not-allowed opacity-50'}"
+		style="background-color: {$offerFormValidation.canSubmit && !isSubmitting ? colors.primary : '#CBD5E1'}"
 	>
-		최종 제안
+		{#if isSubmitting}
+			<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+				<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+				<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+			</svg>
+			제출 중...
+		{:else}
+			최종 제안
+		{/if}
 	</button>
 </div>

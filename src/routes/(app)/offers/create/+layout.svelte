@@ -12,10 +12,9 @@
 		{ path: 'trip-info', name: '여행 정보', number: 1 },
 		{ path: 'price', name: '가격 입력', number: 2 },
 		{ path: 'description', name: '제안 내용', number: 3 },
-		{ path: 'itinerary', name: '일정', number: 4 },
-		{ path: 'files', name: '파일 업로드', number: 5 },
-		{ path: 'review', name: '검토', number: 6 },
-		{ path: 'success', name: '완료', number: 7 }
+		{ path: 'files', name: '파일 업로드', number: 4 },
+		{ path: 'review', name: '검토', number: 5 },
+		{ path: 'success', name: '완료', number: 6 }
 	];
 
 	// Get current step from URL
@@ -54,10 +53,11 @@
 		if (currentIndex > 0) {
 			// Go to previous step
 			const prevStep = steps[currentIndex - 1];
-			goto(`/offers/create/${prevStep.path}`);
+			const tripId = $page.url.searchParams.get('tripId') || $offerFormStore.tripId;
+			goto(`/offers/create/${prevStep.path}${tripId ? `?tripId=${tripId}` : ''}`);
 		} else {
 			// Go back to trips page
-			const tripId = $offerFormStore.tripId;
+			const tripId = $page.url.searchParams.get('tripId') || $offerFormStore.tripId;
 			if (tripId) {
 				goto(`/trips/${tripId}`);
 			} else {
@@ -69,7 +69,7 @@
 	// Check if skip button should be shown
 	const showSkip = $derived(() => {
 		const current = currentStepInfo();
-		return current.path === 'itinerary' || current.path === 'files';
+		return current.path === 'files';
 	});
 
 	function handleSkip() {
@@ -78,7 +78,8 @@
 
 		if (currentIndex < steps.length - 1) {
 			const nextStep = steps[currentIndex + 1];
-			goto(`/offers/create/${nextStep.path}`);
+			const tripId = $page.url.searchParams.get('tripId') || $offerFormStore.tripId;
+			goto(`/offers/create/${nextStep.path}${tripId ? `?tripId=${tripId}` : ''}`);
 		}
 	}
 </script>

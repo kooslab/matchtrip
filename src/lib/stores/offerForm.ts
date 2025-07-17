@@ -1,21 +1,10 @@
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
 
-export interface ItineraryDay {
-	day: number;
-	imageUrl?: string;
-	timeSlots: {
-		time: string;
-		title: string;
-		description: string;
-	}[];
-}
-
 export interface OfferFormData {
 	tripId: string;
 	pricePerPerson: string;
 	description: string;
-	itinerary: ItineraryDay[];
 	additionalFiles: File[];
 }
 
@@ -25,13 +14,6 @@ function createOfferFormStore() {
 		tripId: '',
 		pricePerPerson: '',
 		description: '',
-		itinerary: [
-			{
-				day: 1,
-				imageUrl: '',
-				timeSlots: []
-			}
-		],
 		additionalFiles: []
 	};
 
@@ -63,33 +45,6 @@ function createOfferFormStore() {
 		setTripId: (tripId: string) => update((data) => ({ ...data, tripId })),
 		setPricePerPerson: (price: string) => update((data) => ({ ...data, pricePerPerson: price })),
 		setDescription: (description: string) => update((data) => ({ ...data, description })),
-		addItineraryDay: () =>
-			update((data) => ({
-				...data,
-				itinerary: [
-					...data.itinerary,
-					{
-						day: data.itinerary.length + 1,
-						imageUrl: '',
-						timeSlots: []
-					}
-				]
-			})),
-		removeItineraryDay: (index: number) =>
-			update((data) => {
-				const newItinerary = data.itinerary.filter((_, i) => i !== index);
-				// Renumber days
-				newItinerary.forEach((day, i) => {
-					day.day = i + 1;
-				});
-				return { ...data, itinerary: newItinerary };
-			}),
-		updateItineraryDay: (index: number, day: ItineraryDay) =>
-			update((data) => {
-				const newItinerary = [...data.itinerary];
-				newItinerary[index] = day;
-				return { ...data, itinerary: newItinerary };
-			}),
 		addFiles: (files: File[]) =>
 			update((data) => ({ ...data, additionalFiles: [...data.additionalFiles, ...files] })),
 		removeFile: (index: number) =>

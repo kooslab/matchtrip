@@ -16,7 +16,7 @@
 
 	function handleNext() {
 		if ($offerFormValidation.isDescriptionValid) {
-			goto(`/offers/create/itinerary?tripId=${tripId}`);
+			goto(`/offers/create/files?tripId=${tripId}`);
 		}
 	}
 

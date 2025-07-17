@@ -15,6 +15,14 @@
 	let error = $state<string | null>(null);
 	let widgetContainer = $state<HTMLDivElement>();
 	let hasInitialized = false;
+	let isProcessingPayment = $state(false);
+	
+	// Check if payment can proceed - simplified
+	const canProceedPayment = $derived(
+		!isLoading && 
+		!!paymentWidget && 
+		!isProcessingPayment
+	);
 
 	// Initialize when modal opens
 	$effect(() => {
@@ -38,6 +46,7 @@
 			hasInitialized = false;
 			isLoading = false;
 			error = null;
+			isProcessingPayment = false;
 		}
 	});
 
@@ -96,16 +105,18 @@
 			});
 
 			// Render payment methods
-			await widgets.renderPaymentMethods({
+			const paymentMethodWidget = await widgets.renderPaymentMethods({
 				selector: '#payment-method',
 				variantKey: 'DEFAULT'
 			});
 
 			// Render agreement
-			await widgets.renderAgreement({
+			const agreementWidget = await widgets.renderAgreement({
 				selector: '#agreement',
 				variantKey: 'AGREEMENT'
 			});
+
+			// Widget is ready to use
 
 			paymentWidget = widgets;
 			isLoading = false;
@@ -120,6 +131,9 @@
 
 	async function handlePayment() {
 		if (!paymentWidget) return;
+
+		isProcessingPayment = true;
+		error = null;
 
 		try {
 			const orderId = generateOrderId();
@@ -147,11 +161,19 @@
 			});
 		} catch (err: any) {
 			console.error('Payment request error:', err);
+			isProcessingPayment = false;
+			
 			if (err.code === 'USER_CANCEL') {
 				// User cancelled payment
 				return;
 			}
-			alert('결제 요청 중 오류가 발생했습니다.');
+			
+			// Check for specific error about payment method selection
+			if (err.message?.includes('카드 결제 정보를 선택해주세요') || err.message?.includes('결제 정보를 선택')) {
+				error = '결제 방법을 먼저 선택해주세요.';
+			} else {
+				error = err.message || '결제 요청 중 오류가 발생했습니다.';
+			}
 		}
 	}
 
@@ -264,6 +286,12 @@
 
 						<!-- Payment Widget - Always rendered -->
 						<div class="space-y-3">
+							{#if !isLoading && !error}
+								<div class="mb-2 rounded-lg bg-blue-50 p-3 text-sm text-blue-700">
+									<p class="font-medium">결제 방법을 선택하고 약관에 동의해주세요</p>
+									<p class="mt-1 text-xs">카드, 계좌이체 등 원하시는 결제 수단을 선택한 후 결제하기 버튼을 눌러주세요.</p>
+								</div>
+							{/if}
 							<div id="payment-method" class="w-full rounded-lg" style="min-height: 250px;"></div>
 							<div id="agreement" class="w-full rounded-lg" style="min-height: 120px;"></div>
 						</div>
@@ -279,10 +307,19 @@
 						</button>
 						<button
 							onclick={handlePayment}
-							disabled={isLoading || !!error || !paymentWidget}
-							class="flex-1 rounded-xl bg-[#1095f4] px-4 py-3 text-sm font-medium text-white hover:bg-blue-600 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+							disabled={!canProceedPayment}
+							class="flex-1 rounded-xl px-4 py-3 text-sm font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center gap-2
+								{canProceedPayment ? 'bg-[#1095f4] hover:bg-blue-600' : 'bg-gray-300'}"
 						>
-							결제하기
+							{#if isProcessingPayment}
+								<svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+									<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+									<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+								</svg>
+								처리 중...
+							{:else}
+								결제하기
+							{/if}
 						</button>
 					</div>
 				</div>

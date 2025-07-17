@@ -27,10 +27,10 @@ export const POST: RequestHandler = async ({ request }) => {
 			return json({ success: false, error: '가이드만 제안할 수 있습니다.' }, { status: 403 });
 		}
 
-		const { tripId, pricePerPerson, itinerary } = await request.json();
+		const { tripId, pricePerPerson, description } = await request.json();
 
 		// Validate input
-		if (!tripId || !pricePerPerson || !itinerary) {
+		if (!tripId || !pricePerPerson || !description) {
 			return json({ success: false, error: '모든 필드를 입력해주세요.' }, { status: 400 });
 		}
 
@@ -38,8 +38,8 @@ export const POST: RequestHandler = async ({ request }) => {
 			return json({ success: false, error: '올바른 가격을 입력해주세요.' }, { status: 400 });
 		}
 
-		if (typeof itinerary !== 'string' || itinerary.trim().length === 0) {
-			return json({ success: false, error: '여행 일정을 입력해주세요.' }, { status: 400 });
+		if (typeof description !== 'string' || description.trim().length === 0) {
+			return json({ success: false, error: '제안 내용을 입력해주세요.' }, { status: 400 });
 		}
 
 		// Check if guide has already made an offer for this trip
@@ -77,10 +77,10 @@ export const POST: RequestHandler = async ({ request }) => {
 				guideId: session.user.id,
 				travelerId: tripDetails[0].userId,
 				title: '가이드 제안',
-				description: '가이드가 제안한 여행 일정입니다.',
+				description: description.trim(),
 				price: totalPrice,
 				currency: 'KRW',
-				itinerary: itinerary.trim(),
+				itinerary: '',
 				status: 'pending'
 			})
 			.returning();
