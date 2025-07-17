@@ -13,7 +13,7 @@
 	let paymentWidget: any = $state(null);
 	let isLoading = $state(false);
 	let error = $state<string | null>(null);
-	let widgetContainer: HTMLDivElement;
+	let widgetContainer = $state<HTMLDivElement>();
 	let hasInitialized = false;
 
 	// Initialize when modal opens

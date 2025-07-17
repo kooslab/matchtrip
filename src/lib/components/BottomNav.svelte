@@ -39,9 +39,10 @@
 		class="safe-area-bottom relative rounded-t-[20px] border-t border-[#f1f1f1] bg-white/95 shadow-[0px_-4px_12px_0px_rgba(0,0,0,0.02)] backdrop-blur-sm"
 	>
 		<div class="flex items-end justify-between px-4 pt-0 pb-1">
-			{#each navItems as item, index}
-				{#if index === 1 && currentPath === '/my-trips'}
-					<!-- Active state - My Trips -->
+			{#each navItems as item}
+				{@const isActive = currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href))}
+				{#if isActive}
+					<!-- Active state -->
 					<div class="flex flex-1 justify-center">
 						<div class="flex flex-col items-center gap-1 pt-1 pb-0">
 							<div
@@ -52,6 +53,9 @@
 									{@html item.icon}
 								</div>
 							</div>
+							<span class="text-center text-[10px] leading-3 font-semibold text-[#1095f4]"
+								>{item.label}</span
+							>
 						</div>
 					</div>
 				{:else}
@@ -84,6 +88,15 @@
 		width: 100%;
 		height: 100%;
 		fill: currentColor;
+	}
+
+	/* Force white color for active state icons */
+	:global(nav .text-white svg) {
+		fill: white !important;
+	}
+	
+	:global(nav .text-white svg path) {
+		fill: white !important;
 	}
 
 	/* Safe area padding for iOS */
