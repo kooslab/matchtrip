@@ -105,13 +105,13 @@
 			});
 
 			// Render payment methods
-			const paymentMethodWidget = await widgets.renderPaymentMethods({
+			await widgets.renderPaymentMethods({
 				selector: '#payment-method',
 				variantKey: 'DEFAULT'
 			});
 
 			// Render agreement
-			const agreementWidget = await widgets.renderAgreement({
+			await widgets.renderAgreement({
 				selector: '#agreement',
 				variantKey: 'AGREEMENT'
 			});

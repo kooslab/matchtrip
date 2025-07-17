@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
-import { conversations, messages, users, offers, trips, destinations } from '$lib/server/db/schema';
+import { conversations, messages, users, offers, trips, destinations, countries } from '$lib/server/db/schema';
 import { eq, and, or, asc } from 'drizzle-orm';
 
 // GET /api/conversations/[id] - Get conversation details with messages
@@ -82,7 +82,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 				tripId: offers.tripId,
 				destination: {
 					city: destinations.city,
-					country: destinations.country
+					country: countries.name
 				},
 				trip: {
 					id: trips.id,
@@ -93,6 +93,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 			.from(offers)
 			.leftJoin(trips, eq(offers.tripId, trips.id))
 			.leftJoin(destinations, eq(trips.destinationId, destinations.id))
+			.leftJoin(countries, eq(destinations.countryId, countries.id))
 			.where(eq(offers.id, conv.offerId))
 			.limit(1);
 
