@@ -18,7 +18,8 @@ const ALLOWED_ORIGINS = [
 	'http://localhost:5173',
 	'http://localhost:5174',
 	'https://matchtrip.net',
-	'https://www.matchtrip.net'
+	'https://www.matchtrip.net',
+	'https://dev.matchtrip.net'
 ];
 
 let r2Client: S3Client | null = null;
