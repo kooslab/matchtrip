@@ -5,9 +5,17 @@
 
 	let isSubmitting = $state(false);
 	let isSubmitted = $state(false);
+	let isSubmittingStarted = $state(false);
 
 	// Handle submission
 	async function handleSubmit() {
+		// Prevent multiple submissions
+		if (isSubmittingStarted || isSubmitting || isSubmitted) {
+			console.log('Submission already in progress or completed, skipping...');
+			return;
+		}
+
+		isSubmittingStarted = true;
 		isSubmitting = true;
 
 		try {
@@ -103,7 +111,10 @@
 
 	// Auto-submit when page loads
 	$effect(() => {
-		handleSubmit();
+		// Only submit once when component mounts
+		if (!isSubmittingStarted && !isSubmitting && !isSubmitted) {
+			handleSubmit();
+		}
 	});
 
 	// Navigate to home
