@@ -279,9 +279,11 @@
 								onclick={() => itineraryExpanded = !itineraryExpanded}
 							>
 								<h4 class="font-semibold text-gray-900">제안 내용</h4>
-								<svg class="w-5 h-5 text-gray-400 transform transition-transform {itineraryExpanded ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-								</svg>
+								<div class="w-5 h-5 flex-shrink-0">
+									<svg class="w-full h-full text-gray-400 transform transition-transform {itineraryExpanded ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+									</svg>
+								</div>
 							</button>
 							{#if itineraryExpanded}
 								<div class="mt-4 text-sm text-gray-700 leading-relaxed space-y-3">
@@ -333,9 +335,11 @@
 										onclick={() => {/* Toggle guide info */}}
 									>
 										<h4 class="font-semibold text-gray-900">가이드 정보</h4>
-										<svg class="w-5 h-5 text-gray-400 transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-										</svg>
+										<div class="w-5 h-5 flex-shrink-0">
+											<svg class="w-full h-full text-gray-400 transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+											</svg>
+										</div>
 									</button>
 									<div class="mt-4 text-sm text-gray-600 leading-relaxed">
 										{offer.guideProfile.introduction}
@@ -527,8 +531,8 @@
 						onclick={() => onStartChat(offer.id)}
 						class="w-full py-4 bg-[#1095f4] text-white rounded-xl font-medium hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
 					>
-						<img src={chatIconUrl} alt="chat" class="w-5 h-5 brightness-0 invert" />
-						<span>대화하기</span>
+						<img src={chatIconUrl} alt="chat" class="w-5 h-5 flex-shrink-0 brightness-0 invert" />
+						<span class="text-base">대화하기</span>
 					</button>
 				{:else if activeTab === 'offer'}
 					<!-- Payment section for offer tab -->
@@ -551,8 +555,8 @@
 							onclick={() => onStartChat(offer.id)}
 							class="w-full py-4 bg-[#1095f4] text-white rounded-xl font-medium hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
 						>
-							<img src={chatIconUrl} alt="chat" class="w-5 h-5 brightness-0 invert" />
-							<span>대화하기</span>
+							<img src={chatIconUrl} alt="chat" class="w-5 h-5 flex-shrink-0 brightness-0 invert" />
+							<span class="text-base">대화하기</span>
 						</button>
 					{:else}
 						<div class="text-center py-3 px-6 bg-gray-100 rounded-lg">
@@ -585,5 +589,13 @@
 
 	.animate-slide-up {
 		animation: slide-up 0.3s ease-out;
+	}
+	
+	/* Ensure SVGs don't overflow their containers */
+	:global(.w-5.h-5 svg) {
+		max-width: 100%;
+		max-height: 100%;
+		width: 100%;
+		height: 100%;
 	}
 </style>

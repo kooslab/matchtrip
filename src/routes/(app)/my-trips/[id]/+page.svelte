@@ -386,11 +386,13 @@
 							onclick={() => (expandedSections.request = !expandedSections.request)}
 						>
 							<h2 class="text-base font-semibold text-gray-900">요청 사항</h2>
-							<ChevronDown
-								class="h-5 w-5 text-gray-400 transition-transform {expandedSections.request
-									? 'rotate-180'
-									: ''}"
-							/>
+							<div class="h-5 w-5">
+								<ChevronDown
+									class="h-full w-full flex-shrink-0 text-gray-400 transition-transform {expandedSections.request
+										? 'rotate-180'
+										: ''}"
+								/>
+							</div>
 						</button>
 						{#if expandedSections.request}
 							<div class="px-4 pb-4">
@@ -407,11 +409,13 @@
 						onclick={() => (expandedSections.files = !expandedSections.files)}
 					>
 						<h2 class="text-base font-semibold text-gray-900">첨부 파일</h2>
-						<ChevronDown
-							class="h-5 w-5 text-gray-400 transition-transform {expandedSections.files
-								? 'rotate-180'
-								: ''}"
-						/>
+						<div class="h-5 w-5">
+							<ChevronDown
+								class="h-full w-full flex-shrink-0 text-gray-400 transition-transform {expandedSections.files
+									? 'rotate-180'
+									: ''}"
+							/>
+						</div>
 					</button>
 					{#if expandedSections.files}
 						<div class="px-4 pb-4">
@@ -574,3 +578,25 @@
 		onStartChat={startConversation}
 	/>
 {/if}
+
+<style>
+	/* Ensure Lucide icons maintain their size */
+	:global(.lucide) {
+		flex-shrink: 0;
+		width: 100%;
+		height: 100%;
+	}
+	
+	/* Fix for any oversized SVG icons */
+	:global(svg) {
+		max-width: 100%;
+		max-height: 100%;
+	}
+	
+	/* Specific fix for ChevronDown icons */
+	:global(.lucide-chevron-down) {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+</style>

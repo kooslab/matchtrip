@@ -501,6 +501,7 @@
 			<!-- Messages -->
 			<div bind:this={messagesContainer} class="flex-1 overflow-y-auto px-4 py-2">
 				{#each messages as message, i}
+					{@const parsedContent = parseMessageContent(message.content)}
 					<div
 						class="mb-3 flex flex-col gap-1 {message.senderId !== currentUserId
 							? 'items-start'
@@ -518,7 +519,6 @@
 								: 'rounded-tl-xl rounded-tr-md rounded-br-xl rounded-bl-xl'}"
 							style="background-color: {message.senderId !== currentUserId ? '#003e8105' : '#1095f4'};"
 						>
-							{@const parsedContent = parseMessageContent(message.content)}
 							{#if parsedContent.hasLinks}
 								<p
 									class="text-[13px] leading-5 message-content"

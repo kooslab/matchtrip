@@ -125,20 +125,22 @@
 				</div>
 				<button class="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900">
 					<span>최신순</span>
-					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M19 9l-7 7-7-7"
-						/>
-					</svg>
+					<div class="h-4 w-4 flex-shrink-0">
+						<svg class="h-full w-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M19 9l-7 7-7-7"
+							/>
+						</svg>
+					</div>
 				</button>
 			</div>
 		</div>
 
 		<!-- Content -->
-		<div class="flex-1 px-4 py-6">
+		<div class="flex-1 px-4 py-6 pb-32">
 			{#if refreshing}
 				<div class="flex items-center justify-center py-12">
 					<div
@@ -256,3 +258,16 @@
 		</div>
 	</div>
 {/if}
+
+<style>
+	/* Ensure SVGs are properly constrained */
+	:global(svg) {
+		max-width: 100%;
+		max-height: 100%;
+	}
+	
+	/* Safe area padding for bottom button */
+	.pb-safe {
+		padding-bottom: env(safe-area-inset-bottom);
+	}
+</style>
