@@ -134,8 +134,11 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 // Toss Payments API confirmation
 async function confirmTossPayment(paymentKey: string, orderId: string, amount: number) {
 	try {
-		// Use test secret key for Toss Payments
-		const widgetSecretKey = 'test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6';
+		// Use secret key from environment variable
+		const widgetSecretKey = process.env.TOSS_SECRET_KEY;
+		if (!widgetSecretKey) {
+			throw new Error('TOSS_SECRET_KEY is not configured');
+		}
 		const encryptedSecretKey = 'Basic ' + Buffer.from(widgetSecretKey + ':').toString('base64');
 
 		const response = await fetch(`https://api.tosspayments.com/v1/payments/confirm`, {

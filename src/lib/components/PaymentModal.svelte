@@ -89,7 +89,7 @@
 			agreementEl.innerHTML = '';
 
 			// Initialize Toss Payments
-			const tossPayments = await loadTossPayments('test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm');
+			const tossPayments = await loadTossPayments(import.meta.env.VITE_TOSS_CLIENT_KEY);
 
 			// Create widgets
 			const widgets = tossPayments.widgets({

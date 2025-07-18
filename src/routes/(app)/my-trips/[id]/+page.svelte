@@ -39,6 +39,20 @@
 	let offers = $derived(data.offers);
 	console.log('offers', offers);
 	let acceptedOffer = $derived(offers.find((o) => o.status === 'accepted'));
+	let review = $derived(data.review);
+	
+	// Check if trip has ended and review can be written
+	let tripHasEnded = $derived(() => {
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+		const endDate = new Date(trip.endDate);
+		endDate.setHours(0, 0, 0, 0);
+		return endDate <= today;
+	});
+	
+	let canWriteReview = $derived(() => {
+		return acceptedOffer && tripHasEnded() && review?.reviewRequestedAt && !review?.content;
+	});
 
 	// State for offer actions
 	let processingOfferId = $state<string | null>(null);
@@ -445,17 +459,31 @@
 							</div>
 						</button>
 					{:else if acceptedOffer}
-						<button
-							onclick={() => startConversation(acceptedOffer.id)}
-							class="basis-0 bg-[#1095f4] grow h-12 min-h-px min-w-px relative rounded-[9px] shrink-0 flex flex-row items-center justify-center"
-						>
-							<div class="box-border content-stretch flex flex-row gap-2.5 h-12 items-center justify-center px-6 py-3.5 relative w-full">
-								<MessageSquare class="h-4 w-4 text-white" />
-								<div class="font-semibold leading-[0] not-italic relative shrink-0 text-[#ffffff] text-[14px] text-center text-nowrap">
-									<p class="block leading-[20px] whitespace-pre">대화하기</p>
+						{#if canWriteReview()}
+							<button
+								onclick={() => goto(`/write-review/${review.reviewToken}`)}
+								class="basis-0 bg-[#19b989] grow h-12 min-h-px min-w-px relative rounded-[9px] shrink-0 flex flex-row items-center justify-center"
+							>
+								<div class="box-border content-stretch flex flex-row gap-2.5 h-12 items-center justify-center px-6 py-3.5 relative w-full">
+									<Star class="h-4 w-4 text-white" />
+									<div class="font-semibold leading-[0] not-italic relative shrink-0 text-[#ffffff] text-[14px] text-center text-nowrap">
+										<p class="block leading-[20px] whitespace-pre">리뷰 작성하기</p>
+									</div>
 								</div>
-							</div>
-						</button>
+							</button>
+						{:else}
+							<button
+								onclick={() => startConversation(acceptedOffer.id)}
+								class="basis-0 bg-[#1095f4] grow h-12 min-h-px min-w-px relative rounded-[9px] shrink-0 flex flex-row items-center justify-center"
+							>
+								<div class="box-border content-stretch flex flex-row gap-2.5 h-12 items-center justify-center px-6 py-3.5 relative w-full">
+									<MessageSquare class="h-4 w-4 text-white" />
+									<div class="font-semibold leading-[0] not-italic relative shrink-0 text-[#ffffff] text-[14px] text-center text-nowrap">
+										<p class="block leading-[20px] whitespace-pre">대화하기</p>
+									</div>
+								</div>
+							</button>
+						{/if}
 					{/if}
 				</div>
 			</div>

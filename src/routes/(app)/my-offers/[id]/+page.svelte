@@ -14,6 +14,15 @@
 	let isMarkingCompleted = $state(false);
 	let completionMessage = $state('');
 	let completionError = $state('');
+	
+	// Check if trip has ended (end date is today or past)
+	let tripHasEnded = $derived(() => {
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+		const endDate = new Date(offer.trip.endDate);
+		endDate.setHours(0, 0, 0, 0);
+		return endDate <= today;
+	});
 
 	function formatDate(date: Date | string) {
 		const d = new Date(date);
@@ -296,14 +305,6 @@
 			</details>
 		</div>
 
-		<!-- Lorem Ipsum Card -->
-		<div class="mx-4 mt-8 rounded-2xl bg-gradient-to-r from-blue-50 to-purple-50 p-6">
-			<h3 class="mb-2 text-lg font-semibold text-gray-900">What is Lorem Ipsum</h3>
-			<p class="text-sm text-gray-600">What is Lorem Ipsum</p>
-			<div class="mt-4 flex justify-end">
-				<img src="/placeholder-illustration.png" alt="" class="h-24 w-24" />
-			</div>
-		</div>
 	</div>
 
 	<!-- Fixed Bottom Section -->
@@ -316,7 +317,21 @@
 			</div>
 			
 			<!-- Button Section -->
-			{#if offer.status === 'pending' || offer.status === 'accepted'}
+			{#if offer.status === 'accepted' && tripHasEnded()}
+				<button
+					onclick={requestReview}
+					disabled={isRequestingReview}
+					class="flex items-center justify-center gap-2 rounded-xl bg-[#1095f4] px-8 py-3.5 text-base font-semibold text-white disabled:opacity-50"
+				>
+					{#if isRequestingReview}
+						<span class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+						요청 중...
+					{:else}
+						<Star class="h-5 w-5" />
+						리뷰 요청하기
+					{/if}
+				</button>
+			{:else if offer.status === 'pending' || offer.status === 'accepted'}
 				<button
 					onclick={startConversation}
 					class="flex items-center justify-center gap-2 rounded-xl bg-[#1095f4] px-8 py-3.5 text-base font-semibold text-white"

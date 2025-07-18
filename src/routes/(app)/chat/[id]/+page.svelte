@@ -76,6 +76,9 @@
 
 	// Pattern to detect Korean phone numbers (010-xxxx-xxxx, 010xxxxxxxx, etc.)
 	const phonePattern = /010[-\s]?\d{3,4}[-\s]?\d{4}/g;
+	
+	// Pattern to detect markdown-style links [text](url)
+	const linkPattern = /\[([^\]]+)\]\(([^)]+)\)/g;
 
 	function containsSensitiveInfo(text: string): boolean {
 		return emailPattern.test(text) || phonePattern.test(text);
@@ -93,6 +96,18 @@
 			return '전화번호는 보안상의 이유로 대화에서 공유할 수 없습니다.';
 		}
 		return '';
+	}
+	
+	// Function to parse message content and convert markdown links to HTML
+	function parseMessageContent(content: string): { html: string; hasLinks: boolean } {
+		let hasLinks = false;
+		const html = content.replace(linkPattern, (match, text, url) => {
+			hasLinks = true;
+			// Ensure the URL is safe and add target="_blank" for external links
+			const safeUrl = url.startsWith('/') ? url : url.startsWith('http') ? url : `https://${url}`;
+			return `<a href="${safeUrl}" class="underline font-semibold" ${!url.startsWith('/') ? 'target="_blank" rel="noopener noreferrer"' : ''}>${text}</a>`;
+		});
+		return { html, hasLinks };
 	}
 
 	onMount(async () => {
@@ -503,12 +518,22 @@
 								: 'rounded-tl-xl rounded-tr-md rounded-br-xl rounded-bl-xl'}"
 							style="background-color: {message.senderId !== currentUserId ? '#003e8105' : '#1095f4'};"
 						>
-							<p
-								class="text-[13px] leading-5"
-								style="color: {message.senderId === currentUserId ? '#ffffff' : '#052236'};"
-							>
-								{message.content}
-							</p>
+							{@const parsedContent = parseMessageContent(message.content)}
+							{#if parsedContent.hasLinks}
+								<p
+									class="text-[13px] leading-5 message-content"
+									style="color: {message.senderId === currentUserId ? '#ffffff' : '#052236'};"
+								>
+									{@html parsedContent.html}
+								</p>
+							{:else}
+								<p
+									class="text-[13px] leading-5"
+									style="color: {message.senderId === currentUserId ? '#ffffff' : '#052236'};"
+								>
+									{message.content}
+								</p>
+							{/if}
 						</div>
 
 						<div class="flex items-center gap-1 px-2">
@@ -585,5 +610,16 @@
 	:global(div svg) {
 		width: 100%;
 		height: 100%;
+	}
+	
+	/* Styles for message links */
+	:global(.message-content a) {
+		color: inherit;
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+	
+	:global(.message-content a:hover) {
+		opacity: 0.8;
 	}
 </style>
