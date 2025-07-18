@@ -1,5 +1,13 @@
 import { db } from '$lib/server/db';
-import { trips, destinations, users, offers, conversations, countries, continents } from '$lib/server/db/schema';
+import {
+	trips,
+	destinations,
+	users,
+	offers,
+	conversations,
+	countries,
+	continents
+} from '$lib/server/db/schema';
 import { eq, and, ne } from 'drizzle-orm';
 
 export const load = async ({ locals }) => {

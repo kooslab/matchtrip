@@ -32,18 +32,18 @@ export const load: PageServerLoad = async () => {
 
 		// Continent name mapping
 		const continentNameMap: Record<string, string> = {
-			'Asia': '아시아',
-			'Europe': '유럽',
+			Asia: '아시아',
+			Europe: '유럽',
 			'North America': '북미',
 			'South America': '남미',
-			'Africa': '아프리카',
-			'Oceania': '오세아니아',
-			'Antarctica': '남극'
+			Africa: '아프리카',
+			Oceania: '오세아니아',
+			Antarctica: '남극'
 		};
 
 		allDestinations.forEach((dest) => {
 			const continentName = continentNameMap[dest.continent.name] || dest.continent.name;
-			
+
 			// Special handling for Korea - put it in a separate group
 			if (dest.country.code === 'KOR' || dest.country.name === '대한민국') {
 				if (!groupedDestinations['국내']) {
@@ -59,7 +59,7 @@ export const load: PageServerLoad = async () => {
 		});
 
 		// Remove empty groups
-		Object.keys(groupedDestinations).forEach(key => {
+		Object.keys(groupedDestinations).forEach((key) => {
 			if (groupedDestinations[key].length === 0) {
 				delete groupedDestinations[key];
 			}

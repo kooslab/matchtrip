@@ -23,7 +23,7 @@ function createOnboardingStore() {
 	let currentValue: OnboardingData = { name: '', phone: '' };
 
 	// Subscribe to store changes to keep currentValue updated
-	subscribe(value => {
+	subscribe((value) => {
 		currentValue = value;
 	});
 
@@ -31,10 +31,10 @@ function createOnboardingStore() {
 		subscribe,
 		get: () => currentValue,
 		setField: <K extends keyof OnboardingData>(field: K, value: OnboardingData[K]) => {
-			update(data => ({ ...data, [field]: value }));
+			update((data) => ({ ...data, [field]: value }));
 		},
 		setData: (data: Partial<OnboardingData>) => {
-			update(current => ({ ...current, ...data }));
+			update((current) => ({ ...current, ...data }));
 		},
 		reset: () => set({ name: '', phone: '' })
 	};

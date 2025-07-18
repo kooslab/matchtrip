@@ -22,57 +22,76 @@
 		console.log('[CLIENT] UserRole:', userRole);
 		console.log('[CLIENT] $page store:', browser ? $page : 'SSR');
 	});
-	
+
+	// Safari-specific session refresh workaround
+	$effect(() => {
+		if (browser && !user && /^((?!chrome|android).)*safari/i.test(navigator.userAgent)) {
+			console.log('[SAFARI] Detected Safari browser, forcing session refresh');
+			// Force a session refresh for Safari
+			const refreshInterval = setInterval(async () => {
+				await invalidateAll();
+				if (data?.user) {
+					clearInterval(refreshInterval);
+				}
+			}, 1000);
+
+			// Clear after 10 seconds to prevent infinite refresh
+			setTimeout(() => clearInterval(refreshInterval), 10000);
+		}
+	});
+
 	// Subscribe to session changes for real-time updates
 	// Use derived instead of effect to avoid loops
 	const currentSession = $derived(browser ? $sessionStore : null);
-	
+
 	// Only log when session actually changes
 	$effect(() => {
 		if (browser) {
 			// Only log if there's a meaningful change
-			console.log('[CLIENT] Session store updated:', currentSession ? 'Session exists' : 'No session');
+			console.log(
+				'[CLIENT] Session store updated:',
+				currentSession ? 'Session exists' : 'No session'
+			);
 		}
 	});
-	
+
 	// Check if we're coming back from OAuth callback
 	$effect(() => {
 		if (browser) {
 			const urlParams = new URLSearchParams(window.location.search);
 			const code = urlParams.get('code');
 			const state = urlParams.get('state');
-			
+
 			console.log('[CLIENT] URL params:', { code: !!code, state: !!state });
-			
+
 			// If we have OAuth parameters, we're likely coming back from OAuth
 			if (code && state) {
 				console.log('[CLIENT] OAuth callback detected, waiting for session update');
-				
+
 				// Clean up URL to remove OAuth parameters
 				window.history.replaceState({}, '', window.location.pathname);
-				
+
 				// Wait for session to be established
 				const checkSession = setInterval(async () => {
 					if (currentSession?.user) {
 						clearInterval(checkSession);
-						console.log('[CLIENT] Session established, redirecting based on role:', currentSession.user);
-						
+						console.log(
+							'[CLIENT] Session established, redirecting based on role:',
+							currentSession.user
+						);
+
 						// Refresh all data
 						await invalidateAll();
-						
-						// Redirect based on user role from the session
-						if (userRole === 'admin') {
-							await goto('/admin');
-						} else if (userRole === 'guide') {
-							await goto('/my-offers');
-						} else if (userRole === 'traveler') {
-							await goto('/my-trips');
-						} else if (!userRole) {
+
+						// Only redirect if user hasn't completed onboarding or doesn't have a role
+						// Otherwise, let them stay on the home page where they can logout
+						if (!userRole) {
 							await goto('/select-role');
 						}
+						// If user has a role and completed onboarding, they stay on home page
 					}
 				}, 100); // Check every 100ms
-				
+
 				// Timeout after 5 seconds
 				setTimeout(() => {
 					clearInterval(checkSession);
@@ -86,7 +105,7 @@
 		loading = true;
 		try {
 			console.log('[CLIENT] Starting Google login');
-			
+
 			// Use Better Auth's social sign in with explicit callback URL
 			await signIn.social({
 				provider: 'google',

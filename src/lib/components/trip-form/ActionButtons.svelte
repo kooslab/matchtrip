@@ -12,8 +12,8 @@
 		showBack?: boolean;
 		hasBottomNav?: boolean;
 	}
-	
-	let { 
+
+	let {
 		onBack,
 		onNext,
 		onCancel,
@@ -28,7 +28,11 @@
 	}: Props = $props();
 </script>
 
-<div class="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white p-4 {hasBottomNav ? 'pb-24' : ''}">
+<div
+	class="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-white p-4 {hasBottomNav
+		? 'pb-24'
+		: ''}"
+>
 	{#if showBack && onBack}
 		<div class="flex gap-3">
 			<button
@@ -63,22 +67,20 @@
 				</button>
 			{/if}
 		</div>
-	{:else}
-		{#if onNext}
-			<button
-				onclick={onNext}
-				class="w-full rounded-lg bg-blue-500 py-3 font-medium text-white hover:bg-blue-600"
-			>
-				{nextLabel}
-			</button>
-		{:else if onSubmit}
-			<button
-				onclick={onSubmit}
-				disabled={isSubmitting}
-				class="w-full rounded-lg bg-blue-500 py-3 font-medium text-white transition-colors hover:bg-blue-600 disabled:opacity-50"
-			>
-				{isSubmitting ? '처리 중...' : submitLabel}
-			</button>
-		{/if}
+	{:else if onNext}
+		<button
+			onclick={onNext}
+			class="w-full rounded-lg bg-blue-500 py-3 font-medium text-white hover:bg-blue-600"
+		>
+			{nextLabel}
+		</button>
+	{:else if onSubmit}
+		<button
+			onclick={onSubmit}
+			disabled={isSubmitting}
+			class="w-full rounded-lg bg-blue-500 py-3 font-medium text-white transition-colors hover:bg-blue-600 disabled:opacity-50"
+		>
+			{isSubmitting ? '처리 중...' : submitLabel}
+		</button>
 	{/if}
 </div>

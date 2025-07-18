@@ -41,7 +41,7 @@ export const POST: RequestHandler = async (event) => {
 			error instanceof Error ? error.stack : 'No stack'
 		);
 		console.error('[AUTH HANDLER] POST error details:', JSON.stringify(error, null, 2));
-		
+
 		// Return a proper error response instead of throwing
 		return new Response(
 			JSON.stringify({

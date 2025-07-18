@@ -24,16 +24,16 @@ export const load = async ({ request, locals }) => {
 
 	// First, let's check if there are any payments for this user
 	console.log('Fetching orders for user:', session.user.id);
-	
+
 	// Get all payments for this user first
-	const userPayments = await db
-		.select()
-		.from(payments)
-		.where(eq(payments.userId, session.user.id));
-	
+	const userPayments = await db.select().from(payments).where(eq(payments.userId, session.user.id));
+
 	console.log('User payments found:', userPayments.length);
-	console.log('Payment statuses:', userPayments.map(p => p.status));
-	
+	console.log(
+		'Payment statuses:',
+		userPayments.map((p) => p.status)
+	);
+
 	// Now get the full trip data with payments
 	const paidTrips = await db
 		.select({
@@ -75,10 +75,7 @@ export const load = async ({ request, locals }) => {
 		.where(
 			and(
 				eq(payments.userId, session.user.id),
-				or(
-					eq(payments.status, 'completed'),
-					eq(payments.status, 'cancelled')
-				)
+				or(eq(payments.status, 'completed'), eq(payments.status, 'cancelled'))
 			)
 		);
 
@@ -86,50 +83,49 @@ export const load = async ({ request, locals }) => {
 	console.log('Sample trip:', paidTrips[0]);
 
 	// Transform to expected structure - no need to filter since we start from payments
-	const completedOrders = paidTrips
-		.map((trip) => ({
-			id: trip.tripId,
-			userId: trip.tripUserId,
-			adultsCount: trip.adultsCount,
-			childrenCount: trip.childrenCount,
-			startDate: trip.startDate,
-			endDate: trip.endDate,
-			travelMethod: trip.travelMethod,
-			customRequest: trip.customRequest,
-			status: trip.tripStatus,
-			createdAt: trip.tripCreatedAt,
-			destination: trip.destinationId
-				? {
-						id: trip.destinationId,
-						city: trip.destinationCity,
-						country: trip.destinationCountryName
-					}
-				: null,
-			offer: trip.offerId
-				? {
-						id: trip.offerId,
-						price: trip.offerPrice,
-						itinerary: trip.offerItinerary,
-						status: trip.offerStatus,
-						createdAt: trip.offerCreatedAt
-					}
-				: null,
-			guide: trip.guideId
-				? {
-						id: trip.guideId,
-						name: trip.guideName,
-						email: trip.guideEmail
-					}
-				: null,
-			payment: {
-				id: trip.paymentId,
-				amount: trip.paymentAmount,
-				status: trip.paymentStatus,
-				paymentKey: trip.paymentKey,
-				orderId: trip.paymentOrderId,
-				createdAt: trip.paymentCreatedAt
-			}
-		}));
+	const completedOrders = paidTrips.map((trip) => ({
+		id: trip.tripId,
+		userId: trip.tripUserId,
+		adultsCount: trip.adultsCount,
+		childrenCount: trip.childrenCount,
+		startDate: trip.startDate,
+		endDate: trip.endDate,
+		travelMethod: trip.travelMethod,
+		customRequest: trip.customRequest,
+		status: trip.tripStatus,
+		createdAt: trip.tripCreatedAt,
+		destination: trip.destinationId
+			? {
+					id: trip.destinationId,
+					city: trip.destinationCity,
+					country: trip.destinationCountryName
+				}
+			: null,
+		offer: trip.offerId
+			? {
+					id: trip.offerId,
+					price: trip.offerPrice,
+					itinerary: trip.offerItinerary,
+					status: trip.offerStatus,
+					createdAt: trip.offerCreatedAt
+				}
+			: null,
+		guide: trip.guideId
+			? {
+					id: trip.guideId,
+					name: trip.guideName,
+					email: trip.guideEmail
+				}
+			: null,
+		payment: {
+			id: trip.paymentId,
+			amount: trip.paymentAmount,
+			status: trip.paymentStatus,
+			paymentKey: trip.paymentKey,
+			orderId: trip.paymentOrderId,
+			createdAt: trip.paymentCreatedAt
+		}
+	}));
 
 	console.log('Filtered orders:', completedOrders.length);
 	console.log('Orders:', completedOrders);

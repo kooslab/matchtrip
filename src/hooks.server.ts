@@ -55,7 +55,7 @@ const authHandler = (async ({ event, resolve }) => {
 
 	try {
 		routeId = event.route.id;
-		
+
 		// IMPORTANT: Get session BEFORE calling svelteKitHandler
 		session = await auth.api.getSession({ headers: event.request.headers });
 
@@ -146,7 +146,7 @@ const authHandler = (async ({ event, resolve }) => {
 		// Don't process route protection if we had an error
 		return svelteKitHandler({ event, resolve, auth });
 	}
-	
+
 	// Handle redirects BEFORE calling svelteKitHandler to ensure we have fresh user data
 	// Handle auth route redirects - redirect to role-based pages
 	if (routeId?.startsWith('/(auth)') && session && event.locals.user) {
@@ -160,9 +160,8 @@ const authHandler = (async ({ event, resolve }) => {
 		} else if (event.locals.user.role === 'admin') {
 			redirect(302, '/admin');
 		} else if (event.locals.user.role === 'guide') {
-			// For auth routes, redirect guides to main page
-			// The main page will handle showing appropriate content based on verification status
-			redirect(302, '/');
+			// For auth routes, redirect guides to trips page
+			redirect(302, '/trips');
 		} else {
 			redirect(302, '/my-trips');
 		}
@@ -170,10 +169,13 @@ const authHandler = (async ({ event, resolve }) => {
 
 	// Handle first-time users landing on home page - redirect to onboarding
 	if (routeId === '/' && session && event.locals.user) {
-		console.log('[REDIRECT CHECK] User onboardingCompleted:', event.locals.user.onboardingCompleted);
+		console.log(
+			'[REDIRECT CHECK] User onboardingCompleted:',
+			event.locals.user.onboardingCompleted
+		);
 		console.log('[REDIRECT CHECK] User role:', event.locals.user.role);
 		console.log('[REDIRECT CHECK] Has agreed to terms:', event.locals.hasAgreedToTerms);
-		
+
 		// Check if this is a first-time user (no agreements)
 		if (!event.locals.hasAgreedToTerms) {
 			redirect(302, '/agreement');
@@ -192,26 +194,22 @@ const authHandler = (async ({ event, resolve }) => {
 				redirect(302, '/onboarding/traveler');
 			}
 		}
-		// If all onboarding is complete, redirect to appropriate page
-		else {
-			if (event.locals.user.role === 'admin') {
-				redirect(302, '/admin');
-			} else if (event.locals.user.role === 'guide') {
-				// For guides on the main route, allow access regardless of verification status
-				// The main route can handle showing different content for verified/unverified guides
-				// No redirect needed - let them access the main page
-			} else {
-				redirect(302, '/my-trips');
-			}
-		}
+		// If all onboarding is complete, allow users to stay on home page
+		// No automatic redirects - users can logout or navigate to dashboard
 	}
-	
+
 	// IMPORTANT: Call svelteKitHandler AFTER setting up event.locals and handling redirects
 	// This ensures Better Auth has access to the session data we've set
-	console.log('[BEFORE svelteKitHandler] User onboardingCompleted:', event.locals.user?.onboardingCompleted);
+	console.log(
+		'[BEFORE svelteKitHandler] User onboardingCompleted:',
+		event.locals.user?.onboardingCompleted
+	);
 	const response = await svelteKitHandler({ event, resolve, auth });
-	console.log('[AFTER svelteKitHandler] User onboardingCompleted:', event.locals.user?.onboardingCompleted);
-	
+	console.log(
+		'[AFTER svelteKitHandler] User onboardingCompleted:',
+		event.locals.user?.onboardingCompleted
+	);
+
 	// If svelteKitHandler returned early (e.g., for auth routes), return its response
 	if (response.status !== 200 || event.url.pathname.startsWith('/api/auth/')) {
 		return response;
@@ -272,9 +270,11 @@ const authHandler = (async ({ event, resolve }) => {
 			isVerified: (event.locals.user as any).guideProfile?.isVerified,
 			fullUser: event.locals.user
 		});
-		
+
 		if (!(event.locals.user as any).guideProfile?.isVerified) {
-			console.log('Hooks - Unverified guide trying to access guide routes. Redirecting to pending approval.');
+			console.log(
+				'Hooks - Unverified guide trying to access guide routes. Redirecting to pending approval.'
+			);
 			redirect(302, '/guide/pending-approval');
 		}
 	}

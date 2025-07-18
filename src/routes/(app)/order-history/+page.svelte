@@ -13,7 +13,7 @@
 			format: 'long'
 		});
 	}
-	
+
 	function getPaymentStatusText(status: string) {
 		const statusMap: Record<string, string> = {
 			completed: '결제 완료',
@@ -23,7 +23,7 @@
 		};
 		return statusMap[status] || status;
 	}
-	
+
 	function getPaymentStatusColor(status: string) {
 		const colorMap: Record<string, string> = {
 			completed: 'bg-green-100 text-green-800',
@@ -64,14 +64,21 @@
 		<div class="space-y-4">
 			{#each orders as order}
 				<div
-					class="cursor-pointer rounded-lg border border-gray-200 bg-white p-4 transition-shadow hover:shadow-md {order.payment.status === 'cancelled' ? 'opacity-75' : ''}"
+					class="cursor-pointer rounded-lg border border-gray-200 bg-white p-4 transition-shadow hover:shadow-md {order
+						.payment.status === 'cancelled'
+						? 'opacity-75'
+						: ''}"
 					onclick={() => goto(`/order-history/details?id=${order.payment.id}`)}
 				>
 					<div class="flex items-center justify-between">
 						<!-- Left side - Order info -->
 						<div class="flex-1">
-							<div class="flex items-center gap-4 mb-2">
-								<span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {getPaymentStatusColor(order.payment.status)}">
+							<div class="mb-2 flex items-center gap-4">
+								<span
+									class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {getPaymentStatusColor(
+										order.payment.status
+									)}"
+								>
 									{getPaymentStatusText(order.payment.status)}
 								</span>
 							</div>
@@ -98,7 +105,11 @@
 
 						<!-- Right side - Payment info -->
 						<div class="text-right">
-							<p class="font-semibold {order.payment.status === 'cancelled' ? 'text-gray-500 line-through' : 'text-gray-900'}">
+							<p
+								class="font-semibold {order.payment.status === 'cancelled'
+									? 'text-gray-500 line-through'
+									: 'text-gray-900'}"
+							>
 								{order.payment.amount.toLocaleString()}원
 							</p>
 							<p class="text-xs text-gray-500">

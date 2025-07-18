@@ -1,7 +1,15 @@
 import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { reviews, trips, offers, users, guideProfiles, destinations, countries } from '$lib/server/db/schema';
+import {
+	reviews,
+	trips,
+	offers,
+	users,
+	guideProfiles,
+	destinations,
+	countries
+} from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 
 export const load: PageServerLoad = async ({ params, parent }) => {
@@ -36,7 +44,7 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 		.leftJoin(destinations, eq(trips.destinationId, destinations.id))
 		.leftJoin(countries, eq(destinations.countryId, countries.id))
 		.where(eq(reviews.reviewToken, token))
-		.then(rows => rows[0]);
+		.then((rows) => rows[0]);
 
 	if (!review) {
 		throw redirect(303, '/my-trips');

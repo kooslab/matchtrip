@@ -38,7 +38,7 @@ export const GET: RequestHandler = async ({ url, setHeaders }) => {
 				.innerJoin(continents, eq(countries.continentId, continents.id))
 				.orderBy(destinations.city)
 				.limit(50);
-			
+
 			return json({ results });
 		} catch (error) {
 			console.error('Error fetching all destinations:', error);

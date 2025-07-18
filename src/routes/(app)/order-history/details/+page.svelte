@@ -48,7 +48,7 @@
 	function goToTripDetails(tripId: string) {
 		goto(`/my-trips/${tripId}`);
 	}
-	
+
 	function getPaymentStatusText(status: string) {
 		const statusMap: Record<string, string> = {
 			completed: '결제 완료',
@@ -59,7 +59,7 @@
 		};
 		return statusMap[status] || status;
 	}
-	
+
 	function getPaymentStatusColor(status: string) {
 		const colorMap: Record<string, string> = {
 			completed: 'bg-green-100 text-green-800',
@@ -102,7 +102,9 @@
 				</p>
 			</div>
 			<span
-				class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium whitespace-nowrap {getPaymentStatusColor(order.payment.status)}"
+				class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium whitespace-nowrap {getPaymentStatusColor(
+					order.payment.status
+				)}"
 			>
 				{getPaymentStatusText(order.payment.status)}
 			</span>
@@ -181,7 +183,9 @@
 								{order.payment.status === 'cancelled' ? '취소 일시' : '결제 일시'}
 							</p>
 							<p class="text-sm text-gray-600">
-								{formatDateTime(order.payment.updatedAt || order.payment.paidAt || order.payment.createdAt)}
+								{formatDateTime(
+									order.payment.updatedAt || order.payment.paidAt || order.payment.createdAt
+								)}
 							</p>
 						</div>
 					</div>
@@ -189,7 +193,11 @@
 					<div class="mt-4 rounded-lg bg-gray-50 p-4">
 						<div class="flex items-center justify-between">
 							<span class="text-sm font-medium text-gray-900">총 결제 금액</span>
-							<span class="text-2xl font-bold {order.payment.status === 'cancelled' ? 'text-gray-500 line-through' : 'text-pink-600'}">
+							<span
+								class="text-2xl font-bold {order.payment.status === 'cancelled'
+									? 'text-gray-500 line-through'
+									: 'text-pink-600'}"
+							>
 								{order.payment.amount.toLocaleString()}원
 							</span>
 						</div>

@@ -25,7 +25,10 @@ export const POST: RequestHandler = async ({ locals }) => {
 			locals.user.onboardingCompleted = true;
 		}
 
-		return json({ success: true, message: 'Onboarding completed. Please refresh the page if you are not redirected.' });
+		return json({
+			success: true,
+			message: 'Onboarding completed. Please refresh the page if you are not redirected.'
+		});
 	} catch (error) {
 		console.error('Error completing onboarding:', error);
 		return json({ error: 'Failed to complete onboarding' }, { status: 500 });

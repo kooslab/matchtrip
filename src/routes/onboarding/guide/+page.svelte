@@ -261,7 +261,7 @@
 			case 'mobile':
 				currentStep = 'name';
 				// Remove mobile from completed steps
-				completedSteps = completedSteps.filter(s => s !== 'name');
+				completedSteps = completedSteps.filter((s) => s !== 'name');
 				// Auto-focus on name input after DOM update
 				setTimeout(() => {
 					const nameInput = document.getElementById('name');
@@ -275,7 +275,7 @@
 				break;
 			case 'documents':
 				currentStep = 'destinations';
-				completedSteps = completedSteps.filter(s => s !== 'destinations');
+				completedSteps = completedSteps.filter((s) => s !== 'destinations');
 				break;
 		}
 	}
@@ -338,22 +338,22 @@
 	function handleMobileInput(e: Event) {
 		const input = e.target as HTMLInputElement;
 		const cursorPosition = input.selectionStart || 0;
-		
+
 		// Extract only digits from the input
 		let digits = input.value.replace(/\D/g, '');
-		
+
 		// Remove leading zero for international format
 		if (digits.startsWith('0')) {
 			digits = digits.substring(1);
 		}
-		
+
 		// Limit to expected length
 		const maxLength = getMobileLength(formData.countryCode);
 		digits = digits.substring(0, maxLength);
-		
+
 		// Store raw digits for validation
 		formData.mobile = digits;
-		
+
 		// Count how many digits were before the cursor position in the input
 		let digitsBeforeCursor = 0;
 		for (let i = 0; i < cursorPosition && i < input.value.length; i++) {
@@ -425,14 +425,14 @@
 
 		// Store formatted value and update display
 		formData.mobileFormatted = formattedValue;
-		
+
 		// Force update the input value to ensure no text remains
 		input.value = formattedValue;
-		
+
 		// Set cursor position after the same number of digits as before
 		let newPosition = 0;
 		let digitCount = 0;
-		
+
 		// Find position in formatted string after digitsBeforeCursor digits
 		for (let i = 0; i < formattedValue.length && digitCount < digitsBeforeCursor; i++) {
 			newPosition++;
@@ -440,7 +440,7 @@
 				digitCount++;
 			}
 		}
-		
+
 		// Use setTimeout to ensure cursor position is set after the value update
 		setTimeout(() => {
 			input.setSelectionRange(newPosition, newPosition);
@@ -472,10 +472,10 @@
 		if (event.key === 'Enter' && currentStep !== 'complete') {
 			// Prevent form submission if inside a form
 			event.preventDefault();
-			
+
 			// Check if the dropdown is open - if so, don't trigger next
 			if (isDropdownOpen) return;
-			
+
 			// Only proceed if the button would be enabled
 			if (canProceed() && !isLoading) {
 				handleNext();
@@ -591,12 +591,24 @@
 								oninput={handleMobileInput}
 								onkeydown={(e) => {
 									// Allow special keys
-									const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'Home', 'End', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
+									const allowedKeys = [
+										'Backspace',
+										'Delete',
+										'Tab',
+										'Escape',
+										'Enter',
+										'Home',
+										'End',
+										'ArrowLeft',
+										'ArrowRight',
+										'ArrowUp',
+										'ArrowDown'
+									];
 									if (allowedKeys.includes(e.key)) return;
-									
+
 									// Allow Ctrl/Cmd combinations
 									if (e.ctrlKey || e.metaKey) return;
-									
+
 									// Block if not a number
 									if (!/^[0-9]$/.test(e.key)) {
 										e.preventDefault();
@@ -607,14 +619,15 @@
 									e.preventDefault();
 									const paste = e.clipboardData?.getData('text') || '';
 									const numbersOnly = paste.replace(/\D/g, '');
-									
+
 									// Manually trigger input event with cleaned data
 									const input = e.target as HTMLInputElement;
 									const start = input.selectionStart || 0;
 									const end = input.selectionEnd || 0;
 									const currentValue = formData.mobile;
-									const newValue = currentValue.substring(0, start) + numbersOnly + currentValue.substring(end);
-									
+									const newValue =
+										currentValue.substring(0, start) + numbersOnly + currentValue.substring(end);
+
 									// Create synthetic event
 									const syntheticEvent = new Event('input', { bubbles: true });
 									input.value = newValue;
@@ -791,13 +804,15 @@
 
 			<!-- Completed Steps Stack (below current step) -->
 			{#each completedSteps as step}
-				<button 
-					class="w-full rounded-lg bg-white p-4 shadow-sm text-left transition-all hover:shadow-md cursor-pointer"
+				<button
+					class="w-full cursor-pointer rounded-lg bg-white p-4 text-left shadow-sm transition-all hover:shadow-md"
 					onclick={() => {
 						// Allow editing completed steps
 						currentStep = step;
 						// Remove this step and all steps after it from completed
-						const stepIndex = ['name', 'mobile', 'profile', 'destinations', 'documents'].indexOf(step);
+						const stepIndex = ['name', 'mobile', 'profile', 'destinations', 'documents'].indexOf(
+							step
+						);
 						completedSteps = completedSteps.filter((s) => {
 							const sIndex = ['name', 'mobile', 'profile', 'destinations', 'documents'].indexOf(s);
 							return sIndex < stepIndex;

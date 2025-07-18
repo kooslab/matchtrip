@@ -40,7 +40,8 @@
 	>
 		<div class="flex items-end justify-between px-4 pt-0 pb-1">
 			{#each navItems as item}
-				{@const isActive = currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href))}
+				{@const isActive =
+					currentPath === item.href || (item.href !== '/' && currentPath.startsWith(item.href))}
 				{#if isActive}
 					<!-- Active state -->
 					<div class="flex flex-1 justify-center">
@@ -94,7 +95,7 @@
 	:global(nav .text-white svg) {
 		fill: white !important;
 	}
-	
+
 	:global(nav .text-white svg path) {
 		fill: white !important;
 	}

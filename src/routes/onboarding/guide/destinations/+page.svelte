@@ -6,14 +6,14 @@
 
 	// Get initial data from store
 	let storeData = onboardingStore.get();
-	
+
 	onMount(() => {
 		// Check if required data exists
 		if (!storeData.name || !storeData.phone || !storeData.nickname) {
 			goto('/onboarding/guide');
 			return;
 		}
-		
+
 		// Restore selected destinations if they exist
 		if (storeData.destinations && Array.isArray(storeData.destinations)) {
 			selectedDestinations = storeData.destinations;
@@ -63,7 +63,7 @@
 	// Toggle region expansion
 	function toggleRegion(regionName: string) {
 		if (expandedRegions.includes(regionName)) {
-			expandedRegions = expandedRegions.filter(r => r !== regionName);
+			expandedRegions = expandedRegions.filter((r) => r !== regionName);
 		} else {
 			expandedRegions = [...expandedRegions, regionName];
 		}
@@ -111,7 +111,7 @@
 		onboardingStore.setData({
 			destinations: selectedDestinations
 		});
-		
+
 		goto('/onboarding/guide/profile');
 	}
 
@@ -127,6 +127,107 @@
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
+
+<div class="container">
+	<!-- Header -->
+	<header class="header">
+		<div class="header-content">
+			<button class="back-button" onclick={handleBack}>
+				<img src={iconArrowBack} alt="뒤로가기" />
+			</button>
+			<div class="progress-bar">
+				<div class="progress-fill"></div>
+			</div>
+		</div>
+	</header>
+
+	<!-- Content -->
+	<div class="content">
+		<!-- Title -->
+		<div class="title-section">
+			<h1 class="title">가이드 지역</h1>
+			<p class="subtitle">가이드 가능한 지역을 선택해주세요</p>
+		</div>
+
+		<!-- Search -->
+		<div class="search-container">
+			<input type="text" class="search-input" placeholder="가능한 지역을 검색해 보세요" />
+			<svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="m21 21-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"
+				/>
+			</svg>
+		</div>
+
+		<!-- Destinations Selection -->
+		<div class="destinations-section">
+			{#each destinationRegions as region}
+				<div class="region-item">
+					<div class="region-header" onclick={() => toggleRegion(region.name)}>
+						<div>
+							<span class="region-name">{region.name}</span>
+							<span class="region-name-en">{region.nameEn}</span>
+						</div>
+						<svg
+							class="expand-icon {expandedRegions.includes(region.name) ? 'expanded' : ''}"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="m19 9-7 7-7-7"
+							/>
+						</svg>
+					</div>
+
+					{#if expandedRegions.includes(region.name)}
+						<div class="cities-list">
+							{#each region.cities as city}
+								<div class="city-item" onclick={() => toggleDestination(city.name)}>
+									<div
+										class="city-checkbox {selectedDestinations.includes(city.name)
+											? 'selected'
+											: ''}"
+									>
+										{#if selectedDestinations.includes(city.name)}
+											<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
+													d="m5 13 4 4L19 7"
+												/>
+											</svg>
+										{/if}
+									</div>
+									<div>
+										<span class="city-name">{city.name}</span>
+										<span class="city-name-en">{city.nameEn}</span>
+									</div>
+								</div>
+							{/each}
+						</div>
+					{/if}
+				</div>
+			{/each}
+		</div>
+	</div>
+
+	<!-- Bottom Section -->
+	<div class="bottom-section">
+		<div class="bottom-content">
+			<button class="next-button" disabled={!canProceed() || isLoading} onclick={handleNext}>
+				{isLoading ? '처리중...' : '다 음'}
+			</button>
+		</div>
+	</div>
+</div>
 
 <style>
 	.container {
@@ -405,88 +506,3 @@
 		cursor: not-allowed;
 	}
 </style>
-
-<div class="container">
-	<!-- Header -->
-	<header class="header">
-		<div class="header-content">
-			<button class="back-button" onclick={handleBack}>
-				<img src={iconArrowBack} alt="뒤로가기" />
-			</button>
-			<div class="progress-bar">
-				<div class="progress-fill"></div>
-			</div>
-		</div>
-	</header>
-
-	<!-- Content -->
-	<div class="content">
-		<!-- Title -->
-		<div class="title-section">
-			<h1 class="title">가이드 지역</h1>
-			<p class="subtitle">가이드 가능한 지역을 선택해주세요</p>
-		</div>
-
-		<!-- Search -->
-		<div class="search-container">
-			<input
-				type="text"
-				class="search-input"
-				placeholder="가능한 지역을 검색해 보세요"
-			/>
-			<svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
-			</svg>
-		</div>
-
-		<!-- Destinations Selection -->
-		<div class="destinations-section">
-			{#each destinationRegions as region}
-				<div class="region-item">
-					<div class="region-header" onclick={() => toggleRegion(region.name)}>
-						<div>
-							<span class="region-name">{region.name}</span>
-							<span class="region-name-en">{region.nameEn}</span>
-						</div>
-						<svg class="expand-icon {expandedRegions.includes(region.name) ? 'expanded' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7" />
-						</svg>
-					</div>
-					
-					{#if expandedRegions.includes(region.name)}
-						<div class="cities-list">
-							{#each region.cities as city}
-								<div class="city-item" onclick={() => toggleDestination(city.name)}>
-									<div class="city-checkbox {selectedDestinations.includes(city.name) ? 'selected' : ''}">
-										{#if selectedDestinations.includes(city.name)}
-											<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m5 13 4 4L19 7" />
-											</svg>
-										{/if}
-									</div>
-									<div>
-										<span class="city-name">{city.name}</span>
-										<span class="city-name-en">{city.nameEn}</span>
-									</div>
-								</div>
-							{/each}
-						</div>
-					{/if}
-				</div>
-			{/each}
-		</div>
-	</div>
-
-	<!-- Bottom Section -->
-	<div class="bottom-section">
-		<div class="bottom-content">
-			<button 
-				class="next-button" 
-				disabled={!canProceed() || isLoading}
-				onclick={handleNext}
-			>
-				{isLoading ? '처리중...' : '다 음'}
-			</button>
-		</div>
-	</div>
-</div>

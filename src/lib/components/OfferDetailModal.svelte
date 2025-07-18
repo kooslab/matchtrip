@@ -54,11 +54,20 @@
 		reviewToken?: string | null;
 	}
 
-	let { isOpen, onClose, offer, trip, onAccept, onReject, onStartChat, reviewToken = null }: Props = $props();
-	
+	let {
+		isOpen,
+		onClose,
+		offer,
+		trip,
+		onAccept,
+		onReject,
+		onStartChat,
+		reviewToken = null
+	}: Props = $props();
+
 	// Tab state
 	let activeTab = $state<'offer' | 'guide' | 'review'>('offer');
-	
+
 	// Collapsible state
 	let itineraryExpanded = $state(true);
 
@@ -86,16 +95,19 @@
 
 	function formatDate(date: string | Date) {
 		const dateObj = typeof date === 'string' ? new Date(date) : date;
-		return dateObj.toLocaleDateString('ko-KR', {
-			year: 'numeric',
-			month: '2-digit',
-			day: '2-digit'
-		}).replace(/\. /g, '. ').replace(/\.$/, '');
+		return dateObj
+			.toLocaleDateString('ko-KR', {
+				year: 'numeric',
+				month: '2-digit',
+				day: '2-digit'
+			})
+			.replace(/\. /g, '. ')
+			.replace(/\.$/, '');
 	}
-	
+
 	function formatTravelStyle(style: string | null | undefined) {
 		if (!style) return '미정';
-		
+
 		const styleMap: Record<string, string> = {
 			friends: '친구들과 함께 하는 여행',
 			parents: '부모님과 함께 하는 여행',
@@ -103,13 +115,13 @@
 			business: '직장동료와 함께하는 비즈니스 여행',
 			other: '기타여행'
 		};
-		
+
 		return styleMap[style] || style;
 	}
-	
+
 	function formatActivities(activities: string[] | null | undefined) {
 		if (!activities || activities.length === 0) return '미정';
-		
+
 		const activityMap: Record<string, string> = {
 			'city-tour': '시내투어',
 			'suburb-tour': '근교투어',
@@ -117,15 +129,15 @@
 			'vehicle-tour': '차량투어',
 			'airport-pickup': '공항픽업',
 			'bus-charter': '버스대절',
-			'interpretation': '통역 서비스',
-			'accommodation': '숙박(민박)',
+			interpretation: '통역 서비스',
+			accommodation: '숙박(민박)',
 			'organization-visit': '기관방문',
 			'other-tour': '기타투어'
 		};
-		
-		return activities.map(activity => activityMap[activity] || activity).join(' / ');
+
+		return activities.map((activity) => activityMap[activity] || activity).join(' / ');
 	}
-	
+
 	function getStatusBadge(status: string) {
 		const statusMap: Record<string, { text: string; color: string }> = {
 			pending: { text: '검토중', color: 'bg-green-500' },
@@ -133,70 +145,66 @@
 			rejected: { text: '거절됨', color: 'bg-red-500' },
 			withdrawn: { text: '철회됨', color: 'bg-gray-500' }
 		};
-		
+
 		return statusMap[status] || { text: status, color: 'bg-gray-500' };
 	}
 </script>
 
 {#if isOpen}
 	<!-- Backdrop -->
-	<div class="fixed inset-0 z-40 bg-black bg-opacity-30" aria-hidden="true"></div>
-	
+	<div class="bg-opacity-30 fixed inset-0 z-40 bg-black" aria-hidden="true"></div>
+
 	<!-- Modal Container -->
 	<div class="fixed inset-0 z-50 flex items-end justify-center">
-		<button
-			class="absolute inset-0"
-			onclick={onClose}
-			aria-label="Close modal"
-		></button>
-		
+		<button class="absolute inset-0" onclick={onClose} aria-label="Close modal"></button>
+
 		<!-- Modal Content -->
-		<div class="relative bg-white w-full max-w-lg rounded-t-3xl shadow-xl animate-slide-up" style="height: 90vh; max-height: 90vh;">
+		<div
+			class="animate-slide-up relative w-full max-w-lg rounded-t-3xl bg-white shadow-xl"
+			style="height: 90vh; max-height: 90vh;"
+		>
 			<!-- Header -->
-			<div class="sticky top-0 z-10 bg-white rounded-t-3xl">
-				<div class="flex items-center justify-between p-4 border-b border-gray-100">
+			<div class="sticky top-0 z-10 rounded-t-3xl bg-white">
+				<div class="flex items-center justify-between border-b border-gray-100 p-4">
 					<h2 class="text-lg font-semibold text-gray-900">제안 상세</h2>
-					<button
-						onclick={onClose}
-						class="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
-					>
-						<X class="w-5 h-5 text-gray-600" />
+					<button onclick={onClose} class="rounded-full p-1.5 transition-colors hover:bg-gray-100">
+						<X class="h-5 w-5 text-gray-600" />
 					</button>
 				</div>
-				
+
 				<!-- Tabs -->
 				<div class="flex">
 					<button
-						class="flex-1 py-3.5 text-sm font-medium transition-all relative {activeTab === 'offer'
+						class="relative flex-1 py-3.5 text-sm font-medium transition-all {activeTab === 'offer'
 							? 'text-gray-900'
 							: 'text-gray-500 hover:text-gray-700'}"
 						onclick={() => (activeTab = 'offer')}
 					>
 						제안 정보
 						{#if activeTab === 'offer'}
-							<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900"></div>
+							<div class="absolute right-0 bottom-0 left-0 h-0.5 bg-gray-900"></div>
 						{/if}
 					</button>
 					<button
-						class="flex-1 py-3.5 text-sm font-medium transition-all relative {activeTab === 'guide'
+						class="relative flex-1 py-3.5 text-sm font-medium transition-all {activeTab === 'guide'
 							? 'text-gray-900'
 							: 'text-gray-500 hover:text-gray-700'}"
 						onclick={() => (activeTab = 'guide')}
 					>
 						가이드 정보
 						{#if activeTab === 'guide'}
-							<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900"></div>
+							<div class="absolute right-0 bottom-0 left-0 h-0.5 bg-gray-900"></div>
 						{/if}
 					</button>
 					<button
-						class="flex-1 py-3.5 text-sm font-medium transition-all relative {activeTab === 'review'
+						class="relative flex-1 py-3.5 text-sm font-medium transition-all {activeTab === 'review'
 							? 'text-gray-900'
 							: 'text-gray-500 hover:text-gray-700'}"
 						onclick={() => (activeTab = 'review')}
 					>
 						리뷰
 						{#if activeTab === 'review'}
-							<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900"></div>
+							<div class="absolute right-0 bottom-0 left-0 h-0.5 bg-gray-900"></div>
 						{/if}
 					</button>
 				</div>
@@ -210,12 +218,14 @@
 					<div>
 						<!-- Price Header with Badge -->
 						<div class="px-5 pt-6 pb-8">
-							<div class="inline-flex items-center {statusInfo.color} text-white text-xs font-medium px-2.5 py-1 rounded mb-4">
+							<div
+								class="inline-flex items-center {statusInfo.color} mb-4 rounded px-2.5 py-1 text-xs font-medium text-white"
+							>
 								{statusInfo.text}
 							</div>
 							<div class="flex items-baseline gap-2">
 								<h2 class="text-3xl font-bold text-gray-900">{offer.price.toLocaleString()}원</h2>
-								<span class="text-gray-500 text-base">총 금액</span>
+								<span class="text-base text-gray-500">총 금액</span>
 							</div>
 						</div>
 
@@ -238,7 +248,7 @@
 
 								<!-- Row 2 -->
 								<div class="flex items-center justify-between gap-4">
-									<p class="text-sm text-gray-500 flex-shrink-0">여행 일정</p>
+									<p class="flex-shrink-0 text-sm text-gray-500">여행 일정</p>
 									<div class="flex items-center gap-2">
 										<p class="text-sm text-gray-900">
 											{formatKoreanDate(trip.startDate)} ~ {formatKoreanDate(trip.endDate)}
@@ -253,7 +263,9 @@
 								<div class="flex items-center justify-between">
 									<p class="text-sm text-gray-500">인원</p>
 									<p class="text-sm text-gray-900">
-										성인 {trip.adultsCount}명{trip.childrenCount ? ` · 아동 ${trip.childrenCount}명` : ''}
+										성인 {trip.adultsCount}명{trip.childrenCount
+											? ` · 아동 ${trip.childrenCount}명`
+											: ''}
 									</p>
 								</div>
 
@@ -272,23 +284,35 @@
 						</div>
 
 						<!-- Divider -->
-						<div class="h-px bg-gray-200 mx-5"></div>
+						<div class="mx-5 h-px bg-gray-200"></div>
 
 						<!-- Itinerary Section -->
 						<div class="px-5 py-6">
-							<button 
-								class="w-full flex items-center justify-between"
-								onclick={() => itineraryExpanded = !itineraryExpanded}
+							<button
+								class="flex w-full items-center justify-between"
+								onclick={() => (itineraryExpanded = !itineraryExpanded)}
 							>
 								<h4 class="font-semibold text-gray-900">제안 내용</h4>
-								<div class="w-5 h-5 flex-shrink-0">
-									<svg class="w-full h-full text-gray-400 transform transition-transform {itineraryExpanded ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+								<div class="h-5 w-5 flex-shrink-0">
+									<svg
+										class="h-full w-full transform text-gray-400 transition-transform {itineraryExpanded
+											? 'rotate-180'
+											: ''}"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M19 9l-7 7-7-7"
+										></path>
 									</svg>
 								</div>
 							</button>
 							{#if itineraryExpanded}
-								<div class="mt-4 text-sm text-gray-700 leading-relaxed space-y-3">
+								<div class="mt-4 space-y-3 text-sm leading-relaxed text-gray-700">
 									{@html offer.itinerary}
 								</div>
 							{/if}
@@ -296,24 +320,28 @@
 					</div>
 				{:else if activeTab === 'guide'}
 					<!-- Guide Info Tab -->
-					<div class="flex flex-col h-full">
+					<div class="flex h-full flex-col">
 						{#if offer.guide && offer.guideProfile}
 							<!-- Guide Profile Section -->
 							<div class="flex items-center gap-4 px-5 py-6">
 								<div
-									class="w-20 h-20 rounded-full bg-blue-100 bg-cover bg-center flex-shrink-0"
-									style={offer.guideProfile?.profileImageUrl ? `background-image: url('${offer.guideProfile.profileImageUrl}')` : ''}
+									class="h-20 w-20 flex-shrink-0 rounded-full bg-blue-100 bg-cover bg-center"
+									style={offer.guideProfile?.profileImageUrl
+										? `background-image: url('${offer.guideProfile.profileImageUrl}')`
+										: ''}
 								>
 									{#if !offer.guideProfile?.profileImageUrl}
-										<div class="flex items-center justify-center w-full h-full text-white text-2xl">
-											<svg class="w-10 h-10" viewBox="0 0 24 24" fill="currentColor">
-												<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+										<div class="flex h-full w-full items-center justify-center text-2xl text-white">
+											<svg class="h-10 w-10" viewBox="0 0 24 24" fill="currentColor">
+												<path
+													d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+												/>
 											</svg>
 										</div>
 									{/if}
 								</div>
 								<div class="flex-1">
-									<h3 class="font-semibold text-gray-900 text-xl mb-1">{offer.guide.name}</h3>
+									<h3 class="mb-1 text-xl font-semibold text-gray-900">{offer.guide.name}</h3>
 									<div class="flex items-center gap-2">
 										<div class="flex items-center gap-1">
 											<span class="text-yellow-400">★</span>
@@ -324,7 +352,9 @@
 										<span class="text-sm text-gray-500">0건 여행 진행</span>
 									</div>
 								</div>
-								<button class="px-6 py-2 bg-green-500 text-white rounded-full text-sm font-medium hover:bg-green-600 transition-colors">
+								<button
+									class="rounded-full bg-green-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-green-600"
+								>
 									팔로우
 								</button>
 							</div>
@@ -332,70 +362,103 @@
 							<!-- Guide Info Section -->
 							{#if offer.guideProfile?.introduction}
 								<div class="px-5 pb-6">
-									<button 
-										class="w-full flex items-center justify-between"
-										onclick={() => {/* Toggle guide info */}}
+									<button
+										class="flex w-full items-center justify-between"
+										onclick={() => {
+											/* Toggle guide info */
+										}}
 									>
 										<h4 class="font-semibold text-gray-900">가이드 정보</h4>
-										<div class="w-5 h-5 flex-shrink-0">
-											<svg class="w-full h-full text-gray-400 transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+										<div class="h-5 w-5 flex-shrink-0">
+											<svg
+												class="h-full w-full rotate-180 transform text-gray-400"
+												fill="none"
+												stroke="currentColor"
+												viewBox="0 0 24 24"
+											>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
+													d="M19 9l-7 7-7-7"
+												></path>
 											</svg>
 										</div>
 									</button>
-									<div class="mt-4 text-sm text-gray-600 leading-relaxed">
+									<div class="mt-4 text-sm leading-relaxed text-gray-600">
 										{offer.guideProfile.introduction}
 									</div>
 								</div>
 							{:else}
 								<div class="px-5 pb-6">
-									<p class="text-sm text-gray-500 text-center">가이드 소개가 아직 작성되지 않았습니다.</p>
+									<p class="text-center text-sm text-gray-500">
+										가이드 소개가 아직 작성되지 않았습니다.
+									</p>
 								</div>
 							{/if}
 
 							<!-- Photos Section -->
-							<div class="flex-1 flex items-center justify-center bg-gray-50 mx-5 mb-6 rounded-lg">
+							<div class="mx-5 mb-6 flex flex-1 items-center justify-center rounded-lg bg-gray-50">
 								<div class="text-center">
-									<svg class="w-16 h-16 text-gray-300 mx-auto mb-2" viewBox="0 0 24 24" fill="currentColor">
-										<path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+									<svg
+										class="mx-auto mb-2 h-16 w-16 text-gray-300"
+										viewBox="0 0 24 24"
+										fill="currentColor"
+									>
+										<path
+											d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"
+										/>
 									</svg>
 									<p class="text-sm text-gray-400">사진이 없습니다</p>
 								</div>
 							</div>
 						{:else}
 							<!-- Empty State -->
-							<div class="flex-1 flex items-center justify-center px-5">
+							<div class="flex flex-1 items-center justify-center px-5">
 								<div class="text-center">
-									<svg class="w-20 h-20 text-gray-300 mx-auto mb-4" viewBox="0 0 24 24" fill="currentColor">
-										<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+									<svg
+										class="mx-auto mb-4 h-20 w-20 text-gray-300"
+										viewBox="0 0 24 24"
+										fill="currentColor"
+									>
+										<path
+											d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+										/>
 									</svg>
-									<h3 class="text-lg font-medium text-gray-900 mb-2">가이드 정보가 없습니다</h3>
+									<h3 class="mb-2 text-lg font-medium text-gray-900">가이드 정보가 없습니다</h3>
 									<p class="text-sm text-gray-500">아직 가이드 프로필이 등록되지 않았습니다.</p>
 								</div>
 							</div>
 						{/if}
 					</div>
 				{:else}
-					{@const hasReviews = false} <!-- TODO: Replace with actual reviews check -->
+					{@const hasReviews = false}
+					<!-- TODO: Replace with actual reviews check -->
 					<!-- Reviews Tab -->
-					<div class="flex flex-col h-full">
+					<div class="flex h-full flex-col">
 						{#if hasReviews}
 							<!-- Guide Profile Section (same as guide tab) -->
 							<div class="flex items-center gap-4 px-5 py-6">
 								<div
-									class="w-20 h-20 rounded-full bg-blue-100 bg-cover bg-center flex-shrink-0"
-									style={offer.guideProfile?.profileImageUrl ? `background-image: url('${offer.guideProfile.profileImageUrl}')` : ''}
+									class="h-20 w-20 flex-shrink-0 rounded-full bg-blue-100 bg-cover bg-center"
+									style={offer.guideProfile?.profileImageUrl
+										? `background-image: url('${offer.guideProfile.profileImageUrl}')`
+										: ''}
 								>
 									{#if !offer.guideProfile?.profileImageUrl}
-										<div class="flex items-center justify-center w-full h-full text-white text-2xl">
-											<svg class="w-10 h-10" viewBox="0 0 24 24" fill="currentColor">
-												<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+										<div class="flex h-full w-full items-center justify-center text-2xl text-white">
+											<svg class="h-10 w-10" viewBox="0 0 24 24" fill="currentColor">
+												<path
+													d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+												/>
 											</svg>
 										</div>
 									{/if}
 								</div>
 								<div class="flex-1">
-									<h3 class="font-semibold text-gray-900 text-xl mb-1">{offer.guide?.name || '알 수 없는 가이드'}</h3>
+									<h3 class="mb-1 text-xl font-semibold text-gray-900">
+										{offer.guide?.name || '알 수 없는 가이드'}
+									</h3>
 									<div class="flex items-center gap-2">
 										<div class="flex items-center gap-1">
 											<span class="text-yellow-400">★</span>
@@ -404,36 +467,42 @@
 										<span class="text-sm text-gray-500">752건 여행 진행</span>
 									</div>
 								</div>
-								<button class="px-6 py-2 bg-gray-600 text-white rounded-full text-sm font-medium hover:bg-gray-700 transition-colors">
+								<button
+									class="rounded-full bg-gray-600 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
+								>
 									팔로잉
 								</button>
 							</div>
 
 							<!-- Rating Summary -->
 							<div class="px-5 pb-6">
-								<h2 class="text-2xl font-bold text-blue-500 mb-2">평점은 4.6점이며</h2>
+								<h2 class="mb-2 text-2xl font-bold text-blue-500">평점은 4.6점이며</h2>
 								<p class="text-lg text-gray-900">친절하다는 평가가 많아요</p>
 							</div>
 
 							<!-- Rating Stats -->
 							<div class="px-5 pb-6">
-								<div class="bg-gray-50 rounded-2xl p-5 relative">
-									<div class="flex items-center justify-between mb-4">
+								<div class="relative rounded-2xl bg-gray-50 p-5">
+									<div class="mb-4 flex items-center justify-between">
 										<div class="flex items-center gap-4">
-											<button class="px-4 py-2 bg-blue-500 text-white rounded-full text-sm font-medium">
+											<button
+												class="rounded-full bg-blue-500 px-4 py-2 text-sm font-medium text-white"
+											>
 												가이드
 											</button>
-											<button class="px-4 py-2 bg-white text-gray-700 rounded-full text-sm font-medium">
+											<button
+												class="rounded-full bg-white px-4 py-2 text-sm font-medium text-gray-700"
+											>
 												평균
 											</button>
 										</div>
 									</div>
-									
+
 									<!-- Progress Bar -->
-									<div class="relative h-2 bg-gray-200 rounded-full mb-4">
-										<div class="absolute h-full bg-blue-500 rounded-full" style="width: 92%"></div>
+									<div class="relative mb-4 h-2 rounded-full bg-gray-200">
+										<div class="absolute h-full rounded-full bg-blue-500" style="width: 92%"></div>
 									</div>
-									
+
 									<!-- Stats -->
 									<div class="flex justify-between text-sm">
 										<div>
@@ -448,7 +517,7 @@
 							</div>
 
 							<!-- Reviews List Header -->
-							<div class="px-5 pb-3 flex items-center justify-between">
+							<div class="flex items-center justify-between px-5 pb-3">
 								<div class="flex items-center gap-2">
 									<span class="text-sm font-medium text-gray-900">전체</span>
 									<span class="text-sm font-bold text-blue-500">752</span>
@@ -463,21 +532,23 @@
 							<!-- Sample Review -->
 							<div class="px-5 pb-6">
 								<div class="border-t border-gray-100 pt-4">
-									<div class="flex items-start gap-3 mb-3">
-										<img 
-											src="https://via.placeholder.com/40" 
-											alt="Reviewer" 
-											class="w-10 h-10 rounded-full"
+									<div class="mb-3 flex items-start gap-3">
+										<img
+											src="https://via.placeholder.com/40"
+											alt="Reviewer"
+											class="h-10 w-10 rounded-full"
 										/>
 										<div class="flex-1">
 											<h4 class="font-semibold text-gray-900">윤재원</h4>
-											<div class="flex items-center gap-2 mb-2">
+											<div class="mb-2 flex items-center gap-2">
 												<span class="text-yellow-400">★</span>
 												<span class="text-sm font-medium">4.6</span>
 												<span class="text-sm text-gray-500">오늘</span>
 											</div>
-											<p class="text-sm text-gray-700 leading-relaxed">
-												Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.
+											<p class="text-sm leading-relaxed text-gray-700">
+												Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+												Lorem Ipsum has been the industry's standard dummy text ever since the
+												1500s.
 											</p>
 										</div>
 										<button class="text-gray-400">⋯</button>
@@ -486,37 +557,53 @@
 							</div>
 						{:else}
 							<!-- Empty State for Reviews -->
-							<div class="flex-1 flex flex-col">
+							<div class="flex flex-1 flex-col">
 								<!-- Guide Profile Section -->
 								{#if offer.guide}
-									<div class="flex items-center gap-4 px-5 py-6 border-b border-gray-100">
+									<div class="flex items-center gap-4 border-b border-gray-100 px-5 py-6">
 										<div
-											class="w-16 h-16 rounded-full bg-blue-100 bg-cover bg-center flex-shrink-0"
-											style={offer.guideProfile?.profileImageUrl ? `background-image: url('${offer.guideProfile.profileImageUrl}')` : ''}
+											class="h-16 w-16 flex-shrink-0 rounded-full bg-blue-100 bg-cover bg-center"
+											style={offer.guideProfile?.profileImageUrl
+												? `background-image: url('${offer.guideProfile.profileImageUrl}')`
+												: ''}
 										>
 											{#if !offer.guideProfile?.profileImageUrl}
-												<div class="flex items-center justify-center w-full h-full text-white">
-													<svg class="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
-														<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+												<div class="flex h-full w-full items-center justify-center text-white">
+													<svg class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor">
+														<path
+															d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+														/>
 													</svg>
 												</div>
 											{/if}
 										</div>
 										<div class="flex-1">
-											<h3 class="font-semibold text-gray-900 text-lg">{offer.guide.name}</h3>
+											<h3 class="text-lg font-semibold text-gray-900">{offer.guide.name}</h3>
 											<p class="text-sm text-gray-500">아직 리뷰가 없습니다</p>
 										</div>
 									</div>
 								{/if}
-								
+
 								<!-- Empty Reviews Message -->
-								<div class="flex-1 flex items-center justify-center px-5">
+								<div class="flex flex-1 items-center justify-center px-5">
 									<div class="text-center">
-										<svg class="w-20 h-20 text-gray-300 mx-auto mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+										<svg
+											class="mx-auto mb-4 h-20 w-20 text-gray-300"
+											viewBox="0 0 24 24"
+											fill="none"
+											stroke="currentColor"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+											/>
 										</svg>
-										<h3 class="text-lg font-medium text-gray-900 mb-2">아직 리뷰가 없습니다</h3>
-										<p class="text-sm text-gray-500 mb-6">이 가이드와 함께한 여행 후<br/>첫 번째 리뷰를 작성해보세요!</p>
+										<h3 class="mb-2 text-lg font-medium text-gray-900">아직 리뷰가 없습니다</h3>
+										<p class="mb-6 text-sm text-gray-500">
+											이 가이드와 함께한 여행 후<br />첫 번째 리뷰를 작성해보세요!
+										</p>
 									</div>
 								</div>
 							</div>
@@ -526,14 +613,14 @@
 			</div>
 
 			<!-- Bottom Actions -->
-			<div class="sticky bottom-0 bg-white border-t border-gray-200 p-4">
+			<div class="sticky bottom-0 border-t border-gray-200 bg-white p-4">
 				{#if activeTab === 'guide'}
 					<!-- Chat button for guide tab -->
 					<button
 						onclick={() => onStartChat(offer.id)}
-						class="w-full py-4 bg-[#1095f4] text-white rounded-xl font-medium hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+						class="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1095f4] py-4 font-medium text-white transition-colors hover:bg-blue-600"
 					>
-						<img src={chatIconUrl} alt="chat" class="w-5 h-5 flex-shrink-0 brightness-0 invert" />
+						<img src={chatIconUrl} alt="chat" class="h-5 w-5 flex-shrink-0 brightness-0 invert" />
 						<span class="text-base">대화하기</span>
 					</button>
 				{:else if activeTab === 'offer'}
@@ -541,27 +628,27 @@
 					{#if offer.status === 'pending'}
 						<div class="flex items-center gap-4">
 							<div class="w-1/3">
-								<p class="text-xs text-gray-500 mb-1">총 금액</p>
+								<p class="mb-1 text-xs text-gray-500">총 금액</p>
 								<p class="text-xl font-bold text-gray-900">{offer.price.toLocaleString()}원</p>
 							</div>
 							<button
 								onclick={() => onAccept(offer.id)}
-								class="w-2/3 py-4 bg-[#1095f4] text-white rounded-xl font-medium hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+								class="flex w-2/3 items-center justify-center gap-2 rounded-xl bg-[#1095f4] py-4 font-medium text-white transition-colors hover:bg-blue-600"
 							>
-								<img src={moneyOutIconUrl} alt="payment" class="w-5 h-5 brightness-0 invert" />
+								<img src={moneyOutIconUrl} alt="payment" class="h-5 w-5 brightness-0 invert" />
 								<span>결제하기</span>
 							</button>
 						</div>
 					{:else if offer.status === 'accepted'}
 						<button
 							onclick={() => onStartChat(offer.id)}
-							class="w-full py-4 bg-[#1095f4] text-white rounded-xl font-medium hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+							class="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1095f4] py-4 font-medium text-white transition-colors hover:bg-blue-600"
 						>
-							<img src={chatIconUrl} alt="chat" class="w-5 h-5 flex-shrink-0 brightness-0 invert" />
+							<img src={chatIconUrl} alt="chat" class="h-5 w-5 flex-shrink-0 brightness-0 invert" />
 							<span class="text-base">대화하기</span>
 						</button>
 					{:else}
-						<div class="text-center py-3 px-6 bg-gray-100 rounded-lg">
+						<div class="rounded-lg bg-gray-100 px-6 py-3 text-center">
 							<span class="text-gray-600">
 								{offer.status === 'rejected' ? '거절된 제안입니다' : '처리된 제안입니다'}
 							</span>
@@ -569,7 +656,7 @@
 					{/if}
 				{:else if activeTab === 'review'}
 					<!-- Write review button for review tab -->
-					<button 
+					<button
 						onclick={() => {
 							if (reviewToken) {
 								goto(`/write-review/${reviewToken}`);
@@ -578,9 +665,9 @@
 								alert('리뷰를 작성하려면 먼저 가이드가 리뷰 요청을 보내야 합니다.');
 							}
 						}}
-						class="w-full py-4 bg-[#1095f4] text-white rounded-xl font-medium hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+						class="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1095f4] py-4 font-medium text-white transition-colors hover:bg-blue-600"
 					>
-						<img src={pencilIconUrl} alt="write review" class="w-5 h-5 brightness-0 invert" />
+						<img src={pencilIconUrl} alt="write review" class="h-5 w-5 brightness-0 invert" />
 						<span>리뷰 작성</span>
 					</button>
 				{/if}
@@ -602,7 +689,7 @@
 	.animate-slide-up {
 		animation: slide-up 0.3s ease-out;
 	}
-	
+
 	/* Ensure SVGs don't overflow their containers */
 	:global(.w-5.h-5 svg) {
 		max-width: 100%;

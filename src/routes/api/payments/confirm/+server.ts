@@ -12,7 +12,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		}
 
 		const { paymentKey, orderId, amount, offerId } = await request.json();
-		
+
 		console.log('Payment confirmation request received:', {
 			paymentKey,
 			orderId,
@@ -47,7 +47,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		}
 
 		const offerData = offer[0];
-		
+
 		console.log('Current offer status before update:', offerData.status);
 		console.log('Offer ID:', offerId);
 		console.log('Trip ID:', offerData.tripId);
@@ -77,7 +77,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				{ status: 400 }
 			);
 		}
-		
+
 		console.log('Toss payment confirmed successfully');
 
 		// Start transaction to update offer and trip status
@@ -135,19 +135,19 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 		// Verify the updates worked
 		console.log('Transaction completed - verifying status updates');
-		
+
 		const updatedTrip = await db
 			.select({ status: trips.status })
 			.from(trips)
 			.where(eq(trips.id, offerData.tripId))
 			.limit(1);
-		
+
 		const updatedOffer = await db
 			.select({ status: offers.status })
 			.from(offers)
 			.where(eq(offers.id, offerId))
 			.limit(1);
-		
+
 		console.log('Updated trip status:', updatedTrip[0]?.status);
 		console.log('Updated offer status:', updatedOffer[0]?.status);
 

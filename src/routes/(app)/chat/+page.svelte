@@ -105,7 +105,7 @@
 		<!-- Loading skeleton -->
 		<div class="space-y-0">
 			{#each [1, 2, 3] as _}
-				<div class="border-b border-gray-f1 px-4 py-4">
+				<div class="border-gray-f1 border-b px-4 py-4">
 					<div class="flex items-start gap-3">
 						<div class="h-14 w-14 animate-pulse rounded-full bg-gray-200"></div>
 						<div class="flex-1">
@@ -118,7 +118,7 @@
 		</div>
 	{:else if error}
 		<div class="flex items-center justify-center p-8">
-			<div class="text-center text-color-error">
+			<div class="text-color-error text-center">
 				{error}
 			</div>
 		</div>
@@ -135,8 +135,8 @@
 						/>
 					</svg>
 				</div>
-				<h3 class="text-lg font-semibold text-primary">아직 대화가 없습니다</h3>
-				<p class="mt-2 text-secondary">가이드 제안을 받거나 보내면 여기에 대화가 표시됩니다.</p>
+				<h3 class="text-primary text-lg font-semibold">아직 대화가 없습니다</h3>
+				<p class="text-secondary mt-2">가이드 제안을 받거나 보내면 여기에 대화가 표시됩니다.</p>
 			</div>
 		</div>
 	{:else}
@@ -144,7 +144,10 @@
 		<div class="space-y-0">
 			{#each conversations as conversation}
 				<div
-					class="border-b border-gray-f1 transition-colors hover:bg-gray-50 {conversation.hasUnread || conversation.unreadCount > 0 ? 'bg-blue-50/30' : ''}"
+					class="border-gray-f1 border-b transition-colors hover:bg-gray-50 {conversation.hasUnread ||
+					conversation.unreadCount > 0
+						? 'bg-blue-50/30'
+						: ''}"
 				>
 					<button
 						onclick={() => goto(`/chat/${conversation.id}`)}
@@ -157,42 +160,48 @@
 									<img
 										src={conversation.otherUser.image}
 										alt={conversation.otherUser.name}
-										class="h-14 w-14 rounded-full object-cover border border-gray-f7"
+										class="border-gray-f7 h-14 w-14 rounded-full border object-cover"
 									/>
 								{:else}
-									<div class="flex h-14 w-14 items-center justify-center rounded-full bg-gray-200 border border-gray-f7">
+									<div
+										class="border-gray-f7 flex h-14 w-14 items-center justify-center rounded-full border bg-gray-200"
+									>
 										<span class="text-lg font-medium text-gray-600">
 											{conversation.otherUser.name.charAt(0)}
 										</span>
 									</div>
 								{/if}
 								<!-- Online indicator (currently hidden) -->
-								<div class="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-color-success border-2 border-white opacity-0"></div>
+								<div
+									class="bg-color-success absolute right-0 bottom-0 h-3 w-3 rounded-full border-2 border-white opacity-0"
+								></div>
 							</div>
 
 							<!-- Chat content -->
-							<div class="flex-1 min-w-0">
+							<div class="min-w-0 flex-1">
 								<!-- User name and status -->
 								<div class="flex items-center justify-between">
 									<div class="flex items-center gap-1">
-										<h3 class="font-semibold text-primary text-sm">
+										<h3 class="text-primary text-sm font-semibold">
 											{conversation.otherUser.name}
 										</h3>
 										{#if conversation.offer.status === 'pending'}
-											<span class="inline-flex rounded px-2 py-0.5 text-xs font-medium bg-color-success text-white">
+											<span
+												class="bg-color-success inline-flex rounded px-2 py-0.5 text-xs font-medium text-white"
+											>
 												{getOfferStatusText(conversation.offer.status)}
 											</span>
 										{/if}
 									</div>
-									<div class="text-xs text-gray-99 font-medium">
+									<div class="text-gray-99 text-xs font-medium">
 										{formatMessageTime(conversation.lastMessageAt)}
 									</div>
 								</div>
 
 								<!-- Last message -->
-								<div class="flex items-end justify-between mt-1">
-									<div class="flex-1 min-w-0">
-										<p class="text-sm text-gray-99 leading-5 line-clamp-2">
+								<div class="mt-1 flex items-end justify-between">
+									<div class="min-w-0 flex-1">
+										<p class="text-gray-99 line-clamp-2 text-sm leading-5">
 											{#if conversation.lastMessageContent}
 												{truncateMessage(conversation.lastMessageContent, 60)}
 											{:else}
@@ -203,8 +212,10 @@
 									<!-- Unread badge -->
 									{#if conversation.unreadCount > 0}
 										<div class="ml-2 shrink-0">
-											<div class="flex h-5 w-5 items-center justify-center rounded-full bg-color-error">
-												<span class="text-xs font-semibold text-white leading-3">
+											<div
+												class="bg-color-error flex h-5 w-5 items-center justify-center rounded-full"
+											>
+												<span class="text-xs leading-3 font-semibold text-white">
 													{conversation.unreadCount > 9 ? '9+' : conversation.unreadCount}
 												</span>
 											</div>

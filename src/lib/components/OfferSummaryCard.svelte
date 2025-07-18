@@ -28,92 +28,149 @@
 
 	function formatDate(date: string | Date) {
 		const dateObj = typeof date === 'string' ? new Date(date) : date;
-		return dateObj.toLocaleDateString('ko-KR', {
-			year: 'numeric',
-			month: '2-digit',
-			day: '2-digit'
-		}).replace(/\. /g, '. ').replace(/\.$/, '');
+		return dateObj
+			.toLocaleDateString('ko-KR', {
+				year: 'numeric',
+				month: '2-digit',
+				day: '2-digit'
+			})
+			.replace(/\. /g, '. ')
+			.replace(/\.$/, '');
 	}
 </script>
 
 <button
 	{onclick}
-	class="bg-white relative rounded-xl w-full text-left hover:shadow-md transition-shadow"
+	class="relative w-full rounded-xl bg-white text-left transition-shadow hover:shadow-md"
 >
-	<div class="absolute border border-[rgba(0,62,129,0.01)] border-solid inset-0 pointer-events-none rounded-xl" />
+	<div
+		class="pointer-events-none absolute inset-0 rounded-xl border border-solid border-[rgba(0,62,129,0.01)]"
+	/>
 	<div class="relative size-full">
-		<div class="box-border content-stretch flex flex-col gap-5 items-start justify-start p-[16px] relative w-full">
-			<div class="box-border content-stretch flex flex-col gap-3 items-start justify-start p-0 relative shrink-0 w-full">
-				<div class="box-border content-stretch flex flex-row items-center justify-between pb-3 pt-0 px-0 relative shrink-0 w-full">
-					<div class="absolute border-[#f7f9fa] border-[0px_0px_1px] border-solid inset-0 pointer-events-none" />
-					<div class="font-bold leading-[0] not-italic relative shrink-0 text-[#052236] text-[16px] text-left text-nowrap">
+		<div
+			class="relative box-border flex w-full flex-col content-stretch items-start justify-start gap-5 p-[16px]"
+		>
+			<div
+				class="relative box-border flex w-full shrink-0 flex-col content-stretch items-start justify-start gap-3 p-0"
+			>
+				<div
+					class="relative box-border flex w-full shrink-0 flex-row content-stretch items-center justify-between px-0 pt-0 pb-3"
+				>
+					<div
+						class="pointer-events-none absolute inset-0 border-solid border-[#f7f9fa] border-[0px_0px_1px]"
+					/>
+					<div
+						class="relative shrink-0 text-left text-[16px] leading-[0] font-bold text-nowrap text-[#052236] not-italic"
+					>
 						<p class="block leading-[24px] whitespace-pre">{offer.price.toLocaleString()}원</p>
 					</div>
-					<div class="box-border content-stretch flex flex-row gap-2 items-center justify-start p-0 relative shrink-0">
+					<div
+						class="relative box-border flex shrink-0 flex-row content-stretch items-center justify-start gap-2 p-0"
+					>
 						{#if showBadge && badgeText}
-							<div class="box-border content-stretch flex flex-row gap-1 items-center justify-start p-0 relative shrink-0">
+							<div
+								class="relative box-border flex shrink-0 flex-row content-stretch items-center justify-start gap-1 p-0"
+							>
 								<div
-									class="box-border content-stretch flex flex-row gap-2.5 items-center justify-center px-2 py-1 relative rounded shrink-0"
+									class="relative box-border flex shrink-0 flex-row content-stretch items-center justify-center gap-2.5 rounded px-2 py-1"
 									style="background-color: {badgeColor || '#4daeeb'};"
 								>
 									<div
-										class="absolute border border-solid inset-0 pointer-events-none rounded"
+										class="pointer-events-none absolute inset-0 rounded border border-solid"
 										style="border-color: {badgeColor || '#4daeeb'};"
 									/>
-									<div class="font-medium leading-[0] not-italic relative shrink-0 text-[#ffffff] text-[11px] text-left text-nowrap">
+									<div
+										class="relative shrink-0 text-left text-[11px] leading-[0] font-medium text-nowrap text-[#ffffff] not-italic"
+									>
 										<p class="block leading-[12px] whitespace-pre">{badgeText}</p>
 									</div>
 								</div>
 							</div>
 						{/if}
-						<div class="overflow-clip relative shrink-0 size-3">
-							<div class="absolute bottom-[16.25%] left-[30.299%] right-[30.361%] top-[16.299%]">
-								<img alt="" class="block max-w-none size-full" src={arrowRightUrl} />
+						<div class="relative size-3 shrink-0 overflow-clip">
+							<div class="absolute top-[16.299%] right-[30.361%] bottom-[16.25%] left-[30.299%]">
+								<img alt="" class="block size-full max-w-none" src={arrowRightUrl} />
 							</div>
 						</div>
 					</div>
 				</div>
-				<div class="box-border content-stretch flex flex-row gap-4 items-center justify-start p-0 relative shrink-0 w-full">
-					<div class="basis-0 box-border content-stretch flex flex-row gap-2 grow items-center justify-start min-h-px min-w-px p-0 relative shrink-0">
-						<div class="grid-cols-[max-content] grid-rows-[max-content] inline-grid leading-[0] place-items-start relative shrink-0">
+				<div
+					class="relative box-border flex w-full shrink-0 flex-row content-stretch items-center justify-start gap-4 p-0"
+				>
+					<div
+						class="relative box-border flex min-h-px min-w-px shrink-0 grow basis-0 flex-row content-stretch items-center justify-start gap-2 p-0"
+					>
+						<div
+							class="relative inline-grid shrink-0 grid-cols-[max-content] grid-rows-[max-content] place-items-start leading-[0]"
+						>
 							<div
-								class="[background-size:cover,_auto] [grid-area:1_/_1] bg-[#f0f0f0] bg-[position:50%_50%,_0%_0%] ml-0 mt-0 relative rounded-[22px] size-11"
-								style={offer.guideProfile?.profileImageUrl ? `background-image: url('${offer.guideProfile.profileImageUrl}')` : ''}
+								class="relative mt-0 ml-0 size-11 rounded-[22px] bg-[#f0f0f0] [background-size:cover,_auto] bg-[position:50%_50%,_0%_0%] [grid-area:1_/_1]"
+								style={offer.guideProfile?.profileImageUrl
+									? `background-image: url('${offer.guideProfile.profileImageUrl}')`
+									: ''}
 							>
-								<div class="absolute border border-[rgba(0,62,129,0.01)] border-solid inset-0 pointer-events-none rounded-[22px]" />
+								<div
+									class="pointer-events-none absolute inset-0 rounded-[22px] border border-solid border-[rgba(0,62,129,0.01)]"
+								/>
 								{#if !offer.guideProfile?.profileImageUrl}
-									<div class="flex items-center justify-center w-full h-full text-gray-500 text-sm">
+									<div class="flex h-full w-full items-center justify-center text-sm text-gray-500">
 										{offer.guide?.name?.charAt(0) || '?'}
 									</div>
 								{/if}
 							</div>
 						</div>
-						<div class="box-border content-stretch flex flex-col gap-1 items-start justify-start p-0 relative shrink-0">
-							<div class="box-border content-stretch flex flex-row gap-1 items-center justify-start p-0 relative shrink-0">
-								<div class="font-semibold leading-[0] not-italic relative shrink-0 text-[#052236] text-[14px] text-left text-nowrap">
-									<p class="block leading-[20px] whitespace-pre">{offer.guide?.name || '알 수 없는'} 가이드</p>
+						<div
+							class="relative box-border flex shrink-0 flex-col content-stretch items-start justify-start gap-1 p-0"
+						>
+							<div
+								class="relative box-border flex shrink-0 flex-row content-stretch items-center justify-start gap-1 p-0"
+							>
+								<div
+									class="relative shrink-0 text-left text-[14px] leading-[0] font-semibold text-nowrap text-[#052236] not-italic"
+								>
+									<p class="block leading-[20px] whitespace-pre">
+										{offer.guide?.name || '알 수 없는'} 가이드
+									</p>
 								</div>
 							</div>
-							<div class="box-border content-stretch flex flex-row items-center justify-start leading-[0] p-0 relative shrink-0">
-								<div class="box-border content-stretch flex flex-row gap-0.5 items-center justify-start p-0 relative shrink-0">
-									<div class="grid-cols-[max-content] grid-rows-[max-content] inline-grid place-items-start relative shrink-0">
-										<div class="[grid-area:1_/_1] box-border content-stretch flex flex-row items-start justify-start ml-0 mt-0 p-0 relative">
-											<div class="overflow-clip relative shrink-0 size-3">
+							<div
+								class="relative box-border flex shrink-0 flex-row content-stretch items-center justify-start p-0 leading-[0]"
+							>
+								<div
+									class="relative box-border flex shrink-0 flex-row content-stretch items-center justify-start gap-0.5 p-0"
+								>
+									<div
+										class="relative inline-grid shrink-0 grid-cols-[max-content] grid-rows-[max-content] place-items-start"
+									>
+										<div
+											class="relative mt-0 ml-0 box-border flex flex-row content-stretch items-start justify-start p-0 [grid-area:1_/_1]"
+										>
+											<div class="relative size-3 shrink-0 overflow-clip">
 												<div class="absolute inset-[8.333%]">
-													<img alt="" class="block max-w-none size-full" src={starIconUrl} />
+													<img alt="" class="block size-full max-w-none" src={starIconUrl} />
 												</div>
 											</div>
 										</div>
 									</div>
-									<div class="font-semibold not-italic relative shrink-0 text-[#536b7c] text-[12px] text-left text-nowrap">
-										<p class="block leading-[18px] whitespace-pre">{offer.guideProfile?.avgRating?.toFixed(1) || '0.0'}</p>
+									<div
+										class="relative shrink-0 text-left text-[12px] font-semibold text-nowrap text-[#536b7c] not-italic"
+									>
+										<p class="block leading-[18px] whitespace-pre">
+											{offer.guideProfile?.avgRating?.toFixed(1) || '0.0'}
+										</p>
 									</div>
 								</div>
-								<div class="font-medium not-italic relative shrink-0 text-[#c9ccce] text-[11px] text-left text-nowrap">
+								<div
+									class="relative shrink-0 text-left text-[11px] font-medium text-nowrap text-[#c9ccce] not-italic"
+								>
 									<p class="block leading-[16px] whitespace-pre">・</p>
 								</div>
-								<div class="font-medium not-italic relative shrink-0 text-[#919fa8] text-[11px] text-left text-nowrap">
-									<p class="block leading-[16px] whitespace-pre">제안일 {formatDate(offer.createdAt)}</p>
+								<div
+									class="relative shrink-0 text-left text-[11px] font-medium text-nowrap text-[#919fa8] not-italic"
+								>
+									<p class="block leading-[16px] whitespace-pre">
+										제안일 {formatDate(offer.createdAt)}
+									</p>
 								</div>
 							</div>
 						</div>

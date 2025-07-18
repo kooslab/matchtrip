@@ -1,7 +1,15 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
-import { conversations, messages, users, offers, trips, destinations, countries } from '$lib/server/db/schema';
+import {
+	conversations,
+	messages,
+	users,
+	offers,
+	trips,
+	destinations,
+	countries
+} from '$lib/server/db/schema';
 import { eq, and, or, asc } from 'drizzle-orm';
 
 // GET /api/conversations/[id] - Get conversation details with messages

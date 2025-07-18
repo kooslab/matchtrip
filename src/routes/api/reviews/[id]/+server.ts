@@ -8,7 +8,7 @@ import { eq, and } from 'drizzle-orm';
 export const PUT: RequestHandler = async ({ request, params, locals }) => {
 	const session = locals.session;
 	const user = locals.user;
-	
+
 	if (!session || !user) {
 		return json({ error: 'Unauthorized' }, { status: 401 });
 	}
@@ -31,7 +31,7 @@ export const PUT: RequestHandler = async ({ request, params, locals }) => {
 			.select()
 			.from(reviews)
 			.where(eq(reviews.id, reviewId))
-			.then(rows => rows[0]);
+			.then((rows) => rows[0]);
 
 		if (!review) {
 			return json({ error: 'Review not found' }, { status: 404 });
@@ -53,21 +53,18 @@ export const PUT: RequestHandler = async ({ request, params, locals }) => {
 			content: content.trim(),
 			updatedAt: new Date()
 		};
-		
+
 		// Add images if provided
 		if (images && images.length > 0) {
 			updateData.images = images;
 		}
-		
+
 		// Add tags if provided
 		if (tags && tags.length > 0) {
 			updateData.tags = tags;
 		}
-		
-		await db
-			.update(reviews)
-			.set(updateData)
-			.where(eq(reviews.id, reviewId));
+
+		await db.update(reviews).set(updateData).where(eq(reviews.id, reviewId));
 
 		return json({ success: true });
 	} catch (error) {

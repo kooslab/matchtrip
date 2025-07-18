@@ -42,7 +42,7 @@
 	console.log('offers', offers);
 	let acceptedOffer = $derived(offers.find((o) => o.status === 'accepted'));
 	let review = $derived(data.review);
-	
+
 	// Check if trip has ended and review can be written
 	let tripHasEnded = $derived(() => {
 		const today = new Date();
@@ -51,7 +51,7 @@
 		endDate.setHours(0, 0, 0, 0);
 		return endDate <= today;
 	});
-	
+
 	let canWriteReview = $derived(() => {
 		console.log('canWriteReview check:', {
 			acceptedOffer: !!acceptedOffer,
@@ -162,7 +162,7 @@
 
 	function formatTravelStyle(style: string | null) {
 		if (!style) return '미정';
-		
+
 		const styleMap: Record<string, string> = {
 			friends: '친구들과 함께 하는 여행',
 			parents: '부모님과 함께 하는 여행',
@@ -170,13 +170,13 @@
 			business: '직장동료와 함께하는 비즈니스 여행',
 			other: '기타여행'
 		};
-		
+
 		return styleMap[style] || style;
 	}
 
 	function formatActivities(activities: string[] | null) {
 		if (!activities || activities.length === 0) return '미정';
-		
+
 		const activityMap: Record<string, string> = {
 			'city-tour': '시내투어',
 			'suburb-tour': '근교투어',
@@ -184,18 +184,18 @@
 			'vehicle-tour': '차량투어',
 			'airport-pickup': '공항픽업',
 			'bus-charter': '버스대절',
-			'interpretation': '통역 서비스',
-			'accommodation': '숙박(민박)',
+			interpretation: '통역 서비스',
+			accommodation: '숙박(민박)',
 			'organization-visit': '기관방문',
 			'other-tour': '기타투어'
 		};
-		
-		return activities.map(activity => activityMap[activity] || activity).join(' / ');
+
+		return activities.map((activity) => activityMap[activity] || activity).join(' / ');
 	}
 
 	function formatBudget(amount: number | null): string {
 		if (!amount) return '';
-		
+
 		// If 10,000 or more, show in 만원
 		if (amount >= 10000) {
 			const manWon = amount / 10000;
@@ -278,7 +278,6 @@
 			processingOfferId = null;
 		}
 	}
-	
 </script>
 
 <svelte:head>
@@ -295,7 +294,6 @@
 					{trip.destination?.city || '목적지'}, {trip.destination?.country || ''}
 				</h1>
 			</div>
-			
 		</div>
 
 		<!-- Tabs -->
@@ -332,7 +330,9 @@
 							<div>
 								<p class="text-2xl font-bold text-gray-900">
 									{#if trip.budgetMin || trip.budgetMax}
-										{formatBudget(trip.budgetMin)}{#if trip.budgetMin && trip.budgetMax} ~ {/if}{formatBudget(trip.budgetMax)}
+										{formatBudget(trip.budgetMin)}{#if trip.budgetMin && trip.budgetMax}
+											~
+										{/if}{formatBudget(trip.budgetMax)}
 									{:else}
 										미정
 									{/if}
@@ -447,26 +447,30 @@
 
 			<!-- Bottom Button -->
 			<div class="fixed right-0 bottom-14 left-0 border-t border-gray-200 bg-white">
-				<div class="box-border content-stretch flex flex-row gap-4 items-center justify-start pl-5 pr-4 py-2 relative w-full">
-					<button 
-						class="opacity-40 overflow-clip relative shrink-0 size-5 -rotate-90"
-						onclick={() => {/* Handle dots menu */}}
+				<div
+					class="relative box-border flex w-full flex-row content-stretch items-center justify-start gap-4 py-2 pr-4 pl-5"
+				>
+					<button
+						class="relative size-5 shrink-0 -rotate-90 overflow-clip opacity-40"
+						onclick={() => {
+							/* Handle dots menu */
+						}}
 					>
-						<div class="absolute bottom-[13.454%] left-[13.454%] right-[13.454%] top-[13.454%]">
-							<img
-								alt=""
-								class="block max-w-none size-full"
-								src={dotsIconUrl}
-							/>
+						<div class="absolute top-[13.454%] right-[13.454%] bottom-[13.454%] left-[13.454%]">
+							<img alt="" class="block size-full max-w-none" src={dotsIconUrl} />
 						</div>
 					</button>
 					{#if offers.length === 0}
 						<button
 							onclick={() => goto(`/my-trips/${trip.id}/edit`)}
-							class="basis-0 bg-[#1095f4] grow h-12 min-h-px min-w-px relative rounded-[9px] shrink-0 flex flex-row items-center justify-center"
+							class="relative flex h-12 min-h-px min-w-px shrink-0 grow basis-0 flex-row items-center justify-center rounded-[9px] bg-[#1095f4]"
 						>
-							<div class="box-border content-stretch flex flex-row gap-2.5 h-12 items-center justify-center px-6 py-3.5 relative w-full">
-								<div class="font-semibold leading-[0] not-italic relative shrink-0 text-[#ffffff] text-[14px] text-center text-nowrap">
+							<div
+								class="relative box-border flex h-12 w-full flex-row content-stretch items-center justify-center gap-2.5 px-6 py-3.5"
+							>
+								<div
+									class="relative shrink-0 text-center text-[14px] leading-[0] font-semibold text-nowrap text-[#ffffff] not-italic"
+								>
 									<p class="block leading-[20px] whitespace-pre">계획 변경하기</p>
 								</div>
 							</div>
@@ -475,7 +479,10 @@
 						{#if canWriteReview()}
 							<button
 								onclick={() => {
-									console.log('Review button clicked', { review, reviewToken: review?.reviewToken });
+									console.log('Review button clicked', {
+										review,
+										reviewToken: review?.reviewToken
+									});
 									if (review?.reviewToken) {
 										goto(`/write-review/${review.reviewToken}`);
 									} else {
@@ -483,11 +490,15 @@
 										alert('리뷰를 작성하려면 먼저 가이드가 리뷰 요청을 보내야 합니다.');
 									}
 								}}
-								class="basis-0 bg-[#19b989] grow h-12 min-h-px min-w-px relative rounded-[9px] shrink-0 flex flex-row items-center justify-center"
+								class="relative flex h-12 min-h-px min-w-px shrink-0 grow basis-0 flex-row items-center justify-center rounded-[9px] bg-[#19b989]"
 							>
-								<div class="box-border content-stretch flex flex-row gap-2.5 h-12 items-center justify-center px-6 py-3.5 relative w-full">
+								<div
+									class="relative box-border flex h-12 w-full flex-row content-stretch items-center justify-center gap-2.5 px-6 py-3.5"
+								>
 									<img src={starIconUrl} alt="star" class="h-4 w-4 brightness-0 invert" />
-									<div class="font-semibold leading-[0] not-italic relative shrink-0 text-[#ffffff] text-[14px] text-center text-nowrap">
+									<div
+										class="relative shrink-0 text-center text-[14px] leading-[0] font-semibold text-nowrap text-[#ffffff] not-italic"
+									>
 										<p class="block leading-[20px] whitespace-pre">리뷰 작성하기</p>
 									</div>
 								</div>
@@ -495,11 +506,15 @@
 						{:else}
 							<button
 								onclick={() => startConversation(acceptedOffer.id)}
-								class="basis-0 bg-[#1095f4] grow h-12 min-h-px min-w-px relative rounded-[9px] shrink-0 flex flex-row items-center justify-center"
+								class="relative flex h-12 min-h-px min-w-px shrink-0 grow basis-0 flex-row items-center justify-center rounded-[9px] bg-[#1095f4]"
 							>
-								<div class="box-border content-stretch flex flex-row gap-2.5 h-12 items-center justify-center px-6 py-3.5 relative w-full">
+								<div
+									class="relative box-border flex h-12 w-full flex-row content-stretch items-center justify-center gap-2.5 px-6 py-3.5"
+								>
 									<img src={chatIconUrl} alt="chat" class="h-4 w-4 brightness-0 invert" />
-									<div class="font-semibold leading-[0] not-italic relative shrink-0 text-[#ffffff] text-[14px] text-center text-nowrap">
+									<div
+										class="relative shrink-0 text-center text-[14px] leading-[0] font-semibold text-nowrap text-[#ffffff] not-italic"
+									>
 										<p class="block leading-[20px] whitespace-pre">대화하기</p>
 									</div>
 								</div>
@@ -519,10 +534,18 @@
 					</div>
 				{:else}
 					<div class="space-y-4">
-						<div class="box-border content-stretch flex flex-col gap-1 items-start justify-start p-0 relative shrink-0 w-full">
-							<div class="box-border content-stretch flex flex-row items-center justify-between pb-0 pt-3 px-0 relative shrink-0 w-full">
-								<div class="box-border content-stretch flex flex-row gap-2 items-center justify-start p-0 relative shrink-0">
-									<div class="box-border content-stretch flex flex-row font-bold gap-1 items-center justify-start leading-[0] not-italic p-0 relative shrink-0 text-[12px] text-left text-nowrap">
+						<div
+							class="relative box-border flex w-full shrink-0 flex-col content-stretch items-start justify-start gap-1 p-0"
+						>
+							<div
+								class="relative box-border flex w-full shrink-0 flex-row content-stretch items-center justify-between px-0 pt-3 pb-0"
+							>
+								<div
+									class="relative box-border flex shrink-0 flex-row content-stretch items-center justify-start gap-2 p-0"
+								>
+									<div
+										class="relative box-border flex shrink-0 flex-row content-stretch items-center justify-start gap-1 p-0 text-left text-[12px] leading-[0] font-bold text-nowrap not-italic"
+									>
 										<div class="relative shrink-0 text-[#052236]">
 											<p class="block leading-[16px] text-nowrap whitespace-pre">전체</p>
 										</div>
@@ -531,12 +554,18 @@
 										</div>
 									</div>
 								</div>
-								<div class="box-border content-stretch flex flex-row gap-2 items-center justify-end p-0 relative shrink-0">
-									<div class="box-border content-stretch flex flex-row gap-1 items-center justify-end p-0 relative shrink-0">
-										<div class="font-medium leading-[0] not-italic relative shrink-0 text-[#052236] text-[12px] text-nowrap text-right">
+								<div
+									class="relative box-border flex shrink-0 flex-row content-stretch items-center justify-end gap-2 p-0"
+								>
+									<div
+										class="relative box-border flex shrink-0 flex-row content-stretch items-center justify-end gap-1 p-0"
+									>
+										<div
+											class="relative shrink-0 text-right text-[12px] leading-[0] font-medium text-nowrap text-[#052236] not-italic"
+										>
 											<p class="block leading-[18px] whitespace-pre">최신순</p>
 										</div>
-										<div class="flex h-[0px] items-center justify-center relative shrink-0 w-[0px]">
+										<div class="relative flex h-[0px] w-[0px] shrink-0 items-center justify-center">
 											<div class="flex-none rotate-[90deg]">
 												<ChevronDown class="h-3 w-3" />
 											</div>
@@ -546,8 +575,8 @@
 							</div>
 						</div>
 						{#each offers as offer, index}
-							<OfferSummaryCard 
-								{offer} 
+							<OfferSummaryCard
+								{offer}
 								onclick={() => openOfferDetail(offer)}
 								showBadge={index === 0}
 								badgeText={index === 0 ? '가장 저렴한 가격' : ''}
@@ -604,13 +633,13 @@
 		width: 100%;
 		height: 100%;
 	}
-	
+
 	/* Fix for any oversized SVG icons */
 	:global(svg) {
 		max-width: 100%;
 		max-height: 100%;
 	}
-	
+
 	/* Specific fix for ChevronDown icons */
 	:global(.lucide-chevron-down) {
 		display: block;

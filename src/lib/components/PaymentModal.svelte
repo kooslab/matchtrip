@@ -16,13 +16,9 @@
 	let widgetContainer = $state<HTMLDivElement>();
 	let hasInitialized = false;
 	let isProcessingPayment = $state(false);
-	
+
 	// Check if payment can proceed - simplified
-	const canProceedPayment = $derived(
-		!isLoading && 
-		!!paymentWidget && 
-		!isProcessingPayment
-	);
+	const canProceedPayment = $derived(!isLoading && !!paymentWidget && !isProcessingPayment);
 
 	// Initialize when modal opens
 	$effect(() => {
@@ -162,14 +158,17 @@
 		} catch (err: any) {
 			console.error('Payment request error:', err);
 			isProcessingPayment = false;
-			
+
 			if (err.code === 'USER_CANCEL') {
 				// User cancelled payment
 				return;
 			}
-			
+
 			// Check for specific error about payment method selection
-			if (err.message?.includes('카드 결제 정보를 선택해주세요') || err.message?.includes('결제 정보를 선택')) {
+			if (
+				err.message?.includes('카드 결제 정보를 선택해주세요') ||
+				err.message?.includes('결제 정보를 선택')
+			) {
 				error = '결제 방법을 먼저 선택해주세요.';
 			} else {
 				error = err.message || '결제 요청 중 오류가 발생했습니다.';
@@ -221,7 +220,7 @@
 					<button
 						onclick={onClose}
 						aria-label="Close modal"
-						class="rounded-full p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+						class="rounded-full p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
 					>
 						<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
@@ -242,7 +241,9 @@
 						<div class="space-y-2 text-sm">
 							<div class="flex justify-between">
 								<span class="text-gray-600">여행지</span>
-								<span class="font-medium text-gray-900">{trip.destination?.city || '알 수 없음'}</span>
+								<span class="font-medium text-gray-900"
+									>{trip.destination?.city || '알 수 없음'}</span
+								>
 							</div>
 							<div class="flex justify-between">
 								<span class="text-gray-600">가이드</span>
@@ -279,7 +280,7 @@
 						{/if}
 
 						{#if error}
-							<div class="mb-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-600">
+							<div class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">
 								<p>{error}</p>
 							</div>
 						{/if}
@@ -289,7 +290,9 @@
 							{#if !isLoading && !error}
 								<div class="mb-2 rounded-lg bg-blue-50 p-3 text-sm text-blue-700">
 									<p class="font-medium">결제 방법을 선택하고 약관에 동의해주세요</p>
-									<p class="mt-1 text-xs">카드, 계좌이체 등 원하시는 결제 수단을 선택한 후 결제하기 버튼을 눌러주세요.</p>
+									<p class="mt-1 text-xs">
+										카드, 계좌이체 등 원하시는 결제 수단을 선택한 후 결제하기 버튼을 눌러주세요.
+									</p>
 								</div>
 							{/if}
 							<div id="payment-method" class="w-full rounded-lg" style="min-height: 250px;"></div>
@@ -301,20 +304,36 @@
 					<div class="mt-6 flex gap-3">
 						<button
 							onclick={onClose}
-							class="flex-1 rounded-xl border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+							class="flex-1 rounded-xl border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
 						>
 							취소
 						</button>
 						<button
 							onclick={handlePayment}
 							disabled={!canProceedPayment}
-							class="flex-1 rounded-xl px-4 py-3 text-sm font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center gap-2
+							class="flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50
 								{canProceedPayment ? 'bg-[#1095f4] hover:bg-blue-600' : 'bg-gray-300'}"
 						>
 							{#if isProcessingPayment}
-								<svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-									<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-									<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+								<svg
+									class="h-4 w-4 animate-spin text-white"
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+								>
+									<circle
+										class="opacity-25"
+										cx="12"
+										cy="12"
+										r="10"
+										stroke="currentColor"
+										stroke-width="4"
+									></circle>
+									<path
+										class="opacity-75"
+										fill="currentColor"
+										d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+									></path>
 								</svg>
 								처리 중...
 							{:else}

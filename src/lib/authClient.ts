@@ -60,11 +60,14 @@ export const { useSession } = authClient;
 // Initialize session in browser only
 if (typeof window !== 'undefined') {
 	// Get initial session
-	authClient.getSession().then((initialSession) => {
-		sessionStore.set({ data: initialSession, isPending: false });
-	}).catch(() => {
-		sessionStore.set({ data: null, isPending: false });
-	});
+	authClient
+		.getSession()
+		.then((initialSession) => {
+			sessionStore.set({ data: initialSession, isPending: false });
+		})
+		.catch(() => {
+			sessionStore.set({ data: null, isPending: false });
+		});
 }
 
 // Export the session store for component usage
@@ -72,9 +75,12 @@ export const session = sessionStore;
 
 // Add session debugging only in browser
 if (typeof window !== 'undefined') {
-	authClient.getSession().then((s) => {
-		console.log('[AUTH CLIENT] Initial session check:', s);
-	}).catch((error) => {
-		console.error('[AUTH CLIENT] Session check error:', error);
-	});
+	authClient
+		.getSession()
+		.then((s) => {
+			console.log('[AUTH CLIENT] Initial session check:', s);
+		})
+		.catch((error) => {
+			console.error('[AUTH CLIENT] Session check error:', error);
+		});
 }

@@ -2,9 +2,9 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import BackButton from '$lib/components/BackButton.svelte';
-	
+
 	let { children } = $props();
-	
+
 	// Define the steps - matching actual implemented routes
 	const steps = [
 		{ path: 'destination', label: '목적지', number: 1 },
@@ -16,19 +16,15 @@
 		{ path: 'additional-request', label: '추가 요청', number: 7 },
 		{ path: 'files', label: '파일 첨부', number: 8 }
 	];
-	
+
 	// Get current step from URL
 	let currentPath = $derived($page.url.pathname.split('/').pop());
-	let currentStep = $derived(steps.find(s => s.path === currentPath));
+	let currentStep = $derived(steps.find((s) => s.path === currentPath));
 	// For 'complete' page, show full progress
 	let currentStepIndex = $derived(
-		currentPath === 'complete' 
-			? steps.length - 1 
-			: currentStep 
-				? currentStep.number - 1 
-				: 0
+		currentPath === 'complete' ? steps.length - 1 : currentStep ? currentStep.number - 1 : 0
 	);
-	
+
 	function handleBack() {
 		// Special handling for complete page
 		if (currentPath === 'complete') {
@@ -51,16 +47,16 @@
 		<div class="flex h-14 items-center px-4">
 			<BackButton onclick={handleBack} class="mr-4" />
 		</div>
-		
+
 		<!-- Progress bar -->
 		<div class="h-1 bg-gray-100">
-			<div 
+			<div
 				class="h-full bg-blue-500 transition-all duration-300"
 				style="width: {((currentStepIndex + 1) / steps.length) * 100}%"
 			></div>
 		</div>
 	</header>
-	
+
 	<!-- Content -->
 	<main class="flex-1">
 		{@render children()}

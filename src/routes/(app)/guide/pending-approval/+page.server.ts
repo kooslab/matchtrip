@@ -6,33 +6,33 @@ import { eq } from 'drizzle-orm';
 
 export const load: PageServerLoad = async ({ locals, depends }) => {
 	const user = locals.user;
-	
+
 	if (!user) {
 		throw redirect(302, '/sign-in');
 	}
-	
+
 	if (user.role !== 'guide') {
 		throw redirect(302, '/');
 	}
-	
+
 	// Add dependency for invalidation
 	depends('app:guide-verification');
-	
+
 	// Get guide profile
 	const guideProfile = await db.query.guideProfiles.findFirst({
 		where: eq(guideProfiles.userId, user.id)
 	});
-	
+
 	if (!guideProfile) {
 		// If no guide profile exists, redirect to onboarding
 		throw redirect(302, '/onboarding/guide');
 	}
-	
+
 	// If already verified, redirect to main guide page
 	if (guideProfile.isVerified) {
 		throw redirect(302, '/trips');
 	}
-	
+
 	return {
 		user: {
 			name: user.name,

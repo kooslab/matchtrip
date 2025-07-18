@@ -6,10 +6,12 @@ export const load: PageServerLoad = async ({ setHeaders, parent, url }) => {
 	console.log('[PAGE SERVER] Starting page load');
 	console.log('[PAGE SERVER] URL:', url.toString());
 
-	// Set cache headers for better performance
+	// Set cache headers - disable caching for authenticated pages to ensure fresh session data
+	// This is especially important for Safari which has stricter cookie policies
 	setHeaders({
-		'cache-control': 'public, max-age=3600, s-maxage=3600', // Cache for 1 hour
-		'cdn-cache-control': 'max-age=3600' // CDN cache for 1 hour
+		'cache-control': 'private, no-cache, no-store, must-revalidate',
+		pragma: 'no-cache',
+		expires: '0'
 	});
 
 	// Get parent data (user, session, etc.)

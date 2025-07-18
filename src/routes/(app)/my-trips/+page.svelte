@@ -265,7 +265,7 @@
 		max-width: 100%;
 		max-height: 100%;
 	}
-	
+
 	/* Safe area padding for bottom button */
 	.pb-safe {
 		padding-bottom: env(safe-area-inset-bottom);

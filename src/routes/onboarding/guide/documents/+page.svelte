@@ -6,10 +6,15 @@
 
 	// Get initial data from store
 	let storeData = onboardingStore.get();
-	
+
 	onMount(() => {
 		// Check if required data exists
-		if (!storeData.name || !storeData.phone || !storeData.nickname || !storeData.destinations?.length) {
+		if (
+			!storeData.name ||
+			!storeData.phone ||
+			!storeData.nickname ||
+			!storeData.destinations?.length
+		) {
 			goto('/onboarding/guide');
 		}
 	});
@@ -44,8 +49,8 @@
 
 	// Check if all required documents are uploaded
 	function areAllDocumentsUploaded(): boolean {
-		return documentCategories.every(category => 
-			uploadedFiles[category.id] && uploadedFiles[category.id].length > 0
+		return documentCategories.every(
+			(category) => uploadedFiles[category.id] && uploadedFiles[category.id].length > 0
 		);
 	}
 
@@ -142,7 +147,7 @@
 
 				// Clear store and redirect to completion page
 				onboardingStore.reset();
-				
+
 				// Now navigate with fresh session data
 				await goto('/onboarding/guide/complete');
 			} else {
@@ -168,7 +173,7 @@
 		onboardingStore.setData({
 			uploadedFiles: uploadedFiles
 		});
-		
+
 		goto('/onboarding/guide/destinations');
 	}
 
@@ -184,6 +189,112 @@
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
+
+<div class="container">
+	<!-- Header -->
+	<header class="header">
+		<div class="header-content">
+			<button class="back-button" onclick={handleBack}>
+				<img src={iconArrowBack} alt="뒤로가기" />
+			</button>
+			<div class="progress-bar">
+				<div class="progress-fill"></div>
+			</div>
+		</div>
+	</header>
+
+	<!-- Content -->
+	<div class="content">
+		<!-- Title -->
+		<div class="title-section">
+			<h1 class="title">자격 서류</h1>
+			<p class="subtitle">가이드 승인을 위한 서류를 업로드해주세요</p>
+		</div>
+
+		<!-- Document Categories -->
+		<div class="documents-section">
+			{#each documentCategories as category}
+				<div class="document-category">
+					<div class="category-title">{category.title}</div>
+
+					<!-- Hidden file input -->
+					<input
+						id="file-input-{category.id}"
+						type="file"
+						multiple
+						accept=".pdf,.pptx,.hwp,.docx,.jpg,.jpeg,.png,.gif"
+						onchange={(e) => handleFileUpload(category.id, e)}
+						class="hidden-input"
+					/>
+
+					<!-- Upload area -->
+					<div class="upload-area" onclick={() => triggerFileInput(category.id)}>
+						<svg class="upload-icon" fill="currentColor" viewBox="0 0 24 24">
+							<path
+								d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
+							/>
+						</svg>
+						<div class="upload-text">파일을 클릭하여 찾아보세요.</div>
+					</div>
+
+					<!-- File format info -->
+					<div class="file-format-text">{category.description}</div>
+
+					<!-- Uploaded files for this category -->
+					{#if uploadedFiles[category.id]?.length > 0}
+						<div class="uploaded-files">
+							{#each uploadedFiles[category.id] as file, index}
+								<div class="file-item">
+									<div class="file-info">
+										<svg class="file-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+											/>
+										</svg>
+										<div class="file-name">{file.name}</div>
+									</div>
+									<button
+										class="remove-button"
+										onclick={() => removeFile(category.id, index)}
+										aria-label="파일 삭제"
+									>
+										<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M6 18L18 6M6 6l12 12"
+											/>
+										</svg>
+									</button>
+								</div>
+							{/each}
+						</div>
+					{/if}
+				</div>
+			{/each}
+		</div>
+	</div>
+
+	<!-- Bottom Section -->
+	<div class="bottom-section">
+		<div class="bottom-content">
+			<div class="buttons-row">
+				<button class="skip-button" onclick={handleSkip} disabled={isLoading}> 건너뛰기 </button>
+				<button
+					class="next-button"
+					disabled={!areAllDocumentsUploaded() || isLoading}
+					onclick={handleNext}
+				>
+					{isLoading ? '처리중...' : '완료'}
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
 
 <style>
 	.container {
@@ -450,113 +561,3 @@
 		display: none;
 	}
 </style>
-
-<div class="container">
-	<!-- Header -->
-	<header class="header">
-		<div class="header-content">
-			<button class="back-button" onclick={handleBack}>
-				<img src={iconArrowBack} alt="뒤로가기" />
-			</button>
-			<div class="progress-bar">
-				<div class="progress-fill"></div>
-			</div>
-		</div>
-	</header>
-
-	<!-- Content -->
-	<div class="content">
-		<!-- Title -->
-		<div class="title-section">
-			<h1 class="title">자격 서류</h1>
-			<p class="subtitle">가이드 승인을 위한 서류를 업로드해주세요</p>
-		</div>
-
-		<!-- Document Categories -->
-		<div class="documents-section">
-			{#each documentCategories as category}
-				<div class="document-category">
-					<div class="category-title">{category.title}</div>
-					
-					<!-- Hidden file input -->
-					<input
-						id="file-input-{category.id}"
-						type="file"
-						multiple
-						accept=".pdf,.pptx,.hwp,.docx,.jpg,.jpeg,.png,.gif"
-						onchange={(e) => handleFileUpload(category.id, e)}
-						class="hidden-input"
-					/>
-					
-					<!-- Upload area -->
-					<div class="upload-area" onclick={() => triggerFileInput(category.id)}>
-						<svg class="upload-icon" fill="currentColor" viewBox="0 0 24 24">
-							<path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
-						</svg>
-						<div class="upload-text">파일을 클릭하여 찾아보세요.</div>
-					</div>
-					
-					<!-- File format info -->
-					<div class="file-format-text">{category.description}</div>
-					
-					<!-- Uploaded files for this category -->
-					{#if uploadedFiles[category.id]?.length > 0}
-						<div class="uploaded-files">
-							{#each uploadedFiles[category.id] as file, index}
-								<div class="file-item">
-									<div class="file-info">
-										<svg class="file-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												stroke-width="2"
-												d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-											/>
-										</svg>
-										<div class="file-name">{file.name}</div>
-									</div>
-									<button
-										class="remove-button"
-										onclick={() => removeFile(category.id, index)}
-										aria-label="파일 삭제"
-									>
-										<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												stroke-width="2"
-												d="M6 18L18 6M6 6l12 12"
-											/>
-										</svg>
-									</button>
-								</div>
-							{/each}
-						</div>
-					{/if}
-				</div>
-			{/each}
-		</div>
-	</div>
-
-	<!-- Bottom Section -->
-	<div class="bottom-section">
-		<div class="bottom-content">
-			<div class="buttons-row">
-				<button 
-					class="skip-button"
-					onclick={handleSkip}
-					disabled={isLoading}
-				>
-					건너뛰기
-				</button>
-				<button 
-					class="next-button" 
-					disabled={!areAllDocumentsUploaded() || isLoading}
-					onclick={handleNext}
-				>
-					{isLoading ? '처리중...' : '완료'}
-				</button>
-			</div>
-		</div>
-	</div>
-</div>

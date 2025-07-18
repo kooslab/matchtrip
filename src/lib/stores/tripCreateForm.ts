@@ -4,16 +4,16 @@ interface TripCreateForm {
 	// Step 1: Destination
 	destination: string | null;
 	destinationId: number | null;
-	
+
 	// Step 2: Dates
 	startDate: string | null;
 	endDate: string | null;
-	
+
 	// Step 3: Travelers
 	adultsCount: number;
 	childrenCount: number;
 	babiesCount: number;
-	
+
 	// Step 4: Budget
 	budget: {
 		id: string;
@@ -21,19 +21,19 @@ interface TripCreateForm {
 		min: number | null;
 		max: number | null;
 	} | null;
-	
+
 	// Step 5: Travel Style
 	travelStyle: {
 		id: string;
 		name: string;
 	} | null;
-	
+
 	// Step 6: Activities
 	activities: string[];
-	
+
 	// Step 7: Additional Request
 	additionalRequest: string;
-	
+
 	// Step 8: File
 	file: File | null;
 }
@@ -53,23 +53,23 @@ function createTripCreateStore() {
 		additionalRequest: '',
 		file: null
 	});
-	
+
 	return {
 		subscribe,
 		set,
 		update,
-		
+
 		// Update specific step data
 		updateStep: (step: keyof TripCreateForm | string, data: any) => {
-			update(form => ({
+			update((form) => ({
 				...form,
 				[step]: data
 			}));
 		},
-		
+
 		// Get current form data
 		getData: () => get({ subscribe }),
-		
+
 		// Reset form
 		reset: () => {
 			set({

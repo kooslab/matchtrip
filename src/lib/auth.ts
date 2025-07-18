@@ -43,7 +43,18 @@ export const auth = betterAuth({
 	advanced: {
 		generateId: false,
 		// Add debugging
-		debugMode: true
+		debugMode: true,
+		// Force secure cookies in production
+		useSecureCookies: process.env.NODE_ENV === 'production',
+		// Cookie configuration for better Safari compatibility
+		defaultCookieAttributes: {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === 'production',
+			sameSite: 'lax' as const, // 'lax' instead of 'none' for Safari compatibility
+			path: '/',
+			// Extend cookie lifetime
+			maxAge: 60 * 60 * 24 * 30 // 30 days
+		}
 	},
 	socialProviders: {
 		google: {
@@ -71,7 +82,7 @@ export const auth = betterAuth({
 		storage: 'memory'
 	},
 	user: { modelName: 'users' },
-	session: { 
+	session: {
 		modelName: 'sessions',
 		expiresIn: 60 * 60 * 24 * 30, // 30 days
 		updateAge: 60 * 60 * 24, // Update session every 24 hours
@@ -113,7 +124,7 @@ export const auth = betterAuth({
 	onResponse: async (response: Response) => {
 		console.log('[AUTH RESPONSE] Status:', response.status);
 		console.log('[AUTH RESPONSE] Headers:', Object.fromEntries(response.headers.entries()));
-		
+
 		// Log successful responses too for debugging
 		if (response.status >= 200 && response.status < 300) {
 			try {
@@ -123,7 +134,7 @@ export const auth = betterAuth({
 				console.log('[AUTH RESPONSE] Response is not JSON');
 			}
 		}
-		
+
 		if (response.status >= 400) {
 			try {
 				const body = await response.clone().json();

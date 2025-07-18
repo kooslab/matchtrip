@@ -9,7 +9,7 @@
 
 	// Get initial data from store
 	let storeData = onboardingStore.get();
-	
+
 	// Form data - initialize with store data if available
 	let formData = $state({
 		name: storeData.name || '',
@@ -52,7 +52,7 @@
 	// Handle name completion
 	function handleNameComplete() {
 		if (!canProceedName()) return;
-		
+
 		// Save to store
 		onboardingStore.setData({
 			name: formData.name,
@@ -61,7 +61,7 @@
 			birthMonth: formData.birthMonth,
 			birthDay: formData.birthDay
 		});
-		
+
 		nameCompleted = true;
 		showPhoneStep = true;
 		// Focus on phone input after a short delay
@@ -76,7 +76,7 @@
 			alert('올바른 휴대폰 번호를 입력해주세요.');
 			return;
 		}
-		
+
 		// Save to store before sending verification
 		onboardingStore.setData({
 			name: formData.name,
@@ -182,14 +182,14 @@
 		if (formData.name) {
 			nameCompleted = true;
 			showPhoneStep = true;
-			
+
 			// If we also have phone data, show it as completed
 			if (formData.phone) {
 				phoneCompleted = true;
 				showVerificationStep = false;
 			}
 		}
-		
+
 		return () => {
 			if (timerInterval) {
 				clearInterval(timerInterval);
@@ -220,7 +220,7 @@
 			birthMonth: formData.birthMonth,
 			birthDay: formData.birthDay
 		});
-		
+
 		nameCompleted = false;
 		showPhoneStep = false;
 		showVerificationStep = false;
@@ -246,7 +246,7 @@
 			birthMonth: formData.birthMonth,
 			birthDay: formData.birthDay
 		});
-		
+
 		isVerificationSent = false;
 		showVerificationStep = false;
 		verificationCode = '';
@@ -266,7 +266,12 @@
 	<header class="sticky top-0 z-10 bg-white shadow-sm">
 		<div class="flex h-14 items-center px-4">
 			<button onclick={handleBack} class="mr-4 -ml-2 p-2">
-				<img src={arrowLeftUrl} alt="뒤로가기" class="h-5 w-5" style="filter: invert(37%) sepia(94%) saturate(2831%) hue-rotate(196deg) brightness(101%) contrast(91%);" />
+				<img
+					src={arrowLeftUrl}
+					alt="뒤로가기"
+					class="h-5 w-5"
+					style="filter: invert(37%) sepia(94%) saturate(2831%) hue-rotate(196deg) brightness(101%) contrast(91%);"
+				/>
 			</button>
 		</div>
 	</header>
@@ -309,7 +314,7 @@
 										if (value !== target.value) {
 											verificationCode = value;
 										}
-										
+
 										if (verificationCode.length === 6) {
 											isVerified = true;
 										} else {
@@ -324,8 +329,18 @@
 								/>
 								{#if isVerified}
 									<span class="flex h-8 w-8 items-center justify-center rounded-full bg-green-500">
-										<svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+										<svg
+											class="h-5 w-5 text-white"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M5 13l4 4L19 7"
+											></path>
 										</svg>
 									</span>
 								{:else if verificationTimer > 0}
@@ -368,7 +383,12 @@
 										}
 									}}
 									onkeydown={(e) => {
-										if (e.key === 'Enter' && canProceedPhone() && !isVerificationSent && !isSendingCode) {
+										if (
+											e.key === 'Enter' &&
+											canProceedPhone() &&
+											!isVerificationSent &&
+											!isSendingCode
+										) {
 											sendVerificationCode();
 										}
 									}}
@@ -436,11 +456,9 @@
 
 				<!-- Completed Steps (Shows at bottom) -->
 				{#if nameCompleted && showPhoneStep}
-					<div class="rounded-lg bg-white p-6 shadow-sm opacity-75">
+					<div class="rounded-lg bg-white p-6 opacity-75 shadow-sm">
 						<div>
-							<label class="mb-2 block text-sm font-medium text-gray-700">
-								이름
-							</label>
+							<label class="mb-2 block text-sm font-medium text-gray-700"> 이름 </label>
 							<div class="flex gap-2">
 								<input
 									type="text"
@@ -461,11 +479,9 @@
 				{/if}
 
 				{#if isVerificationSent && showVerificationStep}
-					<div class="rounded-lg bg-white p-6 shadow-sm opacity-75">
+					<div class="rounded-lg bg-white p-6 opacity-75 shadow-sm">
 						<div>
-							<label class="mb-2 block text-sm font-medium text-gray-700">
-								휴대폰 번호
-							</label>
+							<label class="mb-2 block text-sm font-medium text-gray-700"> 휴대폰 번호 </label>
 							<div class="flex gap-2">
 								<input
 									type="tel"
@@ -492,7 +508,9 @@
 					onclick={verifyCode}
 					disabled={!canProceedVerification() || isLoading}
 					class="mt-6 w-full rounded-lg py-4 text-base font-medium text-white transition-colors disabled:opacity-50"
-					style="background-color: {canProceedVerification() && !isLoading ? colors.primary : '#CBD5E1'}"
+					style="background-color: {canProceedVerification() && !isLoading
+						? colors.primary
+						: '#CBD5E1'}"
 				>
 					{isLoading ? '확인중...' : '다음'}
 				</button>

@@ -57,17 +57,17 @@ export async function GET({ request }) {
 
 export async function POST({ request }) {
 	console.log('[API USER ROLE POST] Request received');
-	
+
 	try {
 		const session = await auth.api.getSession({ headers: request.headers });
-		
+
 		if (!session?.user?.id) {
 			console.log('[API USER ROLE POST] No authenticated user');
 			return json({ error: 'Not authenticated' }, { status: 401 });
 		}
 
 		const { role } = await request.json();
-		
+
 		// Validate role
 		if (!role || !['traveler', 'guide'].includes(role)) {
 			return json({ error: 'Invalid role' }, { status: 400 });
@@ -76,7 +76,7 @@ export async function POST({ request }) {
 		// Update user role
 		await db
 			.update(users)
-			.set({ 
+			.set({
 				role,
 				updatedAt: new Date()
 			})

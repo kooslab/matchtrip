@@ -86,7 +86,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 		};
 	} catch (error) {
 		console.error('[ADMIN TRIPS] Error:', error);
-		console.error('[ADMIN TRIPS] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+		console.error(
+			'[ADMIN TRIPS] Error stack:',
+			error instanceof Error ? error.stack : 'No stack trace'
+		);
 
 		// Return minimal data on error
 		return {

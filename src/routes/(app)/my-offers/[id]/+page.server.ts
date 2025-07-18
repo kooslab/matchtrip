@@ -1,5 +1,13 @@
 import { db } from '$lib/server/db';
-import { trips, destinations, users, offers, countries, continents, reviews } from '$lib/server/db/schema';
+import {
+	trips,
+	destinations,
+	users,
+	offers,
+	countries,
+	continents,
+	reviews
+} from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { redirect } from '@sveltejs/kit';
 
@@ -95,12 +103,7 @@ export const load = async ({ params, locals }) => {
 			rating: reviews.rating
 		})
 		.from(reviews)
-		.where(
-			and(
-				eq(reviews.offerId, offerId),
-				eq(reviews.guideId, user?.id || '')
-			)
-		)
+		.where(and(eq(reviews.offerId, offerId), eq(reviews.guideId, user?.id || '')))
 		.limit(1);
 
 	return {

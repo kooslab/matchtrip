@@ -4,21 +4,21 @@
 	import { tripEditForm } from '$lib/stores/tripEditForm';
 	import { onMount } from 'svelte';
 	import { formatKoreanDateRange } from '$lib/utils/dateFormatter';
-	
+
 	let { data } = $props();
 	let trip = $derived(data.trip);
-	
+
 	// Form state
 	let customRequest = $state('');
 	let formData = $state<any>({});
 	let isSubmitting = $state(false);
-	
+
 	// Initialize form on mount
 	onMount(() => {
 		formData = tripEditForm.getData();
 		customRequest = formData.customRequest || trip.customRequest || '';
 	});
-	
+
 	// Get display values
 	function getTravelMethodDisplay(method: string) {
 		const methodMap: Record<string, string> = {
@@ -27,9 +27,12 @@
 			public_transport: '대중교통',
 			bike: '자전거'
 		};
-		return method.split('+').map(m => methodMap[m] || m).join(' + ');
+		return method
+			.split('+')
+			.map((m) => methodMap[m] || m)
+			.join(' + ');
 	}
-	
+
 	function getTravelStyleDisplay(style: string) {
 		const styleMap: Record<string, string> = {
 			relaxation: '휴양/힐링',
@@ -43,7 +46,7 @@
 		};
 		return styleMap[style] || style;
 	}
-	
+
 	function getAccommodationDisplay(type: string) {
 		const typeMap: Record<string, string> = {
 			hotel: '호텔',
@@ -57,22 +60,22 @@
 		};
 		return typeMap[type] || type;
 	}
-	
+
 	// Navigation
 	function handleBack() {
 		goto(`/my-trips/${trip.id}/edit/activities`);
 	}
-	
+
 	// Submit the updated trip
 	async function handleSubmit() {
 		if (isSubmitting) return;
-		
+
 		isSubmitting = true;
 		tripEditForm.updateStep('customRequest', customRequest);
-		
+
 		try {
 			const updateData = tripEditForm.getData();
-			
+
 			// Prepare the update payload
 			const payload = {
 				destinationId: updateData.destination?.id,
@@ -91,7 +94,7 @@
 				interests: updateData.interests,
 				customRequest: customRequest
 			};
-			
+
 			const response = await fetch(`/api/trips/${trip.id}`, {
 				method: 'PATCH',
 				headers: {
@@ -99,7 +102,7 @@
 				},
 				body: JSON.stringify(payload)
 			});
-			
+
 			if (response.ok) {
 				// Clear the form store
 				tripEditForm.set({
@@ -115,7 +118,7 @@
 					needsDriver: false,
 					customRequest: ''
 				});
-				
+
 				await goto(`/my-trips/${trip.id}`);
 			} else {
 				const error = await response.json();
@@ -135,25 +138,28 @@
 		<!-- Review sections -->
 		<div class="rounded-lg bg-white p-4">
 			<h2 class="mb-4 text-lg font-semibold text-gray-900">여행 정보 확인</h2>
-			
+
 			<div class="space-y-3 text-sm">
 				<!-- Destination -->
 				<div class="flex justify-between">
 					<span class="text-gray-600">목적지</span>
 					<span class="font-medium text-gray-900">
-						{formData.destination?.city || trip.destination?.city}, 
+						{formData.destination?.city || trip.destination?.city},
 						{formData.destination?.country || trip.destination?.country}
 					</span>
 				</div>
-				
+
 				<!-- Dates -->
 				<div class="flex justify-between">
 					<span class="text-gray-600">여행 일정</span>
 					<span class="font-medium text-gray-900">
-						{formatKoreanDateRange(formData.startDate || trip.startDate, formData.endDate || trip.endDate)}
+						{formatKoreanDateRange(
+							formData.startDate || trip.startDate,
+							formData.endDate || trip.endDate
+						)}
 					</span>
 				</div>
-				
+
 				<!-- Travelers -->
 				<div class="flex justify-between">
 					<span class="text-gray-600">인원</span>
@@ -164,7 +170,7 @@
 						{/if}
 					</span>
 				</div>
-				
+
 				<!-- Travel style -->
 				<div class="flex justify-between">
 					<span class="text-gray-600">여행 스타일</span>
@@ -172,7 +178,7 @@
 						{getTravelStyleDisplay(formData.tourType || trip.tourType)}
 					</span>
 				</div>
-				
+
 				<!-- Budget -->
 				<div class="flex justify-between">
 					<span class="text-gray-600">예산</span>
@@ -184,7 +190,7 @@
 						{/if}
 					</span>
 				</div>
-				
+
 				<!-- Transportation -->
 				<div class="flex justify-between">
 					<span class="text-gray-600">교통수단</span>
@@ -195,7 +201,7 @@
 						{/if}
 					</span>
 				</div>
-				
+
 				<!-- Accommodation -->
 				{#if formData.accommodationType}
 					<div class="flex justify-between">
@@ -207,7 +213,7 @@
 				{/if}
 			</div>
 		</div>
-		
+
 		<!-- Special requests -->
 		<div class="rounded-lg bg-white p-4">
 			<h3 class="mb-3 text-base font-semibold text-gray-900">특별 요청사항</h3>
@@ -215,13 +221,13 @@
 				bind:value={customRequest}
 				rows="4"
 				placeholder="가이드에게 전달하고 싶은 특별한 요청사항이 있다면 적어주세요..."
-				class="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+				class="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
 			></textarea>
 		</div>
 	</div>
-	
+
 	<!-- Action buttons -->
-	<div class="fixed bottom-0 left-0 right-0 flex gap-3 border-t border-gray-200 bg-white p-4 pb-24">
+	<div class="fixed right-0 bottom-0 left-0 flex gap-3 border-t border-gray-200 bg-white p-4 pb-24">
 		<button
 			onclick={handleBack}
 			class="flex-1 rounded-lg bg-gray-100 py-3 font-medium text-gray-700 hover:bg-gray-200"

@@ -10,34 +10,34 @@ interface TripEditForm {
 		latitude?: number;
 		longitude?: number;
 	} | null;
-	
+
 	// Step 2: Dates
 	startDate: Date | null;
 	endDate: Date | null;
-	
+
 	// Step 3: Travelers
 	adultsCount: number;
 	childrenCount: number;
-	
+
 	// Step 4: Travel Style
 	tourType: string;
-	
+
 	// Step 5: Budget
 	minBudget: number | null;
 	maxBudget: number | null;
-	
+
 	// Step 6: Transportation
 	travelMethod: string;
 	needsDriver: boolean;
-	
+
 	// Step 7: Accommodation
 	accommodationType?: string;
 	accommodationPreferences?: string;
-	
+
 	// Step 8: Activities
 	activities?: string[];
 	interests?: string[];
-	
+
 	// Step 9: Special Requests
 	customRequest: string;
 }
@@ -56,12 +56,12 @@ function createTripEditStore() {
 		needsDriver: false,
 		customRequest: ''
 	});
-	
+
 	return {
 		subscribe,
 		set,
 		update,
-		
+
 		// Initialize from existing trip data
 		initializeFromTrip: (trip: any) => {
 			set({
@@ -82,15 +82,15 @@ function createTripEditStore() {
 				interests: trip.interests
 			});
 		},
-		
+
 		// Update specific step data
 		updateStep: (step: keyof TripEditForm | string, data: any) => {
-			update(form => ({
+			update((form) => ({
 				...form,
 				[step]: data
 			}));
 		},
-		
+
 		// Get current form data
 		getData: () => get({ subscribe })
 	};

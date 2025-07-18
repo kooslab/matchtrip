@@ -15,7 +15,7 @@
 	let isMarkingCompleted = $state(false);
 	let completionMessage = $state('');
 	let completionError = $state('');
-	
+
 	// Check if trip has ended (end date is today or past)
 	let tripHasEnded = $derived(() => {
 		const today = new Date();
@@ -167,11 +167,8 @@
 <div class="min-h-screen bg-gray-50">
 	<!-- Header -->
 	<div class="sticky top-0 z-10 bg-white shadow-sm">
-		<div class="flex items-center h-[52px] px-4">
-			<button
-				onclick={() => goto('/my-offers')}
-				class="-ml-1 p-1"
-			>
+		<div class="flex h-[52px] items-center px-4">
+			<button onclick={() => goto('/my-offers')} class="-ml-1 p-1">
 				<img src={arrowBackIcon} alt="뒤로가기" class="h-6 w-6" />
 			</button>
 			<h1 class="flex-1 text-center text-[17px] font-semibold text-gray-900">
@@ -187,7 +184,11 @@
 	<div class="pb-40">
 		<!-- Status Badge -->
 		<div class="px-4 pt-4">
-			<span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium {getStatusColor(offer.status)}">
+			<span
+				class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium {getStatusColor(
+					offer.status
+				)}"
+			>
 				{getStatusText(offer.status)}
 			</span>
 		</div>
@@ -233,18 +234,24 @@
 		<div class="mt-8">
 			<!-- 제안 내용 -->
 			<details class="border-t border-gray-200">
-				<summary class="flex cursor-pointer items-center justify-between px-4 py-4 hover:bg-gray-50">
+				<summary
+					class="flex cursor-pointer items-center justify-between px-4 py-4 hover:bg-gray-50"
+				>
 					<span class="text-base font-medium text-gray-900">제안 내용</span>
 					<img src={arrowRightIcon} alt="" class="h-3 w-3 rotate-90 transition-transform" />
 				</summary>
 				<div class="px-4 pb-4">
-					<p class="whitespace-pre-wrap text-sm text-gray-700">{offer.description || '제안 내용이 없습니다.'}</p>
+					<p class="text-sm whitespace-pre-wrap text-gray-700">
+						{offer.description || '제안 내용이 없습니다.'}
+					</p>
 				</div>
 			</details>
 
 			<!-- 첨부 파일 -->
 			<details class="border-t border-gray-200">
-				<summary class="flex cursor-pointer items-center justify-between px-4 py-4 hover:bg-gray-50">
+				<summary
+					class="flex cursor-pointer items-center justify-between px-4 py-4 hover:bg-gray-50"
+				>
 					<span class="text-base font-medium text-gray-900">첨부 파일</span>
 					<img src={arrowRightIcon} alt="" class="h-3 w-3 rotate-90 transition-transform" />
 				</summary>
@@ -258,8 +265,18 @@
 							<p class="text-xs text-gray-500">3MB</p>
 						</div>
 						<button class="p-2">
-							<svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+							<svg
+								class="h-5 w-5 text-gray-400"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+								/>
 							</svg>
 						</button>
 					</div>
@@ -268,7 +285,9 @@
 
 			<!-- 결제 정보 -->
 			<details class="border-t border-gray-200">
-				<summary class="flex cursor-pointer items-center justify-between px-4 py-4 hover:bg-gray-50">
+				<summary
+					class="flex cursor-pointer items-center justify-between px-4 py-4 hover:bg-gray-50"
+				>
 					<span class="text-base font-medium text-gray-900">결제 정보</span>
 					<img src={arrowRightIcon} alt="" class="h-3 w-3 rotate-90 transition-transform" />
 				</summary>
@@ -276,7 +295,8 @@
 					<div class="rounded-lg bg-gray-50 p-4">
 						<div class="mb-3 flex justify-between">
 							<span class="text-sm text-gray-600">총 결제금액</span>
-							<span class="text-base font-bold text-gray-900">{offer.price.toLocaleString()}원</span>
+							<span class="text-base font-bold text-gray-900">{offer.price.toLocaleString()}원</span
+							>
 						</div>
 						<button
 							onclick={() => goto(`/my-trips/${offer.tripId}`)}
@@ -290,7 +310,9 @@
 
 			<!-- 취소 / 환불 안내 -->
 			<details class="border-t border-gray-200">
-				<summary class="flex cursor-pointer items-center justify-between px-4 py-4 hover:bg-gray-50">
+				<summary
+					class="flex cursor-pointer items-center justify-between px-4 py-4 hover:bg-gray-50"
+				>
 					<span class="text-base font-medium text-gray-900">취소 / 환불 안내</span>
 					<img src={arrowRightIcon} alt="" class="h-3 w-3 rotate-90 transition-transform" />
 				</summary>
@@ -300,8 +322,10 @@
 			</details>
 
 			<!-- 판매자 정보 및 고시 -->
-			<details class="border-t border-gray-200 border-b">
-				<summary class="flex cursor-pointer items-center justify-between px-4 py-4 hover:bg-gray-50">
+			<details class="border-t border-b border-gray-200">
+				<summary
+					class="flex cursor-pointer items-center justify-between px-4 py-4 hover:bg-gray-50"
+				>
 					<span class="text-base font-medium text-gray-900">판매자 정보 및 고시</span>
 					<img src={arrowRightIcon} alt="" class="h-3 w-3 rotate-90 transition-transform" />
 				</summary>
@@ -310,24 +334,23 @@
 				</div>
 			</details>
 		</div>
-
 	</div>
 
 	<!-- Fixed Bottom Section -->
-	<div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
-		<div class="flex items-center gap-3 px-4 py-3 pb-safe">
+	<div class="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-white">
+		<div class="pb-safe flex items-center gap-3 px-4 py-3">
 			<!-- Price Section -->
 			<div class="flex-1">
 				<p class="text-xs text-gray-600">총 결제금액</p>
 				<p class="text-lg font-bold text-gray-900">{offer.price.toLocaleString()}원</p>
 			</div>
-			
+
 			<!-- Button Section -->
 			{#if offer.status === 'accepted' && tripHasEnded()}
 				{#if review?.reviewRequestedAt}
 					<button
 						disabled
-						class="flex items-center justify-center gap-2 rounded-xl bg-gray-400 px-8 py-3.5 text-base font-semibold text-white cursor-not-allowed"
+						class="flex cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-gray-400 px-8 py-3.5 text-base font-semibold text-white"
 					>
 						<Star class="h-5 w-5" />
 						요청 전송됨
@@ -339,7 +362,9 @@
 						class="flex items-center justify-center gap-2 rounded-xl bg-[#1095f4] px-8 py-3.5 text-base font-semibold text-white disabled:opacity-50"
 					>
 						{#if isRequestingReview}
-							<span class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+							<span
+								class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
+							></span>
 							요청 중...
 						{:else}
 							<Star class="h-5 w-5" />
@@ -359,7 +384,7 @@
 				{#if review?.reviewRequestedAt}
 					<button
 						disabled
-						class="flex items-center justify-center gap-2 rounded-xl bg-gray-400 px-8 py-3.5 text-base font-semibold text-white cursor-not-allowed"
+						class="flex cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-gray-400 px-8 py-3.5 text-base font-semibold text-white"
 					>
 						<Star class="h-5 w-5" />
 						요청 전송됨
@@ -371,7 +396,9 @@
 						class="flex items-center justify-center gap-2 rounded-xl bg-[#1095f4] px-8 py-3.5 text-base font-semibold text-white disabled:opacity-50"
 					>
 						{#if isRequestingReview}
-							<span class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+							<span
+								class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
+							></span>
 							요청 중...
 						{:else}
 							<Star class="h-5 w-5" />
@@ -388,7 +415,7 @@
 	details[open] summary img {
 		transform: rotate(-90deg);
 	}
-	
+
 	details summary::-webkit-details-marker {
 		display: none;
 	}

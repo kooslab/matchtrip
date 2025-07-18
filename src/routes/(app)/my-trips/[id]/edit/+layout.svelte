@@ -2,9 +2,9 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import BackButton from '$lib/components/BackButton.svelte';
-	
+
 	let { children } = $props();
-	
+
 	// Define the steps
 	const steps = [
 		{ path: 'destination', label: '목적지', number: 1 },
@@ -17,15 +17,15 @@
 		{ path: 'activities', label: '활동', number: 8 },
 		{ path: 'review', label: '검토', number: 9 }
 	];
-	
+
 	// Get current step from URL
 	let currentPath = $derived($page.url.pathname.split('/').pop());
-	let currentStep = $derived(steps.find(s => s.path === currentPath));
+	let currentStep = $derived(steps.find((s) => s.path === currentPath));
 	let currentStepIndex = $derived(currentStep ? currentStep.number - 1 : 0);
-	
+
 	// Get trip ID from params
 	let tripId = $derived($page.params.id);
-	
+
 	function handleBack() {
 		if (currentStepIndex > 0) {
 			// Go to previous step
@@ -48,16 +48,16 @@
 				<p class="text-xs text-gray-500">{currentStep?.label} ({currentStep?.number}/9)</p>
 			</div>
 		</div>
-		
+
 		<!-- Progress bar -->
 		<div class="h-1 bg-gray-100">
-			<div 
+			<div
 				class="h-full bg-blue-500 transition-all duration-300"
 				style="width: {((currentStepIndex + 1) / steps.length) * 100}%"
 			></div>
 		</div>
 	</header>
-	
+
 	<!-- Content -->
 	<main class="flex-1">
 		{@render children()}

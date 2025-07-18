@@ -67,7 +67,10 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 
 		// Handle unique constraint violation
 		if (error.code === '23505' && error.constraint === 'destinations_city_country_unique') {
-			return json({ error: 'A destination with this city already exists in this country' }, { status: 409 });
+			return json(
+				{ error: 'A destination with this city already exists in this country' },
+				{ status: 409 }
+			);
 		}
 
 		return json({ error: 'Failed to update destination' }, { status: 500 });

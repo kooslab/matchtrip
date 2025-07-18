@@ -76,7 +76,7 @@
 
 	// Pattern to detect Korean phone numbers (010-xxxx-xxxx, 010xxxxxxxx, etc.)
 	const phonePattern = /010[-\s]?\d{3,4}[-\s]?\d{4}/g;
-	
+
 	// Pattern to detect markdown-style links [text](url)
 	const linkPattern = /\[([^\]]+)\]\(([^)]+)\)/g;
 
@@ -97,7 +97,7 @@
 		}
 		return '';
 	}
-	
+
 	// Function to parse message content and convert markdown links to HTML
 	function parseMessageContent(content: string): { html: string; hasLinks: boolean } {
 		let hasLinks = false;
@@ -155,10 +155,10 @@
 				messages = mergedMessages.sort(
 					(a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
 				);
-				
+
 				// Mark messages as read when conversation is viewed
 				await markMessagesAsRead();
-				
+
 				await tick();
 				scrollToBottom();
 			} else if (response.status === 404) {
@@ -517,11 +517,13 @@
 							class="max-w-[212px] px-3 py-3 {message.senderId !== currentUserId
 								? 'rounded-tl-md rounded-tr-xl rounded-br-xl rounded-bl-xl'
 								: 'rounded-tl-xl rounded-tr-md rounded-br-xl rounded-bl-xl'}"
-							style="background-color: {message.senderId !== currentUserId ? '#003e8105' : '#1095f4'};"
+							style="background-color: {message.senderId !== currentUserId
+								? '#003e8105'
+								: '#1095f4'};"
 						>
 							{#if parsedContent.hasLinks}
 								<p
-									class="text-[13px] leading-5 message-content"
+									class="message-content text-[13px] leading-5"
 									style="color: {message.senderId === currentUserId ? '#ffffff' : '#052236'};"
 								>
 									{@html parsedContent.html}
@@ -611,14 +613,14 @@
 		width: 100%;
 		height: 100%;
 	}
-	
+
 	/* Styles for message links */
 	:global(.message-content a) {
 		color: inherit;
 		text-decoration: underline;
 		text-underline-offset: 2px;
 	}
-	
+
 	:global(.message-content a:hover) {
 		opacity: 0.8;
 	}

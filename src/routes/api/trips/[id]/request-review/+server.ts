@@ -9,7 +9,7 @@ import { nanoid } from 'nanoid';
 export const POST: RequestHandler = async ({ request, params, locals }) => {
 	const session = locals.session;
 	const user = locals.user;
-	
+
 	if (!session || !user) {
 		return json({ error: 'Unauthorized' }, { status: 401 });
 	}
@@ -22,7 +22,7 @@ export const POST: RequestHandler = async ({ request, params, locals }) => {
 			.select()
 			.from(trips)
 			.where(eq(trips.id, tripId))
-			.then(rows => rows[0]);
+			.then((rows) => rows[0]);
 
 		if (!trip) {
 			return json({ error: 'Trip not found' }, { status: 404 });
@@ -33,13 +33,9 @@ export const POST: RequestHandler = async ({ request, params, locals }) => {
 			.select()
 			.from(offers)
 			.where(
-				and(
-					eq(offers.tripId, tripId),
-					eq(offers.guideId, user.id),
-					eq(offers.status, 'accepted')
-				)
+				and(eq(offers.tripId, tripId), eq(offers.guideId, user.id), eq(offers.status, 'accepted'))
 			)
-			.then(rows => rows[0]);
+			.then((rows) => rows[0]);
 
 		if (!offer) {
 			return json({ error: 'No accepted offer found for this trip' }, { status: 404 });
@@ -50,7 +46,7 @@ export const POST: RequestHandler = async ({ request, params, locals }) => {
 		today.setHours(0, 0, 0, 0);
 		const endDate = new Date(trip.endDate);
 		endDate.setHours(0, 0, 0, 0);
-		
+
 		if (endDate > today) {
 			return json({ error: 'Trip has not ended yet' }, { status: 400 });
 		}
@@ -59,13 +55,8 @@ export const POST: RequestHandler = async ({ request, params, locals }) => {
 		const existingReview = await db
 			.select()
 			.from(reviews)
-			.where(
-				and(
-					eq(reviews.tripId, tripId),
-					eq(reviews.offerId, offer.id)
-				)
-			)
-			.then(rows => rows[0]);
+			.where(and(eq(reviews.tripId, tripId), eq(reviews.offerId, offer.id)))
+			.then((rows) => rows[0]);
 
 		if (existingReview && existingReview.reviewRequestedAt) {
 			return json({ error: 'Review already requested' }, { status: 400 });
@@ -102,7 +93,7 @@ export const POST: RequestHandler = async ({ request, params, locals }) => {
 			.select()
 			.from(conversations)
 			.where(eq(conversations.offerId, offer.id))
-			.then(rows => rows[0]);
+			.then((rows) => rows[0]);
 
 		if (conversation) {
 			// Send automatic message in the conversation
@@ -125,10 +116,10 @@ export const POST: RequestHandler = async ({ request, params, locals }) => {
 				.where(eq(conversations.id, conversation.id));
 		}
 
-		return json({ 
-			success: true, 
+		return json({
+			success: true,
 			message: 'Review request sent successfully',
-			reviewToken 
+			reviewToken
 		});
 	} catch (error) {
 		console.error('Error requesting review:', error);

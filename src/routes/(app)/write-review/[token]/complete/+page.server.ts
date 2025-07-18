@@ -27,7 +27,7 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 		.leftJoin(users, eq(reviews.guideId, users.id))
 		.leftJoin(guideProfiles, eq(reviews.guideId, guideProfiles.userId))
 		.where(eq(reviews.reviewToken, token))
-		.then(rows => rows[0]);
+		.then((rows) => rows[0]);
 
 	if (!review) {
 		throw redirect(303, '/my-trips');

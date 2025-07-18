@@ -53,8 +53,8 @@
 			'vehicle-tour': '차량투어',
 			'airport-pickup': '공항픽업',
 			'bus-charter': '버스대절',
-			'interpretation': '통역 서비스',
-			'accommodation': '숙박(민박)',
+			interpretation: '통역 서비스',
+			accommodation: '숙박(민박)',
 			'organization-visit': '기관방문',
 			'other-tour': '기타투어'
 		};
@@ -67,23 +67,23 @@
 
 		// Trip creation travel styles
 		const tripCreationStyles: Record<string, string> = {
-			'friends': '친구들과 함께 하는 여행',
-			'parents': '부모님과 함께 하는 여행',
-			'children': '자녀와 함께 하는 여행',
-			'business': '직장동료와 함께하는 비즈니스 여행',
-			'other': '기타여행'
+			friends: '친구들과 함께 하는 여행',
+			parents: '부모님과 함께 하는 여행',
+			children: '자녀와 함께 하는 여행',
+			business: '직장동료와 함께하는 비즈니스 여행',
+			other: '기타여행'
 		};
 
 		// Trip edit travel styles
 		const tripEditStyles: Record<string, string> = {
-			'relaxation': '휴양/힐링',
-			'adventure': '모험/액티비티',
-			'culture': '문화/역사',
-			'food': '미식/요리',
-			'shopping': '쇼핑',
-			'nature': '자연/생태',
-			'city': '도시 탐방',
-			'family': '가족 여행'
+			relaxation: '휴양/힐링',
+			adventure: '모험/액티비티',
+			culture: '문화/역사',
+			food: '미식/요리',
+			shopping: '쇼핑',
+			nature: '자연/생태',
+			city: '도시 탐방',
+			family: '가족 여행'
 		};
 
 		// Check both style maps
@@ -128,9 +128,7 @@
 					<img src={arrowLeftUrl} alt="Back" class="h-5 w-5" />
 				</button>
 				<h1 class="text-lg font-semibold text-gray-900">
-					{trip.destination?.city || '목적지'}{trip.country?.name
-						? `, ${trip.country.name}`
-						: ''}
+					{trip.destination?.city || '목적지'}{trip.country?.name ? `, ${trip.country.name}` : ''}
 				</h1>
 			</div>
 		</div>
@@ -229,7 +227,7 @@
 			{#if isCustomRequestOpen}
 				<div class="border-t border-gray-100 px-4 pb-4">
 					<p class="mt-3 text-sm text-gray-600">
-						{trip.additionalRequest || "요청 사항이 없습니다."}
+						{trip.additionalRequest || '요청 사항이 없습니다.'}
 					</p>
 				</div>
 			{/if}

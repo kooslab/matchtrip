@@ -39,7 +39,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 	try {
 		const formData = await request.formData();
-		
+
 		// Extract form fields
 		const name = formData.get('name')?.toString();
 		const phone = formData.get('phone')?.toString();
@@ -48,7 +48,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		const birthDate = formData.get('birthDate')?.toString();
 		const destinationsStr = formData.get('destinations')?.toString();
 		const profileImageUrl = formData.get('profileImageUrl')?.toString();
-		
+
 		let destinations: string[] = [];
 		if (destinationsStr) {
 			try {
@@ -62,28 +62,28 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		const documentUrls: Record<string, string[]> = {};
 		let idDocumentUrl: string | null = null;
 		const certificationUrls: string[] = [];
-		
+
 		// Process file uploads
 		for (const [key, value] of formData.entries()) {
 			if (key.startsWith('documents_') && value instanceof File) {
 				const categoryId = key.replace('documents_', '');
-				
+
 				try {
 					// Generate unique filename
 					const timestamp = Date.now();
 					const randomString = Math.random().toString(36).substring(2, 15);
 					const extension = value.name.split('.').pop();
 					const filename = `guide-document-${categoryId}/${timestamp}-${randomString}.${extension}`;
-					
+
 					// Convert file to buffer
 					const buffer = await value.arrayBuffer();
-					
+
 					let fileUrl: string;
-					
+
 					// Upload to R2 if configured
 					if (r2Client && R2_BUCKET_NAME) {
 						const bucketName = R2_BUCKET_NAME; // Guide documents go to private bucket
-						
+
 						const uploadCommand = new PutObjectCommand({
 							Bucket: bucketName,
 							Key: filename,
@@ -91,9 +91,9 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 							ContentType: value.type,
 							ContentLength: value.size
 						});
-						
+
 						await r2Client.send(uploadCommand);
-						
+
 						// Use API endpoint for private bucket files
 						fileUrl = `/api/images/${filename}`;
 					} else if (dev) {
@@ -104,20 +104,24 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 					} else {
 						throw new Error('Storage not configured');
 					}
-					
+
 					// Organize URLs by category
 					if (!documentUrls[categoryId]) {
 						documentUrls[categoryId] = [];
 					}
 					documentUrls[categoryId].push(fileUrl);
-					
+
 					// Store specific document types
 					if (categoryId === 'identity') {
 						idDocumentUrl = fileUrl;
-					} else if (categoryId === 'guide-license' || categoryId === 'license-certification' || categoryId === 'insurance') {
+					} else if (
+						categoryId === 'guide-license' ||
+						categoryId === 'license-certification' ||
+						categoryId === 'insurance'
+					) {
 						certificationUrls.push(fileUrl);
 					}
-					
+
 					// Track file upload in database
 					await db.insert(fileUploads).values({
 						userId,
@@ -134,7 +138,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			}
 		}
 
-		console.log('Uploaded documents:', Object.keys(documentUrls).map(cat => `${cat}: ${documentUrls[cat].length} files`));
+		console.log(
+			'Uploaded documents:',
+			Object.keys(documentUrls).map((cat) => `${cat}: ${documentUrls[cat].length} files`)
+		);
 
 		// Create or update guide profile
 		const existingProfile = await db
@@ -167,7 +174,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				userId,
 				...profileData
 			});
-			
+
 			// Send onboarding confirmation email
 			try {
 				await sendGuideOnboardingEmail({

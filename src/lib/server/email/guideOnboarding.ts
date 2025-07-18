@@ -259,20 +259,23 @@ MatchTrip 팀 드림
 export async function sendGuideOnboardingEmail(data: GuideOnboardingEmailData) {
 	try {
 		const emailData = generateGuideOnboardingEmail(data);
-		
+
 		if (!resend || !RESEND_API_KEY) {
 			// Development mode - just log the email
-			console.log('\n=== GUIDE ONBOARDING EMAIL (Development Mode) ===' );
+			console.log('\n=== GUIDE ONBOARDING EMAIL (Development Mode) ===');
 			console.log('To:', emailData.to);
 			console.log('Subject:', emailData.subject);
-			console.log('Preview URL:', `${process.env.PUBLIC_BASE_URL || 'https://matchtrip.net'}/guide/pending-approval`);
+			console.log(
+				'Preview URL:',
+				`${process.env.PUBLIC_BASE_URL || 'https://matchtrip.net'}/guide/pending-approval`
+			);
 			console.log('\n--- Email Content Preview ---');
 			console.log(emailData.text.substring(0, 500) + '...');
 			console.log('=== END EMAIL ===\n');
-			
+
 			return { success: true, id: 'dev-mode-' + Date.now() };
 		}
-		
+
 		const result = await resend.emails.send({
 			from: RESEND_FROM_EMAIL || 'MatchTrip <noreply@matchtrip.net>',
 			to: emailData.to,
