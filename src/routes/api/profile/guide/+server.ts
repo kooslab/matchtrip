@@ -38,6 +38,28 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	}
 
 	try {
+		// Check content type
+		const contentType = request.headers.get('content-type') || '';
+
+		// Handle JSON requests (from profile updates)
+		if (contentType.includes('application/json')) {
+			const body = await request.json();
+			const { introduction, profileImageUrl } = body;
+
+			// Update existing profile
+			await db
+				.update(guideProfiles)
+				.set({
+					introduction,
+					profileImageUrl,
+					updatedAt: new Date()
+				})
+				.where(eq(guideProfiles.userId, userId));
+
+			return new Response(JSON.stringify({ success: true }));
+		}
+
+		// Handle FormData (from onboarding)
 		const formData = await request.formData();
 
 		// Extract form fields

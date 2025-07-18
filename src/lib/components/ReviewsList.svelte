@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Star, MapPin, Calendar, User } from 'lucide-svelte';
 	import { onMount } from 'svelte';
+	import SkeletonLoader from './SkeletonLoader.svelte';
 
 	interface Review {
 		id: string;
@@ -97,10 +98,10 @@
 	}
 </script>
 
-<div class="space-y-6">
+<div>
 	{#if showSummary && totalCount > 0}
 		<!-- Review Summary -->
-		<div class="rounded-lg bg-white p-6 shadow-sm">
+		<div class="rounded-lg bg-gray-50 p-6">
 			<h3 class="mb-4 text-lg font-semibold text-gray-800">여행자 후기</h3>
 			<div class="flex items-center gap-6">
 				<div class="text-center">
@@ -125,12 +126,28 @@
 
 	<!-- Reviews List -->
 	{#if isLoading}
-		<div class="flex justify-center py-8">
-			<div class="text-center">
-				<div
-					class="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-pink-500"
-				></div>
-				<p class="text-gray-600">후기를 불러오는 중...</p>
+		<div class="space-y-6">
+			{#if showSummary}
+				<!-- Summary skeleton -->
+				<div class="rounded-lg bg-gray-50 p-6">
+					<SkeletonLoader height="h-8" rows={1} class="mb-2 w-3/4" />
+					<SkeletonLoader height="h-6" rows={1} class="w-1/2" />
+				</div>
+			{/if}
+			<!-- Reviews skeleton -->
+			<div class="space-y-4">
+				{#each Array(3) as _}
+					<div class="border-t border-gray-100 pt-4">
+						<div class="flex gap-3">
+							<div class="h-10 w-10 animate-pulse rounded-full bg-gray-200"></div>
+							<div class="flex-1">
+								<SkeletonLoader height="h-4" rows={1} class="mb-2 w-1/4" />
+								<SkeletonLoader height="h-3" rows={1} class="mb-2 w-1/3" />
+								<SkeletonLoader height="h-4" rows={2} />
+							</div>
+						</div>
+					</div>
+				{/each}
 			</div>
 		</div>
 	{:else if error}
@@ -140,9 +157,9 @@
 			<p class="text-gray-600">아직 작성된 후기가 없습니다.</p>
 		</div>
 	{:else}
-		<div class="space-y-4">
+		<div>
 			{#each reviews as review}
-				<div class="rounded-lg bg-white p-6 shadow-sm">
+				<div class="border-b border-gray-100 py-4 first:pt-0 last:border-0">
 					<!-- Reviewer Info -->
 					<div class="mb-4 flex items-start justify-between">
 						<div class="flex items-start gap-3">
@@ -161,11 +178,11 @@
 								<p class="font-medium text-gray-800">{review.traveler.name}</p>
 								<div class="mt-1 flex items-center gap-4 text-sm text-gray-500">
 									<div class="flex items-center gap-1">
-										<MapPin class="h-3 w-3" />
+										<MapPin class="h-3 w-3 flex-shrink-0" />
 										<span>{review.trip.destination.city}</span>
 									</div>
 									<div class="flex items-center gap-1">
-										<Calendar class="h-3 w-3" />
+										<Calendar class="h-3 w-3 flex-shrink-0" />
 										<span>{formatDate(review.trip.startDate)}</span>
 									</div>
 								</div>
@@ -193,14 +210,40 @@
 			{/each}
 
 			{#if hasMore}
-				<button
-					onclick={loadMore}
-					disabled={isLoading}
-					class="w-full rounded-lg border border-gray-300 bg-white py-3 font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-				>
-					더 많은 후기 보기
-				</button>
+				<div class="pt-4">
+					<button
+						onclick={loadMore}
+						disabled={isLoading}
+						class="w-full rounded-lg border border-gray-300 bg-gray-50 py-3 font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+					>
+						더 많은 후기 보기
+					</button>
+				</div>
 			{/if}
 		</div>
 	{/if}
 </div>
+
+<style>
+	/* Fix icon sizes - ensure Lucide icons respect their size classes */
+	:global(svg.lucide) {
+		width: 1em !important;
+		height: 1em !important;
+	}
+
+	/* Specific sizes for our icon classes */
+	:global(.h-3.w-3) {
+		width: 0.75rem !important;
+		height: 0.75rem !important;
+	}
+
+	:global(.h-4.w-4) {
+		width: 1rem !important;
+		height: 1rem !important;
+	}
+
+	:global(.h-5.w-5) {
+		width: 1.25rem !important;
+		height: 1.25rem !important;
+	}
+</style>

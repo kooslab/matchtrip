@@ -2,6 +2,7 @@
 	import { X, Star } from 'lucide-svelte';
 	import { formatKoreanDate, formatKoreanDateRange } from '$lib/utils/dateFormatter';
 	import { goto } from '$app/navigation';
+	import ReviewsList from './ReviewsList.svelte';
 	import starIconUrl from '$lib/icons/icon-star-mono.svg';
 	import locationIconUrl from '$lib/icons/icon-pin-location-mono.svg';
 	import calendarIconUrl from '$lib/icons/icon-calendar-check-mono.svg';
@@ -28,6 +29,7 @@
 			guideProfile?: {
 				profileImageUrl?: string;
 				avgRating?: number;
+				acceptedOffersCount?: number;
 				currentLocation?: string;
 				guideAreas?: string;
 				languages?: string[];
@@ -343,13 +345,27 @@
 								<div class="flex-1">
 									<h3 class="mb-1 text-xl font-semibold text-gray-900">{offer.guide.name}</h3>
 									<div class="flex items-center gap-2">
-										<div class="flex items-center gap-1">
-											<span class="text-yellow-400">★</span>
-											<span class="text-sm font-medium text-gray-700">
+										<div class="flex items-center gap-0.5">
+											{#each [1, 2, 3, 4, 5] as star}
+												<svg
+													class="h-4 w-4 {star <= Math.round(offer.guideProfile?.avgRating || 0)
+														? 'fill-yellow-400 text-yellow-400'
+														: 'text-gray-300'}"
+													viewBox="0 0 20 20"
+													fill="currentColor"
+												>
+													<path
+														d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+													/>
+												</svg>
+											{/each}
+											<span class="ml-1 text-sm font-medium text-gray-700">
 												{offer.guideProfile?.avgRating?.toFixed(1) || '0.0'}
 											</span>
 										</div>
-										<span class="text-sm text-gray-500">0건 여행 진행</span>
+										<span class="text-sm text-gray-500">
+											{offer.guideProfile?.acceptedOffersCount || 0}건 여행 진행
+										</span>
 									</div>
 								</div>
 								<button
@@ -385,8 +401,8 @@
 											</svg>
 										</div>
 									</button>
-									<div class="mt-4 text-sm leading-relaxed text-gray-600">
-										{offer.guideProfile.introduction}
+									<div class="mt-4 text-sm leading-relaxed text-gray-600 prose prose-sm max-w-none">
+										{@html offer.guideProfile.introduction}
 									</div>
 								</div>
 							{:else}
@@ -432,180 +448,64 @@
 						{/if}
 					</div>
 				{:else}
-					{@const hasReviews = false}
-					<!-- TODO: Replace with actual reviews check -->
 					<!-- Reviews Tab -->
 					<div class="flex h-full flex-col">
-						{#if hasReviews}
-							<!-- Guide Profile Section (same as guide tab) -->
-							<div class="flex items-center gap-4 px-5 py-6">
-								<div
-									class="h-20 w-20 flex-shrink-0 rounded-full bg-blue-100 bg-cover bg-center"
-									style={offer.guideProfile?.profileImageUrl
-										? `background-image: url('${offer.guideProfile.profileImageUrl}')`
-										: ''}
-								>
-									{#if !offer.guideProfile?.profileImageUrl}
-										<div class="flex h-full w-full items-center justify-center text-2xl text-white">
-											<svg class="h-10 w-10" viewBox="0 0 24 24" fill="currentColor">
-												<path
-													d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
-												/>
-											</svg>
-										</div>
-									{/if}
-								</div>
-								<div class="flex-1">
-									<h3 class="mb-1 text-xl font-semibold text-gray-900">
-										{offer.guide?.name || '알 수 없는 가이드'}
-									</h3>
-									<div class="flex items-center gap-2">
-										<div class="flex items-center gap-1">
-											<span class="text-yellow-400">★</span>
-											<span class="text-sm font-medium text-gray-700">4.6</span>
-										</div>
-										<span class="text-sm text-gray-500">752건 여행 진행</span>
-									</div>
-								</div>
-								<button
-									class="rounded-full bg-gray-600 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
-								>
-									팔로잉
-								</button>
-							</div>
-
-							<!-- Rating Summary -->
-							<div class="px-5 pb-6">
-								<h2 class="mb-2 text-2xl font-bold text-blue-500">평점은 4.6점이며</h2>
-								<p class="text-lg text-gray-900">친절하다는 평가가 많아요</p>
-							</div>
-
-							<!-- Rating Stats -->
-							<div class="px-5 pb-6">
-								<div class="relative rounded-2xl bg-gray-50 p-5">
-									<div class="mb-4 flex items-center justify-between">
-										<div class="flex items-center gap-4">
-											<button
-												class="rounded-full bg-blue-500 px-4 py-2 text-sm font-medium text-white"
-											>
-												가이드
-											</button>
-											<button
-												class="rounded-full bg-white px-4 py-2 text-sm font-medium text-gray-700"
-											>
-												평균
-											</button>
-										</div>
-									</div>
-
-									<!-- Progress Bar -->
-									<div class="relative mb-4 h-2 rounded-full bg-gray-200">
-										<div class="absolute h-full rounded-full bg-blue-500" style="width: 92%"></div>
-									</div>
-
-									<!-- Stats -->
-									<div class="flex justify-between text-sm">
-										<div>
-											<p class="text-gray-500">현재</p>
-											<p class="font-semibold text-blue-500">4.6점</p>
-										</div>
-										<div class="text-right">
-											<p class="text-gray-500">752건의 후기</p>
-										</div>
-									</div>
-								</div>
-							</div>
-
-							<!-- Reviews List Header -->
-							<div class="flex items-center justify-between px-5 pb-3">
-								<div class="flex items-center gap-2">
-									<span class="text-sm font-medium text-gray-900">전체</span>
-									<span class="text-sm font-bold text-blue-500">752</span>
-								</div>
-								<div class="flex items-center gap-2">
-									<span class="text-blue-500">✓</span>
-									<span class="text-sm text-gray-700">사진 리뷰만</span>
-									<button class="text-sm text-gray-700">최신순 ▼</button>
-								</div>
-							</div>
-
-							<!-- Sample Review -->
-							<div class="px-5 pb-6">
-								<div class="border-t border-gray-100 pt-4">
-									<div class="mb-3 flex items-start gap-3">
-										<img
-											src="https://via.placeholder.com/40"
-											alt="Reviewer"
-											class="h-10 w-10 rounded-full"
-										/>
-										<div class="flex-1">
-											<h4 class="font-semibold text-gray-900">윤재원</h4>
-											<div class="mb-2 flex items-center gap-2">
-												<span class="text-yellow-400">★</span>
-												<span class="text-sm font-medium">4.6</span>
-												<span class="text-sm text-gray-500">오늘</span>
+						{#if offer.guide?.id}
+							<!-- Guide Profile Header -->
+							<div class="border-b border-gray-100 px-5 py-4">
+								<h3 class="mb-3 text-lg font-semibold">여행자 후기</h3>
+								<div class="flex items-center gap-4">
+									<div
+										class="h-16 w-16 flex-shrink-0 rounded-full bg-blue-100 bg-cover bg-center"
+										style={offer.guideProfile?.profileImageUrl
+											? `background-image: url('${offer.guideProfile.profileImageUrl}')`
+											: ''}
+									>
+										{#if !offer.guideProfile?.profileImageUrl}
+											<div class="flex h-full w-full items-center justify-center text-white">
+												<svg class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor">
+													<path
+														d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+													/>
+												</svg>
 											</div>
-											<p class="text-sm leading-relaxed text-gray-700">
-												Lorem Ipsum is simply dummy text of the printing and typesetting industry.
-												Lorem Ipsum has been the industry's standard dummy text ever since the
-												1500s.
-											</p>
-										</div>
-										<button class="text-gray-400">⋯</button>
+										{/if}
+									</div>
+									<div class="flex-1">
+										<h4 class="font-semibold text-gray-900">{offer.guide?.name || '가이드'}</h4>
+										{#if offer.guideProfile?.avgRating}
+											<div class="flex items-center gap-2">
+												<div class="flex items-center gap-0.5">
+													{#each [1, 2, 3, 4, 5] as star}
+														<svg
+															class="h-4 w-4 {star <= Math.round(offer.guideProfile.avgRating || 0)
+																? 'fill-yellow-400 text-yellow-400'
+																: 'text-gray-300'}"
+															viewBox="0 0 20 20"
+															fill="currentColor"
+														>
+															<path
+																d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+															/>
+														</svg>
+													{/each}
+												</div>
+												<span class="text-sm font-medium text-gray-700">
+													{offer.guideProfile.avgRating?.toFixed(1) || '0.0'}
+												</span>
+											</div>
+										{/if}
 									</div>
 								</div>
+							</div>
+
+							<!-- Reviews List -->
+							<div class="flex-1 overflow-y-auto px-5 py-4">
+								<ReviewsList guideId={offer.guide.id} showSummary={false} />
 							</div>
 						{:else}
-							<!-- Empty State for Reviews -->
-							<div class="flex flex-1 flex-col">
-								<!-- Guide Profile Section -->
-								{#if offer.guide}
-									<div class="flex items-center gap-4 border-b border-gray-100 px-5 py-6">
-										<div
-											class="h-16 w-16 flex-shrink-0 rounded-full bg-blue-100 bg-cover bg-center"
-											style={offer.guideProfile?.profileImageUrl
-												? `background-image: url('${offer.guideProfile.profileImageUrl}')`
-												: ''}
-										>
-											{#if !offer.guideProfile?.profileImageUrl}
-												<div class="flex h-full w-full items-center justify-center text-white">
-													<svg class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor">
-														<path
-															d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
-														/>
-													</svg>
-												</div>
-											{/if}
-										</div>
-										<div class="flex-1">
-											<h3 class="text-lg font-semibold text-gray-900">{offer.guide.name}</h3>
-											<p class="text-sm text-gray-500">아직 리뷰가 없습니다</p>
-										</div>
-									</div>
-								{/if}
-
-								<!-- Empty Reviews Message -->
-								<div class="flex flex-1 items-center justify-center px-5">
-									<div class="text-center">
-										<svg
-											class="mx-auto mb-4 h-20 w-20 text-gray-300"
-											viewBox="0 0 24 24"
-											fill="none"
-											stroke="currentColor"
-										>
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												stroke-width="2"
-												d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-											/>
-										</svg>
-										<h3 class="mb-2 text-lg font-medium text-gray-900">아직 리뷰가 없습니다</h3>
-										<p class="mb-6 text-sm text-gray-500">
-											이 가이드와 함께한 여행 후<br />첫 번째 리뷰를 작성해보세요!
-										</p>
-									</div>
-								</div>
+							<div class="flex flex-1 items-center justify-center">
+								<p class="text-gray-500">가이드 정보를 불러올 수 없습니다.</p>
 							</div>
 						{/if}
 					</div>
@@ -688,13 +588,5 @@
 
 	.animate-slide-up {
 		animation: slide-up 0.3s ease-out;
-	}
-
-	/* Ensure SVGs don't overflow their containers */
-	:global(.w-5.h-5 svg) {
-		max-width: 100%;
-		max-height: 100%;
-		width: 100%;
-		height: 100%;
 	}
 </style>

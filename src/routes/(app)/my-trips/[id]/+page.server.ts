@@ -9,7 +9,7 @@ import {
 	continents,
 	reviews
 } from '$lib/server/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { redirect } from '@sveltejs/kit';
 import { auth } from '$lib/auth';
 
@@ -108,6 +108,41 @@ export const load = async ({ params, request, locals }) => {
 		.leftJoin(guideProfiles, eq(users.id, guideProfiles.userId))
 		.where(eq(offers.tripId, tripId))
 		.orderBy(offers.createdAt);
+	
+	// For each offer, fetch the guide's average rating and accepted offers count
+	const offersWithStats = await Promise.all(
+		tripOffers.map(async (offer) => {
+			if (!offer.guide?.id) return offer;
+			
+			// Get average rating
+			const avgRatingResult = await db
+				.select({
+					avgRating: sql`COALESCE(AVG(${reviews.rating}), 0)`.as('avgRating')
+				})
+				.from(reviews)
+				.where(eq(reviews.guideId, offer.guide.id));
+			
+			// Get accepted offers count
+			const acceptedOffersResult = await db
+				.select({
+					count: sql`COUNT(*)`.as('count')
+				})
+				.from(offers)
+				.where(and(
+					eq(offers.guideId, offer.guide.id),
+					eq(offers.status, 'accepted')
+				));
+			
+			return {
+				...offer,
+				guideProfile: {
+					...offer.guideProfile,
+					avgRating: Number(avgRatingResult[0]?.avgRating || 0),
+					acceptedOffersCount: Number(acceptedOffersResult[0]?.count || 0)
+				}
+			};
+		})
+	);
 
 	// Fetch review if exists for this trip
 	const tripReview = await db
@@ -125,7 +160,7 @@ export const load = async ({ params, request, locals }) => {
 
 	return {
 		trip: trip[0],
-		offers: tripOffers,
+		offers: offersWithStats,
 		review: tripReview[0] || null
 	};
 };

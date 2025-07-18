@@ -2,6 +2,7 @@
 	import Editor from '@tinymce/tinymce-svelte';
 	import { Camera } from 'lucide-svelte';
 	import ReviewsList from '$lib/components/ReviewsList.svelte';
+	import SkeletonLoader from '$lib/components/SkeletonLoader.svelte';
 	import { page } from '$app/stores';
 	export let data: { userName: string; userRole: string; guideProfile: any; user: any };
 
@@ -327,12 +328,12 @@
 					{/if}
 				</div>
 
-				<!-- Content Section with Edit Button -->
-				<div class="relative">
-					{#if isGuide}
+				<!-- Edit Button -->
+				{#if isGuide}
+					<div class="mb-4 flex justify-end">
 						<button
 							onclick={handleEdit}
-							class="absolute -top-2 right-0 flex items-center gap-2 rounded-lg bg-pink-500 px-4 py-2 text-sm font-medium text-white shadow-md transition-all hover:bg-pink-600 hover:shadow-lg"
+							class="flex items-center gap-2 rounded-lg bg-[#1095f4] px-4 py-2 text-sm font-medium text-white shadow-md transition-all hover:bg-blue-600 hover:shadow-lg"
 						>
 							<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path
@@ -344,17 +345,18 @@
 							</svg>
 							프로필 수정
 						</button>
-					{/if}
-
-					<div class="mb-4">
-						{#if profile && profile.introduction}
-							<div class="prose prose-neutral rich-content max-w-none">
-								{@html profile.introduction}
-							</div>
-						{:else}
-							<div class="text-gray-400">가이드 소개가 없습니다.</div>
-						{/if}
 					</div>
+				{/if}
+
+				<!-- Content Section -->
+				<div class="mb-4">
+					{#if profile && profile.introduction}
+						<div class="prose prose-neutral rich-content max-w-none">
+							{@html profile.introduction}
+						</div>
+					{:else}
+						<div class="text-gray-400">가이드 소개가 없습니다.</div>
+					{/if}
 				</div>
 
 				<!-- Reviews Section -->
@@ -378,7 +380,7 @@
 						<button
 							onclick={handleProfileImageUpload}
 							disabled={uploadingImage}
-							class="absolute right-0 bottom-0 rounded-full bg-pink-500 p-2 text-white shadow-lg hover:bg-pink-600 disabled:opacity-50"
+							class="absolute right-0 bottom-0 rounded-full bg-[#1095f4] p-2 text-white shadow-lg hover:bg-blue-600 disabled:opacity-50"
 						>
 							{#if uploadingImage}
 								<div
@@ -408,10 +410,19 @@
 					/>
 				</div>
 				<div class="flex justify-end gap-2">
-					<button class="btn btn-secondary" onclick={handleCancel}>취소</button>
-					<button class="btn btn-primary" onclick={handleSave} disabled={saving}
-						>{saving ? '저장 중...' : '저장'}</button
+					<button
+						class="rounded-lg border border-gray-300 bg-white px-6 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+						onclick={handleCancel}
 					>
+						취소
+					</button>
+					<button
+						class="rounded-lg bg-[#1095f4] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+						onclick={handleSave}
+						disabled={saving}
+					>
+						{saving ? '저장 중...' : '저장'}
+					</button>
 				</div>
 				{#if saveError}<div class="mt-2 text-red-500">{saveError}</div>{/if}
 			</div>
