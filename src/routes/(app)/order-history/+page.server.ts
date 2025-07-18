@@ -22,7 +22,19 @@ export const load = async ({ request, locals }) => {
 		throw redirect(302, '/signin');
 	}
 
-	// Fetch trips with accepted offers and payments
+	// First, let's check if there are any payments for this user
+	console.log('Fetching orders for user:', session.user.id);
+	
+	// Get all payments for this user first
+	const userPayments = await db
+		.select()
+		.from(payments)
+		.where(eq(payments.userId, session.user.id));
+	
+	console.log('User payments found:', userPayments.length);
+	console.log('Payment statuses:', userPayments.map(p => p.status));
+	
+	// Now get the full trip data with payments
 	const paidTrips = await db
 		.select({
 			tripId: trips.id,
@@ -54,17 +66,27 @@ export const load = async ({ request, locals }) => {
 			paymentMethod: payments.paymentMethod,
 			paymentCreatedAt: payments.createdAt
 		})
-		.from(trips)
+		.from(payments)
+		.innerJoin(offers, eq(payments.offerId, offers.id))
+		.innerJoin(trips, eq(offers.tripId, trips.id))
 		.leftJoin(destinations, eq(trips.destinationId, destinations.id))
 		.leftJoin(countries, eq(destinations.countryId, countries.id))
-		.leftJoin(offers, and(eq(offers.tripId, trips.id), eq(offers.status, 'accepted')))
 		.leftJoin(users, eq(offers.guideId, users.id))
-		.leftJoin(payments, and(eq(payments.offerId, offers.id), or(eq(payments.status, 'completed'))))
-		.where(and(eq(trips.userId, session.user.id), eq(trips.status, 'accepted')));
+		.where(
+			and(
+				eq(payments.userId, session.user.id),
+				or(
+					eq(payments.status, 'completed'),
+					eq(payments.status, 'cancelled')
+				)
+			)
+		);
 
-	// Filter out trips without payments and transform to expected structure
+	console.log('Found paid trips:', paidTrips.length);
+	console.log('Sample trip:', paidTrips[0]);
+
+	// Transform to expected structure - no need to filter since we start from payments
 	const completedOrders = paidTrips
-		.filter((trip) => trip.paymentId)
 		.map((trip) => ({
 			id: trip.tripId,
 			userId: trip.tripUserId,
@@ -108,6 +130,9 @@ export const load = async ({ request, locals }) => {
 				createdAt: trip.paymentCreatedAt
 			}
 		}));
+
+	console.log('Filtered orders:', completedOrders.length);
+	console.log('Orders:', completedOrders);
 
 	return {
 		orders: completedOrders

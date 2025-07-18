@@ -13,6 +13,26 @@
 			format: 'long'
 		});
 	}
+	
+	function getPaymentStatusText(status: string) {
+		const statusMap: Record<string, string> = {
+			completed: '결제 완료',
+			cancelled: '결제 취소',
+			pending: '결제 대기',
+			failed: '결제 실패'
+		};
+		return statusMap[status] || status;
+	}
+	
+	function getPaymentStatusColor(status: string) {
+		const colorMap: Record<string, string> = {
+			completed: 'bg-green-100 text-green-800',
+			cancelled: 'bg-red-100 text-red-800',
+			pending: 'bg-yellow-100 text-yellow-800',
+			failed: 'bg-red-100 text-red-800'
+		};
+		return colorMap[status] || 'bg-gray-100 text-gray-800';
+	}
 </script>
 
 <svelte:head>
@@ -23,7 +43,7 @@
 	<!-- Header -->
 	<div class="mb-8">
 		<h1 class="text-3xl font-bold text-gray-900">주문 내역</h1>
-		<p class="mt-2 text-gray-600">결제 완료된 여행 내역을 확인하세요</p>
+		<p class="mt-2 text-gray-600">결제 내역을 확인하세요</p>
 	</div>
 
 	{#if orders.length === 0}
@@ -44,12 +64,17 @@
 		<div class="space-y-4">
 			{#each orders as order}
 				<div
-					class="cursor-pointer rounded-lg border border-gray-200 bg-white p-4 transition-shadow hover:shadow-md"
+					class="cursor-pointer rounded-lg border border-gray-200 bg-white p-4 transition-shadow hover:shadow-md {order.payment.status === 'cancelled' ? 'opacity-75' : ''}"
 					onclick={() => goto(`/order-history/details?id=${order.payment.id}`)}
 				>
 					<div class="flex items-center justify-between">
 						<!-- Left side - Order info -->
 						<div class="flex-1">
+							<div class="flex items-center gap-4 mb-2">
+								<span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {getPaymentStatusColor(order.payment.status)}">
+									{getPaymentStatusText(order.payment.status)}
+								</span>
+							</div>
 							<div class="flex items-center gap-4">
 								<div>
 									<h3 class="font-medium text-gray-900">
@@ -73,7 +98,7 @@
 
 						<!-- Right side - Payment info -->
 						<div class="text-right">
-							<p class="font-semibold text-gray-900">
+							<p class="font-semibold {order.payment.status === 'cancelled' ? 'text-gray-500 line-through' : 'text-gray-900'}">
 								{order.payment.amount.toLocaleString()}원
 							</p>
 							<p class="text-xs text-gray-500">

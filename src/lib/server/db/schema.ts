@@ -496,6 +496,8 @@ export const reviews = pgTable(
 			.references(() => users.id, { onDelete: 'cascade' }),
 		rating: integer('rating').notNull(), // 1-5 stars
 		content: text('content').notNull(),
+		images: text('images').$type<string[]>().array(), // Array of image URLs
+		tags: text('tags').$type<string[]>().array(), // Array of selected tags
 		reviewToken: text('review_token').unique(), // Unique token for review links
 		reviewRequestedAt: timestamp('review_requested_at'),
 		createdAt: timestamp('created_at').defaultNow().notNull(),

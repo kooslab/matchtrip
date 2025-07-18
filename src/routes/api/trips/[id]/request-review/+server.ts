@@ -1,14 +1,16 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { auth } from '$lib/auth';
-import { db } from '$lib/server/db/drizzle';
+import { db } from '$lib/server/db';
 import { trips, offers, reviews, conversations, messages } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 
-export const POST: RequestHandler = async ({ request, params, cookies }) => {
-	const session = await auth.api.getSession({ headers: cookies });
-	if (!session) {
+export const POST: RequestHandler = async ({ request, params, locals }) => {
+	const session = locals.session;
+	const user = locals.user;
+	
+	if (!session || !user) {
 		return json({ error: 'Unauthorized' }, { status: 401 });
 	}
 
@@ -33,7 +35,7 @@ export const POST: RequestHandler = async ({ request, params, cookies }) => {
 			.where(
 				and(
 					eq(offers.tripId, tripId),
-					eq(offers.guideId, session.user.id),
+					eq(offers.guideId, user.id),
 					eq(offers.status, 'accepted')
 				)
 			)
@@ -86,7 +88,7 @@ export const POST: RequestHandler = async ({ request, params, cookies }) => {
 			await db.insert(reviews).values({
 				tripId: trip.id,
 				offerId: offer.id,
-				guideId: session.user.id,
+				guideId: user.id,
 				travelerId: trip.userId,
 				rating: 0, // Will be updated when review is submitted
 				content: '', // Will be updated when review is submitted
@@ -109,7 +111,7 @@ export const POST: RequestHandler = async ({ request, params, cookies }) => {
 
 			await db.insert(messages).values({
 				conversationId: conversation.id,
-				senderId: session.user.id,
+				senderId: user.id,
 				content: messageContent
 			});
 

@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { trips, destinations, users, offers, countries, continents } from '$lib/server/db/schema';
+import { trips, destinations, users, offers, countries, continents, reviews } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { redirect } from '@sveltejs/kit';
 
@@ -86,7 +86,25 @@ export const load = async ({ params, locals }) => {
 		throw redirect(302, '/my-offers');
 	}
 
+	// Check if review request exists for this offer
+	const reviewData = await db
+		.select({
+			id: reviews.id,
+			reviewRequestedAt: reviews.reviewRequestedAt,
+			content: reviews.content,
+			rating: reviews.rating
+		})
+		.from(reviews)
+		.where(
+			and(
+				eq(reviews.offerId, offerId),
+				eq(reviews.guideId, user?.id || '')
+			)
+		)
+		.limit(1);
+
 	return {
-		offer: offerDetails[0]
+		offer: offerDetails[0],
+		review: reviewData[0] || null
 	};
 };

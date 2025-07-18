@@ -10,6 +10,8 @@
 	import pdfIconUrl from '$lib/icons/icon-document-mono.svg';
 	import downloadIconUrl from '$lib/icons/icon-download-mono.svg';
 	import dotsIconUrl from '$lib/icons/icon-dots-four-horizontal-mono.svg';
+	import chatIconUrl from '$lib/icons/icon-chat-bubble-dots-mono.svg';
+	import starIconUrl from '$lib/icons/icon-star-mono.svg';
 
 	interface TripData {
 		id: string;
@@ -51,6 +53,13 @@
 	});
 	
 	let canWriteReview = $derived(() => {
+		console.log('canWriteReview check:', {
+			acceptedOffer: !!acceptedOffer,
+			tripHasEnded: tripHasEnded(),
+			reviewRequestedAt: review?.reviewRequestedAt,
+			reviewContent: review?.content,
+			review
+		});
 		return acceptedOffer && tripHasEnded() && review?.reviewRequestedAt && !review?.content;
 	});
 
@@ -465,11 +474,19 @@
 					{:else if acceptedOffer}
 						{#if canWriteReview()}
 							<button
-								onclick={() => goto(`/write-review/${review.reviewToken}`)}
+								onclick={() => {
+									console.log('Review button clicked', { review, reviewToken: review?.reviewToken });
+									if (review?.reviewToken) {
+										goto(`/write-review/${review.reviewToken}`);
+									} else {
+										console.error('No review token available');
+										alert('리뷰를 작성하려면 먼저 가이드가 리뷰 요청을 보내야 합니다.');
+									}
+								}}
 								class="basis-0 bg-[#19b989] grow h-12 min-h-px min-w-px relative rounded-[9px] shrink-0 flex flex-row items-center justify-center"
 							>
 								<div class="box-border content-stretch flex flex-row gap-2.5 h-12 items-center justify-center px-6 py-3.5 relative w-full">
-									<Star class="h-4 w-4 text-white" />
+									<img src={starIconUrl} alt="star" class="h-4 w-4 brightness-0 invert" />
 									<div class="font-semibold leading-[0] not-italic relative shrink-0 text-[#ffffff] text-[14px] text-center text-nowrap">
 										<p class="block leading-[20px] whitespace-pre">리뷰 작성하기</p>
 									</div>
@@ -481,7 +498,7 @@
 								class="basis-0 bg-[#1095f4] grow h-12 min-h-px min-w-px relative rounded-[9px] shrink-0 flex flex-row items-center justify-center"
 							>
 								<div class="box-border content-stretch flex flex-row gap-2.5 h-12 items-center justify-center px-6 py-3.5 relative w-full">
-									<MessageSquare class="h-4 w-4 text-white" />
+									<img src={chatIconUrl} alt="chat" class="h-4 w-4 brightness-0 invert" />
 									<div class="font-semibold leading-[0] not-italic relative shrink-0 text-[#ffffff] text-[14px] text-center text-nowrap">
 										<p class="block leading-[20px] whitespace-pre">대화하기</p>
 									</div>
@@ -567,6 +584,7 @@
 		}}
 		offer={selectedOfferForDetail}
 		{trip}
+		reviewToken={review?.reviewToken}
 		onAccept={(offerId) => {
 			showOfferDetailModal = false;
 			handleOfferAction(offerId, 'accept');

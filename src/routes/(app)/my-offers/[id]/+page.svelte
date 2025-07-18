@@ -8,6 +8,7 @@
 	let { data } = $props();
 
 	let offer = $derived(data.offer);
+	let review = $state(data.review);
 	let isRequestingReview = $state(false);
 	let reviewRequestMessage = $state('');
 	let reviewRequestError = $state('');
@@ -143,6 +144,11 @@
 
 			if (response.ok) {
 				reviewRequestMessage = '리뷰 요청이 성공적으로 전송되었습니다!';
+				// Update review state to reflect the request was sent
+				review = {
+					...review,
+					reviewRequestedAt: new Date().toISOString()
+				};
 			} else {
 				reviewRequestError = data.error || '리뷰 요청 중 오류가 발생했습니다.';
 			}
@@ -318,19 +324,29 @@
 			
 			<!-- Button Section -->
 			{#if offer.status === 'accepted' && tripHasEnded()}
-				<button
-					onclick={requestReview}
-					disabled={isRequestingReview}
-					class="flex items-center justify-center gap-2 rounded-xl bg-[#1095f4] px-8 py-3.5 text-base font-semibold text-white disabled:opacity-50"
-				>
-					{#if isRequestingReview}
-						<span class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
-						요청 중...
-					{:else}
+				{#if review?.reviewRequestedAt}
+					<button
+						disabled
+						class="flex items-center justify-center gap-2 rounded-xl bg-gray-400 px-8 py-3.5 text-base font-semibold text-white cursor-not-allowed"
+					>
 						<Star class="h-5 w-5" />
-						리뷰 요청하기
-					{/if}
-				</button>
+						요청 전송됨
+					</button>
+				{:else}
+					<button
+						onclick={requestReview}
+						disabled={isRequestingReview}
+						class="flex items-center justify-center gap-2 rounded-xl bg-[#1095f4] px-8 py-3.5 text-base font-semibold text-white disabled:opacity-50"
+					>
+						{#if isRequestingReview}
+							<span class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+							요청 중...
+						{:else}
+							<Star class="h-5 w-5" />
+							리뷰 요청하기
+						{/if}
+					</button>
+				{/if}
 			{:else if offer.status === 'pending' || offer.status === 'accepted'}
 				<button
 					onclick={startConversation}
@@ -340,19 +356,29 @@
 					대화하기
 				</button>
 			{:else if offer.status === 'completed'}
-				<button
-					onclick={requestReview}
-					disabled={isRequestingReview}
-					class="flex items-center justify-center gap-2 rounded-xl bg-[#1095f4] px-8 py-3.5 text-base font-semibold text-white disabled:opacity-50"
-				>
-					{#if isRequestingReview}
-						<span class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
-						요청 중...
-					{:else}
+				{#if review?.reviewRequestedAt}
+					<button
+						disabled
+						class="flex items-center justify-center gap-2 rounded-xl bg-gray-400 px-8 py-3.5 text-base font-semibold text-white cursor-not-allowed"
+					>
 						<Star class="h-5 w-5" />
-						리뷰 요청하기
-					{/if}
-				</button>
+						요청 전송됨
+					</button>
+				{:else}
+					<button
+						onclick={requestReview}
+						disabled={isRequestingReview}
+						class="flex items-center justify-center gap-2 rounded-xl bg-[#1095f4] px-8 py-3.5 text-base font-semibold text-white disabled:opacity-50"
+					>
+						{#if isRequestingReview}
+							<span class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+							요청 중...
+						{:else}
+							<Star class="h-5 w-5" />
+							리뷰 요청하기
+						{/if}
+					</button>
+				{/if}
 			{/if}
 		</div>
 	</div>

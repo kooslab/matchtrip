@@ -3,6 +3,8 @@
 	import { page } from '$app/stores';
 	import arrowBackIcon from '$lib/icons/icon-arrow-left-small-mono.svg';
 	import starIcon from '$lib/icons/icon-star-mono.svg';
+	import cameraIcon from '$lib/icons/icon-camera-mono.svg';
+	import closeIcon from '$lib/icons/icon-x-mono.svg';
 	
 	let { data } = $props();
 	
@@ -11,13 +13,64 @@
 	let reviewText = $state('');
 	let isSubmitting = $state(false);
 	let error = $state('');
+	let uploadedImages = $state<{file: File, preview: string}[]>([]);
+	let selectedTags = $state<string[]>([]);
 	
 	const minCharacters = 10;
 	let charactersCount = $derived(reviewText.length);
 	let canSubmit = $derived(rating > 0 && charactersCount >= minCharacters);
 	
+	// Predefined review tags with emojis
+	const reviewTags = [
+		{ emoji: '😊', text: '친절해요' },
+		{ emoji: '👨‍💼', text: '전문적이에요' },
+		{ emoji: '⏰', text: '시간 약속을 잘 지켜요' },
+		{ emoji: '📝', text: '설명이 자세해요' },
+		{ emoji: '🤸', text: '유연하게 대처해요' },
+		{ emoji: '💬', text: '소통이 원활해요' },
+		{ emoji: '📍', text: '추천 장소가 좋아요' },
+		{ emoji: '💰', text: '가격이 합리적이에요' },
+		{ emoji: '🛡️', text: '안전하게 인도해요' },
+		{ emoji: '🎉', text: '재미있어요' }
+	];
+	
 	function setRating(value: number) {
 		rating = value;
+	}
+	
+	function toggleTag(tagText: string) {
+		if (selectedTags.includes(tagText)) {
+			selectedTags = selectedTags.filter(t => t !== tagText);
+		} else {
+			selectedTags = [...selectedTags, tagText];
+		}
+	}
+	
+	function handleImageUpload(event: Event) {
+		const input = event.target as HTMLInputElement;
+		const files = input.files;
+		
+		if (files) {
+			for (let i = 0; i < files.length && uploadedImages.length < 5; i++) {
+				const file = files[i];
+				const reader = new FileReader();
+				
+				reader.onload = (e) => {
+					if (e.target?.result && uploadedImages.length < 5) {
+						uploadedImages = [...uploadedImages, { file, preview: e.target.result as string }];
+					}
+				};
+				
+				reader.readAsDataURL(file);
+			}
+		}
+		
+		// Reset input
+		input.value = '';
+	}
+	
+	function removeImage(index: number) {
+		uploadedImages = uploadedImages.filter((_, i) => i !== index);
 	}
 	
 	function formatDate(date: Date | string) {
@@ -39,6 +92,27 @@
 		error = '';
 		
 		try {
+			// Upload images first
+			const imageUrls: string[] = [];
+			for (const image of uploadedImages) {
+				const formData = new FormData();
+				formData.append('file', image.file);
+				formData.append('type', 'review');
+				
+				const uploadResponse = await fetch('/api/upload', {
+					method: 'POST',
+					body: formData
+				});
+				
+				if (uploadResponse.ok) {
+					const uploadData = await uploadResponse.json();
+					imageUrls.push(uploadData.url);
+				} else {
+					console.error('Failed to upload image');
+				}
+			}
+			
+			// Submit review with images and tags
 			const response = await fetch(`/api/reviews/${data.review.id}`, {
 				method: 'PUT',
 				headers: {
@@ -46,7 +120,9 @@
 				},
 				body: JSON.stringify({
 					rating,
-					content: reviewText
+					content: reviewText,
+					images: imageUrls,
+					tags: selectedTags
 				})
 			});
 			
@@ -106,7 +182,7 @@
 				<div class="flex-1">
 					<h2 class="text-lg font-semibold text-gray-900">{data.guide.name}</h2>
 					<p class="text-sm text-gray-600">
-						{data.offer.destination.city}, {data.offer.destination.country}
+						{data.destination?.city || '알 수 없는 도시'}, {data.country?.name || '알 수 없는 국가'}
 					</p>
 					<p class="text-xs text-gray-500 mt-1">
 						{formatDateRange(data.trip.startDate, data.trip.endDate)}
@@ -128,11 +204,12 @@
 						onmouseleave={() => hoveredRating = 0}
 						class="p-1 transition-transform hover:scale-110"
 					>
-						<img 
-							src={starIcon} 
-							alt={`${value}점`}
-							class="w-10 h-10 transition-all {(hoveredRating || rating) >= value ? 'brightness-0 saturate-100 invert-[.84] sepia-[.87] saturate-[1447%] hue-rotate-[359deg] brightness-[1.01] contrast-[1.05]' : 'opacity-30'}"
-						/>
+						<svg 
+							class="w-10 h-10 transition-all {(hoveredRating || rating) >= value ? 'fill-yellow-400' : 'fill-gray-300'}"
+							viewBox="0 0 24 24"
+						>
+							<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+						</svg>
 					</button>
 				{/each}
 			</div>
@@ -163,6 +240,65 @@
 			</div>
 		</div>
 		
+		<!-- Quick Review Tags Section -->
+		<div class="px-4 pt-8">
+			<h3 class="text-base font-semibold text-gray-900 mb-4">
+				어떤 점이 인상적이었나요?
+			</h3>
+			<div class="flex flex-wrap gap-2">
+				{#each reviewTags as tag}
+					<button
+						onclick={() => toggleTag(tag.text)}
+						class="px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-1.5
+							{selectedTags.includes(tag.text) 
+								? 'bg-[#1095f4] text-white' 
+								: 'bg-gray-100 text-gray-700 hover:bg-gray-200'}"
+					>
+						<span class="text-base">{tag.emoji}</span>
+						<span>{tag.text}</span>
+					</button>
+				{/each}
+			</div>
+		</div>
+		
+		<!-- Image Upload Section -->
+		<div class="px-4 pt-8">
+			<h3 class="text-base font-semibold text-gray-900 mb-4">
+				사진 추가 (선택사항)
+			</h3>
+			<div class="flex gap-2 flex-wrap">
+				{#each uploadedImages as image, index}
+					<div class="relative w-20 h-20">
+						<img 
+							src={image.preview} 
+							alt="Uploaded {index + 1}" 
+							class="w-full h-full object-cover rounded-lg"
+						/>
+						<button
+							onclick={() => removeImage(index)}
+							class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center"
+						>
+							<img src={closeIcon} alt="Remove" class="w-3 h-3 brightness-0 invert" />
+						</button>
+					</div>
+				{/each}
+				
+				{#if uploadedImages.length < 5}
+					<label class="w-20 h-20 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50">
+						<img src={cameraIcon} alt="Add photo" class="w-6 h-6 opacity-50" />
+						<span class="text-xs text-gray-500 mt-1">{uploadedImages.length}/5</span>
+						<input 
+							type="file" 
+							accept="image/*" 
+							multiple
+							class="hidden" 
+							onchange={handleImageUpload}
+						/>
+					</label>
+				{/if}
+			</div>
+		</div>
+		
 		{#if error}
 			<div class="px-4 pt-4">
 				<p class="text-sm text-red-600">{error}</p>
@@ -172,7 +308,7 @@
 	
 	<!-- Fixed Bottom Button -->
 	<div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
-		<div class="px-4 py-3 pb-safe">
+		<div class="px-4 py-3 pb-8">
 			<button
 				onclick={submitReview}
 				disabled={!canSubmit || isSubmitting}

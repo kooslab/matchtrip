@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
-import { db } from '$lib/server/db/drizzle';
+import { db } from '$lib/server/db';
 import { reviews, trips, offers, users, guideProfiles } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 

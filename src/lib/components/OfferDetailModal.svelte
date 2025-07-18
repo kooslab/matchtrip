@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { X, Star } from 'lucide-svelte';
 	import { formatKoreanDate, formatKoreanDateRange } from '$lib/utils/dateFormatter';
+	import { goto } from '$app/navigation';
 	import starIconUrl from '$lib/icons/icon-star-mono.svg';
 	import locationIconUrl from '$lib/icons/icon-pin-location-mono.svg';
 	import calendarIconUrl from '$lib/icons/icon-calendar-check-mono.svg';
@@ -50,9 +51,10 @@
 		onAccept: (offerId: string) => void;
 		onReject: (offerId: string) => void;
 		onStartChat: (offerId: string) => void;
+		reviewToken?: string | null;
 	}
 
-	let { isOpen, onClose, offer, trip, onAccept, onReject, onStartChat }: Props = $props();
+	let { isOpen, onClose, offer, trip, onAccept, onReject, onStartChat, reviewToken = null }: Props = $props();
 	
 	// Tab state
 	let activeTab = $state<'offer' | 'guide' | 'review'>('offer');
@@ -567,7 +569,17 @@
 					{/if}
 				{:else if activeTab === 'review'}
 					<!-- Write review button for review tab -->
-					<button class="w-full py-4 bg-[#1095f4] text-white rounded-xl font-medium hover:bg-blue-600 transition-colors flex items-center justify-center gap-2">
+					<button 
+						onclick={() => {
+							if (reviewToken) {
+								goto(`/write-review/${reviewToken}`);
+								onClose();
+							} else {
+								alert('리뷰를 작성하려면 먼저 가이드가 리뷰 요청을 보내야 합니다.');
+							}
+						}}
+						class="w-full py-4 bg-[#1095f4] text-white rounded-xl font-medium hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+					>
 						<img src={pencilIconUrl} alt="write review" class="w-5 h-5 brightness-0 invert" />
 						<span>리뷰 작성</span>
 					</button>

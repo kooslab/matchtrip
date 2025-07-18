@@ -12,6 +12,14 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		}
 
 		const { paymentKey, orderId, amount, offerId } = await request.json();
+		
+		console.log('Payment confirmation request received:', {
+			paymentKey,
+			orderId,
+			amount,
+			offerId,
+			userId: user.id
+		});
 
 		if (!paymentKey || !orderId || !amount || !offerId) {
 			return json({ success: false, error: '필수 정보가 누락되었습니다.' }, { status: 400 });
@@ -39,6 +47,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		}
 
 		const offerData = offer[0];
+		
+		console.log('Current offer status before update:', offerData.status);
+		console.log('Offer ID:', offerId);
+		console.log('Trip ID:', offerData.tripId);
 
 		// Verify the offer belongs to the user's trip
 		if (offerData.trip.userId !== user.id) {
@@ -52,9 +64,11 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 		// TODO: Call Toss Payments API to confirm payment
 		// For test environment, we'll simulate success
+		console.log('Calling Toss payment confirmation...');
 		const tossPaymentResponse = await confirmTossPayment(paymentKey, orderId, amount);
 
 		if (!tossPaymentResponse.success) {
+			console.error('Toss payment confirmation failed:', tossPaymentResponse.error);
 			return json(
 				{
 					success: false,
@@ -63,9 +77,12 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				{ status: 400 }
 			);
 		}
+		
+		console.log('Toss payment confirmed successfully');
 
 		// Start transaction to update offer and trip status
 		await db.transaction(async (tx) => {
+			console.log('Starting transaction - updating offer:', offerId);
 			// Update offer status to accepted
 			await tx
 				.update(offers)
@@ -75,11 +92,13 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				})
 				.where(eq(offers.id, offerId));
 
+			console.log('Updating trip status for tripId:', offerData.tripId);
 			// Update trip status to accepted
 			await tx
 				.update(trips)
 				.set({
 					status: 'accepted',
+					statusUpdatedAt: new Date(),
 					updatedAt: new Date()
 				})
 				.where(eq(trips.id, offerData.tripId));
@@ -114,6 +133,24 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				);
 		});
 
+		// Verify the updates worked
+		console.log('Transaction completed - verifying status updates');
+		
+		const updatedTrip = await db
+			.select({ status: trips.status })
+			.from(trips)
+			.where(eq(trips.id, offerData.tripId))
+			.limit(1);
+		
+		const updatedOffer = await db
+			.select({ status: offers.status })
+			.from(offers)
+			.where(eq(offers.id, offerId))
+			.limit(1);
+		
+		console.log('Updated trip status:', updatedTrip[0]?.status);
+		console.log('Updated offer status:', updatedOffer[0]?.status);
+
 		return json({
 			success: true,
 			message: '결제가 완료되었습니다.',
@@ -121,6 +158,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		});
 	} catch (error) {
 		console.error('Payment confirmation error:', error);
+		console.error('Error details:', {
+			message: error instanceof Error ? error.message : 'Unknown error',
+			stack: error instanceof Error ? error.stack : undefined
+		});
 		return json(
 			{
 				success: false,

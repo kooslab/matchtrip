@@ -1,18 +1,20 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { auth } from '$lib/auth';
-import { db } from '$lib/server/db/drizzle';
+import { db } from '$lib/server/db';
 import { reviews } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 
-export const PUT: RequestHandler = async ({ request, params, cookies }) => {
-	const session = await auth.api.getSession({ headers: cookies });
-	if (!session) {
+export const PUT: RequestHandler = async ({ request, params, locals }) => {
+	const session = locals.session;
+	const user = locals.user;
+	
+	if (!session || !user) {
 		return json({ error: 'Unauthorized' }, { status: 401 });
 	}
 
 	const reviewId = params.id;
-	const { rating, content } = await request.json();
+	const { rating, content, images, tags } = await request.json();
 
 	// Validate input
 	if (!rating || rating < 1 || rating > 5) {
@@ -36,7 +38,7 @@ export const PUT: RequestHandler = async ({ request, params, cookies }) => {
 		}
 
 		// Check if the current user is the traveler for this review
-		if (review.travelerId !== session.user.id) {
+		if (review.travelerId !== user.id) {
 			return json({ error: 'Unauthorized' }, { status: 403 });
 		}
 
@@ -46,13 +48,25 @@ export const PUT: RequestHandler = async ({ request, params, cookies }) => {
 		}
 
 		// Update the review
+		const updateData: any = {
+			rating,
+			content: content.trim(),
+			updatedAt: new Date()
+		};
+		
+		// Add images if provided
+		if (images && images.length > 0) {
+			updateData.images = images;
+		}
+		
+		// Add tags if provided
+		if (tags && tags.length > 0) {
+			updateData.tags = tags;
+		}
+		
 		await db
 			.update(reviews)
-			.set({
-				rating,
-				content: content.trim(),
-				updatedAt: new Date()
-			})
+			.set(updateData)
 			.where(eq(reviews.id, reviewId));
 
 		return json({ success: true });

@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
-import { db } from '$lib/server/db/drizzle';
-import { reviews, trips, offers, users, guideProfiles } from '$lib/server/db/schema';
+import { db } from '$lib/server/db';
+import { reviews, trips, offers, users, guideProfiles, destinations, countries } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 
 export const load: PageServerLoad = async ({ params, parent }) => {
@@ -19,13 +19,22 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 			trip: trips,
 			offer: offers,
 			guide: users,
-			guideProfile: guideProfiles
+			guideProfile: guideProfiles,
+			destination: {
+				id: destinations.id,
+				city: destinations.city
+			},
+			country: {
+				name: countries.name
+			}
 		})
 		.from(reviews)
 		.leftJoin(trips, eq(reviews.tripId, trips.id))
 		.leftJoin(offers, eq(reviews.offerId, offers.id))
 		.leftJoin(users, eq(reviews.guideId, users.id))
 		.leftJoin(guideProfiles, eq(reviews.guideId, guideProfiles.userId))
+		.leftJoin(destinations, eq(trips.destinationId, destinations.id))
+		.leftJoin(countries, eq(destinations.countryId, countries.id))
 		.where(eq(reviews.reviewToken, token))
 		.then(rows => rows[0]);
 
@@ -48,6 +57,8 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 		trip: review.trip,
 		offer: review.offer,
 		guide: review.guide,
-		guideProfile: review.guideProfile
+		guideProfile: review.guideProfile,
+		destination: review.destination,
+		country: review.country
 	};
 };
