@@ -1,258 +1,397 @@
 <script lang="ts">
-	import { signIn, signOut, session as sessionStore } from '$lib/authClient';
 	import { goto, invalidateAll } from '$app/navigation';
-	import { page } from '$app/stores';
-	import { resetAllStores } from '$lib/stores/resetStores';
-	import { browser } from '$app/environment';
+	import { ChevronDown, ChevronUp, Bell } from 'lucide-svelte';
+	import BottomNav from '$lib/components/BottomNav.svelte';
+	import GuideBottomNav from '$lib/components/GuideBottomNav.svelte';
+	import logo from '$lib/images/Matchtrip.png';
 
 	// Props from load function
 	const { data } = $props();
 
-	let loading = $state(false);
-
 	// Get user data from props
 	const user = $derived(data?.user);
 	const userRole = $derived(data?.userRole);
+	const isGuide = $derived(userRole === 'guide');
+	const isTraveler = $derived(userRole === 'traveler');
 
-	// Debug logging
-	$effect(() => {
-		console.log('[CLIENT] Browser:', browser);
-		console.log('[CLIENT] Data prop:', data);
-		console.log('[CLIENT] User:', user);
-		console.log('[CLIENT] UserRole:', userRole);
-		console.log('[CLIENT] $page store:', browser ? $page : 'SSR');
-	});
+	// Random recommendation messages
+	const recommendationMessages = [
+		'가족과 함께 하기 좋은',
+		'혼자 여행하기 좋은',
+		'커플이 가기 좋은',
+		'친구들과 함께하기 좋은',
+		'모험을 즐기기 좋은',
+		'휴식을 취하기 좋은',
+		'문화를 체험하기 좋은',
+		'음식을 즐기기 좋은',
+		'자연을 만끽하기 좋은',
+		'액티비티가 많은'
+	];
 
-	// Safari-specific session refresh workaround
-	$effect(() => {
-		if (browser && !user && /^((?!chrome|android).)*safari/i.test(navigator.userAgent)) {
-			console.log('[SAFARI] Detected Safari browser, forcing session refresh');
-			// Force a session refresh for Safari
-			const refreshInterval = setInterval(async () => {
-				await invalidateAll();
-				if (data?.user) {
-					clearInterval(refreshInterval);
-				}
-			}, 1000);
+	// Get random recommendation
+	const randomMessage = $derived(
+		recommendationMessages[Math.floor(Math.random() * recommendationMessages.length)]
+	);
+	const randomDestination = $derived(
+		data.displayDestinations?.length > 0
+			? data.displayDestinations[Math.floor(Math.random() * data.displayDestinations.length)]
+			: null
+	);
 
-			// Clear after 10 seconds to prevent infinite refresh
-			setTimeout(() => clearInterval(refreshInterval), 10000);
+	// Collapsible states
+	let supportOpen = $state(false);
+	let partnershipOpen = $state(false);
+
+	// Search functionality
+	let searchQuery = $state(data.searchQuery || '');
+	let showDropdown = $state(false);
+	let searchInput: HTMLInputElement;
+	let debounceTimer: ReturnType<typeof setTimeout>;
+	let isSearching = $state(false);
+
+	// Use server-side filtered destinations
+	const filteredDestinations = $derived(
+		searchQuery.trim() && data.destinations ? data.destinations : []
+	);
+
+	// Debounced search handler - now makes server request
+	async function handleSearch(e: Event) {
+		const target = e.target as HTMLInputElement;
+		const query = target.value;
+		searchQuery = query;
+		
+		clearTimeout(debounceTimer);
+		
+		if (!query.trim()) {
+			showDropdown = false;
+			// Clear search results
+			await goto('/');
+			return;
 		}
-	});
-
-	// Subscribe to session changes for real-time updates
-	// Use derived instead of effect to avoid loops
-	const currentSession = $derived(browser ? $sessionStore : null);
-
-	// Only log when session actually changes
-	$effect(() => {
-		if (browser) {
-			// Only log if there's a meaningful change
-			console.log(
-				'[CLIENT] Session store updated:',
-				currentSession ? 'Session exists' : 'No session'
-			);
-		}
-	});
-
-	// Check if we're coming back from OAuth callback
-	$effect(() => {
-		if (browser) {
-			const urlParams = new URLSearchParams(window.location.search);
-			const code = urlParams.get('code');
-			const state = urlParams.get('state');
-
-			console.log('[CLIENT] URL params:', { code: !!code, state: !!state });
-
-			// If we have OAuth parameters, we're likely coming back from OAuth
-			if (code && state) {
-				console.log('[CLIENT] OAuth callback detected, waiting for session update');
-
-				// Clean up URL to remove OAuth parameters
-				window.history.replaceState({}, '', window.location.pathname);
-
-				// Wait for session to be established
-				const checkSession = setInterval(async () => {
-					if (currentSession?.user) {
-						clearInterval(checkSession);
-						console.log(
-							'[CLIENT] Session established, redirecting based on role:',
-							currentSession.user
-						);
-
-						// Refresh all data
-						await invalidateAll();
-
-						// Only redirect if user hasn't completed onboarding or doesn't have a role
-						// Otherwise, let them stay on the home page where they can logout
-						if (!userRole) {
-							await goto('/select-role');
-						}
-						// If user has a role and completed onboarding, they stay on home page
-					}
-				}, 100); // Check every 100ms
-
-				// Timeout after 5 seconds
-				setTimeout(() => {
-					clearInterval(checkSession);
-					console.log('[CLIENT] Session check timeout');
-				}, 5000);
-			}
-		}
-	});
-
-	async function handleGoogleLogin() {
-		loading = true;
-		try {
-			console.log('[CLIENT] Starting Google login');
-
-			// Use Better Auth's social sign in with explicit callback URL
-			await signIn.social({
-				provider: 'google',
-				callbackURL: window.location.origin + '/'
+		
+		isSearching = true;
+		debounceTimer = setTimeout(async () => {
+			// Make server request with search query
+			await goto(`/?q=${encodeURIComponent(query)}`, { 
+				replaceState: true,
+				keepFocus: true,
+				noScroll: true 
 			});
-			console.log('[CLIENT] Google login initiated');
-		} catch (err) {
-			console.error('Google sign in error:', err);
-			// Don't show error to user, just log it
-		} finally {
-			loading = false;
+			showDropdown = true;
+			isSearching = false;
+		}, 300);
+	}
+
+	// Select destination
+	function selectDestination(destination: typeof data.destinations[0]) {
+		// Fill the search input with the selected city
+		searchQuery = destination.city;
+		showDropdown = false;
+		
+		// Navigate based on user role - now using destination ID
+		if (!user) {
+			goto('/');
+		} else if (isGuide) {
+			// Guide users go to trips page with destination ID filter
+			goto(`/trips?destinations=${destination.id}`, { invalidateAll: true });
+		} else if (isTraveler) {
+			// Traveler users go to create trip with selected destination
+			goto(`/my-trips/create/destination?id=${destination.id}&city=${encodeURIComponent(destination.city)}`);
 		}
 	}
 
-	async function handleLogout() {
-		loading = true;
-		try {
-			// Reset all client-side stores first
-			resetAllStores();
-
-			// Sign out using better-auth
-			await signOut();
-
-			// Invalidate all data to refresh the page
-			await invalidateAll();
-
-			// Redirect to home page
-			await goto('/', { replaceState: true, invalidateAll: true });
-		} catch (error) {
-			console.error('Logout error:', error);
-			// Force reload on error
-			if (typeof window !== 'undefined') {
-				window.location.href = '/';
-			}
-		} finally {
-			loading = false;
-		}
-	}
-
-	async function navigateToDashboard() {
-		if (userRole === 'guide') {
-			await goto('/trips');
-		} else {
-			await goto('/my-trips');
+	// Close dropdown when clicking outside
+	function handleClickOutside(e: MouseEvent) {
+		if (searchInput && !searchInput.contains(e.target as Node)) {
+			showDropdown = false;
 		}
 	}
 </script>
 
-{#if browser && $page?.error}
-	<div class="flex min-h-screen items-center justify-center">
-		<div class="text-center">
-			<h1 class="text-2xl font-bold text-red-600">Error</h1>
-			<p class="mt-2 text-gray-600">{$page.error?.message || 'An error occurred'}</p>
-			<a href="/" class="mt-4 inline-block text-blue-600 hover:underline">Go to Home</a>
+<svelte:window onclick={handleClickOutside} />
+
+<div class="min-h-screen bg-gray-50">
+	<!-- Header -->
+	<header class="sticky top-0 z-50 bg-white shadow-sm">
+		<div class="flex items-center justify-between px-4 py-4">
+			<button onclick={() => goto('/')} class="flex items-center">
+				<img src={logo} alt="Matchtrip" class="h-4 w-auto" />
+			</button>
+			<button class="relative p-2">
+				<Bell class="h-6 w-6 text-gray-600" />
+				<span class="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500"></span>
+			</button>
 		</div>
-	</div>
-{:else}
-	<!-- Splash Screen Style Landing Page -->
-	<div class="relative min-h-screen overflow-hidden">
-		<!-- Background Image -->
-		<div class="absolute inset-0">
-			<img
-				src="/image.png"
-				alt="Scenic mountain and lake view"
-				class="h-full w-full object-cover"
-			/>
-			<!-- Subtle gradient overlay -->
-			<div
-				class="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/30"
-			></div>
-		</div>
+	</header>
 
-		<!-- Main Content -->
-		<div class="relative z-10 flex min-h-screen flex-col px-4">
-			<!-- Logo in center -->
-			<div class="flex flex-1 items-center justify-center pt-16">
-				<img src="/logo-1.png" alt="Matchtrip Logo" class="w-64 brightness-0 invert md:w-80" />
-			</div>
+	<!-- Main Content -->
+	<main class="pb-24">
+		<!-- Recommendation Section -->
+		{#if randomDestination}
+			<section class="bg-white p-4">
+				<div class="flex items-center gap-2 text-sm text-gray-600">
+					<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+						/>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+						/>
+					</svg>
+					<span>{randomDestination.city}, {randomDestination.country}</span>
+				</div>
+				<h2 class="mt-2 text-lg font-medium text-gray-900">
+					{randomMessage} <span class="text-blue-600">{randomDestination.city}</span> 어때요?
+				</h2>
+			</section>
+		{/if}
 
-			<!-- Bottom section - Login/Logout based on auth state -->
-			<div class="flex flex-col items-center gap-4 pb-12">
-				{#if user}
-					<!-- User is logged in -->
-					<div class="flex flex-col items-center gap-4">
-						<p class="text-sm font-medium text-white">
-							Welcome, {user?.email || user?.name || 'User'}
-						</p>
+		<!-- Search Section -->
+		<section class="bg-white p-4">
+			<div class="relative">
+				<input
+					bind:this={searchInput}
+					bind:value={searchQuery}
+					type="text"
+					placeholder="어디로 가고 싶으신가요?"
+					oninput={handleSearch}
+					onfocus={() => (showDropdown = searchQuery.trim().length > 0)}
+					class="w-full rounded-full bg-gray-100 px-4 py-3 pr-12 text-gray-900 placeholder-gray-500 outline-none focus:ring-2 focus:ring-blue-500"
+				/>
+				<button
+					onclick={() => {
+						if (searchQuery.trim()) {
+							if (!user) {
+								goto('/');
+							} else if (isGuide) {
+								// Guide users go to trips page with search query
+								goto(`/trips?search=${encodeURIComponent(searchQuery)}`, { invalidateAll: true });
+							} else if (isTraveler) {
+								// Traveler users go to create trip with search query
+								goto(`/my-trips/create/destination?search=${encodeURIComponent(searchQuery)}`);
+							}
+						}
+					}}
+					class="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-gray-200 rounded-full"
+				>
+					<svg
+						class="h-5 w-5 text-blue-500"
+						fill="currentColor"
+						viewBox="0 0 20 20"
+					>
+						<path
+							fill-rule="evenodd"
+							d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+							clip-rule="evenodd"
+						/>
+					</svg>
+				</button>
 
-						<div class="flex gap-4">
-							<!-- Go to Dashboard button -->
-							<button
-								onclick={navigateToDashboard}
-								disabled={loading}
-								class="rounded-full bg-white px-6 py-3 text-sm font-medium text-gray-700 shadow-lg transition-all hover:scale-110 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
-							>
-								Go to Dashboard
-							</button>
-
-							<!-- Logout button -->
-							<button
-								onclick={handleLogout}
-								disabled={loading}
-								class="rounded-full border border-white/30 bg-white/20 px-6 py-3 text-sm font-medium text-white shadow-lg backdrop-blur-sm transition-all hover:scale-110 hover:bg-white/30 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
-							>
-								Logout
-							</button>
-						</div>
-					</div>
-				{:else}
-					<!-- User is not logged in -->
-					<!-- Sign in text -->
-					<p class="text-sm font-medium text-white">Sign In with Social Networks</p>
-
-					<div class="flex flex-col items-center gap-3">
-						<!-- Google button -->
-						<button
-							onclick={handleGoogleLogin}
-							disabled={loading}
-							class="rounded-full bg-white p-4 shadow-lg transition-all hover:scale-110 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
-							aria-label="Sign in with Google"
-						>
-							<!-- Google Icon -->
-							<svg class="h-6 w-6" viewBox="0 0 24 24">
-								<path
-									fill="#4285F4"
-									d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-								/>
-								<path
-									fill="#34A853"
-									d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-								/>
-								<path
-									fill="#FBBC05"
-									d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-								/>
-								<path
-									fill="#EA4335"
-									d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-								/>
-							</svg>
-						</button>
+				<!-- Autocomplete Dropdown -->
+				{#if showDropdown}
+					<div class="absolute left-0 right-0 top-full z-50 mt-2 max-h-60 overflow-auto rounded-lg bg-white shadow-lg">
+						{#if isSearching}
+							<div class="flex items-center justify-center p-4">
+								<div class="text-sm text-gray-500">검색 중...</div>
+							</div>
+						{:else if filteredDestinations.length > 0}
+							{#each filteredDestinations as destination}
+								<button
+									onclick={() => selectDestination(destination)}
+									class="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-gray-50"
+								>
+									<svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+										/>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+										/>
+									</svg>
+									<div>
+										<p class="font-medium text-gray-900">{destination.city}</p>
+										<p class="text-sm text-gray-500">{destination.country}</p>
+									</div>
+								</button>
+							{/each}
+						{:else}
+							<div class="p-4 text-center text-sm text-gray-500">
+								검색 결과가 없습니다
+							</div>
+						{/if}
 					</div>
 				{/if}
-
-				<!-- Copyright text -->
-				<p class="text-xs text-white/70">© Matchtrip.corp.</p>
 			</div>
+		</section>
+
+		<!-- Sample Destinations -->
+		<section class="mt-4 bg-white p-4">
+			<h3 class="mb-4 text-sm font-medium text-gray-500">
+				나에게 맞는 가이드를 찾고 계신가요?
+			</h3>
+			<h2 class="mb-4 flex items-center justify-between text-xl font-bold text-gray-900">
+				매치트립 나라별 가이드
+				<button onclick={() => goto('/trips')} class="text-sm text-blue-600">
+					<ChevronDown class="h-5 w-5" />
+				</button>
+			</h2>
+			<div class="grid grid-cols-3 gap-3">
+				{#each data.displayDestinations || [] as destination}
+					<button
+						onclick={() => goto(`/trips?destination=${destination.city}`)}
+						class="overflow-hidden rounded-lg"
+					>
+						<div class="relative aspect-square">
+							{#if destination.imageUrl}
+								<img
+									src={destination.imageUrl}
+									alt={destination.city}
+									class="h-full w-full object-cover"
+								/>
+							{:else}
+								<div class="flex h-full w-full items-center justify-center bg-gray-200">
+									<span class="text-gray-400">No image</span>
+								</div>
+							{/if}
+							<div
+								class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
+							></div>
+							<div class="absolute bottom-2 left-2 text-left">
+								<h3 class="text-sm font-medium text-white">{destination.city}</h3>
+								<p class="text-xs text-white/80">{destination.country}</p>
+							</div>
+						</div>
+					</button>
+				{/each}
+			</div>
+		</section>
+
+		<!-- Customer Support Center -->
+		<section class="mt-4 bg-white">
+			<button
+				onclick={() => (supportOpen = !supportOpen)}
+				class="flex w-full items-center justify-between p-4"
+			>
+				<span class="text-base font-medium text-gray-900">고객센터</span>
+				{#if supportOpen}
+					<ChevronUp class="h-5 w-5 text-gray-500" />
+				{:else}
+					<ChevronDown class="h-5 w-5 text-gray-500" />
+				{/if}
+			</button>
+			{#if supportOpen}
+				<div class="border-t px-4 pb-4">
+					<div class="space-y-3 pt-4">
+						<a href="/contact" class="block text-sm text-gray-600 hover:text-blue-600">
+							문의하기
+						</a>
+						<a href="/terms" class="block text-sm text-gray-600 hover:text-blue-600">
+							이용약관
+						</a>
+						<a href="/terms/privacy" class="block text-sm text-gray-600 hover:text-blue-600">
+							개인정보처리방침
+						</a>
+						<a href="/terms/refund-policy" class="block text-sm text-gray-600 hover:text-blue-600">
+							취소 및 환불 정책
+						</a>
+					</div>
+				</div>
+			{/if}
+		</section>
+
+		<!-- Affiliate Marketing Partnership -->
+		<section class="mt-4 bg-white">
+			<button
+				onclick={() => (partnershipOpen = !partnershipOpen)}
+				class="flex w-full items-center justify-between p-4"
+			>
+				<span class="text-base font-medium text-gray-900">제휴 문의</span>
+				{#if partnershipOpen}
+					<ChevronUp class="h-5 w-5 text-gray-500" />
+				{:else}
+					<ChevronDown class="h-5 w-5 text-gray-500" />
+				{/if}
+			</button>
+			{#if partnershipOpen}
+				<div class="border-t px-4 pb-4">
+					<div class="space-y-3 pt-4">
+						<p class="text-sm text-gray-600">
+							매치트립과 함께 성장하고 싶으신가요?
+						</p>
+						<a
+							href="/marketing-terms"
+							class="block text-sm font-medium text-blue-600 hover:text-blue-700"
+						>
+							제휴 안내 보기
+						</a>
+						<a
+							href="mailto:partnership@matchtrip.com"
+							class="block text-sm font-medium text-blue-600 hover:text-blue-700"
+						>
+							이메일로 문의하기
+						</a>
+					</div>
+				</div>
+			{/if}
+		</section>
+
+		<!-- Footer -->
+		<footer class="mt-8 bg-gray-100 p-4 text-center">
+			<div class="space-y-4">
+				<div class="flex justify-center gap-4 text-xs text-gray-500">
+					<a href="/terms" class="hover:text-gray-700">이용약관</a>
+					<span>|</span>
+					<a href="/terms/privacy" class="hover:text-gray-700">개인정보처리방침</a>
+					<span>|</span>
+					<a href="/contact" class="hover:text-gray-700">취소 및 환불 정책</a>
+					<span>|</span>
+					<a href="/marketing-terms" class="hover:text-gray-700">제휴 안내</a>
+				</div>
+				<button
+					onclick={() => goto('/admin')}
+					class="text-xs text-gray-400 hover:text-gray-600"
+				>
+					에이전트 사업자 정보
+				</button>
+				<p class="text-xs text-gray-400">
+					매치트립은 통신판매중개자이며, 통신판매의 당사자가 아닙니다.<br />
+					상품, 상품정보, 거래에 관한 의무와 책임은 판매자에게 있습니다.
+				</p>
+				<p class="text-xs text-gray-500">
+					© 2025 Matchtrip. All rights reserved.
+				</p>
+			</div>
+		</footer>
+	</main>
+
+	<!-- Bottom Navigation -->
+	{#if user}
+		{#if isTraveler}
+			<BottomNav />
+		{:else if isGuide}
+			<GuideBottomNav />
+		{/if}
+	{:else}
+		<!-- Login prompt for non-authenticated users -->
+		<div class="fixed bottom-0 left-0 right-0 bg-white border-t p-4">
+			<button
+				onclick={() => goto('/')}
+				class="w-full rounded-lg bg-blue-600 py-3 text-white font-medium hover:bg-blue-700"
+			>
+				로그인하여 시작하기
+			</button>
 		</div>
-	</div>
-{/if}
+	{/if}
+</div>

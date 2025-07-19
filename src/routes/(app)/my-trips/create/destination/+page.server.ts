@@ -25,50 +25,38 @@ export const load: PageServerLoad = async () => {
 			.from(destinations)
 			.innerJoin(countries, eq(destinations.countryId, countries.id))
 			.innerJoin(continents, eq(countries.continentId, continents.id))
-			.orderBy(destinations.city);
+			.orderBy(countries.name, destinations.city);
 
-		// Group destinations by continent
+		// Group destinations by country
 		const groupedDestinations: Record<string, typeof allDestinations> = {};
 
-		// Continent name mapping
-		const continentNameMap: Record<string, string> = {
-			Asia: '아시아',
-			Europe: '유럽',
-			'North America': '북미',
-			'South America': '남미',
-			Africa: '아프리카',
-			Oceania: '오세아니아',
-			Antarctica: '남극'
-		};
-
 		allDestinations.forEach((dest) => {
-			const continentName = continentNameMap[dest.continent.name] || dest.continent.name;
-
-			// Special handling for Korea - put it in a separate group
-			if (dest.country.code === 'KOR' || dest.country.name === '대한민국') {
-				if (!groupedDestinations['국내']) {
-					groupedDestinations['국내'] = [];
-				}
-				groupedDestinations['국내'].push(dest);
-			} else {
-				if (!groupedDestinations[continentName]) {
-					groupedDestinations[continentName] = [];
-				}
-				groupedDestinations[continentName].push(dest);
+			const countryName = dest.country.name;
+			
+			if (!groupedDestinations[countryName]) {
+				groupedDestinations[countryName] = [];
 			}
+			groupedDestinations[countryName].push(dest);
 		});
 
-		// Remove empty groups
-		Object.keys(groupedDestinations).forEach((key) => {
-			if (groupedDestinations[key].length === 0) {
-				delete groupedDestinations[key];
-			}
+		// Sort countries (Korea first if exists, then alphabetically)
+		const sortedGroupedDestinations: Record<string, typeof allDestinations> = {};
+		const sortedCountries = Object.keys(groupedDestinations).sort((a, b) => {
+			// Put Korea first
+			if (a === '대한민국' || a === 'South Korea') return -1;
+			if (b === '대한민국' || b === 'South Korea') return 1;
+			// Then sort alphabetically
+			return a.localeCompare(b, 'ko');
 		});
 
-		console.log('groupedDestinations', groupedDestinations);
+		sortedCountries.forEach(country => {
+			sortedGroupedDestinations[country] = groupedDestinations[country];
+		});
+
+		console.log('Grouped destinations by country:', Object.keys(sortedGroupedDestinations).length, 'countries');
 
 		return {
-			destinations: groupedDestinations
+			destinations: sortedGroupedDestinations
 		};
 	} catch (error) {
 		console.error('Error loading destinations:', error);

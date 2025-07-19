@@ -14,6 +14,7 @@
 	import CalendarBlank from 'phosphor-svelte/lib/CalendarBlank';
 	import CaretLeft from 'phosphor-svelte/lib/CaretLeft';
 	import CaretRight from 'phosphor-svelte/lib/CaretRight';
+	import { page } from '$app/stores';
 
 	let { data } = $props();
 
@@ -29,10 +30,28 @@
 		budget: false
 	});
 
+	// Initialize selected cities from URL parameters
+	const initializeFromUrl = () => {
+		const destinationsParam = $page.url.searchParams.get('destinations');
+		
+		if (destinationsParam) {
+			// Already using proper destinations parameter
+			const ids = destinationsParam.split(',');
+			return new Set(ids);
+		}
+		
+		return new Set<string>();
+	};
+
 	// City search modal state
 	let showCitySearchModal = $state(false);
-	let selectedCityIds = $state<Set<string>>(new Set());
+	let selectedCityIds = $state<Set<string>>(initializeFromUrl());
 	let citySelectorRef: CitySelector;
+
+	// Set initial filter state based on URL
+	if (selectedCityIds.size > 0) {
+		selectedFilters.destination = true;
+	}
 
 	// Date range picker state
 	let showDateRangePicker = $state(false);

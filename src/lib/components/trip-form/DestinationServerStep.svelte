@@ -45,14 +45,16 @@
 		const query = searchQuery.toLowerCase();
 		const filtered: Record<string, Destination[]> = {};
 
-		Object.entries(destinations).forEach(([region, dests]) => {
+		Object.entries(destinations).forEach(([country, dests]) => {
 			const matchingDests = dests.filter(
 				(dest) =>
-					dest.city.toLowerCase().includes(query) || dest.country.name.toLowerCase().includes(query)
+					dest.city.toLowerCase().includes(query) || 
+					dest.country.name.toLowerCase().includes(query) ||
+					country.toLowerCase().includes(query)
 			);
 
 			if (matchingDests.length > 0) {
-				filtered[region] = matchingDests;
+				filtered[country] = matchingDests;
 			}
 		});
 
@@ -77,6 +79,11 @@
 			return false;
 		}
 		return true;
+	}
+	
+	// Public method to expand a section
+	export function expandSection(sectionId: string) {
+		expandedSection = sectionId;
 	}
 </script>
 
@@ -103,25 +110,26 @@
 		</div>
 	</div>
 
-	<!-- Regions -->
+	<!-- Countries -->
 	<div class="px-4 py-6">
-		{#each Object.entries(filteredDestinations()) as [region, dests]}
+		{#each Object.entries(filteredDestinations()) as [country, dests]}
 			<div class="mb-4">
-				<!-- Region Button -->
+				<!-- Country Button -->
 				<button
-					onclick={() => toggleSection(region)}
+					onclick={() => toggleSection(country)}
 					class="flex w-full items-center justify-between rounded-xl bg-white p-4 shadow-sm transition-all hover:shadow-md"
 				>
 					<div class="flex items-center gap-3">
-						<h2 class="text-lg font-bold text-gray-900">{region}</h2>
+						<h2 class="text-lg font-bold text-gray-900">{country}</h2>
+						<span class="text-sm text-gray-500">({dests.length}개 도시)</span>
 						{#if selectedDestination && dests.find((d) => d.id === selectedDestination.id)}
 							<span class="text-sm text-blue-600">
-								{selectedDestination.city}
+								✓ {selectedDestination.city}
 							</span>
 						{/if}
 					</div>
 					<svg
-						class="h-5 w-5 text-gray-400 transition-transform {expandedSection === region
+						class="h-5 w-5 text-gray-400 transition-transform {expandedSection === country
 							? 'rotate-180'
 							: ''}"
 						fill="none"
@@ -138,7 +146,7 @@
 				</button>
 
 				<!-- Expanded Destinations -->
-				{#if expandedSection === region}
+				{#if expandedSection === country}
 					<div class="mt-2 rounded-xl bg-white p-4 shadow-sm">
 						<div class="space-y-2">
 							{#each dests as destination}
