@@ -24,6 +24,7 @@
 	// Get trips from server data
 	let trips = $derived(data.trips || []);
 	let serverError = $derived(data.error);
+	let loading = $derived(!data.trips && !data.error);
 
 	// Loading state for detail navigation
 	let navigatingTripId = $state<string | null>(null);
@@ -141,7 +142,51 @@
 
 		<!-- Content -->
 		<div class="flex-1 px-4 py-6 pb-32">
-			{#if refreshing}
+			{#if loading && !refreshing}
+				<!-- Skeleton Loading -->
+				<div class="space-y-4">
+					{#each [1, 2, 3] as _}
+						<div class="w-full overflow-hidden rounded-xl border border-gray-100 bg-white">
+							<!-- Status Badge Skeleton -->
+							<div class="px-4 pt-4">
+								<div class="h-6 w-16 animate-pulse rounded-md bg-gray-200"></div>
+							</div>
+
+							<!-- Trip Info Skeleton -->
+							<div class="px-4 pb-4">
+								<div class="mt-3 h-7 w-3/4 animate-pulse rounded bg-gray-200"></div>
+
+								<!-- Date Skeleton -->
+								<div class="mt-2 flex items-center gap-2">
+									<div class="h-4 w-4 animate-pulse rounded bg-gray-200"></div>
+									<div class="h-4 w-40 animate-pulse rounded bg-gray-200"></div>
+								</div>
+
+								<!-- Participants Skeleton -->
+								<div class="mt-1 flex items-center gap-2">
+									<div class="h-4 w-4 animate-pulse rounded bg-gray-200"></div>
+									<div class="h-4 w-32 animate-pulse rounded bg-gray-200"></div>
+								</div>
+
+								<!-- Price Skeleton -->
+								<div class="mt-3 h-4 w-24 animate-pulse rounded bg-gray-200"></div>
+
+								<!-- Offer Status Skeleton -->
+								<div class="mt-4 rounded-lg bg-gray-50 p-3">
+									<div class="flex items-center justify-between">
+										<div class="h-4 w-16 animate-pulse rounded bg-gray-200"></div>
+										<div class="h-5 w-12 animate-pulse rounded bg-gray-200"></div>
+									</div>
+									<div class="mt-2 h-4 w-20 animate-pulse rounded bg-gray-200"></div>
+								</div>
+
+								<!-- Action Button Skeleton -->
+								<div class="mt-4 h-10 w-full animate-pulse rounded-lg bg-gray-200"></div>
+							</div>
+						</div>
+					{/each}
+				</div>
+			{:else if refreshing}
 				<div class="flex items-center justify-center py-12">
 					<div
 						class="h-8 w-8 animate-spin rounded-full border-2 border-pink-500 border-t-transparent"
