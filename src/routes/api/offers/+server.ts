@@ -27,7 +27,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			return json({ success: false, error: '가이드만 제안할 수 있습니다.' }, { status: 403 });
 		}
 
-		const { tripId, pricePerPerson, description } = await request.json();
+		const { tripId, pricePerPerson, description, descriptionImages } = await request.json();
 
 		// Validate input
 		if (!tripId || !pricePerPerson || !description) {
@@ -78,6 +78,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				travelerId: tripDetails[0].userId,
 				title: '가이드 제안',
 				description: description.trim(),
+				descriptionImages: descriptionImages || [],
 				price: totalPrice,
 				currency: 'KRW',
 				itinerary: '',

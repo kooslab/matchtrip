@@ -3,26 +3,134 @@
 	import { page } from '$app/stores';
 	import { offerFormStore, offerFormValidation } from '$lib/stores/offerForm';
 	import { colors } from '$lib/constants/colors';
+	import { browser } from '$app/environment';
+	import { onMount, onDestroy } from 'svelte';
+	import { Editor } from '@tiptap/core';
+	import StarterKit from '@tiptap/starter-kit';
+	import Image from '@tiptap/extension-image';
+	import Link from '@tiptap/extension-link';
+	import Placeholder from '@tiptap/extension-placeholder';
 
 	let tripId = $derived($page.url.searchParams.get('tripId'));
+	let element: HTMLDivElement;
+	let editor: Editor;
+	let isUploading = $state(false);
 
 	// Bind to store value
-	let description = $state($offerFormStore.description);
+	let description = $state($offerFormStore.description || '');
 
-	// Update store when value changes
-	$effect(() => {
-		offerFormStore.setDescription(description);
+	onMount(() => {
+		editor = new Editor({
+			element: element,
+			extensions: [
+				StarterKit,
+				Image.configure({
+					inline: true,
+					allowBase64: true,
+				}),
+				Link.configure({
+					openOnClick: false,
+				}),
+				Placeholder.configure({
+					placeholder: '제안 내용을 작성해주세요...',
+				})
+			],
+			content: description,
+			onUpdate: ({ editor }) => {
+				description = editor.getHTML();
+				offerFormStore.setDescription(description);
+			},
+			editorProps: {
+				attributes: {
+					class: 'prose prose-sm max-w-none focus:outline-none min-h-[300px] px-4 py-3'
+				}
+			}
+		});
 	});
+
+	onDestroy(() => {
+		if (editor) {
+			editor.destroy();
+		}
+	});
+
+	async function handleImageUpload() {
+		const input = document.createElement('input');
+		input.type = 'file';
+		input.accept = 'image/*';
+		
+		input.onchange = async () => {
+			const file = input.files?.[0];
+			if (!file) return;
+			
+			// Validate file size (5MB)
+			if (file.size > 5 * 1024 * 1024) {
+				alert('파일 크기는 5MB 이하여야 합니다.');
+				return;
+			}
+			
+			isUploading = true;
+			
+			try {
+				// Insert placeholder while uploading
+				const placeholderSrc = '/src/lib/icons/icon-picture-mono.svg';
+				const selection = editor.state.selection;
+				const from = selection.$from;
+				const placeholderNode = editor.schema.nodes.image.create({
+					src: placeholderSrc,
+					alt: '업로드 중...',
+					class: 'opacity-50 animate-pulse w-32 h-32'
+				});
+				
+				const tr = editor.state.tr.insert(from.pos, placeholderNode);
+				editor.view.dispatch(tr);
+				const placeholderPos = from.pos;
+				
+				// Upload image
+				const formData = new FormData();
+				formData.append('file', file);
+				formData.append('type', 'offer-description');
+				
+				const response = await fetch('/api/upload', {
+					method: 'POST',
+					body: formData
+				});
+				
+				if (!response.ok) throw new Error('Upload failed');
+				
+				const data = await response.json();
+				
+				// Replace placeholder with actual image
+				const imageNode = editor.schema.nodes.image.create({
+					src: data.url,
+					alt: file.name
+				});
+				
+				const transaction = editor.state.tr.replaceWith(
+					placeholderPos,
+					placeholderPos + 1,
+					imageNode
+				);
+				
+				editor.view.dispatch(transaction);
+			} catch (error) {
+				console.error('Upload error:', error);
+				alert('이미지 업로드에 실패했습니다.');
+				// Remove placeholder on error
+				editor.commands.undo();
+			} finally {
+				isUploading = false;
+			}
+		};
+		
+		input.click();
+	}
 
 	function handleNext() {
 		if ($offerFormValidation.isDescriptionValid) {
 			goto(`/offers/create/files?tripId=${tripId}`);
 		}
 	}
-
-	// Character count
-	const charCount = $derived(description.length);
-	const maxChars = 1000;
 </script>
 
 <div class="flex-1 px-4 py-6 pb-40">
@@ -35,31 +143,97 @@
 			</p>
 		</div>
 
-		<!-- Description Textarea -->
+		<!-- Tiptap Editor -->
 		<div class="space-y-2">
 			<label for="description" class="block text-sm font-medium text-gray-700"> 제안 내용 </label>
-			<div class="relative">
-				<textarea
-					id="description"
-					bind:value={description}
-					placeholder="제안 내용을 작성해주세요"
-					rows="8"
-					maxlength={maxChars}
-					class="focus:border-opacity-100 w-full resize-none rounded-lg border border-gray-300 px-4 py-3 text-base placeholder-gray-400 transition-colors focus:ring-1 focus:outline-none"
-					style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1;"
-					onfocus={(e) => (e.currentTarget.style.borderColor = colors.primary)}
-					onblur={(e) => (e.currentTarget.style.borderColor = '')}
-				></textarea>
-			</div>
-
-			<!-- Character count -->
-			<div class="flex justify-between text-xs">
-				<p class="text-gray-500">
-					여행 일정을 구체적으로 작성해주세요.<br />
-					시간, 장소, 활동 등을 포함하면 더 좋습니다.
-				</p>
-				<span class="text-gray-500">{charCount}/{maxChars}</span>
-			</div>
+			
+			<!-- Editor Toolbar -->
+			{#if browser}
+				<div class="flex flex-wrap gap-1 p-2 border border-gray-300 rounded-t-lg bg-gray-50 items-center">
+					<button
+						type="button"
+						onclick={() => editor?.chain().focus().toggleBold().run()}
+						class="p-2 rounded hover:bg-gray-200 {editor?.isActive('bold') ? 'bg-gray-200' : ''}"
+						disabled={!editor || !editor.can().chain().focus().toggleBold().run()}
+					>
+						<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
+							<path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
+						</svg>
+					</button>
+					
+					<button
+						type="button"
+						onclick={() => editor?.chain().focus().toggleItalic().run()}
+						class="p-2 rounded hover:bg-gray-200 {editor?.isActive('italic') ? 'bg-gray-200' : ''}"
+						disabled={!editor || !editor.can().chain().focus().toggleItalic().run()}
+					>
+						<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<line x1="19" y1="4" x2="10" y2="4"></line>
+							<line x1="14" y1="20" x2="5" y2="20"></line>
+							<line x1="15" y1="4" x2="9" y2="20"></line>
+						</svg>
+					</button>
+					
+					<div class="w-px h-6 bg-gray-300 mx-1 self-center"></div>
+					
+					<button
+						type="button"
+						onclick={() => editor?.chain().focus().toggleBulletList().run()}
+						class="p-2 rounded hover:bg-gray-200 {editor?.isActive('bulletList') ? 'bg-gray-200' : ''}"
+						disabled={!editor}
+					>
+						<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<line x1="8" y1="6" x2="21" y2="6"></line>
+							<line x1="8" y1="12" x2="21" y2="12"></line>
+							<line x1="8" y1="18" x2="21" y2="18"></line>
+							<line x1="3" y1="6" x2="3.01" y2="6"></line>
+							<line x1="3" y1="12" x2="3.01" y2="12"></line>
+							<line x1="3" y1="18" x2="3.01" y2="18"></line>
+						</svg>
+					</button>
+					
+					<button
+						type="button"
+						onclick={() => editor?.chain().focus().toggleOrderedList().run()}
+						class="p-2 rounded hover:bg-gray-200 {editor?.isActive('orderedList') ? 'bg-gray-200' : ''}"
+						disabled={!editor}
+					>
+						<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<line x1="10" y1="6" x2="21" y2="6"></line>
+							<line x1="10" y1="12" x2="21" y2="12"></line>
+							<line x1="10" y1="18" x2="21" y2="18"></line>
+							<path d="M4 6h1v4"></path>
+							<path d="M4 10h2"></path>
+							<path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path>
+						</svg>
+					</button>
+					
+					<div class="w-px h-6 bg-gray-300 mx-1 self-center"></div>
+					
+					<button
+						type="button"
+						onclick={handleImageUpload}
+						disabled={isUploading}
+						class="px-3 py-2 rounded hover:bg-gray-200 flex items-center gap-1 bg-white border border-gray-300"
+						title="이미지 업로드"
+					>
+						{#if isUploading}
+							<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-800"></div>
+						{:else}
+							<img src="/src/lib/icons/icon-picture-mono.svg" alt="사진" class="w-4 h-4" />
+						{/if}
+						<span class="text-sm font-medium">사진</span>
+					</button>
+				</div>
+			{/if}
+			
+			<!-- Editor Content -->
+			<div 
+				bind:this={element}
+				class="border border-gray-300 rounded-b-lg focus-within:ring-1 focus-within:border-primary"
+				style="--tw-ring-color: {colors.primary};"
+			></div>
 		</div>
 
 		<!-- Writing Tips -->
@@ -70,6 +244,7 @@
 				<li>• 구체적인 장소와 활동을 포함하면 신뢰도가 높아집니다</li>
 				<li>• 본인만의 특별한 경험이나 노하우를 어필하세요</li>
 				<li>• 포함/불포함 사항을 명확히 구분해주세요</li>
+				<li>• 텍스트 중간에 이미지를 추가하려면 원하는 위치에 커서를 놓고 사진 버튼을 클릭하세요</li>
 			</ul>
 		</div>
 
@@ -105,19 +280,45 @@
 	</div>
 </div>
 
-<!-- Bottom Button -->
+<!-- Bottom Buttons -->
 <div
 	class="fixed right-0 bottom-0 left-0 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
 >
 	<div class="mx-auto max-w-[430px] px-4 py-4 pb-4">
 		<button
 			onclick={handleNext}
-			disabled={!$offerFormValidation.isDescriptionValid}
+			disabled={!$offerFormValidation.isDescriptionValid || isUploading}
 			class="w-full rounded-lg py-3.5 text-base font-semibold text-white transition-all
-				{$offerFormValidation.isDescriptionValid ? 'hover:opacity-90' : 'cursor-not-allowed opacity-50'}"
-			style="background-color: {$offerFormValidation.isDescriptionValid ? colors.primary : '#CBD5E1'}"
+				{$offerFormValidation.isDescriptionValid && !isUploading ? 'hover:opacity-90' : 'cursor-not-allowed opacity-50'}"
+			style="background-color: {$offerFormValidation.isDescriptionValid && !isUploading ? colors.primary : '#CBD5E1'}"
 		>
 			다음
 		</button>
 	</div>
 </div>
+
+<style>
+	/* Tiptap editor styles */
+	:global(.ProseMirror) {
+		min-height: 300px;
+	}
+	
+	:global(.ProseMirror p.is-editor-empty:first-child::before) {
+		content: attr(data-placeholder);
+		float: left;
+		color: #adb5bd;
+		pointer-events: none;
+		height: 0;
+	}
+	
+	:global(.ProseMirror img) {
+		max-width: 100%;
+		height: auto;
+		margin: 1rem 0;
+		border-radius: 0.5rem;
+	}
+	
+	:global(.ProseMirror:focus) {
+		outline: none;
+	}
+</style>

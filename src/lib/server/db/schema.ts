@@ -338,6 +338,7 @@ export const offers = pgTable(
 			.references(() => users.id, { onDelete: 'cascade' }),
 		title: text('title').notNull(),
 		description: text('description').notNull(),
+		descriptionImages: text('description_images').array(), // Array of image URLs
 		price: integer('price').notNull(), // in cents to avoid decimal issues
 		currency: varchar('currency', { length: 3 }).notNull().default('USD'),
 		duration: integer('duration'), // duration in hours

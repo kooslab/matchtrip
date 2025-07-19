@@ -51,7 +51,8 @@
 				body: JSON.stringify({
 					tripId: formData.tripId,
 					pricePerPerson: parseInt(formData.pricePerPerson),
-					description: formData.description
+					description: formData.description,
+					descriptionImages: formData.descriptionImages
 				})
 			});
 
@@ -146,7 +147,9 @@
 						수정
 					</button>
 				</div>
-				<p class="text-sm whitespace-pre-wrap text-gray-700">{formData.description}</p>
+				<div class="text-sm text-gray-700 prose prose-sm max-w-none [&>img]:my-4 [&>img]:max-w-full [&>img]:rounded-lg">
+					{@html formData.description}
+				</div>
 			</div>
 
 			<!-- Files -->
