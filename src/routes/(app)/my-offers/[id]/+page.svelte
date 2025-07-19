@@ -338,7 +338,8 @@
 
 	<!-- Fixed Bottom Section -->
 	<div class="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-white">
-		<div class="pb-safe flex items-center gap-3 px-4 py-3">
+		<div class="mx-auto max-w-[430px]">
+			<div class="pb-safe flex items-center gap-3 px-4 py-3">
 			<!-- Price Section -->
 			<div class="flex-1">
 				<p class="text-xs text-gray-600">총 결제금액</p>
@@ -407,6 +408,7 @@
 					</button>
 				{/if}
 			{/if}
+			</div>
 		</div>
 	</div>
 </div>

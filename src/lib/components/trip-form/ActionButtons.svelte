@@ -28,11 +28,8 @@
 	}: Props = $props();
 </script>
 
-<div
-	class="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-white p-4 {hasBottomNav
-		? 'pb-24'
-		: ''}"
->
+<div class="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-white">
+	<div class="mx-auto max-w-[430px] p-4 {hasBottomNav ? 'pb-24' : ''}">
 	{#if showBack && onBack}
 		<div class="flex gap-3">
 			<button
@@ -83,4 +80,5 @@
 			{isSubmitting ? '처리 중...' : submitLabel}
 		</button>
 	{/if}
+	</div>
 </div>

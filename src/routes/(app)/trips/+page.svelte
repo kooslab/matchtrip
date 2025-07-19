@@ -287,13 +287,32 @@
 		const option = budgetOptions.find((opt) => opt.value === selectedBudget);
 		return option?.label || '';
 	});
+
+	// Check if any modal is open
+	let isAnyModalOpen = $derived(
+		showCitySearchModal || showDateRangePicker || showPeopleSelector || showBudgetSelector
+	);
+
+	// Add/remove class to body when modal state changes
+	$effect(() => {
+		if (isAnyModalOpen) {
+			document.body.classList.add('modal-open');
+		} else {
+			document.body.classList.remove('modal-open');
+		}
+		
+		// Cleanup on unmount
+		return () => {
+			document.body.classList.remove('modal-open');
+		};
+	});
 </script>
 
 <svelte:head>
 	<title>여행찾기 - MatchTrip</title>
 </svelte:head>
 
-<div class="min-h-screen bg-gray-50">
+<div class="min-h-screen bg-gray-50 {!isAnyModalOpen ? 'pb-24' : ''}">
 	<!-- Filter Bar -->
 	<div class="sticky top-0 z-10 border-b border-gray-200 bg-white">
 		<div class="container mx-auto px-4 py-2">
@@ -1122,5 +1141,10 @@
 
 	.animate-slide-up {
 		animation: slide-up 0.3s ease-out;
+	}
+
+	/* Hide bottom nav when modal is open */
+	:global(body.modal-open .fixed.bottom-0.left-1\/2) {
+		display: none;
 	}
 </style>

@@ -407,18 +407,20 @@
 		class="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-white"
 		style="z-index: 40; box-shadow: 0px -5px 20px rgba(0, 0, 0, 0.05); display: block; visibility: visible;"
 	>
-		<div style="padding: 8px; padding-bottom: calc(8px + env(safe-area-inset-bottom, 8px));">
-			<button
-				class="w-full cursor-pointer font-semibold text-white transition-colors duration-200"
-				style="height: 48px; border-radius: 9px; font-size: 14px; line-height: 20px; background-color: {canProceed &&
-				!isLoading
-					? '#1095f4'
-					: '#8ea0ac'}; {canProceed && !isLoading ? '' : 'cursor: not-allowed; opacity: 0.7;'}"
-				disabled={!canProceed || isLoading}
-				onclick={handleNext}
-			>
-				{isLoading ? '처리중...' : '다 음'}
-			</button>
+		<div class="mx-auto max-w-[430px]">
+			<div style="padding: 8px; padding-bottom: calc(8px + env(safe-area-inset-bottom, 8px));">
+				<button
+					class="w-full cursor-pointer font-semibold text-white transition-colors duration-200"
+					style="height: 48px; border-radius: 9px; font-size: 14px; line-height: 20px; background-color: {canProceed &&
+					!isLoading
+						? '#1095f4'
+						: '#8ea0ac'}; {canProceed && !isLoading ? '' : 'cursor: not-allowed; opacity: 0.7;'}"
+					disabled={!canProceed || isLoading}
+					onclick={handleNext}
+				>
+					{isLoading ? '처리중...' : '다 음'}
+				</button>
+			</div>
 		</div>
 	</div>
 

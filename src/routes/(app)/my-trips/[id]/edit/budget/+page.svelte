@@ -153,18 +153,20 @@
 	</div>
 
 	<!-- Action buttons -->
-	<div class="fixed right-0 bottom-0 left-0 flex gap-3 border-t border-gray-200 bg-white p-4 pb-24">
-		<button
-			onclick={handleBack}
-			class="flex-1 rounded-lg bg-gray-100 py-3 font-medium text-gray-700 hover:bg-gray-200"
-		>
-			이전
-		</button>
-		<button
-			onclick={handleNext}
-			class="flex-1 rounded-lg bg-blue-500 py-3 font-medium text-white hover:bg-blue-600"
-		>
-			다음
-		</button>
+	<div class="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-white pb-24">
+		<div class="mx-auto max-w-[430px] flex gap-3 p-4">
+			<button
+				onclick={handleBack}
+				class="flex-1 rounded-lg bg-gray-100 py-3 font-medium text-gray-700 hover:bg-gray-200"
+			>
+				이전
+			</button>
+			<button
+				onclick={handleNext}
+				class="flex-1 rounded-lg bg-blue-500 py-3 font-medium text-white hover:bg-blue-600"
+			>
+				다음
+			</button>
+		</div>
 	</div>
 </div>

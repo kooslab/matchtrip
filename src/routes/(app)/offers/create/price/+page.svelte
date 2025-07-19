@@ -86,15 +86,17 @@
 
 <!-- Bottom Button -->
 <div
-	class="fixed right-0 bottom-0 left-0 bg-white px-4 py-4 pb-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
+	class="fixed right-0 bottom-0 left-0 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
 >
-	<button
-		onclick={handleNext}
-		disabled={!$offerFormValidation.isPriceValid}
-		class="w-full rounded-lg py-3.5 text-base font-semibold text-white transition-all
-			{$offerFormValidation.isPriceValid ? 'hover:opacity-90' : 'cursor-not-allowed opacity-50'}"
-		style="background-color: {$offerFormValidation.isPriceValid ? colors.primary : '#CBD5E1'}"
-	>
-		다음
-	</button>
+	<div class="mx-auto max-w-[430px] px-4 py-4 pb-4">
+		<button
+			onclick={handleNext}
+			disabled={!$offerFormValidation.isPriceValid}
+			class="w-full rounded-lg py-3.5 text-base font-semibold text-white transition-all
+				{$offerFormValidation.isPriceValid ? 'hover:opacity-90' : 'cursor-not-allowed opacity-50'}"
+			style="background-color: {$offerFormValidation.isPriceValid ? colors.primary : '#CBD5E1'}"
+		>
+			다음
+		</button>
+	</div>
 </div>

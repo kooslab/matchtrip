@@ -295,41 +295,47 @@
 </div>
 
 <!-- Fixed Image Upload Button -->
-<div class="fixed right-4 bottom-24 z-50">
-	<input
-		bind:this={fileInput}
-		type="file"
-		accept="image/*"
-		onchange={handleImageUpload}
-		class="hidden"
-	/>
-	<button
-		onclick={handleImageButtonClick}
-		class="flex h-12 w-12 items-center justify-center rounded-full border border-gray-300 bg-white shadow-lg transition-all hover:border-gray-400 hover:bg-gray-50"
-		title="이미지 추가"
-		type="button"
-	>
-		<img
-			src={cameraUrl}
-			alt="이미지 추가"
-			class="h-6 w-6"
-			style="filter: brightness(0) saturate(100%) invert(60%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(70%) contrast(100%);"
-		/>
-	</button>
+<div class="fixed left-0 right-0 bottom-24 z-50">
+	<div class="mx-auto max-w-[430px] px-4">
+		<div class="flex justify-end">
+			<input
+				bind:this={fileInput}
+				type="file"
+				accept="image/*"
+				onchange={handleImageUpload}
+				class="hidden"
+			/>
+			<button
+				onclick={handleImageButtonClick}
+				class="flex h-12 w-12 items-center justify-center rounded-full border border-gray-300 bg-white shadow-lg transition-all hover:border-gray-400 hover:bg-gray-50"
+				title="이미지 추가"
+				type="button"
+			>
+				<img
+					src={cameraUrl}
+					alt="이미지 추가"
+					class="h-6 w-6"
+					style="filter: brightness(0) saturate(100%) invert(60%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(70%) contrast(100%);"
+				/>
+			</button>
+		</div>
+	</div>
 </div>
 
 <!-- Bottom Button -->
 <div
-	class="fixed right-0 bottom-0 left-0 bg-white px-4 py-4 pb-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
+	class="fixed right-0 bottom-0 left-0 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
 >
-	<button
-		onclick={handleNext}
-		class="w-full rounded-lg py-3.5 text-base font-semibold text-white transition-all hover:opacity-90"
-		style="background-color: {colors.primary}"
-		type="button"
-	>
-		다음
-	</button>
+	<div class="mx-auto max-w-[430px] px-4 py-4 pb-4">
+		<button
+			onclick={handleNext}
+			class="w-full rounded-lg py-3.5 text-base font-semibold text-white transition-all hover:opacity-90"
+			style="background-color: {colors.primary}"
+			type="button"
+		>
+			다음
+		</button>
+	</div>
 </div>
 
 <style>

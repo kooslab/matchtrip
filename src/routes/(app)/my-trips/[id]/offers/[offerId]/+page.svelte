@@ -615,9 +615,10 @@
 
 	<!-- Bottom Fixed Section -->
 	<div class="fixed right-0 bottom-0 left-0 z-50 bg-white">
-		<div
-			class="box-border flex w-full flex-row content-stretch items-center justify-start gap-4 py-4 pr-4 pl-5 shadow-[0px_-4px_6px_-1px_rgba(0,0,0,0.1)]"
-		>
+		<div class="mx-auto max-w-[430px]">
+			<div
+				class="box-border flex w-full flex-row content-stretch items-center justify-start gap-4 py-4 pr-4 pl-5 shadow-[0px_-4px_6px_-1px_rgba(0,0,0,0.1)]"
+			>
 			<button
 				class="relative size-5 shrink-0 -rotate-90 overflow-clip opacity-40"
 				onclick={() => {
@@ -667,6 +668,7 @@
 					</div>
 				</div>
 			</button>
+			</div>
 		</div>
 	</div>
 </div>

@@ -153,8 +153,9 @@
 
 			<!-- Action Buttons -->
 			<div
-				class="fixed right-0 bottom-0 left-0 flex gap-3 border-t border-gray-200 bg-white p-4 pb-24"
+				class="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-white pb-24"
 			>
+				<div class="mx-auto flex max-w-[430px] gap-3 p-4">
 				<button
 					type="button"
 					onclick={handleCancel}
@@ -169,6 +170,7 @@
 				>
 					{isSubmitting ? '저장 중...' : '저장하기'}
 				</button>
+				</div>
 			</div>
 		</form>
 	</div>

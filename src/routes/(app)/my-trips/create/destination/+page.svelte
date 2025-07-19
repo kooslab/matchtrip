@@ -40,14 +40,16 @@
 </div>
 
 <!-- Custom action button for destination -->
-<div class="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-white p-4">
-	<button
-		onclick={handleNext}
-		disabled={!formData.destination}
-		class="w-full rounded-lg py-3 font-medium transition-colors {formData.destination
-			? 'bg-blue-500 text-white hover:bg-blue-600'
-			: 'cursor-not-allowed bg-gray-200 text-gray-400'}"
-	>
-		{buttonText}
-	</button>
+<div class="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white">
+	<div class="mx-auto max-w-[430px] p-4">
+		<button
+			onclick={handleNext}
+			disabled={!formData.destination}
+			class="w-full rounded-lg py-3 font-medium transition-colors {formData.destination
+				? 'bg-blue-500 text-white hover:bg-blue-600'
+				: 'cursor-not-allowed bg-gray-200 text-gray-400'}"
+		>
+			{buttonText}
+		</button>
+	</div>
 </div>

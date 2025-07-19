@@ -311,23 +311,25 @@
 
 	<!-- Fixed Bottom Button -->
 	<div class="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-white">
-		<div class="px-4 py-3 pb-8">
-			<button
-				onclick={submitReview}
-				disabled={!canSubmit || isSubmitting}
-				class="w-full rounded-xl py-3.5 font-semibold text-white transition-colors {canSubmit &&
-				!isSubmitting
-					? 'bg-[#1095f4] hover:bg-blue-600'
-					: 'bg-gray-300'}"
-			>
-				{#if isSubmitting}
-					<span
-						class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
-					></span>
-				{:else}
-					리뷰 등록하기
-				{/if}
-			</button>
+		<div class="mx-auto max-w-[430px]">
+			<div class="px-4 py-3 pb-8">
+				<button
+					onclick={submitReview}
+					disabled={!canSubmit || isSubmitting}
+					class="w-full rounded-xl py-3.5 font-semibold text-white transition-colors {canSubmit &&
+					!isSubmitting
+						? 'bg-[#1095f4] hover:bg-blue-600'
+						: 'bg-gray-300'}"
+				>
+					{#if isSubmitting}
+						<span
+							class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
+						></span>
+					{:else}
+						리뷰 등록하기
+					{/if}
+				</button>
+			</div>
 		</div>
 	</div>
 </div>

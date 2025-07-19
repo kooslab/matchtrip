@@ -180,12 +180,14 @@
 	</div>
 
 	<!-- Bottom CTA -->
-	<div class="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-white p-4 pb-24">
-		<button
-			onclick={() => goto(`/my-trips/${data.trip.id}`)}
-			class="w-full rounded-xl bg-[#1095f4] px-4 py-3.5 text-sm font-medium text-white transition-colors hover:bg-blue-600"
-		>
-			여행 상세보기
-		</button>
+	<div class="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-white pb-24">
+		<div class="mx-auto max-w-[430px] p-4">
+			<button
+				onclick={() => goto(`/my-trips/${data.trip.id}`)}
+				class="w-full rounded-xl bg-[#1095f4] px-4 py-3.5 text-sm font-medium text-white transition-colors hover:bg-blue-600"
+			>
+				여행 상세보기
+			</button>
+		</div>
 	</div>
 </div>

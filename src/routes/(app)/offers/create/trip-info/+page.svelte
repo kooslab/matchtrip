@@ -136,13 +136,15 @@
 
 <!-- Bottom Button -->
 <div
-	class="fixed right-0 bottom-0 left-0 bg-white px-4 py-4 pb-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
+	class="fixed right-0 bottom-0 left-0 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
 >
-	<button
-		onclick={handleNext}
-		class="w-full rounded-lg py-3.5 text-base font-semibold text-white transition-all hover:opacity-90"
-		style="background-color: {colors.primary}"
-	>
-		다음
-	</button>
+	<div class="mx-auto max-w-[430px] px-4 py-4 pb-4">
+		<button
+			onclick={handleNext}
+			class="w-full rounded-lg py-3.5 text-base font-semibold text-white transition-all hover:opacity-90"
+			style="background-color: {colors.primary}"
+		>
+			다음
+		</button>
+	</div>
 </div>

@@ -296,25 +296,27 @@
 
 	<!-- Bottom Buttons -->
 	<div class="fixed right-0 bottom-0 left-0 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-		<div class="container mx-auto max-w-3xl px-4 py-4">
-			{#if hasExistingOffer}
-				<button
-					onclick={handleViewOffer}
-					class="w-full rounded-lg bg-gray-500 py-3.5 text-base font-semibold text-white transition-all hover:bg-gray-600"
-				>
-					이미 제안함
-				</button>
-			{:else}
-				<button
-					onclick={handleMakeOffer}
-					class="w-full rounded-lg py-3.5 text-base font-semibold text-white transition-all active:scale-[0.98]"
-					style="background-color: {colors.primary}"
-					onmouseover={(e) => (e.currentTarget.style.backgroundColor = colors.primaryHover)}
-					onmouseout={(e) => (e.currentTarget.style.backgroundColor = colors.primary)}
-				>
-					제안하기
-				</button>
-			{/if}
+		<div class="mx-auto max-w-[430px]">
+			<div class="px-4 py-4">
+				{#if hasExistingOffer}
+					<button
+						onclick={handleViewOffer}
+						class="w-full rounded-lg bg-gray-500 py-3.5 text-base font-semibold text-white transition-all hover:bg-gray-600"
+					>
+						이미 제안함
+					</button>
+				{:else}
+					<button
+						onclick={handleMakeOffer}
+						class="w-full rounded-lg py-3.5 text-base font-semibold text-white transition-all active:scale-[0.98]"
+						style="background-color: {colors.primary}"
+						onmouseover={(e) => (e.currentTarget.style.backgroundColor = colors.primaryHover)}
+						onmouseout={(e) => (e.currentTarget.style.backgroundColor = colors.primary)}
+					>
+						제안하기
+					</button>
+				{/if}
+			</div>
 		</div>
 	</div>
 </div>

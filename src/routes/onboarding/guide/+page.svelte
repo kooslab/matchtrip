@@ -942,35 +942,37 @@
 		<div
 			class="fixed right-0 bottom-0 left-0 bg-white px-4 py-4 shadow-[0_-1px_3px_rgba(0,0,0,0.1)]"
 		>
-			{#if currentStep === 'documents'}
-				<div class="flex gap-3">
-					<button
-						onclick={() => handleNext()}
-						class="flex-1 rounded-lg border border-gray-300 bg-white py-3.5 text-base font-medium text-gray-700"
-					>
-						건너뛰기
-					</button>
+			<div class="mx-auto max-w-[430px]">
+				{#if currentStep === 'documents'}
+					<div class="flex gap-3">
+						<button
+							onclick={() => handleNext()}
+							class="flex-1 rounded-lg border border-gray-300 bg-white py-3.5 text-base font-medium text-gray-700"
+						>
+							건너뛰기
+						</button>
+						<button
+							onclick={handleNext}
+							disabled={isLoading}
+							class="flex-1 rounded-lg py-3.5 text-base font-semibold text-white transition-all
+								{!isLoading ? '' : 'cursor-not-allowed opacity-50'}"
+							style="background-color: {!isLoading ? colors.primary : '#CBD5E1'}"
+						>
+							{isLoading ? '처리중...' : '완료'}
+						</button>
+					</div>
+				{:else}
 					<button
 						onclick={handleNext}
-						disabled={isLoading}
-						class="flex-1 rounded-lg py-3.5 text-base font-semibold text-white transition-all
-							{!isLoading ? '' : 'cursor-not-allowed opacity-50'}"
-						style="background-color: {!isLoading ? colors.primary : '#CBD5E1'}"
+						disabled={!canProceed() || isLoading}
+						class="w-full rounded-lg py-3.5 text-base font-semibold text-white transition-all
+							{canProceed() && !isLoading ? '' : 'cursor-not-allowed opacity-50'}"
+						style="background-color: {canProceed() && !isLoading ? colors.primary : '#CBD5E1'}"
 					>
-						{isLoading ? '처리중...' : '완료'}
+						{isLoading ? '처리중...' : '다음'}
 					</button>
-				</div>
-			{:else}
-				<button
-					onclick={handleNext}
-					disabled={!canProceed() || isLoading}
-					class="w-full rounded-lg py-3.5 text-base font-semibold text-white transition-all
-						{canProceed() && !isLoading ? '' : 'cursor-not-allowed opacity-50'}"
-					style="background-color: {canProceed() && !isLoading ? colors.primary : '#CBD5E1'}"
-				>
-					{isLoading ? '처리중...' : '다음'}
-				</button>
-			{/if}
+				{/if}
+			</div>
 		</div>
 	{/if}
 </div>

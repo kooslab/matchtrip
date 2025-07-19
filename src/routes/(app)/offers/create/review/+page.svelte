@@ -191,37 +191,39 @@
 
 <!-- Bottom Button -->
 <div
-	class="fixed right-0 bottom-0 left-0 bg-white px-4 py-4 pb-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
+	class="fixed right-0 bottom-0 left-0 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
 >
-	<button
-		onclick={handleSubmit}
-		disabled={!$offerFormValidation.canSubmit || isSubmitting}
-		class="flex w-full items-center justify-center gap-2 rounded-lg py-3.5 text-base font-semibold text-white transition-all
-			{$offerFormValidation.canSubmit && !isSubmitting
-			? 'hover:opacity-90'
-			: 'cursor-not-allowed opacity-50'}"
-		style="background-color: {$offerFormValidation.canSubmit && !isSubmitting
-			? colors.primary
-			: '#CBD5E1'}"
-	>
-		{#if isSubmitting}
-			<svg
-				class="h-5 w-5 animate-spin text-white"
-				xmlns="http://www.w3.org/2000/svg"
-				fill="none"
-				viewBox="0 0 24 24"
-			>
-				<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
-				></circle>
-				<path
-					class="opacity-75"
-					fill="currentColor"
-					d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-				></path>
-			</svg>
-			제출 중...
-		{:else}
-			최종 제안
-		{/if}
-	</button>
+	<div class="mx-auto max-w-[430px] px-4 py-4 pb-4">
+		<button
+			onclick={handleSubmit}
+			disabled={!$offerFormValidation.canSubmit || isSubmitting}
+			class="flex w-full items-center justify-center gap-2 rounded-lg py-3.5 text-base font-semibold text-white transition-all
+				{$offerFormValidation.canSubmit && !isSubmitting
+				? 'hover:opacity-90'
+				: 'cursor-not-allowed opacity-50'}"
+			style="background-color: {$offerFormValidation.canSubmit && !isSubmitting
+				? colors.primary
+				: '#CBD5E1'}"
+		>
+			{#if isSubmitting}
+				<svg
+					class="h-5 w-5 animate-spin text-white"
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24"
+				>
+					<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
+					></circle>
+					<path
+						class="opacity-75"
+						fill="currentColor"
+						d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+					></path>
+				</svg>
+				제출 중...
+			{:else}
+				최종 제안
+			{/if}
+		</button>
+	</div>
 </div>
