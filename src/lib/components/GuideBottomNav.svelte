@@ -20,7 +20,7 @@
 	$: currentPath = $page.url.pathname;
 </script>
 
-<div class="fixed right-0 bottom-0 left-0 z-40">
+<div class="fixed bottom-0 left-1/2 z-40 w-full max-w-[430px] -translate-x-1/2">
 	<!-- Bottom Navigation -->
 	<nav
 		class="safe-area-bottom relative rounded-t-[20px] border-t border-[#f1f1f1] bg-white/95 shadow-[0px_-4px_12px_0px_rgba(0,0,0,0.02)] backdrop-blur-sm"
@@ -30,7 +30,7 @@
 				{#if currentPath === item.href}
 					<!-- Active state -->
 					<div class="flex flex-1 justify-center">
-						<div class="flex flex-col items-center gap-1 pt-0 pb-1">
+						<div class="flex flex-col items-center gap-1 pt-1 pb-0">
 							<div
 								class="flex h-8 w-8 items-center justify-center rounded-[20px] bg-[#1095f4] shadow-[0px_12px_12px_0px_rgba(98,120,246,0.12)]"
 								style="background-image: linear-gradient(157.454deg, rgba(54, 41, 241, 0) 0%, rgba(220, 220, 220, 0.4) 100%)"
@@ -39,6 +39,9 @@
 									{@html item.icon}
 								</div>
 							</div>
+							<span class="text-center text-[10px] leading-3 font-semibold text-[#1095f4]"
+								>{item.label}</span
+							>
 						</div>
 					</div>
 				{:else}

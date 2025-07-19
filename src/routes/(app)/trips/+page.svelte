@@ -19,6 +19,7 @@
 
 	let trips = $derived(data.trips);
 	let userRole = $derived(data.userRole);
+	let availableDestinations = $derived(data.destinations || []);
 
 	// Filter states
 	let selectedFilters = $state({
@@ -53,6 +54,29 @@
 	// Get unique destinations count
 	let uniqueDestinations = $derived(
 		new Set(trips.map((trip) => `${trip.destination.city}, ${trip.country.name}`)).size
+	);
+
+	// Clear all filters
+	function clearAllFilters() {
+		selectedCityIds.clear();
+		selectedDateRange = {};
+		peopleCount = { adults: 2, children: 0, infants: 0 };
+		selectedBudget = '100-200';
+		selectedFilters = {
+			destination: false,
+			dates: false,
+			people: false,
+			budget: false
+		};
+		goto('/trips');
+	}
+
+	// Check if any filter is active
+	let hasActiveFilters = $derived(
+		selectedFilters.destination || 
+		selectedFilters.dates || 
+		selectedFilters.people || 
+		selectedFilters.budget
 	);
 
 	// Get status display info
@@ -122,10 +146,11 @@
 	function applyCityFilter() {
 		if (selectedCityIds.size > 0) {
 			selectedFilters.destination = true;
-			// Get city names from the selector component
-			const selectedCities = citySelectorRef?.getCitiesByIds(Array.from(selectedCityIds)) || [];
-			const cityParams = selectedCities.map((c) => c.nameEn).join(',');
-			goto(`/trips?cities=${encodeURIComponent(cityParams)}`);
+			// Pass destination IDs directly
+			const destinationParams = Array.from(selectedCityIds).join(',');
+			const currentParams = new URLSearchParams(window.location.search);
+			currentParams.set('destinations', destinationParams);
+			goto(`/trips?${currentParams.toString()}`);
 		}
 		showCitySearchModal = false;
 	}
@@ -160,7 +185,10 @@
 			const startDateStr = formatDateString(startDate);
 			const endDateStr = formatDateString(endDate);
 
-			goto(`/trips?startDate=${startDateStr}&endDate=${endDateStr}`);
+			const currentParams = new URLSearchParams(window.location.search);
+			currentParams.set('startDate', startDateStr);
+			currentParams.set('endDate', endDateStr);
+			goto(`/trips?${currentParams.toString()}`);
 		}
 		showDateRangePicker = false;
 		dateRangeOpen = false;
@@ -184,10 +212,13 @@
 
 	function applyPeopleFilter() {
 		selectedFilters.people = true;
-		const totalPeople = peopleCount.adults + peopleCount.children + peopleCount.infants;
-		goto(
-			`/trips?adults=${peopleCount.adults}&children=${peopleCount.children}&infants=${peopleCount.infants}`
-		);
+		const currentParams = new URLSearchParams(window.location.search);
+		currentParams.set('adults', peopleCount.adults.toString());
+		currentParams.set('children', peopleCount.children.toString());
+		if (peopleCount.infants > 0) {
+			currentParams.set('infants', peopleCount.infants.toString());
+		}
+		goto(`/trips?${currentParams.toString()}`);
 		showPeopleSelector = false;
 	}
 
@@ -233,7 +264,14 @@
 
 	function applyBudgetFilter() {
 		selectedFilters.budget = true;
-		goto(`/trips?budget=${selectedBudget}`);
+		const currentParams = new URLSearchParams(window.location.search);
+		
+		// Parse budget range
+		const [min, max] = selectedBudget.split('-').map(v => parseInt(v));
+		if (min) currentParams.set('budgetMin', min.toString());
+		if (max) currentParams.set('budgetMax', max.toString());
+		
+		goto(`/trips?${currentParams.toString()}`);
 		showBudgetSelector = false;
 	}
 
@@ -318,6 +356,18 @@
 						class="h-3 w-3 {selectedFilters.budget ? 'brightness-0 invert' : ''}"
 					/>
 				</button>
+				
+				{#if hasActiveFilters}
+					<button
+						onclick={clearAllFilters}
+						class="flex flex-shrink-0 items-center gap-1 rounded-full border border-red-300 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100"
+					>
+						<svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+						</svg>
+						<span>필터 초기화</span>
+					</button>
+				{/if}
 			</div>
 		</div>
 	</div>
@@ -327,7 +377,7 @@
 		<div class="fixed inset-0 z-50 flex items-end justify-center">
 			<!-- Backdrop -->
 			<div
-				class="bg-opacity-50 absolute inset-0 bg-black"
+				class="absolute inset-0 bg-black/20 backdrop-blur-sm"
 				onclick={() => (showCitySearchModal = false)}
 			></div>
 
@@ -338,6 +388,7 @@
 				<CitySelector
 					bind:this={citySelectorRef}
 					selectedCities={selectedCityIds}
+					availableDestinations={availableDestinations}
 					onCityToggle={toggleCitySelection}
 					onClose={() => (showCitySearchModal = false)}
 					onSubmit={applyCityFilter}
@@ -358,7 +409,7 @@
 		<div class="fixed inset-0 z-50 flex items-end justify-center">
 			<!-- Backdrop -->
 			<div
-				class="bg-opacity-50 absolute inset-0 bg-black"
+				class="absolute inset-0 bg-black/20 backdrop-blur-sm"
 				onclick={() => (showDateRangePicker = false)}
 			></div>
 
@@ -480,7 +531,7 @@
 		<div class="fixed inset-0 z-50 flex items-end justify-center">
 			<!-- Backdrop -->
 			<div
-				class="bg-opacity-50 absolute inset-0 bg-black"
+				class="absolute inset-0 bg-black/20 backdrop-blur-sm"
 				onclick={() => (showPeopleSelector = false)}
 			></div>
 
@@ -669,7 +720,7 @@
 		<div class="fixed inset-0 z-50 flex items-end justify-center">
 			<!-- Backdrop -->
 			<div
-				class="bg-opacity-50 absolute inset-0 bg-black"
+				class="absolute inset-0 bg-black/20 backdrop-blur-sm"
 				onclick={() => (showBudgetSelector = false)}
 			></div>
 

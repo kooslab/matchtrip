@@ -27,6 +27,7 @@
 		submitText?: string;
 		title?: string;
 		showBackButton?: boolean;
+		availableDestinations?: any[];
 	}
 
 	let {
@@ -36,12 +37,18 @@
 		onSubmit,
 		submitText = '추가하기',
 		title = '',
-		showBackButton = true
+		showBackButton = true,
+		availableDestinations = []
 	}: Props = $props();
 
 	// State
 	let searchQuery = $state('');
-	let countries = $state<Country[]>([
+	
+	// Use available destinations if provided, otherwise use default
+	let countries = $state<Country[]>(
+		availableDestinations.length > 0
+			? transformDestinationsToCountries(availableDestinations)
+			: [
 		{
 			id: 'korea',
 			name: '국내',
@@ -241,7 +248,37 @@
 				}
 			]
 		}
-	]);
+	]
+	);
+	
+	// Transform destinations from database to country-grouped format
+	function transformDestinationsToCountries(destinations: any[]): Country[] {
+		const countryMap = new Map<string, Country>();
+		
+		destinations.forEach(dest => {
+			const countryKey = dest.country.id;
+			if (!countryMap.has(countryKey)) {
+				countryMap.set(countryKey, {
+					id: countryKey,
+					name: dest.country.name,
+					nameEn: dest.country.name,
+					isExpanded: false,
+					cities: []
+				});
+			}
+			
+			const country = countryMap.get(countryKey)!;
+			country.cities.push({
+				id: dest.id,
+				name: dest.city,
+				nameEn: dest.nameEn || dest.city,
+				country: dest.country.name,
+				countryEn: dest.country.name
+			});
+		});
+		
+		return Array.from(countryMap.values());
+	}
 
 	// Filter cities based on search query
 	const filteredCountries = $derived.by(() => {
