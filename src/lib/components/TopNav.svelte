@@ -3,7 +3,7 @@
 	import notificationIconUrl from '$lib/icons/icon-loudspeaker-mono.svg';
 </script>
 
-<header class="fixed top-0 right-0 left-0 z-40 border-b border-gray-200 bg-white">
+<header class="fixed top-0 left-1/2 z-40 w-full max-w-[430px] -translate-x-1/2 border-b border-gray-200 bg-white">
 	<div class="flex h-14 items-center justify-between px-4">
 		<h1 class="text-xl font-bold text-gray-900">Matchtrip</h1>
 

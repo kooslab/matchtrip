@@ -261,4 +261,6 @@
 {/if}
 -->
 
-<slot />
+<div class="mx-auto max-w-[430px] min-h-screen bg-white">
+	<slot />
+</div>

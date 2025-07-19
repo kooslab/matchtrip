@@ -100,12 +100,12 @@
 	<title>채팅 - MatchTrip</title>
 </svelte:head>
 
-<div class="min-h-screen bg-white">
+<div class="min-h-screen bg-gray-50/50">
 	{#if loading}
 		<!-- Loading skeleton -->
 		<div class="space-y-0">
-			{#each [1, 2, 3] as _}
-				<div class="border-gray-f1 border-b px-4 py-4">
+			{#each [1, 2, 3] as _, index}
+				<div class="border-b border-gray-200/50 px-4 py-4 {index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">
 					<div class="flex items-start gap-3">
 						<div class="h-14 w-14 animate-pulse rounded-full bg-gray-200"></div>
 						<div class="flex-1">
@@ -142,10 +142,11 @@
 	{:else}
 		<!-- Chat list -->
 		<div class="space-y-0">
-			{#each conversations as conversation}
+			{#each conversations as conversation, index}
 				<div
-					class="border-gray-f1 border-b transition-colors hover:bg-gray-50 {conversation.hasUnread ||
-					conversation.unreadCount > 0
+					class="border-b border-gray-200/50 transition-colors hover:bg-gray-100/50 {index % 2 === 0
+						? 'bg-white'
+						: 'bg-gray-50'} {conversation.hasUnread || conversation.unreadCount > 0
 						? 'bg-blue-50/30'
 						: ''}"
 				>
@@ -160,11 +161,11 @@
 									<img
 										src={conversation.otherUser.image}
 										alt={conversation.otherUser.name}
-										class="border-gray-f7 h-14 w-14 rounded-full border object-cover"
+										class="h-14 w-14 rounded-full object-cover"
 									/>
 								{:else}
 									<div
-										class="border-gray-f7 flex h-14 w-14 items-center justify-center rounded-full border bg-gray-200"
+										class="flex h-14 w-14 items-center justify-center rounded-full bg-gray-200"
 									>
 										<span class="text-lg font-medium text-gray-600">
 											{conversation.otherUser.name.charAt(0)}

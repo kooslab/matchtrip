@@ -445,84 +445,6 @@
 				</div>
 			</div>
 
-			<!-- Bottom Button -->
-			<div class="fixed right-0 bottom-14 left-0 border-t border-gray-200 bg-white">
-				<div
-					class="relative box-border flex w-full flex-row content-stretch items-center justify-start gap-4 py-2 pr-4 pl-5"
-				>
-					<button
-						class="relative size-5 shrink-0 -rotate-90 overflow-clip opacity-40"
-						onclick={() => {
-							/* Handle dots menu */
-						}}
-					>
-						<div class="absolute top-[13.454%] right-[13.454%] bottom-[13.454%] left-[13.454%]">
-							<img alt="" class="block size-full max-w-none" src={dotsIconUrl} />
-						</div>
-					</button>
-					{#if offers.length === 0}
-						<button
-							onclick={() => goto(`/my-trips/${trip.id}/edit`)}
-							class="relative flex h-12 min-h-px min-w-px shrink-0 grow basis-0 flex-row items-center justify-center rounded-[9px] bg-[#1095f4]"
-						>
-							<div
-								class="relative box-border flex h-12 w-full flex-row content-stretch items-center justify-center gap-2.5 px-6 py-3.5"
-							>
-								<div
-									class="relative shrink-0 text-center text-[14px] leading-[0] font-semibold text-nowrap text-[#ffffff] not-italic"
-								>
-									<p class="block leading-[20px] whitespace-pre">계획 변경하기</p>
-								</div>
-							</div>
-						</button>
-					{:else if acceptedOffer}
-						{#if canWriteReview()}
-							<button
-								onclick={() => {
-									console.log('Review button clicked', {
-										review,
-										reviewToken: review?.reviewToken
-									});
-									if (review?.reviewToken) {
-										goto(`/write-review/${review.reviewToken}`);
-									} else {
-										console.error('No review token available');
-										alert('리뷰를 작성하려면 먼저 가이드가 리뷰 요청을 보내야 합니다.');
-									}
-								}}
-								class="relative flex h-12 min-h-px min-w-px shrink-0 grow basis-0 flex-row items-center justify-center rounded-[9px] bg-[#19b989]"
-							>
-								<div
-									class="relative box-border flex h-12 w-full flex-row content-stretch items-center justify-center gap-2.5 px-6 py-3.5"
-								>
-									<img src={starIconUrl} alt="star" class="h-4 w-4 brightness-0 invert" />
-									<div
-										class="relative shrink-0 text-center text-[14px] leading-[0] font-semibold text-nowrap text-[#ffffff] not-italic"
-									>
-										<p class="block leading-[20px] whitespace-pre">리뷰 작성하기</p>
-									</div>
-								</div>
-							</button>
-						{:else}
-							<button
-								onclick={() => startConversation(acceptedOffer.id)}
-								class="relative flex h-12 min-h-px min-w-px shrink-0 grow basis-0 flex-row items-center justify-center rounded-[9px] bg-[#1095f4]"
-							>
-								<div
-									class="relative box-border flex h-12 w-full flex-row content-stretch items-center justify-center gap-2.5 px-6 py-3.5"
-								>
-									<img src={chatIconUrl} alt="chat" class="h-4 w-4 brightness-0 invert" />
-									<div
-										class="relative shrink-0 text-center text-[14px] leading-[0] font-semibold text-nowrap text-[#ffffff] not-italic"
-									>
-										<p class="block leading-[20px] whitespace-pre">대화하기</p>
-									</div>
-								</div>
-							</button>
-						{/if}
-					{/if}
-				</div>
-			</div>
 		{:else}
 			<!-- Offers Tab -->
 			<div class="px-4 py-4">
@@ -586,6 +508,55 @@
 					</div>
 				{/if}
 			</div>
+		{/if}
+	</div>
+</div>
+
+<!-- Bottom Button -->
+<div class="fixed bottom-0 left-1/2 z-30 w-full max-w-[430px] -translate-x-1/2 border-t border-gray-200 bg-white">
+	<div class="flex items-center gap-3 px-4 py-3">
+		<button
+			class="h-5 w-5 -rotate-90 opacity-40"
+			onclick={() => {
+				/* Handle dots menu */
+			}}
+		>
+			<img alt="More options" class="h-full w-full" src={dotsIconUrl} />
+		</button>
+		{#if offers.length === 0}
+			<button
+				onclick={() => goto(`/my-trips/${trip.id}/edit`)}
+				class="flex h-12 flex-1 items-center justify-center rounded-[9px] bg-[#1095f4] px-6 py-3.5 text-sm font-semibold text-white"
+			>
+				계획 변경하기
+			</button>
+		{:else if acceptedOffer && canWriteReview()}
+			<button
+				onclick={() => {
+					console.log('Review button clicked', {
+						review,
+						reviewToken: review?.reviewToken
+					});
+					if (review?.reviewToken) {
+						goto(`/write-review/${review.reviewToken}`);
+					} else {
+						console.error('No review token available');
+						alert('리뷰를 작성하려면 먼저 가이드가 리뷰 요청을 보내야 합니다.');
+					}
+				}}
+				class="flex h-12 flex-1 items-center justify-center gap-2.5 rounded-[9px] bg-[#19b989] px-6 py-3.5 text-sm font-semibold text-white"
+			>
+				<img src={starIconUrl} alt="star" class="h-4 w-4 brightness-0 invert" />
+				리뷰 작성하기
+			</button>
+		{:else}
+			<button
+				onclick={() => goto('/chat')}
+				class="flex h-12 flex-1 items-center justify-center gap-2.5 rounded-[9px] bg-[#1095f4] px-6 py-3.5 text-sm font-semibold text-white"
+			>
+				<img src={chatIconUrl} alt="chat" class="h-4 w-4 brightness-0 invert" />
+				대화하기
+			</button>
 		{/if}
 	</div>
 </div>
