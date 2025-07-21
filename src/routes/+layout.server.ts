@@ -3,10 +3,42 @@ import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 
+// Helper function to filter sensitive headers
+function getFilteredHeaders(headers: Headers): Record<string, string> {
+	const allowedHeaders = [
+		'accept',
+		'accept-language',
+		'host',
+		'referer',
+		'user-agent',
+		'sec-fetch-dest',
+		'sec-fetch-mode',
+		'sec-fetch-site'
+	];
+	
+	const filtered: Record<string, string> = {};
+	
+	for (const [key, value] of headers.entries()) {
+		if (allowedHeaders.includes(key.toLowerCase())) {
+			// Truncate very long values
+			filtered[key] = value.length > 100 ? value.substring(0, 100) + '...' : value;
+		}
+	}
+	
+	// Add a count of hidden headers for debugging
+	const totalHeaders = Array.from(headers.entries()).length;
+	const hiddenCount = totalHeaders - Object.keys(filtered).length;
+	if (hiddenCount > 0) {
+		filtered['[hidden-headers-count]'] = `${hiddenCount} headers hidden (including cookies)`;
+	}
+	
+	return filtered;
+}
+
 export const load = async ({ request, locals }) => {
 	console.log('[LAYOUT SERVER] Starting load function');
 	console.log('[LAYOUT SERVER] Request URL:', request.url);
-	console.log('[LAYOUT SERVER] Request headers:', Object.fromEntries(request.headers.entries()));
+	console.log('[LAYOUT SERVER] Request headers:', getFilteredHeaders(request.headers));
 
 	try {
 		console.log('[LAYOUT SERVER] Getting session from auth.api');
