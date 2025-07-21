@@ -14,12 +14,10 @@
 
 	// Budget options
 	const budgetOptions = [
-		{ id: 'budget', name: '예산 중심 (50만원 이하)', min: 0, max: 500000 },
-		{ id: 'standard', name: '일반 (50-150만원)', min: 500000, max: 1500000 },
-		{ id: 'comfort', name: '여유 (150-300만원)', min: 1500000, max: 3000000 },
-		{ id: 'premium', name: '프리미엄 (300-500만원)', min: 3000000, max: 5000000 },
-		{ id: 'luxury', name: '럭셔리 (500만원 이상)', min: 5000000, max: null },
-		{ id: 'flexible', name: '예산 유연', min: null, max: null }
+		{ id: 'budget', name: '10~50만원', min: 100000, max: 500000 },
+		{ id: 'standard', name: '50만원~100만원', min: 500000, max: 1000000 },
+		{ id: 'comfort', name: '100만원~200만원', min: 1000000, max: 2000000 },
+		{ id: 'premium', name: '200만원 이상', min: 2000000, max: null }
 	];
 
 	// Select budget
