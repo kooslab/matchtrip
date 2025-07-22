@@ -6,12 +6,23 @@
 
 	let { formData, onUpdate }: Props = $props();
 
-	// Local state
-	let additionalRequest = $state(formData.additionalRequest || '');
+	// Local state - check both customRequest and additionalRequest fields
+	let additionalRequest = $state(formData.customRequest || formData.additionalRequest || '');
 
 	// Update parent when text changes
-	$effect(() => {
+	function handleInput(e: Event) {
+		const target = e.target as HTMLTextAreaElement;
+		additionalRequest = target.value;
+		onUpdate('customRequest', additionalRequest);
 		onUpdate('additionalRequest', additionalRequest);
+	}
+
+	// Update local state when formData changes
+	$effect(() => {
+		const newValue = formData.customRequest || formData.additionalRequest || '';
+		if (newValue !== additionalRequest) {
+			additionalRequest = newValue;
+		}
 	});
 
 	// Validation
@@ -30,7 +41,8 @@
 	<div class="px-4 pb-6">
 		<label class="mb-2 block text-xs font-medium text-gray-700">요청사항 (선택)</label>
 		<textarea
-			bind:value={additionalRequest}
+			value={additionalRequest}
+			oninput={handleInput}
 			placeholder="예: 특별한 음식 제한, 접근성 요구사항, 특정 장소 방문 희망 등"
 			class="min-h-[150px] w-full resize-y rounded-lg border border-gray-300 p-4 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
 		/>

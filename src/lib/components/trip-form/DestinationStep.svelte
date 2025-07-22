@@ -10,7 +10,9 @@
 
 	// Search state
 	let searchQuery = $state(
-		formData.destination ? `${formData.destination.city}, ${formData.destination.country}` : ''
+		formData.destination && typeof formData.destination === 'object' 
+			? `${formData.destination.city}, ${formData.destination.country}` 
+			: ''
 	);
 	let results = $state<any[]>([]);
 	let loading = $state(false);
@@ -53,7 +55,11 @@
 
 	// Select destination
 	function selectDestination(destination: any) {
-		onUpdate('destination', `${destination.city}, ${destination.country}`);
+		onUpdate('destination', {
+			id: destination.id,
+			city: destination.city,
+			country: destination.country
+		});
 		onUpdate('destinationId', destination.id);
 		searchQuery = `${destination.city}, ${destination.country}`;
 		showDropdown = false;
@@ -61,7 +67,7 @@
 
 	// Validation
 	export function validate() {
-		if (!formData.destination || !formData.destinationId) {
+		if (!formData.destination || typeof formData.destination !== 'object' || !formData.destination.id) {
 			alert('목적지를 선택해주세요.');
 			return false;
 		}
@@ -111,7 +117,7 @@
 	</div>
 
 	<!-- Selected destination display -->
-	{#if formData.destination}
+	{#if formData.destination && typeof formData.destination === 'object'}
 		<div class="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-3">
 			<p class="text-sm text-blue-600">선택된 목적지:</p>
 			<p class="font-medium text-blue-900">

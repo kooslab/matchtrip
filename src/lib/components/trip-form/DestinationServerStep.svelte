@@ -3,6 +3,8 @@
 		id: number;
 		city: string;
 		imageUrl: string | null;
+		latitude?: number;
+		longitude?: number;
 		country: {
 			id: number;
 			name: string;
@@ -34,7 +36,13 @@
 
 	// Select destination
 	function selectDestination(destination: Destination) {
-		onUpdate('destination', `${destination.city}, ${destination.country.name}`);
+		onUpdate('destination', {
+			id: destination.id,
+			city: destination.city,
+			country: destination.country.name,
+			latitude: destination.latitude,
+			longitude: destination.longitude
+		});
 		onUpdate('destinationId', destination.id);
 	}
 

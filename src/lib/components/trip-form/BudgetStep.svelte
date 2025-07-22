@@ -8,10 +8,6 @@
 
 	let { formData, onUpdate }: Props = $props();
 
-	// Local state
-	let selectedBudget = $state(formData.budget || null);
-	let showModal = $state(false);
-
 	// Budget options
 	const budgetOptions = [
 		{ id: 'budget', name: '10~50만원', min: 100000, max: 500000 },
@@ -20,10 +16,52 @@
 		{ id: 'premium', name: '200만원 이상', min: 2000000, max: null }
 	];
 
+	// Initialize selected budget from minBudget/maxBudget
+	function getInitialBudget() {
+		// If formData.budget is already set as an object, use it
+		if (formData.budget && typeof formData.budget === 'object') {
+			return formData.budget;
+		}
+		
+		// Otherwise, try to match based on minBudget/maxBudget
+		if (formData.minBudget || formData.maxBudget) {
+			const min = formData.minBudget ? formData.minBudget * 10000 : 0; // Convert from 만원 to won
+			const max = formData.maxBudget ? formData.maxBudget * 10000 : null;
+			
+			// Find matching budget option
+			return budgetOptions.find(option => {
+				if (option.max === null) {
+					// Premium option (200만원 이상)
+					return min >= option.min;
+				}
+				// Check if the stored values match or are within the option range
+				return (min >= option.min && min <= option.max) || 
+					   (max && max >= option.min && max <= option.max);
+			}) || null;
+		}
+		
+		return null;
+	}
+
+	// Local state
+	let selectedBudget = $state(getInitialBudget());
+	let showModal = $state(false);
+
+	// Update selected budget when formData changes
+	$effect(() => {
+		const newBudget = getInitialBudget();
+		if (newBudget?.id !== selectedBudget?.id) {
+			selectedBudget = newBudget;
+		}
+	});
+
 	// Select budget
 	function selectBudget(budget: any) {
 		selectedBudget = budget;
 		onUpdate('budget', budget);
+		// Also update minBudget and maxBudget in 만원 units
+		onUpdate('minBudget', budget.min / 10000);
+		onUpdate('maxBudget', budget.max ? budget.max / 10000 : null);
 		showModal = false;
 	}
 

@@ -1,4 +1,4 @@
-import { writable, get } from 'svelte/store';
+import { writable, get, derived } from 'svelte/store';
 import type { Trip } from '$lib/server/db/schema';
 
 interface TripEditForm {
@@ -10,6 +10,7 @@ interface TripEditForm {
 		latitude?: number;
 		longitude?: number;
 	} | null;
+	destinationId?: number;
 
 	// Step 2: Dates
 	startDate: Date | null;
@@ -18,43 +19,44 @@ interface TripEditForm {
 	// Step 3: Travelers
 	adultsCount: number;
 	childrenCount: number;
+	babiesCount: number;
 
 	// Step 4: Travel Style
-	tourType: string;
+	travelStyle: string;
 
 	// Step 5: Budget
 	minBudget: number | null;
 	maxBudget: number | null;
+	budget?: string;
 
-	// Step 6: Transportation
-	travelMethod: string;
-	needsDriver: boolean;
-
-	// Step 7: Accommodation
-	accommodationType?: string;
-	accommodationPreferences?: string;
-
-	// Step 8: Activities
+	// Step 6: Activity
 	activities?: string[];
-	interests?: string[];
 
-	// Step 9: Special Requests
+	// Step 7: Additional Request
 	customRequest: string;
+	additionalRequest?: string;
+
+	// Step 8: Files
+	file?: File | null;
 }
 
 function createTripEditStore() {
 	const { subscribe, set, update } = writable<TripEditForm>({
 		destination: null,
+		destinationId: undefined,
 		startDate: null,
 		endDate: null,
 		adultsCount: 1,
 		childrenCount: 0,
-		tourType: '',
+		babiesCount: 0,
+		travelStyle: '',
 		minBudget: null,
 		maxBudget: null,
-		travelMethod: '',
-		needsDriver: false,
-		customRequest: ''
+		budget: undefined,
+		activities: [],
+		customRequest: '',
+		additionalRequest: undefined,
+		file: null
 	});
 
 	return {
@@ -65,21 +67,27 @@ function createTripEditStore() {
 		// Initialize from existing trip data
 		initializeFromTrip: (trip: any) => {
 			set({
-				destination: trip.destination || null,
+				destination: trip.destination ? {
+					id: trip.destination.id,
+					city: trip.destination.city,
+					country: trip.destination.country?.name || trip.destination.country,
+					latitude: trip.destination.latitude,
+					longitude: trip.destination.longitude
+				} : null,
+				destinationId: trip.destination?.id || trip.destinationId,
 				startDate: trip.startDate ? new Date(trip.startDate) : null,
 				endDate: trip.endDate ? new Date(trip.endDate) : null,
 				adultsCount: trip.adultsCount || 1,
 				childrenCount: trip.childrenCount || 0,
-				tourType: trip.tourType || '',
-				minBudget: trip.minBudget || null,
-				maxBudget: trip.maxBudget || null,
-				travelMethod: trip.travelMethod || '',
-				needsDriver: trip.needsDriver || false,
-				customRequest: trip.customRequest || '',
-				accommodationType: trip.accommodationType,
-				accommodationPreferences: trip.accommodationPreferences,
-				activities: trip.activities,
-				interests: trip.interests
+				babiesCount: trip.babiesCount || 0,
+				travelStyle: trip.travelStyle || trip.tourType || '',
+				minBudget: trip.minBudget || trip.budgetMin || null,
+				maxBudget: trip.maxBudget || trip.budgetMax || null,
+				budget: trip.budget,
+				activities: trip.activities || [],
+				customRequest: trip.customRequest || trip.additionalRequest || '',
+				additionalRequest: trip.additionalRequest || trip.customRequest || '',
+				file: null
 			});
 		},
 
@@ -92,7 +100,28 @@ function createTripEditStore() {
 		},
 
 		// Get current form data
-		getData: () => get({ subscribe })
+		getData: () => get({ subscribe }),
+
+		// Reset form
+		reset: () => {
+			set({
+				destination: null,
+				destinationId: undefined,
+				startDate: null,
+				endDate: null,
+				adultsCount: 1,
+				childrenCount: 0,
+				babiesCount: 0,
+				travelStyle: '',
+				minBudget: null,
+				maxBudget: null,
+				budget: undefined,
+				activities: [],
+				customRequest: '',
+				additionalRequest: undefined,
+				file: null
+			});
+		}
 	};
 }
 

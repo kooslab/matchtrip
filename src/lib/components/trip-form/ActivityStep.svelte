@@ -9,6 +9,13 @@
 	// Local state
 	let selectedActivities = $state(formData.activities || []);
 
+	// Update selected activities when formData changes
+	$effect(() => {
+		if (formData.activities && JSON.stringify(formData.activities) !== JSON.stringify(selectedActivities)) {
+			selectedActivities = formData.activities;
+		}
+	});
+
 	// Activity options
 	const activityOptions = [
 		{ id: 'city-tour', name: '시내투어', icon: '🏙️' },

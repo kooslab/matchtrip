@@ -2,14 +2,14 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { tripEditForm } from '$lib/stores/tripEditForm';
-	import BudgetStep from '$lib/components/trip-form/BudgetStep.svelte';
+	import FilesStep from '$lib/components/trip-form/FilesStep.svelte';
 	import ActionButtons from '$lib/components/trip-form/ActionButtons.svelte';
 	import { onMount } from 'svelte';
 
 	let { data } = $props();
 	let trip = $derived(data.trip);
 
-	let budgetStep: any;
+	let filesStep: any;
 	
 	// Subscribe to store and make it reactive
 	let storeData = $state({});
@@ -33,20 +33,18 @@
 
 	// Navigation
 	function handleNext() {
-		if (budgetStep.validate()) {
-			goto(`/my-trips/${trip.id}/edit/activity`);
+		if (filesStep.validate()) {
+			goto(`/my-trips/${trip.id}/edit/complete`);
 		}
 	}
 
 	function handleBack() {
-		goto(`/my-trips/${trip.id}/edit/travel-style`);
+		goto(`/my-trips/${trip.id}/edit/additional-request`);
 	}
 </script>
 
 <div class="flex-1 overflow-y-auto pb-32">
-	{#if formData.minBudget !== undefined || formData.maxBudget !== undefined}
-		<BudgetStep bind:this={budgetStep} {formData} onUpdate={handleUpdate} />
-	{/if}
+	<FilesStep bind:this={filesStep} {formData} onUpdate={handleUpdate} />
 </div>
 
 <ActionButtons onNext={handleNext} onBack={handleBack} hasBottomNav={false} />

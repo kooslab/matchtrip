@@ -12,36 +12,25 @@
 
 	let { formData, onUpdate }: Props = $props();
 
+	// Helper to convert date to CalendarDate
+	function toCalendarDate(date: any): CalendarDate | undefined {
+		if (!date) return undefined;
+		
+		const jsDate = typeof date === 'string' ? new Date(date) : date;
+		if (jsDate instanceof Date && !isNaN(jsDate.getTime())) {
+			return new CalendarDate(
+				jsDate.getFullYear(),
+				jsDate.getMonth() + 1, // CalendarDate months are 1-indexed
+				jsDate.getDate()
+			);
+		}
+		return undefined;
+	}
+
 	// Initialize dates as CalendarDate objects for bits-ui
 	let value = $state<{ start: CalendarDate | undefined; end: CalendarDate | undefined }>({
-		start: undefined,
-		end: undefined
-	});
-
-	// Initialize from formData
-	$effect(() => {
-		if (formData.startDate) {
-			const date =
-				typeof formData.startDate === 'string' ? new Date(formData.startDate) : formData.startDate;
-			if (date instanceof Date && !isNaN(date.getTime())) {
-				value.start = new CalendarDate(
-					date.getFullYear(),
-					date.getMonth() + 1, // CalendarDate months are 1-indexed
-					date.getDate()
-				);
-			}
-		}
-		if (formData.endDate) {
-			const date =
-				typeof formData.endDate === 'string' ? new Date(formData.endDate) : formData.endDate;
-			if (date instanceof Date && !isNaN(date.getTime())) {
-				value.end = new CalendarDate(
-					date.getFullYear(),
-					date.getMonth() + 1, // CalendarDate months are 1-indexed
-					date.getDate()
-				);
-			}
-		}
+		start: toCalendarDate(formData.startDate),
+		end: toCalendarDate(formData.endDate)
 	});
 
 	// Update parent when dates change
@@ -169,12 +158,14 @@
 													transition-all
 													hover:bg-gray-100
 													data-disabled:text-gray-300 data-disabled:hover:bg-transparent
-													data-outside-month:text-gray-300 data-selected:bg-blue-500
-													data-selected:text-white
-													data-selected:hover:bg-blue-600 data-selection-end:rounded-r-full
-													data-selection-end:bg-blue-500 data-selection-end:text-white data-selection-end:hover:bg-blue-600
-													data-selection-start:rounded-l-full data-selection-start:bg-blue-500 data-selection-start:text-white data-selection-start:hover:bg-blue-600
-													data-today:font-semibold data-today:text-blue-600 data-unavailable:text-gray-300 data-unavailable:hover:bg-transparent"
+													data-outside-month:text-gray-300
+													data-selected:bg-blue-500 data-selected:!text-white
+													data-selected:hover:bg-blue-600
+													data-selection-start:rounded-l-full data-selection-start:bg-blue-500 data-selection-start:!text-white data-selection-start:hover:bg-blue-600
+													data-selection-end:rounded-r-full data-selection-end:bg-blue-500 data-selection-end:!text-white data-selection-end:hover:bg-blue-600
+													data-today:font-semibold data-today:text-blue-600
+													data-unavailable:text-gray-300 data-unavailable:hover:bg-transparent
+													[&[data-selected][data-today]]:!text-white [&[data-selection-start][data-today]]:!text-white [&[data-selection-end][data-today]]:!text-white"
 												>
 													{date.day}
 												</DateRangePicker.Day>

@@ -14,7 +14,11 @@ export const load = (async ({ params, locals }) => {
 	const trip = await db.query.trips.findFirst({
 		where: eq(trips.id, params.id),
 		with: {
-			destination: true
+			destination: {
+				with: {
+					country: true
+				}
+			}
 		}
 	});
 

@@ -12,6 +12,7 @@
 	import dotsIconUrl from '$lib/icons/icon-dots-four-horizontal-mono.svg';
 	import chatIconUrl from '$lib/icons/icon-chat-bubble-dots-mono.svg';
 	import starIconUrl from '$lib/icons/icon-star-mono.svg';
+	import { formatTravelStyle, formatTravelMethod, formatActivities, formatTripStatus, formatOfferStatus } from '$lib/utils/travelFormatters';
 
 	interface TripData {
 		id: string;
@@ -98,35 +99,8 @@
 		});
 	}
 
-	function formatTravelMethod(method: string | null) {
-		if (!method) return '미정';
-
-		const methodMap: Record<string, string> = {
-			walking: '도보',
-			driving: '자동차',
-			public_transport: '대중교통',
-			bike: '자전거',
-			'walking+public_transport': '도보+대중교통',
-			'walking+bike': '도보+자전거',
-			'walking+driving': '도보+자동차',
-			'walking+driving+public_transport': '도보+자동차+대중교통',
-			'walking+driving+bike': '도보+자동차+자전거',
-			'walking+driving+public_transport+bike': '모든 교통수단',
-			other: '기타'
-		};
-
-		return methodMap[method] || method;
-	}
-
 	function getStatusText(status: string) {
-		const statusMap: Record<string, string> = {
-			draft: '임시저장',
-			submitted: '제출됨',
-			accepted: '수락됨',
-			completed: '완료됨',
-			cancelled: '취소됨'
-		};
-		return statusMap[status] || status;
+		return formatTripStatus(status);
 	}
 
 	function getStatusColor(status: string) {
@@ -141,13 +115,7 @@
 	}
 
 	function getOfferStatusText(status: string) {
-		const statusMap: Record<string, string> = {
-			pending: '검토 중',
-			accepted: '수락됨',
-			rejected: '거절됨',
-			withdrawn: '철회됨'
-		};
-		return statusMap[status] || status;
+		return formatOfferStatus(status);
 	}
 
 	function getOfferStatusColor(status: string) {
@@ -160,38 +128,6 @@
 		return colorMap[status] || 'bg-gray-100 text-gray-800';
 	}
 
-	function formatTravelStyle(style: string | null) {
-		if (!style) return '미정';
-
-		const styleMap: Record<string, string> = {
-			friends: '친구들과 함께 하는 여행',
-			parents: '부모님과 함께 하는 여행',
-			children: '자녀와 함께 하는 여행',
-			business: '직장동료와 함께하는 비즈니스 여행',
-			other: '기타여행'
-		};
-
-		return styleMap[style] || style;
-	}
-
-	function formatActivities(activities: string[] | null) {
-		if (!activities || activities.length === 0) return '미정';
-
-		const activityMap: Record<string, string> = {
-			'city-tour': '시내투어',
-			'suburb-tour': '근교투어',
-			'snap-photo': '스냅사진',
-			'vehicle-tour': '차량투어',
-			'airport-pickup': '공항픽업',
-			'bus-charter': '버스대절',
-			interpretation: '통역 서비스',
-			accommodation: '숙박(민박)',
-			'organization-visit': '기관방문',
-			'other-tour': '기타투어'
-		};
-
-		return activities.map((activity) => activityMap[activity] || activity).join(' / ');
-	}
 
 	function formatBudget(amount: number | null): string {
 		if (!amount) return '';
@@ -302,16 +238,14 @@
 				class="flex-1 py-3 text-sm font-medium {activeTab === 'info'
 					? 'border-b-2 border-gray-900 text-gray-900'
 					: 'text-gray-500'}"
-				onclick={() => (activeTab = 'info')}
-			>
+				onclick={() => (activeTab = 'info')}>
 				여행 정보
 			</button>
 			<button
 				class="flex-1 py-3 text-sm font-medium {activeTab === 'offers'
 					? 'border-b-2 border-gray-900 text-gray-900'
 					: 'text-gray-500'}"
-				onclick={() => (activeTab = 'offers')}
-			>
+				onclick={() => (activeTab = 'offers')}>
 				받은 제안 ({offers.length})
 			</button>
 		</div>
@@ -330,9 +264,9 @@
 							<div>
 								<p class="text-2xl font-bold text-gray-900">
 									{#if trip.budgetMin || trip.budgetMax}
-										{formatBudget(trip.budgetMin)}{#if trip.budgetMin && trip.budgetMax}
+										{formatBudget(trip.budgetMin ? trip.budgetMin * 10000 : null)}{#if trip.budgetMin && trip.budgetMax}
 											~
-										{/if}{formatBudget(trip.budgetMax)}
+										{/if}{formatBudget(trip.budgetMax ? trip.budgetMax * 10000 : null)}
 									{:else}
 										미정
 									{/if}
@@ -346,8 +280,7 @@
 						<div class="flex items-center justify-between">
 							<span class="text-sm text-gray-600">현재 상태</span>
 							<span
-								class="inline-flex items-center rounded-md bg-green-600 px-3 py-1 text-xs font-medium text-white"
-							>
+								class="inline-flex items-center rounded-md bg-green-600 px-3 py-1 text-xs font-medium text-white">
 								{getStatusText(trip.status)}
 							</span>
 						</div>
@@ -356,11 +289,9 @@
 							<span class="text-sm text-gray-600">여행 일정</span>
 							<div class="text-right">
 								<span class="text-sm font-medium text-blue-600"
-									>{formatKoreanDateRange(trip.startDate, trip.endDate)}</span
-								>
+									>{formatKoreanDateRange(trip.startDate, trip.endDate)}</span>
 								<span class="ml-2 text-sm text-gray-600"
-									>{calculateNightsAndDays(trip.startDate, trip.endDate)}</span
-								>
+									>{calculateNightsAndDays(trip.startDate, trip.endDate)}</span>
 							</div>
 						</div>
 
@@ -388,63 +319,64 @@
 				</div>
 
 				<!-- Custom Request Section -->
-				{#if trip.customRequest}
+				{#if trip.customRequest || trip.additionalRequest}
 					<div class="rounded-lg bg-white">
 						<button
 							class="flex w-full items-center justify-between p-4"
-							onclick={() => (expandedSections.request = !expandedSections.request)}
-						>
+							onclick={() => (expandedSections.request = !expandedSections.request)}>
 							<h2 class="text-base font-semibold text-gray-900">요청 사항</h2>
 							<div class="h-5 w-5">
 								<ChevronDown
 									class="h-full w-full flex-shrink-0 text-gray-400 transition-transform {expandedSections.request
 										? 'rotate-180'
-										: ''}"
-								/>
+										: ''}" />
 							</div>
 						</button>
 						{#if expandedSections.request}
 							<div class="px-4 pb-4">
-								<p class="text-sm text-gray-600">{trip.customRequest}</p>
+								<p class="text-sm text-gray-600">{trip.customRequest || trip.additionalRequest}</p>
 							</div>
 						{/if}
 					</div>
 				{/if}
 
 				<!-- Attached Files Section -->
-				<div class="rounded-lg bg-white">
-					<button
-						class="flex w-full items-center justify-between p-4"
-						onclick={() => (expandedSections.files = !expandedSections.files)}
-					>
-						<h2 class="text-base font-semibold text-gray-900">첨부 파일</h2>
-						<div class="h-5 w-5">
-							<ChevronDown
-								class="h-full w-full flex-shrink-0 text-gray-400 transition-transform {expandedSections.files
-									? 'rotate-180'
-									: ''}"
-							/>
-						</div>
-					</button>
-					{#if expandedSections.files}
-						<div class="px-4 pb-4">
-							<div class="flex items-center justify-between rounded-lg bg-gray-50 p-3">
-								<div class="flex items-center gap-3">
-									<img src={pdfIconUrl} alt="PDF" class="h-8 w-8" />
-									<div>
-										<p class="text-sm font-medium text-gray-900">여행계획표.pdf</p>
-										<p class="text-xs text-gray-500">2MB</p>
-									</div>
-								</div>
-								<button class="rounded-lg p-2 transition-colors hover:bg-gray-200">
-									<img src={downloadIconUrl} alt="Download" class="h-5 w-5" />
-								</button>
+				<!-- TODO: Uncomment when attachments feature is implemented
+				{#if trip.attachments && trip.attachments.length > 0}
+					<div class="rounded-lg bg-white">
+						<button
+							class="flex w-full items-center justify-between p-4"
+							onclick={() => (expandedSections.files = !expandedSections.files)}>
+							<h2 class="text-base font-semibold text-gray-900">첨부 파일</h2>
+							<div class="h-5 w-5">
+								<ChevronDown
+									class="h-full w-full flex-shrink-0 text-gray-400 transition-transform {expandedSections.files
+										? 'rotate-180'
+										: ''}" />
 							</div>
-						</div>
-					{/if}
-				</div>
+						</button>
+						{#if expandedSections.files}
+							<div class="px-4 pb-4">
+								{#each trip.attachments as attachment}
+									<div class="flex items-center justify-between rounded-lg bg-gray-50 p-3 mb-2">
+										<div class="flex items-center gap-3">
+											<img src={pdfIconUrl} alt="PDF" class="h-8 w-8" />
+											<div>
+												<p class="text-sm font-medium text-gray-900">{attachment.name}</p>
+												<p class="text-xs text-gray-500">{attachment.size}</p>
+											</div>
+										</div>
+										<button class="rounded-lg p-2 transition-colors hover:bg-gray-200">
+											<img src={downloadIconUrl} alt="Download" class="h-5 w-5" />
+										</button>
+									</div>
+								{/each}
+							</div>
+						{/if}
+					</div>
+				{/if}
+				-->
 			</div>
-
 		{:else}
 			<!-- Offers Tab -->
 			<div class="px-4 py-4">
@@ -457,17 +389,13 @@
 				{:else}
 					<div class="space-y-4">
 						<div
-							class="relative box-border flex w-full shrink-0 flex-col content-stretch items-start justify-start gap-1 p-0"
-						>
+							class="relative box-border flex w-full shrink-0 flex-col content-stretch items-start justify-start gap-1 p-0">
 							<div
-								class="relative box-border flex w-full shrink-0 flex-row content-stretch items-center justify-between px-0 pt-3 pb-0"
-							>
+								class="relative box-border flex w-full shrink-0 flex-row content-stretch items-center justify-between px-0 pt-3 pb-0">
 								<div
-									class="relative box-border flex shrink-0 flex-row content-stretch items-center justify-start gap-2 p-0"
-								>
+									class="relative box-border flex shrink-0 flex-row content-stretch items-center justify-start gap-2 p-0">
 									<div
-										class="relative box-border flex shrink-0 flex-row content-stretch items-center justify-start gap-1 p-0 text-left text-[12px] leading-[0] font-bold text-nowrap not-italic"
-									>
+										class="relative box-border flex shrink-0 flex-row content-stretch items-center justify-start gap-1 p-0 text-left text-[12px] leading-[0] font-bold text-nowrap not-italic">
 										<div class="relative shrink-0 text-[#052236]">
 											<p class="block leading-[16px] text-nowrap whitespace-pre">전체</p>
 										</div>
@@ -477,14 +405,11 @@
 									</div>
 								</div>
 								<div
-									class="relative box-border flex shrink-0 flex-row content-stretch items-center justify-end gap-2 p-0"
-								>
+									class="relative box-border flex shrink-0 flex-row content-stretch items-center justify-end gap-2 p-0">
 									<div
-										class="relative box-border flex shrink-0 flex-row content-stretch items-center justify-end gap-1 p-0"
-									>
+										class="relative box-border flex shrink-0 flex-row content-stretch items-center justify-end gap-1 p-0">
 										<div
-											class="relative shrink-0 text-right text-[12px] leading-[0] font-medium text-nowrap text-[#052236] not-italic"
-										>
+											class="relative shrink-0 text-right text-[12px] leading-[0] font-medium text-nowrap text-[#052236] not-italic">
 											<p class="block leading-[18px] whitespace-pre">최신순</p>
 										</div>
 										<div class="relative flex h-[0px] w-[0px] shrink-0 items-center justify-center">
@@ -502,8 +427,7 @@
 								onclick={() => openOfferDetail(offer)}
 								showBadge={index === 0}
 								badgeText={index === 0 ? '가장 저렴한 가격' : ''}
-								badgeColor="#4daeeb"
-							/>
+								badgeColor="#4daeeb" />
 						{/each}
 					</div>
 				{/if}
@@ -513,21 +437,20 @@
 </div>
 
 <!-- Bottom Button -->
-<div class="fixed bottom-0 left-1/2 z-30 w-full max-w-[430px] -translate-x-1/2 border-t border-gray-200 bg-white">
+<div
+	class="fixed bottom-0 left-1/2 z-30 w-full max-w-[430px] -translate-x-1/2 border-t border-gray-200 bg-white">
 	<div class="flex items-center gap-3 px-4 py-3">
 		<button
 			class="h-5 w-5 -rotate-90 opacity-40"
 			onclick={() => {
 				/* Handle dots menu */
-			}}
-		>
+			}}>
 			<img alt="More options" class="h-full w-full" src={dotsIconUrl} />
 		</button>
 		{#if offers.length === 0}
 			<button
 				onclick={() => goto(`/my-trips/${trip.id}/edit`)}
-				class="flex h-12 flex-1 items-center justify-center rounded-[9px] bg-[#1095f4] px-6 py-3.5 text-sm font-semibold text-white"
-			>
+				class="flex h-12 flex-1 items-center justify-center rounded-[9px] bg-[#1095f4] px-6 py-3.5 text-sm font-semibold text-white">
 				계획 변경하기
 			</button>
 		{:else if acceptedOffer && canWriteReview()}
@@ -544,16 +467,14 @@
 						alert('리뷰를 작성하려면 먼저 가이드가 리뷰 요청을 보내야 합니다.');
 					}
 				}}
-				class="flex h-12 flex-1 items-center justify-center gap-2.5 rounded-[9px] bg-[#19b989] px-6 py-3.5 text-sm font-semibold text-white"
-			>
+				class="flex h-12 flex-1 items-center justify-center gap-2.5 rounded-[9px] bg-[#19b989] px-6 py-3.5 text-sm font-semibold text-white">
 				<img src={starIconUrl} alt="star" class="h-4 w-4 brightness-0 invert" />
 				리뷰 작성하기
 			</button>
 		{:else}
 			<button
 				onclick={() => goto('/chat')}
-				class="flex h-12 flex-1 items-center justify-center gap-2.5 rounded-[9px] bg-[#1095f4] px-6 py-3.5 text-sm font-semibold text-white"
-			>
+				class="flex h-12 flex-1 items-center justify-center gap-2.5 rounded-[9px] bg-[#1095f4] px-6 py-3.5 text-sm font-semibold text-white">
 				<img src={chatIconUrl} alt="chat" class="h-4 w-4 brightness-0 invert" />
 				대화하기
 			</button>
@@ -570,8 +491,7 @@
 			selectedOffer = null;
 		}}
 		offer={selectedOffer}
-		{trip}
-	/>
+		{trip} />
 {/if}
 
 <!-- Offer Detail Modal -->
@@ -593,8 +513,7 @@
 			showOfferDetailModal = false;
 			handleOfferAction(offerId, 'reject');
 		}}
-		onStartChat={startConversation}
-	/>
+		onStartChat={startConversation} />
 {/if}
 
 <style>
