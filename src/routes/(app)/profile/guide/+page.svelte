@@ -100,7 +100,7 @@
 		<div class="divide-y divide-gray-100">
 			<button 
 				class="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50"
-				onclick={() => window.alert('매출/정산 내역 준비중')}
+				onclick={() => goto('/profile/guide/orders')}
 			>
 				<span class="text-gray-700">매출/정산 내역</span>
 				<ChevronRight class="h-5 w-5 text-gray-400" />

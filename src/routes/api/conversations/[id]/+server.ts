@@ -53,6 +53,8 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 				id: messages.id,
 				content: messages.content,
 				senderId: messages.senderId,
+				messageType: messages.messageType,
+				metadata: messages.metadata,
 				isEdited: messages.isEdited,
 				editedAt: messages.editedAt,
 				isDeleted: messages.isDeleted,

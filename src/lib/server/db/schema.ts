@@ -418,6 +418,13 @@ export const conversationStatusEnum = pgEnum('conversation_status', [
 	'archived',
 	'blocked'
 ]);
+
+// Message type enum
+export const messageTypeEnum = pgEnum('message_type', [
+	'text',
+	'cancellation_request',
+	'cancellation_response'
+]);
 export type ConversationStatus = (typeof conversationStatusEnum.enumValues)[number];
 
 // Conversations table for chat between travelers and guides
@@ -464,6 +471,8 @@ export const messages = pgTable(
 			.notNull()
 			.references(() => users.id, { onDelete: 'cascade' }),
 		content: text('content').notNull(),
+		messageType: messageTypeEnum('message_type').notNull().default('text'),
+		metadata: jsonb('metadata').$type<Record<string, any>>(),
 		isEdited: boolean('is_edited').notNull().default(false),
 		editedAt: timestamp('edited_at'),
 		isDeleted: boolean('is_deleted').notNull().default(false),
