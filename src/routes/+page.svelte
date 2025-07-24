@@ -5,6 +5,7 @@
 	import GuideBottomNav from '$lib/components/GuideBottomNav.svelte';
 	import logo from '$lib/images/Matchtrip.png';
 	import bgImage from '$lib/images/bg.png';
+	import beachImage from '$lib/images/beach.png';
 
 	// Props from load function
 	const { data } = $props();
@@ -130,11 +131,11 @@
 
 			<!-- Main Content -->
 			<main class="pb-24">
-		<!-- Recommendation Section -->
-		{#if randomDestination}
+		{#if isGuide}
+			<!-- Guide Specific Content -->
 			<section class="bg-white p-4">
-				<div class="flex items-center gap-2 text-sm text-gray-600">
-					<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+				<div class="flex items-center gap-2 text-xs text-gray-500">
+					<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 						<path
 							stroke-linecap="round"
 							stroke-linejoin="round"
@@ -148,113 +149,112 @@
 							d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
 						/>
 					</svg>
-					<span>{randomDestination.city}, {randomDestination.country}</span>
+					<span>Berlin, Germany</span>
 				</div>
-				<h2 class="mt-2 text-lg font-medium text-gray-900">
-					{randomMessage} <span class="text-blue-600">{randomDestination.city}</span> 어때요?
+				<h2 class="mt-3 text-xl font-bold text-gray-900 leading-tight">
+					안녕하세요 <span class="text-blue-500">{user?.name || '여행자'}님</span>,
 				</h2>
+				<h3 class="mt-1 text-xl font-bold text-gray-900 leading-tight">
+					새로운 여행이 기다리고 있어요.
+				</h3>
+				
+				<!-- Search Bar -->
+				<div class="mt-5 relative">
+					<input
+						type="text"
+						placeholder="지금 가이드 활동을 시작해 보세요!"
+						class="w-full pl-5 pr-14 py-3.5 bg-gray-50 rounded-full text-base text-gray-700 placeholder-gray-400"
+						readonly
+					/>
+					<button class="absolute right-1.5 top-1/2 -translate-y-1/2 w-11 h-11 bg-blue-500 rounded-full flex items-center justify-center shadow-sm hover:bg-blue-600 transition-colors">
+						<svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+						</svg>
+					</button>
+				</div>
 			</section>
+
+			<!-- Guide Banner Section -->
+			<section class="bg-white mt-3 p-4">
+				<div class="bg-gray-50 rounded-2xl p-5 flex items-center justify-between overflow-hidden">
+					<div class="flex-1">
+						<p class="text-sm text-gray-500 font-medium">What is Lorem Ipsum</p>
+						<h3 class="text-lg font-bold text-gray-900 mt-0.5">What is Lorem Ipsum</h3>
+					</div>
+					<div class="relative w-28 h-28 -mr-5">
+						<img 
+							src={beachImage} 
+							alt="Beach umbrella" 
+							class="w-full h-full object-contain"
+						/>
+					</div>
+				</div>
+				<div class="flex justify-center mt-3 gap-1.5">
+					<span class="w-1.5 h-1.5 rounded-full bg-gray-800"></span>
+					<span class="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+					<span class="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+					<span class="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+				</div>
+			</section>
+		{:else if isTraveler}
+			<!-- Traveler Specific Content (Original) -->
+			<!-- Recommendation Section -->
+			{#if randomDestination}
+				<section class="bg-white p-4">
+					<div class="flex items-center gap-2 text-sm text-gray-600">
+						<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+							/>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+							/>
+						</svg>
+						<span>{randomDestination.city}, {randomDestination.country}</span>
+					</div>
+					<h2 class="mt-2 text-lg font-medium text-gray-900">
+						{randomMessage} <span class="text-blue-600">{randomDestination.city}</span> 어때요?
+					</h2>
+				</section>
+			{/if}
 		{/if}
 
-		<!-- Search Section -->
-		<section class="bg-white p-4">
-			<div class="relative">
-				<input
-					bind:this={searchInput}
-					bind:value={searchQuery}
-					type="text"
-					placeholder="어디로 가고 싶으신가요?"
-					oninput={handleSearch}
-					onfocus={() => (showDropdown = searchQuery.trim().length > 0)}
-					class="w-full rounded-full bg-gray-100 px-4 py-3 pr-12 text-gray-900 placeholder-gray-500 outline-none focus:ring-2 focus:ring-blue-500"
-				/>
-				<button
-					onclick={() => {
-						if (searchQuery.trim()) {
-							if (!user) {
-								goto('/');
-							} else if (isGuide) {
-								// Guide users go to trips page with search query
-								goto(`/trips?search=${encodeURIComponent(searchQuery)}`, { invalidateAll: true });
-							} else if (isTraveler) {
-								// Traveler users go to create trip with search query
-								goto(`/my-trips/create/destination?search=${encodeURIComponent(searchQuery)}`);
-							}
-						}
-					}}
-					class="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-gray-200 rounded-full"
-				>
-					<svg
-						class="h-5 w-5 text-blue-500"
-						fill="currentColor"
-						viewBox="0 0 20 20"
-					>
-						<path
-							fill-rule="evenodd"
-							d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-							clip-rule="evenodd"
-						/>
-					</svg>
-				</button>
-
-				<!-- Autocomplete Dropdown -->
-				{#if showDropdown}
-					<div class="absolute left-0 right-0 top-full z-50 mt-2 max-h-60 overflow-auto rounded-lg bg-white shadow-lg">
-						{#if isSearching}
-							<div class="flex items-center justify-center p-4">
-								<div class="text-sm text-gray-500">검색 중...</div>
-							</div>
-						{:else if filteredDestinations.length > 0}
-							{#each filteredDestinations as destination}
-								<button
-									onclick={() => selectDestination(destination)}
-									class="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-gray-50"
-								>
-									<svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-										/>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-										/>
-									</svg>
-									<div>
-										<p class="font-medium text-gray-900">{destination.city}</p>
-										<p class="text-sm text-gray-500">{destination.country}</p>
-									</div>
-								</button>
-							{/each}
-						{:else}
-							<div class="p-4 text-center text-sm text-gray-500">
-								검색 결과가 없습니다
-							</div>
-						{/if}
-					</div>
-				{/if}
-			</div>
-		</section>
 
 		<!-- Sample Destinations -->
 		<section class="mt-4 bg-white p-4">
-			<h3 class="mb-4 text-sm font-medium text-gray-500">
-				나에게 맞는 가이드를 찾고 계신가요?
-			</h3>
-			<h2 class="mb-4 flex items-center justify-between text-xl font-bold text-gray-900">
-				매치트립 나라별 가이드
-				<button onclick={() => goto('/trips')} class="text-sm text-blue-600">
-					<ChevronDown class="h-5 w-5" />
-				</button>
-			</h2>
+			{#if isGuide}
+				<h3 class="mb-3 text-sm text-gray-500">
+					내가 필요한 여행자를 찾고 계신가요?
+				</h3>
+				<h2 class="mb-4 flex items-center justify-between text-lg font-bold text-gray-900">
+					여행자 찾기
+					<button onclick={() => goto('/trips')} class="text-blue-500">
+						<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+						</svg>
+					</button>
+				</h2>
+			{:else}
+				<h3 class="mb-3 text-sm text-gray-500">
+					나에게 맞는 가이드를 찾고 계신가요?
+				</h3>
+				<h2 class="mb-4 flex items-center justify-between text-lg font-bold text-gray-900">
+					매치트립 나라별 가이드
+					<button onclick={() => goto('/trips')} class="text-blue-500">
+						<ChevronDown class="h-5 w-5" />
+					</button>
+				</h2>
+			{/if}
 			<div class="grid grid-cols-3 gap-3">
 				{#each data.displayDestinations || [] as destination}
 					<button
-						onclick={() => goto(`/trips?destination=${destination.city}`)}
+						onclick={() => goto(isGuide ? `/trips?destinations=${destination.id}` : `/trips?destination=${destination.city}`)}
 						class="overflow-hidden rounded-lg"
 					>
 						<div class="relative aspect-square">
@@ -273,8 +273,8 @@
 								class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
 							></div>
 							<div class="absolute bottom-2 left-2 text-left">
-								<h3 class="text-sm font-medium text-white">{destination.city}</h3>
-								<p class="text-xs text-white/80">{destination.country}</p>
+								<h3 class="text-base font-semibold text-white">{destination.city}</h3>
+								<p class="text-xs text-white/90">{destination.country}</p>
 							</div>
 						</div>
 					</button>
@@ -288,11 +288,13 @@
 				onclick={() => (supportOpen = !supportOpen)}
 				class="flex w-full items-center justify-between p-4"
 			>
-				<span class="text-base font-medium text-gray-900">고객센터</span>
+				<span class="text-lg font-semibold text-gray-900">고객센터</span>
 				{#if supportOpen}
-					<ChevronUp class="h-5 w-5 text-gray-500" />
+					<ChevronUp class="h-5 w-5 text-blue-500" />
 				{:else}
-					<ChevronDown class="h-5 w-5 text-gray-500" />
+					<svg class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+					</svg>
 				{/if}
 			</button>
 			{#if supportOpen}
@@ -321,11 +323,13 @@
 				onclick={() => (partnershipOpen = !partnershipOpen)}
 				class="flex w-full items-center justify-between p-4"
 			>
-				<span class="text-base font-medium text-gray-900">제휴 문의</span>
+				<span class="text-lg font-semibold text-gray-900">제휴 문의</span>
 				{#if partnershipOpen}
-					<ChevronUp class="h-5 w-5 text-gray-500" />
+					<ChevronUp class="h-5 w-5 text-blue-500" />
 				{:else}
-					<ChevronDown class="h-5 w-5 text-gray-500" />
+					<svg class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+					</svg>
 				{/if}
 			</button>
 			{#if partnershipOpen}
@@ -354,7 +358,7 @@
 		<!-- Footer -->
 		<footer class="mt-8 bg-gray-100 p-4 text-center">
 			<div class="space-y-4">
-				<div class="flex justify-center gap-4 text-xs text-gray-500">
+				<div class="flex justify-center gap-3 text-xs text-gray-500">
 					<a href="/terms" class="hover:text-gray-700">이용약관</a>
 					<span>|</span>
 					<a href="/terms/privacy" class="hover:text-gray-700">개인정보처리방침</a>
@@ -367,7 +371,7 @@
 					onclick={() => goto('/admin')}
 					class="text-xs text-gray-400 hover:text-gray-600"
 				>
-					에이전트 사업자 정보
+					에이전트티 사업자 정보
 				</button>
 				<p class="text-xs text-gray-400">
 					매치트립은 통신판매중개자이며, 통신판매의 당사자가 아닙니다.<br />
