@@ -32,8 +32,8 @@
 			// Invalidate all data to refresh user session
 			await invalidateAll();
 
-			// Redirect to name collection page
-			await goto('/onboarding/name');
+			// Redirect to role-specific onboarding page
+			await goto(`/onboarding/${selectedRole}`);
 		} catch (err) {
 			error = err instanceof Error ? err.message : '역할 선택 중 오류가 발생했습니다.';
 		} finally {

@@ -148,6 +148,24 @@ const authHandler = (async ({ event, resolve }) => {
 	}
 
 	// Handle redirects BEFORE calling svelteKitHandler to ensure we have fresh user data
+	// Handle signin route - redirect authenticated users to appropriate pages
+	if (routeId === '/signin' && session && event.locals.user) {
+		// First check if user has agreed to terms
+		if (!event.locals.hasAgreedToTerms) {
+			redirect(302, '/agreement');
+		}
+		// Then check if user has a role (OAuth users might not have one)
+		else if (!event.locals.user.role) {
+			redirect(302, '/select-role');
+		} else if (event.locals.user.role === 'admin') {
+			redirect(302, '/admin');
+		} else if (event.locals.user.role === 'guide') {
+			redirect(302, '/trips');
+		} else {
+			redirect(302, '/my-trips');
+		}
+	}
+
 	// Handle auth route redirects - redirect to role-based pages
 	if (routeId?.startsWith('/(auth)') && session && event.locals.user) {
 		// First check if user has agreed to terms

@@ -1,8 +1,9 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { genericOAuth } from 'better-auth/plugins';
 import { db } from './server/db';
 import * as schema from './server/db/schema';
-import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, BETTER_AUTH_SECRET } from '$env/static/private';
+import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, BETTER_AUTH_SECRET, KAKAO_REST_API_KEY, KAKAO_CLIENT_SECRET } from '$env/static/private';
 import { PUBLIC_BETTER_AUTH_URL } from '$env/static/public';
 import { authErrorLogger } from './utils/authErrorLogger';
 
@@ -18,6 +19,13 @@ if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
 	authErrorLogger.log('config', 'Missing Google OAuth credentials', {
 		GOOGLE_CLIENT_ID_exists: !!GOOGLE_CLIENT_ID,
 		GOOGLE_CLIENT_SECRET_exists: !!GOOGLE_CLIENT_SECRET
+	});
+}
+
+if (!KAKAO_REST_API_KEY || !KAKAO_CLIENT_SECRET) {
+	authErrorLogger.log('config', 'Missing Kakao OAuth credentials', {
+		KAKAO_REST_API_KEY_exists: !!KAKAO_REST_API_KEY,
+		KAKAO_CLIENT_SECRET_exists: !!KAKAO_CLIENT_SECRET
 	});
 }
 
@@ -78,6 +86,35 @@ export const auth = betterAuth({
 			}
 		}
 	},
+	plugins: [
+		genericOAuth({
+			config: [
+				{
+					providerId: 'kakao',
+					clientId: KAKAO_REST_API_KEY,
+					clientSecret: KAKAO_CLIENT_SECRET,
+					authorizationUrl: 'https://kauth.kakao.com/oauth/authorize',
+					tokenUrl: 'https://kauth.kakao.com/oauth/token',
+					userInfoUrl: 'https://kapi.kakao.com/v2/user/me',
+					redirectURI: `${getAuthUrl()}/api/auth/callback/kakao`,
+					scope: ['account_email', 'profile_nickname', 'profile_image'],
+					mapUserData: (data) => {
+						console.log('[KAKAO OAUTH] Raw user data:', JSON.stringify(data, null, 2));
+						const kakaoAccount = data.kakao_account || {};
+						const kakaoProfile = kakaoAccount.profile || {};
+						
+						return {
+							id: data.id?.toString(),
+							name: kakaoProfile.nickname || kakaoAccount.email || `User${data.id}`,
+							email: kakaoAccount.email || `kakao_${data.id}@kakao.local`,
+							emailVerified: kakaoAccount.is_email_verified || false,
+							image: kakaoProfile.profile_image_url || kakaoProfile.thumbnail_image_url
+						};
+					}
+				}
+			]
+		})
+	],
 	rateLimit: {
 		storage: 'memory'
 	},

@@ -10,9 +10,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 		redirect(302, '/signin');
 	}
 
-	// TEMPORARY: Skip checking for existing agreements to always show onboarding
-	// Uncomment this block when onboarding flow is complete
-	/*
 	// Check if user already has agreements
 	const existingAgreement = await db.query.userAgreements.findFirst({
 		where: eq(userAgreements.userId, locals.user.id)
@@ -30,7 +27,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 			redirect(302, '/my-trips');
 		}
 	}
-	*/
 
 	return {
 		user: locals.user
