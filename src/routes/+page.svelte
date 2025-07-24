@@ -374,7 +374,7 @@
 					<span>|</span>
 					<a href="/terms/privacy" class="hover:text-gray-700">개인정보처리방침</a>
 					<span>|</span>
-					<a href="/contact" class="hover:text-gray-700">취소 및 환불 정책</a>
+					<a href="/terms/refund-policy" class="hover:text-gray-700">취소 및 환불 정책</a>
 					<span>|</span>
 					<a href="/marketing-terms" class="hover:text-gray-700">제휴 안내</a>
 				</div>
