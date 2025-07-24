@@ -31,7 +31,13 @@
 			const destination = destinations.find((d: any) => d.id === id);
 			if (destination) {
 				// Pre-select the destination
-				handleUpdate('destination', `${destination.city}, ${destination.country.name}`);
+				handleUpdate('destination', {
+					id: destination.id,
+					city: destination.city,
+					country: destination.country.name,
+					latitude: destination.latitude,
+					longitude: destination.longitude
+				});
 				handleUpdate('destinationId', destination.id);
 				
 				// Skip to the next step immediately
@@ -50,7 +56,13 @@
 	}
 
 	// Get button text
-	let buttonText = $derived(formData.destination ? `${formData.destination} 여행하기` : '다음');
+	let buttonText = $derived(
+		formData.destination 
+			? typeof formData.destination === 'string' 
+				? `${formData.destination} 여행하기` 
+				: `${formData.destination.city}, ${formData.destination.country} 여행하기`
+			: '다음'
+	);
 
 	$effect(() => {
 		console.log('data', data);
