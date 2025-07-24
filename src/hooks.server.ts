@@ -150,39 +150,14 @@ const authHandler = (async ({ event, resolve }) => {
 	// Handle redirects BEFORE calling svelteKitHandler to ensure we have fresh user data
 	// Handle signin route - redirect authenticated users to appropriate pages
 	if (routeId === '/signin' && session && event.locals.user) {
-		// First check if user has agreed to terms
-		if (!event.locals.hasAgreedToTerms) {
-			redirect(302, '/agreement');
-		}
-		// Then check if user has a role (OAuth users might not have one)
-		else if (!event.locals.user.role) {
-			redirect(302, '/select-role');
-		} else if (event.locals.user.role === 'admin') {
-			redirect(302, '/admin');
-		} else if (event.locals.user.role === 'guide') {
-			redirect(302, '/trips');
-		} else {
-			redirect(302, '/my-trips');
-		}
+		// Always redirect to home page - the modal will handle agreements there
+		redirect(302, '/');
 	}
 
-	// Handle auth route redirects - redirect to role-based pages
+	// Handle auth route redirects - redirect to home page
 	if (routeId?.startsWith('/(auth)') && session && event.locals.user) {
-		// First check if user has agreed to terms
-		if (!event.locals.hasAgreedToTerms) {
-			redirect(302, '/agreement');
-		}
-		// Then check if user has a role (Google OAuth users might not have one)
-		else if (!event.locals.user.role) {
-			redirect(302, '/select-role');
-		} else if (event.locals.user.role === 'admin') {
-			redirect(302, '/admin');
-		} else if (event.locals.user.role === 'guide') {
-			// For auth routes, redirect guides to trips page
-			redirect(302, '/trips');
-		} else {
-			redirect(302, '/my-trips');
-		}
+		// Always redirect to home page - the modal will handle agreements there
+		redirect(302, '/');
 	}
 
 	// Handle first-time users landing on home page - redirect to onboarding
@@ -194,16 +169,13 @@ const authHandler = (async ({ event, resolve }) => {
 		console.log('[REDIRECT CHECK] User role:', event.locals.user.role);
 		console.log('[REDIRECT CHECK] Has agreed to terms:', event.locals.hasAgreedToTerms);
 
-		// Check if this is a first-time user (no agreements)
-		if (!event.locals.hasAgreedToTerms) {
-			redirect(302, '/agreement');
-		}
-		// Check if user hasn't selected a role yet
-		else if (!event.locals.user.role) {
+		// Don't redirect for agreement - the modal will handle it on the home page
+		// Only redirect if user has agreed but hasn't selected a role yet
+		if (event.locals.hasAgreedToTerms && !event.locals.user.role) {
 			redirect(302, '/onboarding/role');
 		}
 		// Check if user hasn't completed onboarding
-		else if (!event.locals.user.onboardingCompleted) {
+		else if (event.locals.hasAgreedToTerms && event.locals.user.role && !event.locals.user.onboardingCompleted) {
 			console.log('[REDIRECT] Redirecting to onboarding - onboardingCompleted is false');
 			// Redirect to role-specific onboarding
 			if (event.locals.user.role === 'guide') {
@@ -212,8 +184,8 @@ const authHandler = (async ({ event, resolve }) => {
 				redirect(302, '/onboarding/traveler');
 			}
 		}
-		// If all onboarding is complete, allow users to stay on home page
-		// No automatic redirects - users can logout or navigate to dashboard
+		// If all onboarding is complete or if they need to agree to terms, allow users to stay on home page
+		// The agreement modal will show up automatically if needed
 	}
 
 	// IMPORTANT: Call svelteKitHandler AFTER setting up event.locals and handling redirects
@@ -234,11 +206,13 @@ const authHandler = (async ({ event, resolve }) => {
 	}
 
 	// Check if user needs to agree to terms first
+	// Allow home page (/) to load - the modal will handle agreements there
 	if (
 		session &&
 		event.locals.user &&
 		!event.locals.hasAgreedToTerms &&
 		routeId !== '/agreement' &&
+		routeId !== '/' &&
 		!routeId?.startsWith('/api') &&
 		!routeId?.startsWith('/terms')
 	) {

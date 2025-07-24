@@ -3,6 +3,7 @@
 	import { ChevronDown, ChevronUp, Bell } from 'lucide-svelte';
 	import BottomNav from '$lib/components/BottomNav.svelte';
 	import GuideBottomNav from '$lib/components/GuideBottomNav.svelte';
+	import AgreementModal from '$lib/components/AgreementModal.svelte';
 	import logo from '$lib/images/Matchtrip.png';
 	import bgImage from '$lib/images/bg.png';
 	import beachImage from '$lib/images/beach.png';
@@ -15,6 +16,16 @@
 	const userRole = $derived(data?.userRole);
 	const isGuide = $derived(userRole === 'guide');
 	const isTraveler = $derived(userRole === 'traveler');
+	
+	// Agreement modal state
+	let showAgreementModal = $state(false);
+	
+	// Check if user needs to agree to terms when user data changes
+	$effect(() => {
+		if (user && !data?.hasAgreedToTerms) {
+			showAgreementModal = true;
+		}
+	});
 
 	// Random recommendation messages
 	const recommendationMessages = [
@@ -487,3 +498,10 @@
 		</div>
 	</div>
 {/if}
+
+<!-- Agreement Modal -->
+<AgreementModal 
+	isOpen={showAgreementModal} 
+	onClose={() => showAgreementModal = false}
+	{user}
+/>

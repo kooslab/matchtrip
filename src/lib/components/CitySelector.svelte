@@ -44,11 +44,27 @@
 	// State
 	let searchQuery = $state('');
 	
-	// Use available destinations if provided, otherwise use default
-	let countries = $state<Country[]>(
-		availableDestinations.length > 0
+	// Initialize countries with proper expansion state
+	const initializeCountries = () => {
+		const baseCountries = availableDestinations.length > 0
 			? transformDestinationsToCountries(availableDestinations)
-			: [
+			: getDefaultCountries();
+			
+		// Auto-expand countries that have selected cities
+		baseCountries.forEach(country => {
+			if (country.cities.some(city => selectedCities.has(city.id))) {
+				country.isExpanded = true;
+			}
+		});
+		
+		return baseCountries;
+	};
+	
+	// Use available destinations if provided, otherwise use default
+	let countries = $state<Country[]>(initializeCountries());
+	
+	function getDefaultCountries(): Country[] {
+		return [
 		{
 			id: 'korea',
 			name: '국내',
@@ -94,7 +110,7 @@
 			id: 'japan',
 			name: '일본',
 			nameEn: 'Japan',
-			isExpanded: true,
+			isExpanded: false,
 			cities: [
 				{ id: 'tokyo', name: '도쿄', nameEn: 'Tokyo', country: '일본', countryEn: 'Japan' },
 				{ id: 'sapporo', name: '삿포로', nameEn: 'Sapporo', country: '일본', countryEn: 'Japan' },
@@ -248,8 +264,8 @@
 				}
 			]
 		}
-	]
-	);
+	];
+	}
 	
 	// Transform destinations from database to country-grouped format
 	function transformDestinationsToCountries(destinations: any[]): Country[] {
@@ -269,7 +285,7 @@
 			
 			const country = countryMap.get(countryKey)!;
 			country.cities.push({
-				id: dest.id,
+				id: dest.id.toString(),
 				name: dest.city,
 				nameEn: dest.nameEn || dest.city,
 				country: dest.country.name,

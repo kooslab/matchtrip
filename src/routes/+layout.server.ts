@@ -1,6 +1,6 @@
 import { auth } from '$lib/auth';
 import { db } from '$lib/server/db';
-import { users } from '$lib/server/db/schema';
+import { users, userAgreements } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 
 // Helper function to filter sensitive headers
@@ -62,6 +62,7 @@ export const load = async ({ request, locals }) => {
 
 		let userRole = null;
 		let fullUser = null;
+		let hasAgreedToTerms = false;
 
 		// If user is logged in, fetch their role and cache it
 		if (session?.user?.id) {
@@ -86,6 +87,18 @@ export const load = async ({ request, locals }) => {
 				if (user) {
 					userRole = user.role;
 					fullUser = user;
+					
+					// Check if user has agreed to terms
+					const agreement = await db.query.userAgreements.findFirst({
+						where: eq(userAgreements.userId, user.id),
+						columns: {
+							termsAgreed: true,
+							privacyAgreed: true
+						}
+					});
+					
+					hasAgreedToTerms = !!(agreement?.termsAgreed && agreement?.privacyAgreed);
+					
 					// Cache user data in locals for other server functions to use
 					locals.user = {
 						id: user.id,
@@ -96,7 +109,8 @@ export const load = async ({ request, locals }) => {
 						guideProfile: user.guideProfile
 					};
 					locals.session = session;
-					console.log('Layout server - User cached in locals:', user.email, 'Role:', user.role);
+					locals.hasAgreedToTerms = hasAgreedToTerms;
+					console.log('Layout server - User cached in locals:', user.email, 'Role:', user.role, 'Has agreed:', hasAgreedToTerms);
 				} else {
 					console.log('Layout server - No user found in database for ID:', session.user.id);
 				}
@@ -115,7 +129,8 @@ export const load = async ({ request, locals }) => {
 			user: session?.user ?? null,
 			session: session?.session ?? null,
 			userRole,
-			fullUser
+			fullUser,
+			hasAgreedToTerms
 		};
 
 		console.log(
@@ -125,7 +140,8 @@ export const load = async ({ request, locals }) => {
 					hasUser: !!returnData.user,
 					hasSession: !!returnData.session,
 					userRole: returnData.userRole,
-					hasFullUser: !!returnData.fullUser
+					hasFullUser: !!returnData.fullUser,
+					hasAgreedToTerms: returnData.hasAgreedToTerms
 				},
 				null,
 				2
@@ -145,7 +161,8 @@ export const load = async ({ request, locals }) => {
 			user: null,
 			session: null,
 			userRole: null,
-			fullUser: null
+			fullUser: null,
+			hasAgreedToTerms: false
 		};
 	}
 };
