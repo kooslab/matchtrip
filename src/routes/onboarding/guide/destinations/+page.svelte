@@ -235,7 +235,7 @@
 		<!-- Bottom Section -->
 		<div class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-100 shadow-lg">
 			<div class="max-w-[430px] mx-auto">
-				<div class="p-2 pb-24">
+				<div class="p-4">
 					<button 
 						class="w-full h-12 rounded-lg font-semibold text-white transition-all duration-200" 
 						style="background-color: {canProceed() && !isLoading ? '#1095f4' : '#8ea0ac'}; {canProceed() && !isLoading ? '' : 'cursor: not-allowed;'}"

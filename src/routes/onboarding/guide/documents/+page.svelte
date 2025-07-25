@@ -569,8 +569,7 @@
 	.bottom-content {
 		max-width: 430px;
 		margin: 0 auto;
-		padding: 8px 16px;
-		padding-bottom: 96px; /* pb-24 equivalent for BottomNav spacing */
+		padding: 16px;
 	}
 
 	.buttons-row {

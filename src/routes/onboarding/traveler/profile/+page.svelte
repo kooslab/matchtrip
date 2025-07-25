@@ -434,7 +434,7 @@
 		<div
 			class="fixed right-0 bottom-0 left-0 z-40 border-t border-gray-200 bg-white shadow-[0px_-5px_20px_rgba(0,0,0,0.05)]"
 		>
-			<div class="mx-auto max-w-[430px] p-4 pb-24">
+			<div class="mx-auto max-w-[430px] p-4">
 				<button
 					class="h-12 w-full cursor-pointer rounded-[9px] border-none text-sm leading-5 font-semibold text-white transition-colors duration-200 disabled:cursor-not-allowed"
 					style="background-color: {canProceed() && !isLoading ? '#1095f4' : '#8ea0ac'}"

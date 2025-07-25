@@ -408,7 +408,7 @@
 		style="z-index: 40; box-shadow: 0px -5px 20px rgba(0, 0, 0, 0.05); display: block; visibility: visible;"
 	>
 		<div class="mx-auto max-w-[430px]">
-			<div class="p-2 pb-24">
+			<div class="p-4">
 				<button
 					class="w-full cursor-pointer font-semibold text-white transition-colors duration-200"
 					style="height: 48px; border-radius: 9px; font-size: 14px; line-height: 20px; background-color: {canProceed &&

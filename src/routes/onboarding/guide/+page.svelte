@@ -652,7 +652,7 @@
 														: formData.countryCode === '+49'
 															? '151-2345-6789'
 															: '1234567890'}
-								class="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-1 focus:outline-none"
+								class="min-w-0 max-w-full flex-1 rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-1 focus:outline-none"
 								style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1; font-size: 16px; -webkit-text-size-adjust: 100%;"
 								onfocus={(e) => {
 									e.target.style.borderColor = colors.primary;
