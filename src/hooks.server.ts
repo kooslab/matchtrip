@@ -267,7 +267,6 @@ const authHandler = (async ({ event, resolve }) => {
 
 	if (
 		isGuideOnlyRoute &&
-		!isAdminRoute &&
 		!routeId?.startsWith('/api') &&
 		(!event.locals.user || event.locals.user.role !== 'guide')
 	) {
