@@ -350,7 +350,7 @@
 							매치트립과 함께 성장하고 싶으신가요?
 						</p>
 						<a
-							href="/marketing-terms"
+							href="/terms/marketing"
 							class="block text-sm font-medium text-blue-600 hover:text-blue-700"
 						>
 							제휴 안내 보기
@@ -376,7 +376,7 @@
 					<span>|</span>
 					<a href="/terms/refund-policy" class="hover:text-gray-700">취소 및 환불 정책</a>
 					<span>|</span>
-					<a href="/marketing-terms" class="hover:text-gray-700">제휴 안내</a>
+					<a href="/terms/marketing" class="hover:text-gray-700">제휴 안내</a>
 				</div>
 				<p class="text-xs text-gray-400">
 					에이전트티 사업자 정보
@@ -499,6 +499,5 @@
 <!-- Agreement Modal -->
 <AgreementModal 
 	isOpen={showAgreementModal} 
-	onClose={() => showAgreementModal = false}
 	{user}
 />

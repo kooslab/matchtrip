@@ -140,7 +140,7 @@
 		<label for="check-marketing" class="ml-2 text-gray-700">
 			마케팅 동의 <span class="text-gray-400">(선택)</span>
 		</label>
-		<a href="/marketing-terms" target="_blank" class="ml-auto text-sm text-blue-500 hover:underline"
+		<a href="/terms/marketing" target="_blank" class="ml-auto text-sm text-blue-500 hover:underline"
 			>내용보기</a
 		>
 	</div>

@@ -1,7 +1,9 @@
 <script lang="ts">
-	import { X, Check } from 'lucide-svelte';
 	import { fade, fly } from 'svelte/transition';
 	import { goto, invalidateAll } from '$app/navigation';
+	import IconCheckCircle from '$lib/icons/icon-check-circle-mono.svg?raw';
+	import IconArrowRight from '$lib/icons/icon-arrow-right-small-mono.svg?raw';
+	import TermsModal from './TermsModal.svelte';
 
 	interface Props {
 		isOpen: boolean;
@@ -16,6 +18,11 @@
 	let marketingAgreed = $state(false);
 	let isSubmitting = $state(false);
 	let allChecked = $state(false);
+
+	// Terms modal state
+	let showTermsModal = $state(false);
+	let termsModalType: 'terms' | 'privacy' | 'marketing' = $state('terms');
+	let termsModalTitle = $state('');
 
 	// Computed property for all required agreements
 	const allRequiredAgreed = $derived(termsAgreed && privacyAgreed);
@@ -83,6 +90,13 @@
 	function handleModalClick(e: MouseEvent) {
 		e.stopPropagation();
 	}
+
+	// Open terms modal
+	function openTermsModal(type: 'terms' | 'privacy' | 'marketing', title: string) {
+		termsModalType = type;
+		termsModalTitle = title;
+		showTermsModal = true;
+	}
 </script>
 
 {#if isOpen}
@@ -90,7 +104,6 @@
 	<div 
 		class="fixed inset-0 z-50 bg-black/50"
 		transition:fade={{ duration: 200 }}
-		onclick={onClose}
 	>
 		<!-- Modal Container -->
 		<div class="flex min-h-screen items-center justify-center p-4">
@@ -101,141 +114,149 @@
 				onclick={handleModalClick}
 			>
 				<!-- Header -->
-				<div class="flex items-center justify-between border-b border-gray-100 p-6">
-					<h2 class="text-xl font-bold text-gray-900">서비스 이용약관</h2>
-					{#if onClose}
-						<button 
-							onclick={onClose}
-							class="rounded-full p-1.5 transition-colors hover:bg-gray-100"
-							aria-label="닫기"
-						>
-							<X class="h-5 w-5 text-gray-500" />
-						</button>
-					{/if}
+				<div class="px-6 pt-8 pb-4">
+					<h2 class="text-2xl font-bold text-gray-900">약관 동의</h2>
+					<p class="mt-2 text-base text-gray-500">
+						서비스 이용을 위해 약관에 동의해 주세요
+					</p>
 				</div>
 
 				<!-- Content -->
-				<div class="p-6">
-					<p class="mb-6 text-sm text-gray-600">
-						매치트립 서비스 이용을 위해 아래 약관에 동의해주세요.
-					</p>
+				<div class="px-6 pb-6">
 
 					<!-- All agreements checkbox -->
-					<label class="mb-4 flex cursor-pointer items-start rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50">
-						<input
-							type="checkbox"
-							checked={allChecked}
-							onchange={toggleAllAgreements}
-							class="mt-0.5 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-						/>
-						<div class="ml-3">
-							<span class="font-medium text-gray-900">전체 동의</span>
-							<p class="mt-1 text-sm text-gray-500">
-								서비스 이용을 위한 필수 및 선택 약관에 모두 동의합니다
-							</p>
-						</div>
-					</label>
-
-					<div class="mb-6 space-y-3 border-t border-gray-100 pt-4">
-						<!-- Terms agreement -->
-						<label class="flex cursor-pointer items-start rounded-lg p-3 transition-colors hover:bg-gray-50">
-							<input
-								type="checkbox"
-								bind:checked={termsAgreed}
-								class="mt-0.5 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-							/>
-							<div class="ml-3 flex-1">
-								<div class="flex items-center gap-2">
-									<span class="text-sm font-medium text-gray-900">이용약관 동의</span>
-									<span class="text-xs font-medium text-red-500">(필수)</span>
-								</div>
-								<a
-									href="/terms"
-									target="_blank"
-									class="mt-1 inline-block text-xs text-blue-600 hover:underline"
-									onclick={(e) => e.stopPropagation()}
-								>
-									약관 보기
-								</a>
-							</div>
-						</label>
-
-						<!-- Privacy agreement -->
-						<label class="flex cursor-pointer items-start rounded-lg p-3 transition-colors hover:bg-gray-50">
-							<input
-								type="checkbox"
-								bind:checked={privacyAgreed}
-								class="mt-0.5 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-							/>
-							<div class="ml-3 flex-1">
-								<div class="flex items-center gap-2">
-									<span class="text-sm font-medium text-gray-900">개인정보 처리방침 동의</span>
-									<span class="text-xs font-medium text-red-500">(필수)</span>
-								</div>
-								<a
-									href="/terms/privacy"
-									target="_blank"
-									class="mt-1 inline-block text-xs text-blue-600 hover:underline"
-									onclick={(e) => e.stopPropagation()}
-								>
-									개인정보 처리방침 보기
-								</a>
-							</div>
-						</label>
-
-						<!-- Marketing agreement -->
-						<label class="flex cursor-pointer items-start rounded-lg p-3 transition-colors hover:bg-gray-50">
-							<input
-								type="checkbox"
-								bind:checked={marketingAgreed}
-								class="mt-0.5 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-							/>
-							<div class="ml-3 flex-1">
-								<div class="flex items-center gap-2">
-									<span class="text-sm font-medium text-gray-900">마케팅 정보 수신 동의</span>
-									<span class="text-xs font-medium text-gray-500">(선택)</span>
-								</div>
-								<p class="mt-1 text-xs text-gray-500">
-									이벤트, 할인 및 유용한 정보를 받아보실 수 있습니다
-								</p>
-							</div>
-						</label>
-					</div>
-
-					<!-- Submit Button -->
 					<button
-						onclick={handleSubmit}
-						disabled={!allRequiredAgreed || isSubmitting}
-						class="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+						onclick={toggleAllAgreements}
+						class="mb-6 flex w-full cursor-pointer items-center gap-3 rounded-lg bg-gray-50 p-4 transition-colors hover:bg-gray-100"
 					>
-						{#if isSubmitting}
-							<div class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-							<span>처리 중...</span>
-						{:else}
-							<Check class="h-5 w-5" />
-							<span>동의하고 시작하기</span>
-						{/if}
+						<div class="h-6 w-6" class:checked={allChecked}>
+							{@html IconCheckCircle}
+						</div>
+						<span class="text-base font-medium text-gray-900">모든 약관에 동의합니다.</span>
 					</button>
 
-					<!-- Info text -->
-					<p class="mt-4 text-center text-xs text-gray-500">
-						필수 항목에 동의하지 않으면 서비스를 이용할 수 없습니다.
-					</p>
+					<div class="mb-8 space-y-0">
+						<!-- Terms agreement -->
+						<div class="flex w-full items-center gap-3 py-4">
+							<button
+								onclick={() => termsAgreed = !termsAgreed}
+								class="h-6 w-6" 
+								class:checked={termsAgreed}
+							>
+								{@html IconCheckCircle}
+							</button>
+							<div class="flex flex-1 items-center justify-between">
+								<button
+									onclick={() => termsAgreed = !termsAgreed}
+									class="flex items-center gap-1 text-left"
+								>
+									<span class="text-base text-gray-900">이용약관 동의</span>
+									<span class="text-sm text-blue-500">(필수)</span>
+								</button>
+								<button
+									onclick={() => openTermsModal('terms', '이용약관')}
+									class="h-6 w-6 text-gray-400 hover:text-gray-600"
+								>
+									{@html IconArrowRight}
+								</button>
+							</div>
+						</div>
+
+						<!-- Privacy agreement -->
+						<div class="flex w-full items-center gap-3 py-4">
+							<button
+								onclick={() => privacyAgreed = !privacyAgreed}
+								class="h-6 w-6" 
+								class:checked={privacyAgreed}
+							>
+								{@html IconCheckCircle}
+							</button>
+							<div class="flex flex-1 items-center justify-between">
+								<button
+									onclick={() => privacyAgreed = !privacyAgreed}
+									class="flex items-center gap-1 text-left"
+								>
+									<span class="text-base text-gray-900">개인정보처리방침 동의</span>
+									<span class="text-sm text-blue-500">(필수)</span>
+								</button>
+								<button
+									onclick={() => openTermsModal('privacy', '개인정보처리방침')}
+									class="h-6 w-6 text-gray-400 hover:text-gray-600"
+								>
+									{@html IconArrowRight}
+								</button>
+							</div>
+						</div>
+
+						<!-- Marketing agreement -->
+						<div class="flex w-full items-center gap-3 py-4">
+							<button
+								onclick={() => marketingAgreed = !marketingAgreed}
+								class="h-6 w-6" 
+								class:checked={marketingAgreed}
+							>
+								{@html IconCheckCircle}
+							</button>
+							<div class="flex flex-1 items-center justify-between">
+								<button
+									onclick={() => marketingAgreed = !marketingAgreed}
+									class="text-base text-gray-900 text-left"
+								>
+									마케팅 및 광고 활용 동의
+								</button>
+								<button
+									onclick={() => openTermsModal('marketing', '마케팅 정보 수신 동의')}
+									class="h-6 w-6 text-gray-400 hover:text-gray-600"
+								>
+									{@html IconArrowRight}
+								</button>
+							</div>
+						</div>
+					</div>
+
+					<!-- Action Buttons -->
+					<div class="flex gap-3">
+						<button
+							disabled
+							class="flex-1 rounded-xl bg-gray-100 py-4 text-base font-medium text-gray-400 cursor-not-allowed"
+						>
+							취소
+						</button>
+						<button
+							onclick={handleSubmit}
+							disabled={!allRequiredAgreed || isSubmitting}
+							class="flex-1 rounded-xl bg-blue-500 py-4 text-base font-medium text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-300"
+						>
+							{#if isSubmitting}
+								처리 중...
+							{:else}
+								동의하기
+							{/if}
+						</button>
+					</div>
 				</div>
 			</div>
 		</div>
 	</div>
 {/if}
 
-<style>
-	/* Spinner animation */
-	@keyframes spin {
-		to {
-			transform: rotate(360deg);
-		}
-	}
+<!-- Terms Modal -->
+<TermsModal 
+	isOpen={showTermsModal}
+	onClose={() => showTermsModal = false}
+	title={termsModalTitle}
+	type={termsModalType}
+/>
 
-	.animate-spin {
-		animation: spin 1s linear infinite;
+<style>
+	/* Checkbox styling */
+	.checked :global(svg path) {
+		fill: #3B82F6;
+	}
+	
+	/* Ensure icons maintain their aspect ratio */
+	:global(.h-6.w-6 svg) {
+		width: 100%;
+		height: 100%;
 	}
 </style>
