@@ -77,6 +77,7 @@
 	// Handle next (complete profile)
 	async function handleNext() {
 		isLoading = true;
+		console.log('[GUIDE ONBOARDING] Starting profile completion');
 
 		try {
 			// Create FormData for file upload
@@ -99,6 +100,7 @@
 			});
 
 			// First, set the user role to guide
+			console.log('[GUIDE ONBOARDING] Setting user role to guide');
 			const roleResponse = await fetch('/api/user/role', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -106,10 +108,13 @@
 			});
 
 			if (!roleResponse.ok) {
-				console.error('Failed to set user role');
+				console.error('[GUIDE ONBOARDING] Failed to set user role:', await roleResponse.text());
+			} else {
+				console.log('[GUIDE ONBOARDING] User role set to guide successfully');
 			}
 
 			// Update user profile data
+			console.log('[GUIDE ONBOARDING] Updating user profile');
 			const userResponse = await fetch('/api/user/profile', {
 				method: 'PATCH',
 				headers: { 'Content-Type': 'application/json' },
@@ -122,36 +127,54 @@
 
 			if (!userResponse.ok) {
 				const error = await userResponse.json();
+				console.error('[GUIDE ONBOARDING] Failed to update user profile:', error);
 				alert(error.error || '프로필 저장에 실패했습니다.');
 				return;
 			}
+			console.log('[GUIDE ONBOARDING] User profile updated successfully');
 
 			// Create guide profile
+			console.log('[GUIDE ONBOARDING] Creating guide profile');
 			const guideResponse = await fetch('/api/profile/guide', {
 				method: 'POST',
 				body: profileData
 			});
 
 			if (guideResponse.ok) {
+				console.log('[GUIDE ONBOARDING] Guide profile created successfully');
+				
 				// Mark onboarding as completed
+				console.log('[GUIDE ONBOARDING] Marking onboarding as completed');
 				const completeResponse = await fetch('/api/user/complete-onboarding', {
 					method: 'POST'
 				});
 
 				if (!completeResponse.ok) {
-					console.error('Failed to mark onboarding as complete');
+					console.error('[GUIDE ONBOARDING] Failed to mark onboarding as complete:', await completeResponse.text());
+					// Don't return here - try to proceed anyway
+				} else {
+					const result = await completeResponse.json();
+					console.log('[GUIDE ONBOARDING] Onboarding marked as completed:', result);
 				}
 
 				// Invalidate all cached data to ensure session is refreshed
+				console.log('[GUIDE ONBOARDING] Invalidating all cached data');
 				await invalidateAll();
 
-				// Clear store and redirect to completion page
+				// Clear store
+				console.log('[GUIDE ONBOARDING] Clearing store');
 				onboardingStore.reset();
 
-				// Now navigate with fresh session data
-				await goto('/onboarding/guide/complete');
+				// Small delay to ensure database updates are propagated
+				console.log('[GUIDE ONBOARDING] Waiting for database propagation');
+				await new Promise(resolve => setTimeout(resolve, 500));
+
+				// Use hard navigation to ensure fresh session data
+				console.log('[GUIDE ONBOARDING] Navigating to completion page with hard refresh');
+				window.location.href = '/onboarding/guide/complete';
 			} else {
 				const error = await guideResponse.json();
+				console.error('[GUIDE ONBOARDING] Failed to create guide profile:', error);
 				alert(error.error || '가이드 프로필 생성에 실패했습니다.');
 			}
 		} catch (error) {
@@ -164,6 +187,7 @@
 
 	// Handle skip
 	async function handleSkip() {
+		console.log('[GUIDE ONBOARDING] Skip button clicked - proceeding without documents');
 		await handleNext();
 	}
 
