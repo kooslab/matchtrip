@@ -19,8 +19,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 	if (existingAgreement?.termsAgreed && existingAgreement?.privacyAgreed) {
 		if (!locals.user.role) {
 			redirect(302, '/select-role');
-		} else if (locals.user.role === 'admin') {
-			redirect(302, '/admin');
 		} else if (locals.user.role === 'guide') {
 			redirect(302, '/my-offers');
 		} else {

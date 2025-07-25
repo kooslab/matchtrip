@@ -240,12 +240,7 @@ const authHandler = (async ({ event, resolve }) => {
 	// Handle protected routes that require specific roles (guide-only routes)
 	const guideOnlyRoutes = ['/(app)/trips', '/(app)/offers', '/(app)/my-offers'];
 	const isGuideOnlyRoute = guideOnlyRoutes.some((route) => routeId?.includes(route));
-	const isAdminRoute = routeId?.startsWith('/admin');
-
-	// Allow admin users to access any route
-	if (event.locals.user?.role === 'admin') {
-		return resolve(event);
-	}
+	// Remove admin route handling
 
 	// Check if guide is trying to access guide routes but is not verified
 	if (
@@ -281,15 +276,7 @@ const authHandler = (async ({ event, resolve }) => {
 		redirect(302, '/');
 	}
 
-	// Handle admin-only routes
-	if (
-		isAdminRoute &&
-		!routeId?.startsWith('/api') &&
-		(!event.locals.user || event.locals.user.role !== 'admin')
-	) {
-		console.log('Hooks - Access denied to admin route. User role:', event.locals.user?.role);
-		redirect(302, '/');
-	}
+	// Admin routes removed
 
 	// Return the response from svelteKitHandler
 	return response;

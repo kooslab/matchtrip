@@ -60,4 +60,3 @@
 		{/if}
 	</div>
 </div>
-</script>

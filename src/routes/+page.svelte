@@ -378,12 +378,9 @@
 					<span>|</span>
 					<a href="/marketing-terms" class="hover:text-gray-700">제휴 안내</a>
 				</div>
-				<button
-					onclick={() => goto('/admin')}
-					class="text-xs text-gray-400 hover:text-gray-600"
-				>
+				<p class="text-xs text-gray-400">
 					에이전트티 사업자 정보
-				</button>
+				</p>
 				<p class="text-xs text-gray-400">
 					매치트립은 통신판매중개자이며, 통신판매의 당사자가 아닙니다.<br />
 					상품, 상품정보, 거래에 관한 의무와 책임은 판매자에게 있습니다.

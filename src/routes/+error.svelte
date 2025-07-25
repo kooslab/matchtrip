@@ -1,10 +1,9 @@
 <script>
 	import { page } from '$app/stores';
 
-	// Check if we're in admin section
-	$: isAdminError = $page.url?.pathname?.startsWith('/admin');
-	$: backUrl = isAdminError ? '/admin' : '/';
-	$: backText = isAdminError ? '관리자 대시보드로 돌아가기' : '홈으로 돌아가기';
+	// Navigate back to home
+	const backUrl = '/';
+	const backText = '홈으로 돌아가기';
 </script>
 
 <div class="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
