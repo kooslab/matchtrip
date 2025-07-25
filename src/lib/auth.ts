@@ -98,17 +98,88 @@ export const auth = betterAuth({
 					userInfoUrl: 'https://kapi.kakao.com/v2/user/me',
 					redirectURI: `${getAuthUrl()}/api/auth/callback/kakao`,
 					scope: ['account_email', 'profile_nickname', 'profile_image'],
-					mapUserData: (data) => {
-						console.log('[KAKAO OAUTH] Raw user data:', JSON.stringify(data, null, 2));
-						const kakaoAccount = data.kakao_account || {};
-						const kakaoProfile = kakaoAccount.profile || {};
+					// Add property_keys to specifically request email and prompt for consent
+					additionalParams: {
+						prompt: 'login' // Forces the consent screen to appear
+					},
+					// Add custom getUserInfo that properly requests email from Kakao
+					getUserInfo: async (data) => {
+						console.log('[KAKAO OAUTH] Custom getUserInfo called');
+						const accessToken = data.accessToken || data.access_token || data;
+						
+						try {
+							// Make request to Kakao API with property_keys
+							const propertyKeys = ['kakao_account.email', 'kakao_account.profile'];
+							const response = await fetch('https://kapi.kakao.com/v2/user/me', {
+								method: 'POST',
+								headers: {
+									'Authorization': `Bearer ${accessToken}`,
+									'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+								},
+								body: new URLSearchParams({
+									'property_keys': JSON.stringify(propertyKeys)
+								})
+							});
+							
+							if (!response.ok) {
+								const errorText = await response.text();
+								throw new Error(`Kakao API error: ${response.status} - ${errorText}`);
+							}
+							
+							const userData = await response.json();
+							console.log('[KAKAO OAUTH] Got user data from Kakao:', JSON.stringify(userData, null, 2));
+							
+							// Better-auth expects email at the top level of the returned object
+							// Extract and normalize the data
+							const email = userData.kakao_account?.email;
+							if (!email) {
+								throw new Error('Email not provided by Kakao');
+							}
+							
+							const normalizedUser = {
+								id: userData.id?.toString(),
+								email: email,
+								name: userData.kakao_account?.profile?.nickname || 'Kakao User',
+								image: userData.kakao_account?.profile?.profile_image_url,
+								emailVerified: userData.kakao_account?.is_email_verified || false,
+								// Pass the full data for mapProfileToUser if needed
+								kakao_account: userData.kakao_account
+							};
+							
+							console.log('[KAKAO OAUTH] Returning normalized user data:', JSON.stringify(normalizedUser, null, 2));
+							return normalizedUser;
+						} catch (error) {
+							console.error('[KAKAO OAUTH] Error in getUserInfo:', error);
+							throw error;
+						}
+					},
+					mapProfileToUser: async (profile) => {
+						console.log('[KAKAO OAUTH] mapProfileToUser called with:', JSON.stringify(profile, null, 2));
+						
+						// Since getUserInfo already normalized the data, we can use it directly
+						// Check if this is already normalized data or raw Kakao data
+						if (profile.email && profile.id) {
+							// Already normalized by getUserInfo
+							console.log('[KAKAO OAUTH] Using pre-normalized user data');
+							return {
+								email: profile.email,
+								name: profile.name,
+								image: profile.image,
+								emailVerified: profile.emailVerified
+							};
+						}
+						
+						// Fallback for raw Kakao data (shouldn't happen with our getUserInfo)
+						const kakaoAccount = profile.kakao_account || {};
+						if (!kakaoAccount.email) {
+							throw new Error('Email not provided by Kakao');
+						}
 						
 						return {
-							id: data.id?.toString(),
-							name: kakaoProfile.nickname || kakaoAccount.email || `User${data.id}`,
-							email: kakaoAccount.email || `kakao_${data.id}@kakao.local`,
-							emailVerified: kakaoAccount.is_email_verified || false,
-							image: kakaoProfile.profile_image_url || kakaoProfile.thumbnail_image_url
+							email: kakaoAccount.email,
+							name: kakaoAccount.profile?.nickname || 'Kakao User',
+							image: kakaoAccount.profile?.profile_image_url,
+							emailVerified: kakaoAccount.is_email_verified || false
 						};
 					}
 				}
