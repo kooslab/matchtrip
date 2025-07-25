@@ -516,8 +516,12 @@
 							bind:value={formData.name}
 							placeholder="홍길동"
 							class="w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-1 focus:outline-none"
-							style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1;"
-							onfocus={(e) => (e.target.style.borderColor = colors.primary)}
+							style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1; font-size: 16px; -webkit-text-size-adjust: 100%;"
+							onfocus={(e) => {
+								e.target.style.borderColor = colors.primary;
+								// Prevent zoom on iOS
+								e.target.style.fontSize = '16px';
+							}}
 							onblur={(e) => (e.target.style.borderColor = '')}
 						/>
 					</div>
@@ -649,8 +653,12 @@
 															? '151-2345-6789'
 															: '1234567890'}
 								class="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-1 focus:outline-none"
-								style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1;"
-								onfocus={(e) => (e.target.style.borderColor = colors.primary)}
+								style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1; font-size: 16px; -webkit-text-size-adjust: 100%;"
+								onfocus={(e) => {
+									e.target.style.borderColor = colors.primary;
+									// Prevent zoom on iOS
+									e.target.style.fontSize = '16px';
+								}}
 								onblur={(e) => (e.target.style.borderColor = '')}
 							/>
 						</div>
@@ -940,7 +948,7 @@
 	<!-- Bottom Button -->
 	{#if currentStep !== 'complete'}
 		<div
-			class="fixed right-0 bottom-0 left-0 bg-white px-4 py-4 shadow-[0_-1px_3px_rgba(0,0,0,0.1)]"
+			class="fixed right-0 bottom-0 left-0 bg-white px-4 py-4 pb-24 shadow-[0_-1px_3px_rgba(0,0,0,0.1)]"
 		>
 			<div class="mx-auto max-w-[430px]">
 				{#if currentStep === 'documents'}

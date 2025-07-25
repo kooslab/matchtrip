@@ -3,6 +3,9 @@
 	import { onMount } from 'svelte';
 	import { onboardingStore } from '$lib/stores/onboardingStore';
 	import iconArrowBack from '$lib/icons/icon-arrow-back-android-mono.svg';
+	import type { PageData } from './$types';
+
+	let { data }: { data: PageData } = $props();
 
 	// Get initial data from store
 	let storeData = onboardingStore.get();
@@ -20,45 +23,13 @@
 		}
 	});
 
-	// Available destinations by region
-	const destinationRegions = [
-		{
-			name: '유럽',
-			nameEn: 'Europe',
-			cities: [
-				{ name: '파리', nameEn: 'Paris' },
-				{ name: '런던', nameEn: 'London' },
-				{ name: '베를린', nameEn: 'Berlin' },
-				{ name: '로마', nameEn: 'Rome' },
-				{ name: '바르셀로나', nameEn: 'Barcelona' },
-				{ name: '암스테르담', nameEn: 'Amsterdam' },
-				{ name: '프라하', nameEn: 'Prague' },
-				{ name: '비엔나', nameEn: 'Vienna' },
-				{ name: '취리히', nameEn: 'Zurich' },
-				{ name: '뮌헨', nameEn: 'Munich' }
-			]
-		},
-		{
-			name: '한국',
-			nameEn: 'Korea',
-			cities: [
-				{ name: '서울', nameEn: 'Seoul' },
-				{ name: '부산', nameEn: 'Busan' },
-				{ name: '제주도', nameEn: 'Jeju' },
-				{ name: '경주', nameEn: 'Gyeongju' },
-				{ name: '강릉', nameEn: 'Gangneung' },
-				{ name: '전주', nameEn: 'Jeonju' },
-				{ name: '인천', nameEn: 'Incheon' },
-				{ name: '대구', nameEn: 'Daegu' },
-				{ name: '광주', nameEn: 'Gwangju' },
-				{ name: '대전', nameEn: 'Daejeon' }
-			]
-		}
-	];
+	// Get destinations from server
+	const destinationRegions = data.destinationRegions;
 
-	let expandedRegions = $state<string[]>(['유럽']); // Start with Europe expanded
-	let selectedDestinations = $state<string[]>([]);
+	let expandedRegions = $state<string[]>(destinationRegions.length > 0 ? [destinationRegions[0].name] : []); // Start with first region expanded
+	let selectedDestinations = $state<number[]>([]);
 	let isLoading = $state(false);
+	let searchQuery = $state('');
 
 	// Toggle region expansion
 	function toggleRegion(regionName: string) {
@@ -70,13 +41,30 @@
 	}
 
 	// Toggle destination selection
-	function toggleDestination(destination: string) {
-		if (selectedDestinations.includes(destination)) {
-			selectedDestinations = selectedDestinations.filter((d) => d !== destination);
+	function toggleDestination(destinationId: number) {
+		if (selectedDestinations.includes(destinationId)) {
+			selectedDestinations = selectedDestinations.filter((d) => d !== destinationId);
 		} else {
-			selectedDestinations = [...selectedDestinations, destination];
+			selectedDestinations = [...selectedDestinations, destinationId];
 		}
 	}
+
+	// Filter destinations based on search query
+	let filteredRegions = $derived(
+		searchQuery
+			? destinationRegions.map(region => ({
+					...region,
+					countries: region.countries.map(country => ({
+						...country,
+						cities: country.cities.filter(city => 
+							city.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+							country.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+							region.name.toLowerCase().includes(searchQuery.toLowerCase())
+						)
+					})).filter(country => country.cities.length > 0)
+			  })).filter(region => region.countries.length > 0)
+			: destinationRegions
+	);
 
 	// Validation
 	function canProceed(): boolean {
@@ -128,31 +116,37 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<div class="container">
-	<!-- Header -->
-	<header class="header">
-		<div class="header-content">
-			<button class="back-button" onclick={handleBack}>
-				<img src={iconArrowBack} alt="뒤로가기" />
-			</button>
-			<div class="progress-bar">
-				<div class="progress-fill"></div>
+<div class="min-h-screen bg-white relative overflow-hidden">
+	<div class="max-w-[430px] mx-auto">
+		<!-- Header -->
+		<header class="sticky top-0 z-10 bg-white/95 backdrop-blur-xl h-14 border-b-2 border-gray-100">
+			<div class="flex items-center justify-between h-full px-4 relative">
+				<button class="w-6 h-6 cursor-pointer" onclick={handleBack}>
+					<img src={iconArrowBack} alt="뒤로가기" />
+				</button>
+				<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-100">
+					<div class="absolute bottom-0 left-0 w-2/3 h-0.5 bg-color-primary transition-all duration-300"></div>
+				</div>
 			</div>
-		</div>
-	</header>
+		</header>
 
-	<!-- Content -->
-	<div class="content">
-		<!-- Title -->
-		<div class="title-section">
-			<h1 class="title">가이드 지역</h1>
-			<p class="subtitle">가이드 가능한 지역을 선택해주세요</p>
-		</div>
+		<!-- Content -->
+		<div class="px-4 pt-6 pb-32">
+			<!-- Title -->
+			<div class="mb-8">
+				<h1 class="text-xl font-bold text-primary mb-2">가이드 지역</h1>
+				<p class="text-xs text-color-secondary">가이드 가능한 지역을 선택해주세요</p>
+			</div>
 
 		<!-- Search -->
-		<div class="search-container">
-			<input type="text" class="search-input" placeholder="가능한 지역을 검색해 보세요" />
-			<svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+		<div class="relative mb-6">
+			<input 
+				type="text" 
+				class="w-full h-12 bg-gray-50 border border-gray-200 rounded-lg px-5 pr-12 text-base text-primary placeholder-color-secondary focus:border-color-primary focus:bg-blue-50/50 transition-all duration-200 outline-none" 
+				placeholder="가능한 지역을 검색해 보세요" 
+				bind:value={searchQuery}
+			/>
+			<svg class="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-color-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				<path
 					stroke-linecap="round"
 					stroke-linejoin="round"
@@ -163,346 +157,95 @@
 		</div>
 
 		<!-- Destinations Selection -->
-		<div class="destinations-section">
-			{#each destinationRegions as region}
-				<div class="region-item">
-					<div class="region-header" onclick={() => toggleRegion(region.name)}>
-						<div>
-							<span class="region-name">{region.name}</span>
-							<span class="region-name-en">{region.nameEn}</span>
-						</div>
-						<svg
-							class="expand-icon {expandedRegions.includes(region.name) ? 'expanded' : ''}"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="m19 9-7 7-7-7"
-							/>
-						</svg>
-					</div>
-
-					{#if expandedRegions.includes(region.name)}
-						<div class="cities-list">
-							{#each region.cities as city}
-								<div class="city-item" onclick={() => toggleDestination(city.name)}>
-									<div
-										class="city-checkbox {selectedDestinations.includes(city.name)
-											? 'selected'
-											: ''}"
-									>
-										{#if selectedDestinations.includes(city.name)}
-											<svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path
-													stroke-linecap="round"
-													stroke-linejoin="round"
-													stroke-width="2"
-													d="m5 13 4 4L19 7"
-												/>
-											</svg>
-										{/if}
-									</div>
-									<div>
-										<span class="city-name">{city.name}</span>
-										<span class="city-name-en">{city.nameEn}</span>
-									</div>
-								</div>
-							{/each}
-						</div>
-					{/if}
+		<div class="space-y-2">
+			{#if filteredRegions.length === 0}
+				<div class="text-center py-16 text-color-secondary">
+					<p>검색 결과가 없습니다.</p>
 				</div>
-			{/each}
-		</div>
-	</div>
+			{:else}
+				{#each filteredRegions as region}
+					<div class="border border-gray-200 rounded-lg overflow-hidden">
+						<div 
+							class="flex items-center justify-between p-4 bg-white cursor-pointer hover:bg-gray-50 transition-colors duration-200" 
+							onclick={() => toggleRegion(region.name)}
+						>
+							<div>
+								<span class="font-semibold text-sm text-primary">{region.name}</span>
+								<span class="ml-2 text-xs text-color-secondary">{region.code}</span>
+							</div>
+							<svg
+								class="w-5 h-5 text-color-secondary transition-transform duration-200 {expandedRegions.includes(region.name) ? 'rotate-180' : ''}"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="m19 9-7 7-7-7"
+								/>
+							</svg>
+						</div>
 
-	<!-- Bottom Section -->
-	<div class="bottom-section">
-		<div class="bottom-content">
-			<button class="next-button" disabled={!canProceed() || isLoading} onclick={handleNext}>
-				{isLoading ? '처리중...' : '다 음'}
-			</button>
+						{#if expandedRegions.includes(region.name)}
+							<div class="bg-gray-50 border-t border-gray-200">
+								{#each region.countries as country}
+									<div class="border-b border-gray-100 last:border-b-0">
+										<div class="px-3 py-2 bg-gray-100 font-semibold text-xs text-primary">
+											{country.name}
+										</div>
+										<div class="p-3 space-y-2">
+											{#each country.cities as city}
+												<div 
+													class="flex items-center cursor-pointer group" 
+													onclick={() => toggleDestination(city.id)}
+												>
+													<div
+														class="w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-200 bg-white"
+														style="{selectedDestinations.includes(city.id) ? 'border-color: #1095f4;' : 'border-color: #d1d5db;'}"
+													>
+														{#if selectedDestinations.includes(city.id)}
+															<svg class="w-5 h-5 text-color-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+																<path
+																	stroke-linecap="round"
+																	stroke-linejoin="round"
+																	stroke-width="2"
+																	d="m5 13 4 4L19 7"
+																/>
+															</svg>
+														{/if}
+													</div>
+													<div class="ml-3 flex-1">
+														<span class="text-sm font-medium {selectedDestinations.includes(city.id) ? 'text-color-primary' : 'text-gray-900'}">{city.name}</span>
+													</div>
+												</div>
+											{/each}
+										</div>
+									</div>
+								{/each}
+							</div>
+						{/if}
+					</div>
+				{/each}
+			{/if}
+			</div>
+		</div>
+
+		<!-- Bottom Section -->
+		<div class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-100 shadow-lg">
+			<div class="max-w-[430px] mx-auto">
+				<div class="p-2 pb-24">
+					<button 
+						class="w-full h-12 rounded-lg font-semibold text-white transition-all duration-200" 
+						style="background-color: {canProceed() && !isLoading ? '#1095f4' : '#8ea0ac'}; {canProceed() && !isLoading ? '' : 'cursor: not-allowed;'}"
+						disabled={!canProceed() || isLoading} 
+						onclick={handleNext}
+					>
+						{isLoading ? '처리중...' : '다 음'}
+					</button>
+				</div>
+			</div>
 		</div>
 	</div>
 </div>
-
-<style>
-	.container {
-		min-height: 100vh;
-		background-color: #ffffff;
-		position: relative;
-		overflow: hidden;
-	}
-
-	.header {
-		position: sticky;
-		top: 0;
-		z-index: 10;
-		background-color: rgba(255, 255, 255, 0.92);
-		backdrop-filter: blur(10px);
-		height: 56px;
-		border-bottom: 2px solid rgba(0, 62, 129, 0.08);
-	}
-
-	.header-content {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		height: 100%;
-		padding: 0 16px;
-		position: relative;
-	}
-
-	.back-button {
-		width: 24px;
-		height: 24px;
-		cursor: pointer;
-		background: none;
-		border: none;
-		padding: 0;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.progress-bar {
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		height: 2px;
-		background-color: rgba(0, 62, 129, 0.08);
-	}
-
-	.progress-fill {
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		width: 66%;
-		height: 2px;
-		background-color: #1095f4;
-		transition: width 0.3s ease;
-	}
-
-	.content {
-		padding: 24px 16px 120px;
-	}
-
-	.title-section {
-		margin-bottom: 40px;
-	}
-
-	.title {
-		font-family: 'Pretendard', sans-serif;
-		font-weight: 700;
-		font-size: 22px;
-		line-height: 32px;
-		color: #052236;
-		margin-bottom: 8px;
-	}
-
-	.subtitle {
-		font-family: 'Pretendard', sans-serif;
-		font-weight: 400;
-		font-size: 13px;
-		line-height: 20px;
-		color: #8ea0ac;
-	}
-
-	.destinations-section {
-		margin-bottom: 40px;
-	}
-
-	.region-item {
-		margin-bottom: 8px;
-		border-radius: 9px;
-		overflow: hidden;
-		border: 1px solid rgba(0, 62, 129, 0.08);
-	}
-
-	.region-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 16px;
-		background-color: #ffffff;
-		cursor: pointer;
-		transition: background-color 0.2s ease;
-	}
-
-	.region-header:hover {
-		background-color: rgba(0, 62, 129, 0.02);
-	}
-
-	.region-name {
-		font-family: 'Pretendard', sans-serif;
-		font-weight: 600;
-		font-size: 15px;
-		line-height: 24px;
-		color: #052236;
-	}
-
-	.region-name-en {
-		font-family: 'Pretendard', sans-serif;
-		font-weight: 400;
-		font-size: 13px;
-		line-height: 20px;
-		color: #8ea0ac;
-		margin-left: 8px;
-	}
-
-	.expand-icon {
-		width: 20px;
-		height: 20px;
-		color: #8ea0ac;
-		transition: transform 0.2s ease;
-	}
-
-	.expand-icon.expanded {
-		transform: rotate(180deg);
-	}
-
-	.cities-list {
-		background-color: rgba(0, 62, 129, 0.02);
-		border-top: 1px solid rgba(0, 62, 129, 0.08);
-	}
-
-	.city-item {
-		display: flex;
-		align-items: center;
-		padding: 12px 16px;
-		border-bottom: 1px solid rgba(0, 62, 129, 0.04);
-		cursor: pointer;
-		transition: background-color 0.2s ease;
-	}
-
-	.city-item:last-child {
-		border-bottom: none;
-	}
-
-	.city-item:hover {
-		background-color: rgba(16, 149, 244, 0.04);
-	}
-
-	.city-checkbox {
-		width: 20px;
-		height: 20px;
-		border: 2px solid rgba(0, 62, 129, 0.16);
-		border-radius: 50%;
-		margin-right: 12px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		transition: all 0.2s ease;
-	}
-
-	.city-checkbox.selected {
-		border-color: #1095f4;
-		background-color: #1095f4;
-	}
-
-	.city-checkbox svg {
-		width: 12px;
-		height: 12px;
-		color: #ffffff;
-	}
-
-	.city-name {
-		font-family: 'Pretendard', sans-serif;
-		font-weight: 500;
-		font-size: 15px;
-		line-height: 24px;
-		color: #052236;
-	}
-
-	.city-name-en {
-		font-family: 'Pretendard', sans-serif;
-		font-weight: 400;
-		font-size: 13px;
-		line-height: 20px;
-		color: #8ea0ac;
-		margin-left: 8px;
-	}
-
-	.search-container {
-		position: relative;
-		margin-bottom: 24px;
-	}
-
-	.search-input {
-		width: 100%;
-		height: 48px;
-		background-color: rgba(0, 62, 129, 0.02);
-		border: 1px solid rgba(0, 62, 129, 0.08);
-		border-radius: 9px;
-		padding: 14px 48px 14px 20px;
-		font-family: 'Pretendard', sans-serif;
-		font-weight: 400;
-		font-size: 15px;
-		line-height: 24px;
-		color: #052236;
-		outline: none;
-		transition: all 0.2s ease;
-	}
-
-	.search-input:focus {
-		border-color: #1095f4;
-		background-color: rgba(16, 149, 244, 0.04);
-	}
-
-	.search-input::placeholder {
-		color: #8ea0ac;
-	}
-
-	.search-icon {
-		position: absolute;
-		right: 16px;
-		top: 50%;
-		transform: translateY(-50%);
-		width: 20px;
-		height: 20px;
-		color: #1095f4;
-	}
-
-	.bottom-section {
-		position: fixed;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		background-color: rgba(254, 254, 254, 0.96);
-		backdrop-filter: blur(10px);
-		border-top: 1px solid #f1f1f1;
-		box-shadow: 0px -5px 20px rgba(0, 0, 0, 0.02);
-	}
-
-	.bottom-content {
-		padding: 8px 16px;
-		padding-bottom: calc(8px + env(safe-area-inset-bottom));
-	}
-
-	.next-button {
-		width: 100%;
-		height: 48px;
-		background-color: #8ea0ac;
-		border: none;
-		border-radius: 9px;
-		font-family: 'Pretendard', sans-serif;
-		font-weight: 600;
-		font-size: 14px;
-		line-height: 20px;
-		color: #ffffff;
-		cursor: pointer;
-		transition: background-color 0.2s ease;
-	}
-
-	.next-button:enabled {
-		background-color: #1095f4;
-	}
-
-	.next-button:disabled {
-		cursor: not-allowed;
-	}
-</style>

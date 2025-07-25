@@ -77,7 +77,16 @@
 	// Handle next (complete profile)
 	async function handleNext() {
 		isLoading = true;
-		console.log('[GUIDE ONBOARDING] Starting profile completion');
+		const startTime = Date.now();
+		console.log('[GUIDE ONBOARDING] Starting profile completion at', new Date().toISOString());
+		console.log('[GUIDE ONBOARDING] Store data:', {
+			hasName: !!storeData.name,
+			hasPhone: !!storeData.phone,
+			hasNickname: !!storeData.nickname,
+			destinationsCount: storeData.destinations?.length || 0,
+			hasProfileImage: !!storeData.profileImageUrl,
+			uploadedFilesCount: Object.keys(uploadedFiles).reduce((acc, key) => acc + uploadedFiles[key].length, 0)
+		});
 
 		try {
 			// Create FormData for file upload
@@ -135,18 +144,31 @@
 
 			// Create guide profile
 			console.log('[GUIDE ONBOARDING] Creating guide profile');
+			const guideStartTime = Date.now();
 			const guideResponse = await fetch('/api/profile/guide', {
 				method: 'POST',
 				body: profileData
 			});
+			console.log('[GUIDE ONBOARDING] Guide profile API response:', {
+				status: guideResponse.status,
+				statusText: guideResponse.statusText,
+				time: Date.now() - guideStartTime + 'ms'
+			});
 
 			if (guideResponse.ok) {
-				console.log('[GUIDE ONBOARDING] Guide profile created successfully');
+				const guideResult = await guideResponse.json();
+				console.log('[GUIDE ONBOARDING] Guide profile created successfully:', guideResult);
 				
 				// Mark onboarding as completed
 				console.log('[GUIDE ONBOARDING] Marking onboarding as completed');
+				const completeStartTime = Date.now();
 				const completeResponse = await fetch('/api/user/complete-onboarding', {
 					method: 'POST'
+				});
+				console.log('[GUIDE ONBOARDING] Complete onboarding API response:', {
+					status: completeResponse.status,
+					statusText: completeResponse.statusText,
+					time: Date.now() - completeStartTime + 'ms'
 				});
 
 				if (!completeResponse.ok) {
@@ -165,22 +187,35 @@
 				console.log('[GUIDE ONBOARDING] Clearing store');
 				onboardingStore.reset();
 
-				// Small delay to ensure database updates are propagated
-				console.log('[GUIDE ONBOARDING] Waiting for database propagation');
-				await new Promise(resolve => setTimeout(resolve, 500));
+				// Remove artificial delay - not needed with proper session handling
 
 				// Use hard navigation to ensure fresh session data
+				console.log('[GUIDE ONBOARDING] Total time:', Date.now() - startTime + 'ms');
 				console.log('[GUIDE ONBOARDING] Navigating to completion page with hard refresh');
 				window.location.href = '/onboarding/guide/complete';
 			} else {
-				const error = await guideResponse.json();
-				console.error('[GUIDE ONBOARDING] Failed to create guide profile:', error);
+				const errorText = await guideResponse.text();
+				let error;
+				try {
+					error = JSON.parse(errorText);
+				} catch {
+					error = { error: errorText };
+				}
+				console.error('[GUIDE ONBOARDING] Failed to create guide profile:', {
+					status: guideResponse.status,
+					error: error,
+					time: Date.now() - startTime + 'ms'
+				});
 				alert(error.error || '가이드 프로필 생성에 실패했습니다.');
+				isLoading = false;
 			}
 		} catch (error) {
-			console.error('Error:', error);
+			console.error('[GUIDE ONBOARDING] Caught error:', {
+				message: error.message,
+				stack: error.stack,
+				time: Date.now() - startTime + 'ms'
+			});
 			alert('오류가 발생했습니다.');
-		} finally {
 			isLoading = false;
 		}
 	}
@@ -379,7 +414,7 @@
 	}
 
 	.content {
-		padding: 24px 16px 120px;
+		padding: 24px 16px 128px; /* pb-32 equivalent */
 	}
 
 	.title-section {
@@ -532,8 +567,10 @@
 	}
 
 	.bottom-content {
+		max-width: 430px;
+		margin: 0 auto;
 		padding: 8px 16px;
-		padding-bottom: calc(8px + env(safe-area-inset-bottom));
+		padding-bottom: 96px; /* pb-24 equivalent for BottomNav spacing */
 	}
 
 	.buttons-row {

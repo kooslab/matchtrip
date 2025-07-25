@@ -257,7 +257,7 @@
 	</header>
 
 	<!-- Content -->
-	<div class="px-[16px] pt-[24px] pb-[120px]">
+	<div class="px-[16px] pt-[24px] pb-32">
 		<!-- Title -->
 		<div class="mb-[40px]">
 			<h1 class="text-primary mb-[8px] text-[22px] leading-8 font-bold">기본 정보</h1>
@@ -408,7 +408,7 @@
 		style="z-index: 40; box-shadow: 0px -5px 20px rgba(0, 0, 0, 0.05); display: block; visibility: visible;"
 	>
 		<div class="mx-auto max-w-[430px]">
-			<div style="padding: 8px; padding-bottom: calc(8px + env(safe-area-inset-bottom, 8px));">
+			<div class="p-2 pb-24">
 				<button
 					class="w-full cursor-pointer font-semibold text-white transition-colors duration-200"
 					style="height: 48px; border-radius: 9px; font-size: 14px; line-height: 20px; background-color: {canProceed &&

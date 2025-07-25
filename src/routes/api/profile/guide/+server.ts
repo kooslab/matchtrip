@@ -32,17 +32,24 @@ if (R2_ACCOUNT_ID && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY) {
 }
 
 export const POST: RequestHandler = async ({ request, locals }) => {
+	const startTime = Date.now();
+	console.log('[API GUIDE PROFILE] Request received at', new Date().toISOString());
+	
 	const userId = locals.user?.id;
 	if (!userId) {
+		console.error('[API GUIDE PROFILE] No user ID in locals');
 		return new Response(JSON.stringify({ success: false, error: 'Unauthorized' }), { status: 401 });
 	}
+	console.log('[API GUIDE PROFILE] User ID:', userId);
 
 	try {
 		// Check content type
 		const contentType = request.headers.get('content-type') || '';
+		console.log('[API GUIDE PROFILE] Content type:', contentType);
 
 		// Handle JSON requests (from profile updates)
 		if (contentType.includes('application/json')) {
+			console.log('[API GUIDE PROFILE] Processing JSON request');
 			const body = await request.json();
 			const { introduction, profileImageUrl } = body;
 
@@ -60,6 +67,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		}
 
 		// Handle FormData (from onboarding)
+		console.log('[API GUIDE PROFILE] Processing FormData request');
 		const formData = await request.formData();
 
 		// Extract form fields
@@ -70,6 +78,16 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		const birthDate = formData.get('birthDate')?.toString();
 		const destinationsStr = formData.get('destinations')?.toString();
 		const profileImageUrl = formData.get('profileImageUrl')?.toString();
+		
+		console.log('[API GUIDE PROFILE] Form data received:', {
+			hasName: !!name,
+			hasPhone: !!phone,
+			hasNickname: !!nickname,
+			hasFrequentArea: !!frequentArea,
+			hasBirthDate: !!birthDate,
+			hasDestinations: !!destinationsStr,
+			hasProfileImage: !!profileImageUrl
+		});
 
 		let destinations: string[] = [];
 		if (destinationsStr) {
@@ -86,9 +104,12 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		const certificationUrls: string[] = [];
 
 		// Process file uploads
+		let fileCount = 0;
 		for (const [key, value] of formData.entries()) {
 			if (key.startsWith('documents_') && value instanceof File) {
 				const categoryId = key.replace('documents_', '');
+				fileCount++;
+				console.log(`[API GUIDE PROFILE] Processing file ${fileCount} for category ${categoryId}, size: ${value.size} bytes`);
 
 				try {
 					// Generate unique filename
@@ -160,17 +181,21 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			}
 		}
 
-		console.log(
-			'Uploaded documents:',
-			Object.keys(documentUrls).map((cat) => `${cat}: ${documentUrls[cat].length} files`)
-		);
+		console.log('[API GUIDE PROFILE] File upload summary:', {
+			totalFiles: fileCount,
+			documentsByCategory: Object.keys(documentUrls).map((cat) => `${cat}: ${documentUrls[cat].length} files`),
+			hasIdDocument: !!idDocumentUrl,
+			certificationCount: certificationUrls.length
+		});
 
 		// Create or update guide profile
+		console.log('[API GUIDE PROFILE] Checking for existing profile');
 		const existingProfile = await db
 			.select()
 			.from(guideProfiles)
 			.where(eq(guideProfiles.userId, userId))
 			.limit(1);
+		console.log('[API GUIDE PROFILE] Existing profile found:', existingProfile.length > 0);
 
 		const profileData: any = {
 			username: nickname,
@@ -183,6 +208,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 		if (existingProfile.length > 0) {
 			// Update existing profile
+			console.log('[API GUIDE PROFILE] Updating existing profile');
 			await db
 				.update(guideProfiles)
 				.set({
@@ -190,30 +216,46 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 					updatedAt: new Date()
 				})
 				.where(eq(guideProfiles.userId, userId));
+			console.log('[API GUIDE PROFILE] Profile updated successfully');
 		} else {
 			// Create new profile
+			console.log('[API GUIDE PROFILE] Creating new profile');
 			await db.insert(guideProfiles).values({
 				userId,
 				...profileData
 			});
+			console.log('[API GUIDE PROFILE] Profile created successfully');
 
 			// Send onboarding confirmation email
 			try {
+				console.log('[API GUIDE PROFILE] Sending onboarding email');
 				await sendGuideOnboardingEmail({
 					guideName: locals.user?.name || nickname || 'Guide',
 					guideEmail: locals.user?.email || '',
 					submittedAt: new Date()
 				});
+				console.log('[API GUIDE PROFILE] Email sent successfully');
 			} catch (emailError) {
 				// Log error but don't fail the request
-				console.error('Failed to send onboarding email:', emailError);
+				console.error('[API GUIDE PROFILE] Failed to send onboarding email:', emailError);
 			}
 		}
 
-		return new Response(JSON.stringify({ success: true }));
+		const totalTime = Date.now() - startTime;
+		console.log(`[API GUIDE PROFILE] Request completed successfully in ${totalTime}ms`);
+		return new Response(JSON.stringify({ success: true, time: totalTime }));
 	} catch (err) {
-		console.error('Guide profile error:', err);
-		return new Response(JSON.stringify({ success: false, error: 'DB error' }), { status: 500 });
+		const totalTime = Date.now() - startTime;
+		console.error('[API GUIDE PROFILE] Error:', {
+			message: err.message,
+			stack: err.stack,
+			time: totalTime
+		});
+		return new Response(JSON.stringify({ 
+			success: false, 
+			error: err.message || 'DB error',
+			time: totalTime
+		}), { status: 500 });
 	}
 };
 

@@ -5,11 +5,11 @@
 	import iconCheck from '$lib/icons/icon-check-circle-mono.svg';
 
 	onMount(() => {
-		// Redirect to pending approval page after 2 seconds
+		// Redirect to pending approval page after 1 second
 		setTimeout(() => {
 			// Use window.location for a hard refresh to ensure session is updated
 			window.location.href = '/guide/pending-approval';
-		}, 2000);
+		}, 1000);
 	});
 </script>
 
