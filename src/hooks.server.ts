@@ -245,7 +245,6 @@ const authHandler = (async ({ event, resolve }) => {
 	// Check if guide is trying to access guide routes but is not verified
 	if (
 		isGuideOnlyRoute &&
-		!isAdminRoute &&
 		!routeId?.startsWith('/api') &&
 		event.locals.user?.role === 'guide'
 	) {
