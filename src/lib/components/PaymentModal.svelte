@@ -102,14 +102,12 @@
 
 			// Render payment methods
 			await widgets.renderPaymentMethods({
-				selector: '#payment-method',
-				variantKey: 'DEFAULT'
+				selector: '#payment-method'
 			});
 
 			// Render agreement
 			await widgets.renderAgreement({
-				selector: '#agreement',
-				variantKey: 'AGREEMENT'
+				selector: '#agreement'
 			});
 
 			// Widget is ready to use

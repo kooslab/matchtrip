@@ -24,14 +24,12 @@
 
 			status = 'Rendering payment methods...';
 			await widgets.renderPaymentMethods({
-				selector: '#payment-method',
-				variantKey: 'DEFAULT'
+				selector: '#payment-method'
 			});
 
 			status = 'Rendering agreement...';
 			await widgets.renderAgreement({
-				selector: '#agreement',
-				variantKey: 'AGREEMENT'
+				selector: '#agreement'
 			});
 
 			status = 'Success! Payment widget loaded.';

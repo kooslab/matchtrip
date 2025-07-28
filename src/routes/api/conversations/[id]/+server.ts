@@ -109,7 +109,6 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 			.limit(1);
 
 		// Check chat permissions for guides
-		const isGuide = conv.guideId === session.user.id;
 		let canSendMessage = true;
 
 		if (isGuide) {
