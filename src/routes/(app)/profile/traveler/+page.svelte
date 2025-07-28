@@ -6,8 +6,6 @@
 
 	let { data } = $props();
 
-	const profileImageUrl = $derived(data.user?.profileImageUrl || 'https://via.placeholder.com/150');
-
 	const handleLogout = async () => {
 		try {
 			await authClient.signOut({
@@ -36,21 +34,15 @@
 		<!-- Profile Section -->
 		<div class="border-b border-gray-200 bg-white px-4 py-6">
 			<div class="mb-2 text-sm text-gray-500">Match Your Trip, Make It Yours</div>
-			<div class="flex items-center space-x-4">
-				<img
-					src={profileImageUrl}
-					alt="프로필 이미지"
-					class="h-20 w-20 rounded-full object-cover" />
-				<div class="flex-1">
-					<h2 class="text-lg font-semibold">
-						{data.user?.nickname || data.user?.name || '홍길동'} 님
-					</h2>
-					<button
-						onclick={() => goto('/profile/traveler/edit')}
-						class="mt-1 text-sm text-blue-500 hover:underline">
-						프로필 수정
-					</button>
-				</div>
+			<div class="flex items-center justify-between">
+				<h2 class="text-lg font-semibold">
+					안녕하세요! {data.user?.nickname || data.user?.name || '홍길동'} 님
+				</h2>
+				<button
+					onclick={() => goto('/profile/traveler/edit')}
+					class="rounded-full bg-gray-200 px-3 py-1 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-300">
+					프로필 수정
+				</button>
 			</div>
 
 			<!-- Stats -->

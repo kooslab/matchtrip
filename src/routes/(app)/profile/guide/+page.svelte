@@ -10,22 +10,11 @@
 	const user = $derived(data?.user);
 	const guideProfile = $derived(data?.guideProfile);
 	const userName = $derived(user?.name || '사용자');
-	const profileImageUrl = $derived(guideProfile?.profileImageUrl || '');
 
 	// Stats
 	const completedTrips = $derived(guideProfile?.completedTrips || 3);
 	const acceptedOffers = $derived(guideProfile?.acceptedOffers || 0);
 	const rating = $derived(guideProfile?.rating || 4.9);
-
-	// Generate avatar placeholder
-	function getAvatarUrl(name: string) {
-		const initials = name
-			.split(' ')
-			.map((n) => n[0])
-			.join('')
-			.toUpperCase();
-		return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1095f4&color=fff&size=200&font-size=0.4&bold=true`;
-	}
 
 	// Logout handler
 	async function handleLogout() {
@@ -51,16 +40,10 @@
 	<!-- Profile Section -->
 	<section class="bg-white p-4">
 		<div class="mb-2 text-sm text-gray-600">Match Your Trip, Make It Yours</div>
-		<div class="mb-4 flex items-center gap-3">
-			<img
-				src={profileImageUrl || getAvatarUrl(userName)}
-				alt={userName}
-				class="h-12 w-12 rounded-full object-cover" />
-			<div class="flex-1">
-				<h2 class="text-lg font-semibold">안녕하세요! {userName} 님</h2>
-			</div>
+		<div class="mb-4 flex items-center justify-between">
+			<h2 class="text-lg font-semibold">안녕하세요! {userName} 님</h2>
 			<button
-				class="text-sm text-blue-600"
+				class="rounded-full bg-gray-200 px-3 py-1 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-300"
 				onclick={() => window.window.alert('프로필 수정 준비중')}>
 				프로필 수정
 			</button>
