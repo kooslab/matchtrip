@@ -68,6 +68,7 @@
 	let showCancelModal = $state(false);
 	let selectedCancelRequest = $state<Message | null>(null);
 	let currentUserId = $derived(data?.session?.user?.id || $page.data.session?.user?.id);
+	let canSendMessage = $state(true);
 	let messagesContainer: HTMLDivElement;
 	let pollingInterval: ReturnType<typeof setInterval>;
 
@@ -132,6 +133,7 @@
 				const data = await response.json();
 				conversation = data.conversation;
 				offer = data.offer || null;
+				canSendMessage = data.canSendMessage ?? true;
 
 				// Preserve optimistic messages (temp IDs) while updating real messages
 				const tempMessages = messages.filter((msg) => msg.id.startsWith('temp-'));
@@ -645,31 +647,39 @@
 								<p class="text-sm text-red-700">{warningMessage}</p>
 							</div>
 						{/if}
-						<form onsubmit={sendMessage} class="flex items-end gap-3">
-							<div class="flex-1 py-2">
-								<input
-									id="message-input"
-									type="text"
-									bind:value={newMessage}
-									placeholder="메시지를 입력하세요"
-									disabled={sending}
-									oninput={() => {
-										if (warningMessage) warningMessage = '';
-									}}
-									class="text-primary placeholder:text-primary/60 w-full bg-transparent text-base leading-6 outline-none"
-								/>
+						{#if !canSendMessage}
+							<div class="py-3 text-center">
+								<p class="text-sm text-gray-600">
+									고객이 먼저 메시지를 보내거나 결제가 완료된 후에 채팅이 가능합니다.
+								</p>
 							</div>
-							<button
-								type="submit"
-								disabled={!newMessage.trim() || sending}
-								class="flex h-9 w-9 items-center justify-center rounded-[20px] p-1 transition-opacity disabled:opacity-50"
-								style="background-color: #1095f4; background-image: linear-gradient(157.454deg, rgba(54, 41, 241, 0) 0%, rgba(220, 220, 220, 0.4) 100%)"
-							>
-								<div class="h-7 w-7" style="color: white;">
-									{@html PlayIcon.replace('fill="#8B95A1"', 'fill="currentColor"')}
+						{:else}
+							<form onsubmit={sendMessage} class="flex items-end gap-3">
+								<div class="flex-1 py-2">
+									<input
+										id="message-input"
+										type="text"
+										bind:value={newMessage}
+										placeholder="메시지를 입력하세요"
+										disabled={sending}
+										oninput={() => {
+											if (warningMessage) warningMessage = '';
+										}}
+										class="text-primary placeholder:text-primary/60 w-full bg-transparent text-base leading-6 outline-none"
+									/>
 								</div>
-							</button>
-						</form>
+								<button
+									type="submit"
+									disabled={!newMessage.trim() || sending}
+									class="flex h-9 w-9 items-center justify-center rounded-[20px] p-1 transition-opacity disabled:opacity-50"
+									style="background-color: #1095f4; background-image: linear-gradient(157.454deg, rgba(54, 41, 241, 0) 0%, rgba(220, 220, 220, 0.4) 100%)"
+								>
+									<div class="h-7 w-7" style="color: white;">
+										{@html PlayIcon.replace('fill="#8B95A1"', 'fill="currentColor"')}
+									</div>
+								</button>
+							</form>
+						{/if}
 					</div>
 				</div>
 			{:else}

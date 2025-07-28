@@ -8,9 +8,10 @@ import {
 	offers,
 	trips,
 	destinations,
-	countries
+	countries,
+	payments
 } from '$lib/server/db/schema';
-import { eq, and, or, asc } from 'drizzle-orm';
+import { eq, and, or, asc, sql } from 'drizzle-orm';
 
 // GET /api/conversations/[id] - Get conversation details with messages
 export const GET: RequestHandler = async ({ params, locals }) => {
@@ -107,11 +108,47 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 			.where(eq(offers.id, conv.offerId))
 			.limit(1);
 
+		// Check chat permissions for guides
+		const isGuide = conv.guideId === session.user.id;
+		let canSendMessage = true;
+
+		if (isGuide) {
+			// Check if traveler has sent any messages
+			const travelerMessages = await db
+				.select({ count: sql<number>`count(*)` })
+				.from(messages)
+				.where(
+					and(
+						eq(messages.conversationId, conversationId),
+						eq(messages.senderId, conv.travelerId)
+					)
+				);
+
+			const hasTravelerMessages = travelerMessages[0]?.count > 0;
+
+			// Check if payment is completed for this offer
+			const completedPayments = await db
+				.select({ count: sql<number>`count(*)` })
+				.from(payments)
+				.where(
+					and(
+						eq(payments.offerId, conv.offerId),
+						eq(payments.status, 'completed')
+					)
+				);
+
+			const hasCompletedPayment = completedPayments[0]?.count > 0;
+
+			// Guide can only send messages if traveler has messaged or payment is completed
+			canSendMessage = hasTravelerMessages || hasCompletedPayment;
+		}
+
 		console.log('Returning conversation with', conversationMessages.length, 'messages');
 		return json({
 			conversation: conv,
 			messages: conversationMessages,
-			offer: offerDetails[0] || null
+			offer: offerDetails[0] || null,
+			canSendMessage
 		});
 	} catch (error) {
 		console.error('Error fetching conversation:', error);
@@ -157,6 +194,48 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 		// Check if conversation is active
 		if (conv.status !== 'active') {
 			return json({ error: 'Conversation is not active' }, { status: 400 });
+		}
+
+		// Determine if the user is a guide
+		const isGuide = conv.guideId === session.user.id;
+
+		// If the sender is a guide, check chat permissions
+		if (isGuide) {
+			// Check if traveler has sent any messages
+			const travelerMessages = await db
+				.select({ count: sql<number>`count(*)` })
+				.from(messages)
+				.where(
+					and(
+						eq(messages.conversationId, conversationId),
+						eq(messages.senderId, conv.travelerId)
+					)
+				);
+
+			const hasTravelerMessages = travelerMessages[0]?.count > 0;
+
+			// Check if payment is completed for this offer
+			const completedPayments = await db
+				.select({ count: sql<number>`count(*)` })
+				.from(payments)
+				.where(
+					and(
+						eq(payments.offerId, conv.offerId),
+						eq(payments.status, 'completed')
+					)
+				);
+
+			const hasCompletedPayment = completedPayments[0]?.count > 0;
+
+			// Guide can only send messages if:
+			// 1. Traveler has already sent a message, OR
+			// 2. Payment has been completed
+			if (!hasTravelerMessages && !hasCompletedPayment) {
+				return json(
+					{ error: '고객이 먼저 메시지를 보내거나 결제가 완료된 후에 채팅이 가능합니다.' },
+					{ status: 403 }
+				);
+			}
 		}
 
 		// Create the message

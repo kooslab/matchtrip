@@ -9,6 +9,9 @@
 
 	let offer = $derived(data.offer);
 	let review = $state(data.review);
+	let canStartChat = $derived(data.canStartChat);
+	let hasCompletedPayment = $derived(data.hasCompletedPayment);
+	let hasTravelerMessages = $derived(data.hasTravelerMessages);
 	let isRequestingReview = $state(false);
 	let reviewRequestMessage = $state('');
 	let reviewRequestError = $state('');
@@ -82,8 +85,8 @@
 			});
 
 			if (response.ok) {
-				const { conversationId } = await response.json();
-				goto(`/chat/${conversationId}`);
+				const { conversation } = await response.json();
+				goto(`/chat/${conversation.id}`);
 			} else {
 				alert('대화를 시작할 수 없습니다.');
 			}
@@ -374,13 +377,28 @@
 					</button>
 				{/if}
 			{:else if offer.status === 'pending' || offer.status === 'accepted'}
-				<button
-					onclick={startConversation}
-					class="flex items-center justify-center gap-2 rounded-xl bg-[#1095f4] px-8 py-3.5 text-base font-semibold text-white"
-				>
-					<img src={chatIcon} alt="" class="h-5 w-5 brightness-0 invert" />
-					대화하기
-				</button>
+				{#if canStartChat}
+					<button
+						onclick={startConversation}
+						class="flex items-center justify-center gap-2 rounded-xl bg-[#1095f4] px-8 py-3.5 text-base font-semibold text-white"
+					>
+						<img src={chatIcon} alt="" class="h-5 w-5 brightness-0 invert" />
+						대화하기
+					</button>
+				{:else}
+					<div class="text-center">
+						<button
+							disabled
+							class="flex items-center justify-center gap-2 rounded-xl bg-gray-400 px-8 py-3.5 text-base font-semibold text-white cursor-not-allowed"
+						>
+							<img src={chatIcon} alt="" class="h-5 w-5 brightness-0 invert" />
+							대화하기
+						</button>
+						<p class="mt-2 text-sm text-gray-600">
+							{hasCompletedPayment ? '고객이 먼저 메시지를 보낸 후에 채팅이 가능합니다.' : '고객이 결제를 완료하거나 메시지를 보낸 후에 채팅이 가능합니다.'}
+						</p>
+					</div>
+				{/if}
 			{:else if offer.status === 'completed'}
 				{#if review?.reviewRequestedAt}
 					<button

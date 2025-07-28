@@ -6,9 +6,12 @@ import {
 	offers,
 	countries,
 	continents,
-	reviews
+	reviews,
+	payments,
+	conversations,
+	messages
 } from '$lib/server/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { redirect } from '@sveltejs/kit';
 
 export const load = async ({ params, locals }) => {
@@ -106,8 +109,53 @@ export const load = async ({ params, locals }) => {
 		.where(and(eq(reviews.offerId, offerId), eq(reviews.guideId, user?.id || '')))
 		.limit(1);
 
+	// Check if payment is completed
+	const paymentData = await db
+		.select({ count: sql<number>`count(*)` })
+		.from(payments)
+		.where(
+			and(
+				eq(payments.offerId, offerId),
+				eq(payments.status, 'completed')
+			)
+		);
+
+	const hasCompletedPayment = paymentData[0]?.count > 0;
+
+	// Check if conversation exists and if traveler has sent messages
+	const conversationData = await db
+		.select({
+			id: conversations.id,
+			travelerId: conversations.travelerId
+		})
+		.from(conversations)
+		.where(eq(conversations.offerId, offerId))
+		.limit(1);
+
+	let hasTravelerMessages = false;
+	if (conversationData.length > 0) {
+		const travelerMessageCount = await db
+			.select({ count: sql<number>`count(*)` })
+			.from(messages)
+			.where(
+				and(
+					eq(messages.conversationId, conversationData[0].id),
+					eq(messages.senderId, conversationData[0].travelerId)
+				)
+			);
+		hasTravelerMessages = travelerMessageCount[0]?.count > 0;
+	}
+
+	// Guide can start chat if:
+	// 1. Traveler has sent a message, OR
+	// 2. Payment is completed
+	const canStartChat = hasTravelerMessages || hasCompletedPayment;
+
 	return {
 		offer: offerDetails[0],
-		review: reviewData[0] || null
+		review: reviewData[0] || null,
+		canStartChat,
+		hasCompletedPayment,
+		hasTravelerMessages
 	};
 };
