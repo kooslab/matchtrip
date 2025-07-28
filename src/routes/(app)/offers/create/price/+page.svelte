@@ -86,9 +86,9 @@
 
 <!-- Bottom Button -->
 <div
-	class="fixed right-0 bottom-0 left-0 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
+	class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
 >
-	<div class="mx-auto max-w-[430px] px-4 py-4 pb-4">
+	<div class="px-4 py-4 pb-4">
 		<button
 			onclick={handleNext}
 			disabled={!$offerFormValidation.isPriceValid}

@@ -40,11 +40,11 @@
 	});
 
 	// Check if we should show header (not on success page)
-	const showHeader = $derived(() => {
+	const showHeader = $derived((() => {
 		const pathSegments = $page.url.pathname.split('/');
 		const currentPath = pathSegments[pathSegments.length - 1];
 		return currentPath !== 'success';
-	});
+	})());
 
 	function handleBack() {
 		const current = currentStepInfo();
@@ -67,10 +67,11 @@
 	}
 
 	// Check if skip button should be shown
-	const showSkip = $derived(() => {
-		const current = currentStepInfo();
-		return current.path === 'files';
-	});
+	const showSkip = $derived((() => {
+		const pathSegments = $page.url.pathname.split('/');
+		const currentPath = pathSegments[pathSegments.length - 1];
+		return currentPath === 'files';
+	})());
 
 	function handleSkip() {
 		const current = currentStepInfo();
