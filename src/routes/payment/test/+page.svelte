@@ -24,12 +24,14 @@
 
 			status = 'Rendering payment methods...';
 			await widgets.renderPaymentMethods({
-				selector: '#payment-method'
+				selector: '#payment-method',
+				variantKey: import.meta.env.VITE_TOSS_VARIANT_KEY
 			});
 
 			status = 'Rendering agreement...';
 			await widgets.renderAgreement({
-				selector: '#agreement'
+				selector: '#agreement',
+				variantKey: import.meta.env.VITE_TOSS_VARIANT_KEY
 			});
 
 			status = 'Success! Payment widget loaded.';

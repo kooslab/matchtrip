@@ -102,12 +102,14 @@
 
 			// Render payment methods
 			await widgets.renderPaymentMethods({
-				selector: '#payment-method'
+				selector: '#payment-method',
+				variantKey: import.meta.env.VITE_TOSS_VARIANT_KEY
 			});
 
 			// Render agreement
 			await widgets.renderAgreement({
-				selector: '#agreement'
+				selector: '#agreement',
+				variantKey: import.meta.env.VITE_TOSS_VARIANT_KEY
 			});
 
 			// Widget is ready to use
