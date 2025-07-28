@@ -3,15 +3,25 @@
 	import { page } from '$app/stores';
 	import { offerFormStore, offerFormValidation } from '$lib/stores/offerForm';
 	import { colors } from '$lib/constants/colors';
+	import { createNumberInputHandler, formatNumberWithCommas } from '$lib/utils/numberFormatter';
 
 	let tripId = $derived($page.url.searchParams.get('tripId'));
 
-	// Bind to store value
-	let pricePerPerson = $state($offerFormStore.pricePerPerson);
+	// Bind to store value (raw number without commas)
+	let rawPrice = $state($offerFormStore.pricePerPerson || '');
+	// Display value with commas
+	let displayValue = $state('');
+
+	// Initialize display value
+	$effect(() => {
+		if (rawPrice) {
+			displayValue = formatNumberWithCommas(rawPrice);
+		}
+	});
 
 	// Update store when value changes
 	$effect(() => {
-		offerFormStore.setPricePerPerson(pricePerPerson);
+		offerFormStore.setPricePerPerson(rawPrice);
 	});
 
 	function handleNext() {
@@ -20,19 +30,11 @@
 		}
 	}
 
-	// Format number input
-	function handlePriceInput(e: Event) {
-		const input = e.target as HTMLInputElement;
-		// Remove non-numeric characters
-		const value = input.value.replace(/[^\d]/g, '');
-		pricePerPerson = value;
-	}
-
-	// Format display value
-	const formattedPrice = $derived.by(() => {
-		if (!pricePerPerson) return '';
-		return new Intl.NumberFormat('ko-KR').format(parseInt(pricePerPerson));
-	});
+	// Create the formatted number input handler
+	const handlePriceInput = createNumberInputHandler(
+		(value) => rawPrice = value,
+		(value) => displayValue = value
+	);
 </script>
 
 <div class="flex-1 px-4 py-6 pb-40">
@@ -52,7 +54,7 @@
 				<input
 					id="price"
 					type="text"
-					value={pricePerPerson}
+					value={displayValue}
 					oninput={handlePriceInput}
 					placeholder="1인당 금액을 입력해 주세요"
 					class="focus:border-opacity-100 w-full rounded-lg border border-gray-300 px-4 py-3.5 text-base placeholder-gray-400 transition-colors focus:ring-1 focus:outline-none"
@@ -60,16 +62,10 @@
 					onfocus={(e) => (e.currentTarget.style.borderColor = colors.primary)}
 					onblur={(e) => (e.currentTarget.style.borderColor = '')}
 				/>
-				{#if pricePerPerson}
+				{#if displayValue}
 					<div class="absolute top-1/2 right-4 -translate-y-1/2 text-sm text-gray-500">원</div>
 				{/if}
 			</div>
-
-			{#if formattedPrice}
-				<p class="text-sm text-gray-600">
-					입력한 금액: <span class="font-medium">{formattedPrice}원</span>
-				</p>
-			{/if}
 		</div>
 
 		<!-- Helper Text -->

@@ -64,8 +64,10 @@
 			if (!file) return;
 			
 			// Validate file size (5MB)
-			if (file.size > 5 * 1024 * 1024) {
-				alert('파일 크기는 5MB 이하여야 합니다.');
+			const maxSize = 5 * 1024 * 1024; // 5MB
+			if (file.size > maxSize) {
+				const fileSizeMB = (file.size / 1024 / 1024).toFixed(1);
+				alert(`이미지 크기가 너무 큽니다.\n\n현재 크기: ${fileSizeMB}MB\n최대 허용 크기: 5MB\n\n더 작은 크기의 이미지를 선택해주세요.`);
 				return;
 			}
 			
@@ -216,7 +218,7 @@
 						onclick={handleImageUpload}
 						disabled={isUploading}
 						class="px-3 py-2 rounded hover:bg-gray-200 flex items-center gap-1 bg-white border border-gray-300"
-						title="이미지 업로드"
+						title="이미지 업로드 (최대 5MB)"
 					>
 						{#if isUploading}
 							<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-800"></div>
@@ -225,6 +227,7 @@
 						{/if}
 						<span class="text-sm font-medium">사진</span>
 					</button>
+					<span class="text-xs text-gray-500 self-center ml-2">최대 5MB</span>
 				</div>
 			{/if}
 			
@@ -245,6 +248,7 @@
 				<li>• 본인만의 특별한 경험이나 노하우를 어필하세요</li>
 				<li>• 포함/불포함 사항을 명확히 구분해주세요</li>
 				<li>• 텍스트 중간에 이미지를 추가하려면 원하는 위치에 커서를 놓고 사진 버튼을 클릭하세요</li>
+				<li>• 이미지는 5MB 이하만 업로드 가능합니다</li>
 			</ul>
 		</div>
 
