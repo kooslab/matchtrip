@@ -29,6 +29,10 @@
 	// Loading states
 	let isLoading = $state(false);
 	let isSendingCode = $state(false);
+	let isVerifying = $state(false);
+	
+	// Error message
+	let verificationError = $state('');
 
 	// Step visibility
 	let showPhoneStep = $state(false);
@@ -46,7 +50,7 @@
 	}
 
 	function canProceedVerification(): boolean {
-		return verificationCode.length === 6;
+		return verificationCode.length === 6 && isVerified;
 	}
 
 	// Handle name completion
@@ -115,10 +119,21 @@
 	}
 
 	// Verify code and complete
-	async function verifyCode() {
-		if (!canProceedVerification()) return;
+	async function verifyCode(isAutoVerify = false) {
+		if (verificationCode.length !== 6) return;
+		
+		// Prevent duplicate verification calls
+		if (isVerifying || isLoading) return;
+		
+		// For auto-verify, reset error
+		if (isAutoVerify) {
+			verificationError = '';
+		}
 
-		isLoading = true;
+		isVerifying = true;
+		if (!isAutoVerify) {
+			isLoading = true;
+		}
 
 		try {
 			const verifyResponse = await fetch('/api/phone/verify', {
@@ -130,29 +145,40 @@
 				})
 			});
 
-			if (verifyResponse.ok) {
-				phoneCompleted = true;
-				// Clear timer
-				if (timerInterval) {
-					clearInterval(timerInterval);
-					timerInterval = null;
+			const data = await verifyResponse.json();
+			
+			if (verifyResponse.ok && data.success) {
+				isVerified = true;
+				verificationError = '';
+				
+				// Only proceed to next page if manually submitted (not auto-verify)
+				if (!isAutoVerify) {
+					phoneCompleted = true;
+					// Clear timer
+					if (timerInterval) {
+						clearInterval(timerInterval);
+						timerInterval = null;
+					}
+					// Save data to store and redirect to profile page
+					onboardingStore.setData({
+						name: formData.name,
+						phone: formData.phone,
+						birthYear: formData.birthYear,
+						birthMonth: formData.birthMonth,
+						birthDay: formData.birthDay
+					});
+					await goto('/onboarding/traveler/profile');
 				}
-				// Save data to store and redirect to profile page
-				onboardingStore.setData({
-					name: formData.name,
-					phone: formData.phone,
-					birthYear: formData.birthYear,
-					birthMonth: formData.birthMonth,
-					birthDay: formData.birthDay
-				});
-				await goto('/onboarding/traveler/profile');
 			} else {
-				alert('인증번호가 올바르지 않습니다.');
+				isVerified = false;
+				verificationError = data.message || '인증번호가 올바르지 않습니다.';
 			}
 		} catch (error) {
 			console.error('Error:', error);
-			alert('오류가 발생했습니다.');
+			isVerified = false;
+			verificationError = '오류가 발생했습니다.';
 		} finally {
+			isVerifying = false;
 			isLoading = false;
 		}
 	}
@@ -251,6 +277,7 @@
 		showVerificationStep = false;
 		verificationCode = '';
 		isVerified = false;
+		verificationError = '';
 		if (timerInterval) {
 			clearInterval(timerInterval);
 			timerInterval = null;
@@ -307,7 +334,7 @@
 									style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1;"
 									onfocus={(e) => (e.target.style.borderColor = colors.primary)}
 									onblur={(e) => (e.target.style.borderColor = '')}
-									oninput={(e) => {
+									oninput={async (e) => {
 										// Remove any non-numeric characters
 										const target = e.currentTarget;
 										const value = target.value.replace(/[^0-9]/g, '');
@@ -315,10 +342,12 @@
 											verificationCode = value;
 										}
 
+										// Auto-verify when 6 digits are entered
 										if (verificationCode.length === 6) {
-											isVerified = true;
+											await verifyCode(true);
 										} else {
 											isVerified = false;
+											verificationError = '';
 										}
 									}}
 									onkeydown={(e) => {
@@ -349,6 +378,9 @@
 									</span>
 								{/if}
 							</div>
+							{#if verificationError}
+								<p class="mt-2 text-sm text-red-600">{verificationError}</p>
+							{/if}
 						</div>
 					</div>
 				{/if}

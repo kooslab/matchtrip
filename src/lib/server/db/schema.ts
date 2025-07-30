@@ -27,15 +27,19 @@ export const users = pgTable(
 		image: text('image'),
 		role: userRoleEnum('role'),
 		phone: text('phone'),
+		phoneVerified: boolean('phone_verified').notNull().default(false),
 		birthDate: date('birth_date'),
 		onboardingCompleted: boolean('onboarding_completed').notNull().default(false),
+		isDeleted: boolean('is_deleted').notNull().default(false),
+		deletedAt: timestamp('deleted_at'),
 		createdAt: timestamp('created_at').defaultNow().notNull(),
 		updatedAt: timestamp('updated_at').defaultNow().notNull()
 	},
 	(table) => ({
 		// Add indexes for frequently queried columns
 		roleIdx: index('users_role_idx').on(table.role),
-		emailIdx: index('users_email_idx').on(table.email)
+		emailIdx: index('users_email_idx').on(table.email),
+		isDeletedIdx: index('users_is_deleted_idx').on(table.isDeleted)
 	})
 );
 
@@ -495,6 +499,56 @@ export const reviews = pgTable(
 		reviewTokenIdx: index('reviews_review_token_idx').on(table.reviewToken),
 		// Ensure one review per trip
 		uniqueTripReview: index('reviews_trip_traveler_unique').on(table.tripId, table.travelerId)
+	})
+);
+
+// Admin tables for admin panel functionality
+export const admins = pgTable(
+	'admins',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		email: text('email').notNull().unique(),
+		name: text('name'),
+		passwordHash: text('password_hash'),
+		isApproved: boolean('is_approved').notNull().default(false),
+		approvedAt: timestamp('approved_at'),
+		approvedBy: uuid('approved_by'),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at').defaultNow().notNull()
+	}
+);
+
+export const adminSessions = pgTable(
+	'admin_sessions',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		adminId: uuid('admin_id')
+			.notNull()
+			.references(() => admins.id, { onDelete: 'cascade' }),
+		expiresAt: timestamp('expires_at').notNull(),
+		token: text('token').notNull().unique(),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at').defaultNow().notNull(),
+		ipAddress: text('ip_address'),
+		userAgent: text('user_agent')
+	}
+);
+
+// Phone verifications table for storing temporary verification codes
+export const phoneVerifications = pgTable(
+	'phone_verifications',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		phone: text('phone').notNull(),
+		code: text('code').notNull(),
+		expiresAt: timestamp('expires_at').notNull(),
+		verified: boolean('verified').notNull().default(false),
+		attempts: integer('attempts').notNull().default(0),
+		createdAt: timestamp('created_at').defaultNow().notNull()
+	},
+	(table) => ({
+		phoneIdx: index('phone_verifications_phone_idx').on(table.phone),
+		expiresAtIdx: index('phone_verifications_expires_at_idx').on(table.expiresAt)
 	})
 );
 
