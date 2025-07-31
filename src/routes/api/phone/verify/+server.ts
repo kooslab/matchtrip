@@ -19,6 +19,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 		// Normalize phone number (remove dashes, spaces, etc) to match what was stored
 		const normalizedPhone = phone.replace(/\D/g, '');
+		
+		console.log('[verify] Original phone:', phone);
+		console.log('[verify] Normalized phone:', normalizedPhone);
+		console.log('[verify] Code:', code);
 
 		// Verify the code
 		const { success, reason } = await verifyCode(normalizedPhone, code);
@@ -32,8 +36,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		}
 
 		// If user is logged in, update their phone verification status
-		const session = await locals.auth();
-		if (session?.user) {
+		const user = locals.user;
+		if (user) {
 			await db
 				.update(users)
 				.set({ 
@@ -41,7 +45,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 					phoneVerified: true,
 					updatedAt: new Date()
 				})
-				.where(eq(users.id, session.user.id));
+				.where(eq(users.id, user.id));
 		}
 
 		return json({

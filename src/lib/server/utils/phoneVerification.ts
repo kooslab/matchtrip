@@ -103,6 +103,8 @@ export async function createVerificationCode(phone: string): Promise<string> {
 }
 
 export async function verifyCode(phone: string, code: string): Promise<{ success: boolean; reason?: string }> {
+	console.log('[verifyCode] Verifying:', { phone, code });
+	
 	// Find the most recent verification code for this phone
 	const verificationRecord = await db
 		.select()
@@ -115,6 +117,16 @@ export async function verifyCode(phone: string, code: string): Promise<{ success
 		)
 		.orderBy(desc(phoneVerifications.createdAt))
 		.limit(1);
+		
+	console.log('[verifyCode] Found records:', verificationRecord.length);
+	if (verificationRecord.length > 0) {
+		console.log('[verifyCode] Record:', {
+			phone: verificationRecord[0].phone,
+			code: verificationRecord[0].code,
+			expiresAt: verificationRecord[0].expiresAt,
+			attempts: verificationRecord[0].attempts
+		});
+	}
 		
 	if (verificationRecord.length === 0) {
 		return { success: false, reason: '인증번호를 찾을 수 없습니다. 다시 요청해주세요.' };
@@ -133,6 +145,8 @@ export async function verifyCode(phone: string, code: string): Promise<{ success
 	}
 	
 	// Verify the code
+	console.log('[verifyCode] Comparing:', { provided: code, stored: record.code, match: record.code === code });
+	
 	if (record.code !== code) {
 		// Increment attempts
 		await db

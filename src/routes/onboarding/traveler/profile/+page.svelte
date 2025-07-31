@@ -314,24 +314,31 @@
 			<!-- Profile Image -->
 			<div class="mb-10 flex justify-center">
 				<div
-					class="relative h-[124px] w-[124px] cursor-pointer transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
-					onclick={handleImageClick}
+					class="relative h-[124px] w-[124px] transition-transform duration-200 {!uploadingImage ? 'cursor-pointer hover:scale-[1.02] active:scale-[0.98]' : 'cursor-not-allowed'}"
+					onclick={() => !uploadingImage && handleImageClick()}
 					role="button"
 					tabindex="0"
 					onkeydown={(e) => {
-						if (e.key === 'Enter' || e.key === ' ') {
+						if (!uploadingImage && (e.key === 'Enter' || e.key === ' ')) {
 							e.preventDefault();
 							handleImageClick();
 						}
 					}}
 				>
 					<div
-						class="flex h-[124px] w-[124px] items-center justify-center overflow-hidden rounded-[62px] bg-[rgba(0,62,129,0.08)] transition-colors duration-200 hover:bg-[rgba(0,62,129,0.12)]"
+						class="relative flex h-[124px] w-[124px] items-center justify-center overflow-hidden rounded-[62px] bg-[rgba(0,62,129,0.08)] transition-colors duration-200 hover:bg-[rgba(0,62,129,0.12)]"
 					>
 						{#if profileImageUrl}
 							<img src={profileImageUrl} alt="프로필 이미지" class="h-full w-full object-cover" />
 						{:else}
 							<img src={iconUser} alt="프로필 이미지" class="h-[68px] w-[68px]" />
+						{/if}
+						{#if uploadingImage}
+							<div class="absolute inset-0 flex items-center justify-center bg-black/50 rounded-[62px]">
+								<div
+									class="border-t-white h-8 w-8 animate-spin rounded-full border-[3px] border-white/30"
+								></div>
+							</div>
 						{/if}
 					</div>
 					<button

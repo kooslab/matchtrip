@@ -33,6 +33,9 @@
 	
 	// Error message
 	let verificationError = $state('');
+	
+	// Track last verified code to prevent duplicate verifications
+	let lastVerifiedCode = $state('');
 
 	// Step visibility
 	let showPhoneStep = $state(false);
@@ -99,6 +102,8 @@
 				body: JSON.stringify({ phone: formData.phone })
 			});
 
+			const data = await response.json();
+
 			if (response.ok) {
 				isVerificationSent = true;
 				showVerificationStep = true;
@@ -108,7 +113,8 @@
 					document.getElementById('code')?.focus();
 				}, 100);
 			} else {
-				alert('인증번호 전송에 실패했습니다.');
+				// Show the specific error message from the server
+				alert(data.message || '인증번호 전송에 실패했습니다.');
 			}
 		} catch (error) {
 			console.error('Error:', error);
@@ -124,6 +130,31 @@
 		
 		// Prevent duplicate verification calls
 		if (isVerifying || isLoading) return;
+		
+		// Skip if we already verified this exact code for auto-verify
+		if (isAutoVerify && lastVerifiedCode === verificationCode) {
+			return;
+		}
+		
+		// If already verified and user clicks Next, just proceed
+		if (!isAutoVerify && isVerified && lastVerifiedCode === verificationCode) {
+			phoneCompleted = true;
+			// Clear timer
+			if (timerInterval) {
+				clearInterval(timerInterval);
+				timerInterval = null;
+			}
+			// Save data to store and redirect to profile page
+			onboardingStore.setData({
+				name: formData.name,
+				phone: formData.phone,
+				birthYear: formData.birthYear,
+				birthMonth: formData.birthMonth,
+				birthDay: formData.birthDay
+			});
+			await goto('/onboarding/traveler/profile');
+			return;
+		}
 		
 		// For auto-verify, reset error
 		if (isAutoVerify) {
@@ -150,6 +181,7 @@
 			if (verifyResponse.ok && data.success) {
 				isVerified = true;
 				verificationError = '';
+				lastVerifiedCode = verificationCode;
 				
 				// Only proceed to next page if manually submitted (not auto-verify)
 				if (!isAutoVerify) {
@@ -172,6 +204,7 @@
 			} else {
 				isVerified = false;
 				verificationError = data.message || '인증번호가 올바르지 않습니다.';
+				lastVerifiedCode = ''; // Reset on failure
 			}
 		} catch (error) {
 			console.error('Error:', error);
@@ -278,6 +311,7 @@
 		verificationCode = '';
 		isVerified = false;
 		verificationError = '';
+		lastVerifiedCode = '';
 		if (timerInterval) {
 			clearInterval(timerInterval);
 			timerInterval = null;
@@ -537,7 +571,7 @@
 			<!-- Action Button -->
 			{#if showVerificationStep && !phoneCompleted}
 				<button
-					onclick={verifyCode}
+					onclick={() => verifyCode(false)}
 					disabled={!canProceedVerification() || isLoading}
 					class="mt-6 w-full rounded-lg py-4 text-base font-medium text-white transition-colors disabled:opacity-50"
 					style="background-color: {canProceedVerification() && !isLoading

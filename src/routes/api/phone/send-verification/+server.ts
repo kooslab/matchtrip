@@ -24,15 +24,19 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		// Normalize phone number (remove dashes, spaces, etc)
 		const normalizedPhone = phone.replace(/\D/g, '');
+		
+		console.log('[send-verification] Original phone:', phone);
+		console.log('[send-verification] Normalized phone:', normalizedPhone);
 
 		// Check rate limits
-		const { allowed, reason } = await canSendVerificationCode(normalizedPhone);
-		if (!allowed) {
-			return json({
-				success: false,
-				message: reason
-			}, { status: 429 });
-		}
+		// TODO: Re-enable rate limiting for production
+		// const { allowed, reason } = await canSendVerificationCode(normalizedPhone);
+		// if (!allowed) {
+		// 	return json({
+		// 		success: false,
+		// 		message: reason
+		// 	}, { status: 429 });
+		// }
 
 		// Generate verification code
 		const code = await createVerificationCode(normalizedPhone);
