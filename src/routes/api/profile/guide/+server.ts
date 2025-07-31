@@ -34,7 +34,7 @@ if (R2_ACCOUNT_ID && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY) {
 export const POST: RequestHandler = async ({ request, locals }) => {
 	const startTime = Date.now();
 	console.log('[API GUIDE PROFILE] Request received at', new Date().toISOString());
-	
+
 	const userId = locals.user?.id;
 	if (!userId) {
 		console.error('[API GUIDE PROFILE] No user ID in locals');
@@ -78,7 +78,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		const birthDate = formData.get('birthDate')?.toString();
 		const destinationsStr = formData.get('destinations')?.toString();
 		const profileImageUrl = formData.get('profileImageUrl')?.toString();
-		
+
 		console.log('[API GUIDE PROFILE] Form data received:', {
 			hasName: !!name,
 			hasPhone: !!phone,
@@ -109,7 +109,9 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			if (key.startsWith('documents_') && value instanceof File) {
 				const categoryId = key.replace('documents_', '');
 				fileCount++;
-				console.log(`[API GUIDE PROFILE] Processing file ${fileCount} for category ${categoryId}, size: ${value.size} bytes`);
+				console.log(
+					`[API GUIDE PROFILE] Processing file ${fileCount} for category ${categoryId}, size: ${value.size} bytes`
+				);
 
 				try {
 					// Generate unique filename
@@ -183,7 +185,9 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 		console.log('[API GUIDE PROFILE] File upload summary:', {
 			totalFiles: fileCount,
-			documentsByCategory: Object.keys(documentUrls).map((cat) => `${cat}: ${documentUrls[cat].length} files`),
+			documentsByCategory: Object.keys(documentUrls).map(
+				(cat) => `${cat}: ${documentUrls[cat].length} files`
+			),
 			hasIdDocument: !!idDocumentUrl,
 			certificationCount: certificationUrls.length
 		});
@@ -251,11 +255,14 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			stack: err.stack,
 			time: totalTime
 		});
-		return new Response(JSON.stringify({ 
-			success: false, 
-			error: err.message || 'DB error',
-			time: totalTime
-		}), { status: 500 });
+		return new Response(
+			JSON.stringify({
+				success: false,
+				error: err.message || 'DB error',
+				time: totalTime
+			}),
+			{ status: 500 }
+		);
 	}
 };
 

@@ -30,10 +30,10 @@
 	let isLoading = $state(false);
 	let isSendingCode = $state(false);
 	let isVerifying = $state(false);
-	
+
 	// Error message
 	let verificationError = $state('');
-	
+
 	// Track last verified code to prevent duplicate verifications
 	let lastVerifiedCode = $state('');
 
@@ -127,15 +127,15 @@
 	// Verify code and complete
 	async function verifyCode(isAutoVerify = false) {
 		if (verificationCode.length !== 6) return;
-		
+
 		// Prevent duplicate verification calls
 		if (isVerifying || isLoading) return;
-		
+
 		// Skip if we already verified this exact code for auto-verify
 		if (isAutoVerify && lastVerifiedCode === verificationCode) {
 			return;
 		}
-		
+
 		// If already verified and user clicks Next, just proceed
 		if (!isAutoVerify && isVerified && lastVerifiedCode === verificationCode) {
 			phoneCompleted = true;
@@ -155,7 +155,7 @@
 			await goto('/onboarding/traveler/profile');
 			return;
 		}
-		
+
 		// For auto-verify, reset error
 		if (isAutoVerify) {
 			verificationError = '';
@@ -177,12 +177,12 @@
 			});
 
 			const data = await verifyResponse.json();
-			
+
 			if (verifyResponse.ok && data.success) {
 				isVerified = true;
 				verificationError = '';
 				lastVerifiedCode = verificationCode;
-				
+
 				// Only proceed to next page if manually submitted (not auto-verify)
 				if (!isAutoVerify) {
 					phoneCompleted = true;

@@ -85,7 +85,10 @@
 			hasNickname: !!storeData.nickname,
 			destinationsCount: storeData.destinations?.length || 0,
 			hasProfileImage: !!storeData.profileImageUrl,
-			uploadedFilesCount: Object.keys(uploadedFiles).reduce((acc, key) => acc + uploadedFiles[key].length, 0)
+			uploadedFilesCount: Object.keys(uploadedFiles).reduce(
+				(acc, key) => acc + uploadedFiles[key].length,
+				0
+			)
 		});
 
 		try {
@@ -158,7 +161,7 @@
 			if (guideResponse.ok) {
 				const guideResult = await guideResponse.json();
 				console.log('[GUIDE ONBOARDING] Guide profile created successfully:', guideResult);
-				
+
 				// Mark onboarding as completed
 				console.log('[GUIDE ONBOARDING] Marking onboarding as completed');
 				const completeStartTime = Date.now();
@@ -172,7 +175,10 @@
 				});
 
 				if (!completeResponse.ok) {
-					console.error('[GUIDE ONBOARDING] Failed to mark onboarding as complete:', await completeResponse.text());
+					console.error(
+						'[GUIDE ONBOARDING] Failed to mark onboarding as complete:',
+						await completeResponse.text()
+					);
 					// Don't return here - try to proceed anyway
 				} else {
 					const result = await completeResponse.json();

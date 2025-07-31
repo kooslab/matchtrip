@@ -556,45 +556,55 @@
 						{/if}
 
 						{#if message.messageType === 'cancellation_request'}
-							<div class="max-w-[300px] border-2 border-blue-500 rounded-lg bg-white overflow-hidden">
-								<div class="px-4 py-3 border-b border-dashed border-blue-300">
+							<div
+								class="max-w-[300px] overflow-hidden rounded-lg border-2 border-blue-500 bg-white"
+							>
+								<div class="border-b border-dashed border-blue-300 px-4 py-3">
 									<p class="text-center font-semibold text-gray-900">취소 요청</p>
 								</div>
-								<div class="px-4 py-3 border-b border-dashed border-blue-300">
-									<p class="text-center text-gray-700">{message.metadata?.reason || '가이드가 여행 취소를 요청하였습니다.'}</p>
+								<div class="border-b border-dashed border-blue-300 px-4 py-3">
+									<p class="text-center text-gray-700">
+										{message.metadata?.reason || '가이드가 여행 취소를 요청하였습니다.'}
+									</p>
 								</div>
 								<div class="px-4 py-3">
 									<!-- Debug info -->
-									<p class="text-xs text-gray-400 mb-2">
-										Role: {data?.user?.role || 'none'}, 
-										Status: {message.metadata?.status || 'undefined'}
+									<p class="mb-2 text-xs text-gray-400">
+										Role: {data?.user?.role || 'none'}, Status: {message.metadata?.status ||
+											'undefined'}
 									</p>
-									
+
 									{#if message.metadata?.status === 'accepted'}
-										<p class="text-center text-green-600 font-medium">✓ 취소가 승인되었습니다</p>
+										<p class="text-center font-medium text-green-600">✓ 취소가 승인되었습니다</p>
 									{:else if message.metadata?.status === 'declined'}
-										<p class="text-center text-red-600 font-medium">✗ 취소가 거절되었습니다</p>
+										<p class="text-center font-medium text-red-600">✗ 취소가 거절되었습니다</p>
 									{:else}
 										<!-- Always show button for travelers regardless of metadata status -->
 										{#if data?.user?.role === 'traveler'}
 											<button
 												type="button"
 												onclick={() => handleCancelRequestClick(message)}
-												class="w-full py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition-colors"
+												class="w-full rounded bg-blue-600 py-2 font-medium text-white transition-colors hover:bg-blue-700"
 											>
 												확인하기
 											</button>
 										{:else}
-											<p class="text-sm text-center text-gray-500">여행자의 응답을 기다리고 있습니다</p>
+											<p class="text-center text-sm text-gray-500">
+												여행자의 응답을 기다리고 있습니다
+											</p>
 										{/if}
 									{/if}
 								</div>
 							</div>
 						{:else if message.messageType === 'cancellation_response'}
-							<div class="max-w-[280px] px-4 py-3 rounded-lg bg-gray-100">
-								<p class="text-sm font-semibold mb-1">취소 {message.metadata?.response === 'accepted' ? '승인' : '거절'}</p>
+							<div class="max-w-[280px] rounded-lg bg-gray-100 px-4 py-3">
+								<p class="mb-1 text-sm font-semibold">
+									취소 {message.metadata?.response === 'accepted' ? '승인' : '거절'}
+								</p>
 								<p class="text-sm text-gray-600">
-									{message.metadata?.response === 'accepted' ? '가이드가 여행 취소를 요청하였습니다.' : '취소 요청이 거절되었습니다.'}
+									{message.metadata?.response === 'accepted'
+										? '가이드가 여행 취소를 요청하였습니다.'
+										: '취소 요청이 거절되었습니다.'}
 								</p>
 							</div>
 						{:else}
@@ -694,12 +704,12 @@
 
 	<!-- Cancellation Confirmation Modal -->
 	{#if showCancelModal && selectedCancelRequest}
-		<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
-			<div class="bg-white rounded-2xl p-6 w-full max-w-sm">
-				<h2 class="text-xl font-bold text-center mb-6">취소 확인</h2>
-				
-				<div class="mb-6 p-4 bg-gray-50 rounded-lg">
-					<p class="text-sm text-gray-600 text-center">
+		<div class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black px-4">
+			<div class="w-full max-w-sm rounded-2xl bg-white p-6">
+				<h2 class="mb-6 text-center text-xl font-bold">취소 확인</h2>
+
+				<div class="mb-6 rounded-lg bg-gray-50 p-4">
+					<p class="text-center text-sm text-gray-600">
 						{selectedCancelRequest.metadata?.reason || '취소 사유가 제공되지 않았습니다.'}
 					</p>
 				</div>
@@ -708,14 +718,14 @@
 					<button
 						type="button"
 						onclick={() => handleCancelResponse('declined')}
-						class="flex-1 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+						class="flex-1 rounded-lg border border-gray-300 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-50"
 					>
 						담기
 					</button>
 					<button
 						type="button"
 						onclick={() => handleCancelResponse('accepted')}
-						class="flex-1 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+						class="flex-1 rounded-lg bg-blue-600 py-3 font-medium text-white transition-colors hover:bg-blue-700"
 					>
 						수락하기
 					</button>

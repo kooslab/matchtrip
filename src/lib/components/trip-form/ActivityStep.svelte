@@ -11,7 +11,10 @@
 
 	// Update selected activities when formData changes
 	$effect(() => {
-		if (formData.activities && JSON.stringify(formData.activities) !== JSON.stringify(selectedActivities)) {
+		if (
+			formData.activities &&
+			JSON.stringify(formData.activities) !== JSON.stringify(selectedActivities)
+		) {
 			selectedActivities = formData.activities;
 		}
 	});

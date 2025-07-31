@@ -15,23 +15,23 @@ function getFilteredHeaders(headers: Headers): Record<string, string> {
 		'sec-fetch-mode',
 		'sec-fetch-site'
 	];
-	
+
 	const filtered: Record<string, string> = {};
-	
+
 	for (const [key, value] of headers.entries()) {
 		if (allowedHeaders.includes(key.toLowerCase())) {
 			// Truncate very long values
 			filtered[key] = value.length > 100 ? value.substring(0, 100) + '...' : value;
 		}
 	}
-	
+
 	// Add a count of hidden headers for debugging
 	const totalHeaders = Array.from(headers.entries()).length;
 	const hiddenCount = totalHeaders - Object.keys(filtered).length;
 	if (hiddenCount > 0) {
 		filtered['[hidden-headers-count]'] = `${hiddenCount} headers hidden (including cookies)`;
 	}
-	
+
 	return filtered;
 }
 
@@ -87,7 +87,7 @@ export const load = async ({ request, locals }) => {
 				if (user) {
 					userRole = user.role;
 					fullUser = user;
-					
+
 					// Check if user has agreed to terms
 					const agreement = await db.query.userAgreements.findFirst({
 						where: eq(userAgreements.userId, user.id),
@@ -96,9 +96,9 @@ export const load = async ({ request, locals }) => {
 							privacyAgreed: true
 						}
 					});
-					
+
 					hasAgreedToTerms = !!(agreement?.termsAgreed && agreement?.privacyAgreed);
-					
+
 					// Cache user data in locals for other server functions to use
 					locals.user = {
 						id: user.id,
@@ -110,7 +110,14 @@ export const load = async ({ request, locals }) => {
 					};
 					locals.session = session;
 					locals.hasAgreedToTerms = hasAgreedToTerms;
-					console.log('Layout server - User cached in locals:', user.email, 'Role:', user.role, 'Has agreed:', hasAgreedToTerms);
+					console.log(
+						'Layout server - User cached in locals:',
+						user.email,
+						'Role:',
+						user.role,
+						'Has agreed:',
+						hasAgreedToTerms
+					);
 				} else {
 					console.log('Layout server - No user found in database for ID:', session.user.id);
 				}

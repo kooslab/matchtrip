@@ -22,24 +22,28 @@
 		if (formData.budget && typeof formData.budget === 'object') {
 			return formData.budget;
 		}
-		
+
 		// Otherwise, try to match based on minBudget/maxBudget
 		if (formData.minBudget || formData.maxBudget) {
 			const min = formData.minBudget ? formData.minBudget * 10000 : 0; // Convert from 만원 to won
 			const max = formData.maxBudget ? formData.maxBudget * 10000 : null;
-			
+
 			// Find matching budget option
-			return budgetOptions.find(option => {
-				if (option.max === null) {
-					// Premium option (200만원 이상)
-					return min >= option.min;
-				}
-				// Check if the stored values match or are within the option range
-				return (min >= option.min && min <= option.max) || 
-					   (max && max >= option.min && max <= option.max);
-			}) || null;
+			return (
+				budgetOptions.find((option) => {
+					if (option.max === null) {
+						// Premium option (200만원 이상)
+						return min >= option.min;
+					}
+					// Check if the stored values match or are within the option range
+					return (
+						(min >= option.min && min <= option.max) ||
+						(max && max >= option.min && max <= option.max)
+					);
+				}) || null
+			);
 		}
-		
+
 		return null;
 	}
 

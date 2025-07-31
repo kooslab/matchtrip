@@ -41,9 +41,9 @@
 
 <div class="min-h-screen bg-gray-50">
 	<!-- Header -->
-	<header class="sticky top-0 z-10 bg-white border-b border-gray-100">
-		<div class="flex items-center h-14 px-4">
-			<button onclick={() => goto('/profile/guide/orders')} class="p-2 -ml-2">
+	<header class="sticky top-0 z-10 border-b border-gray-100 bg-white">
+		<div class="flex h-14 items-center px-4">
+			<button onclick={() => goto('/profile/guide/orders')} class="-ml-2 p-2">
 				<ChevronLeft class="h-5 w-5" />
 			</button>
 			<h1 class="ml-2 text-lg font-semibold">주문 상세</h1>
@@ -53,41 +53,53 @@
 	<!-- Content -->
 	<div class="bg-white pb-24">
 		<!-- Order Date -->
-		<div class="px-4 py-4 border-b border-gray-100">
+		<div class="border-b border-gray-100 px-4 py-4">
 			<p class="text-2xl font-bold">{formatDate(payment?.createdAt || offer.createdAt)} 결제</p>
 		</div>
 
 		<!-- Payment Status -->
-		<div class="px-4 py-4 border-b border-gray-100">
-			<span class={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium ${paymentStatus.class}`}>
+		<div class="border-b border-gray-100 px-4 py-4">
+			<span
+				class={`inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium ${paymentStatus.class}`}
+			>
 				{paymentStatus.text}
 			</span>
 		</div>
 
 		<!-- Trip Info -->
-		<div class="px-4 py-4 border-b border-gray-100">
-			<h2 class="text-lg font-semibold mb-3">{offer.title}</h2>
+		<div class="border-b border-gray-100 px-4 py-4">
+			<h2 class="mb-3 text-lg font-semibold">{offer.title}</h2>
 			<div class="space-y-2 text-sm">
 				<div class="flex items-start gap-3">
-					<Calendar class="h-4 w-4 text-gray-400 mt-0.5" />
+					<Calendar class="mt-0.5 h-4 w-4 text-gray-400" />
 					<div>
 						<p class="font-medium">{formatDate(trip.startDate)} - {formatDate(trip.endDate)}</p>
 						<p class="text-gray-500">
-							{Math.ceil((new Date(trip.endDate).getTime() - new Date(trip.startDate).getTime()) / (1000 * 60 * 60 * 24))}박 
-							{Math.ceil((new Date(trip.endDate).getTime() - new Date(trip.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1}일
+							{Math.ceil(
+								(new Date(trip.endDate).getTime() - new Date(trip.startDate).getTime()) /
+									(1000 * 60 * 60 * 24)
+							)}박
+							{Math.ceil(
+								(new Date(trip.endDate).getTime() - new Date(trip.startDate).getTime()) /
+									(1000 * 60 * 60 * 24)
+							) + 1}일
 						</p>
 					</div>
 				</div>
 				<div class="flex items-start gap-3">
-					<Users class="h-4 w-4 text-gray-400 mt-0.5" />
-					<p>성인 {trip.adultsCount}명{trip.childrenCount > 0 ? `, 아동 ${trip.childrenCount}명` : ''}</p>
+					<Users class="mt-0.5 h-4 w-4 text-gray-400" />
+					<p>
+						성인 {trip.adultsCount}명{trip.childrenCount > 0
+							? `, 아동 ${trip.childrenCount}명`
+							: ''}
+					</p>
 				</div>
 			</div>
 		</div>
 
 		<!-- Traveler Info -->
-		<div class="px-4 py-4 border-b border-gray-100">
-			<h3 class="font-semibold mb-3">주문자 정보</h3>
+		<div class="border-b border-gray-100 px-4 py-4">
+			<h3 class="mb-3 font-semibold">주문자 정보</h3>
 			<div class="space-y-2 text-sm">
 				<div class="flex items-center justify-between">
 					<span class="text-gray-600">주문자</span>
@@ -99,14 +111,16 @@
 				</div>
 				<div class="flex items-center justify-between">
 					<span class="text-gray-600">결제일시</span>
-					<span class="font-medium">{payment ? formatDate(payment.paidAt || payment.createdAt) + ' 오전 03:49' : '-'}</span>
+					<span class="font-medium"
+						>{payment ? formatDate(payment.paidAt || payment.createdAt) + ' 오전 03:49' : '-'}</span
+					>
 				</div>
 			</div>
 		</div>
 
 		<!-- Payment Details -->
-		<div class="px-4 py-4 border-b border-gray-100">
-			<h3 class="font-semibold mb-3">결제 정보</h3>
+		<div class="border-b border-gray-100 px-4 py-4">
+			<h3 class="mb-3 font-semibold">결제 정보</h3>
 			<div class="space-y-2">
 				<div class="flex items-center justify-between">
 					<span class="text-gray-600">총 상품금액 (1개)</span>
@@ -115,20 +129,22 @@
 				{#if payment}
 					<div class="flex items-center justify-between">
 						<span class="text-gray-600">할인금액</span>
-						<span class="font-medium text-red-600">-{formatPrice(Math.floor(offer.price * 0.033))}원</span>
+						<span class="font-medium text-red-600"
+							>-{formatPrice(Math.floor(offer.price * 0.033))}원</span
+						>
 					</div>
 				{/if}
 			</div>
 		</div>
 
 		<!-- Total Payment -->
-		<div class="px-4 py-4 border-b border-gray-100">
+		<div class="border-b border-gray-100 px-4 py-4">
 			<div class="flex items-center justify-between">
 				<span class="text-lg font-semibold">총 결제금액</span>
 				<span class="text-xl font-bold">{formatPrice(payment?.amount || offer.price)}원</span>
 			</div>
 			{#if payment}
-				<p class="text-sm text-gray-500 mt-1 text-right">토스페이 / 체크카드</p>
+				<p class="mt-1 text-right text-sm text-gray-500">토스페이 / 체크카드</p>
 			{/if}
 		</div>
 
@@ -137,29 +153,28 @@
 			<div class="px-4 py-4">
 				<button
 					type="button"
-					onclick={() => showCancelModal = true}
+					onclick={() => (showCancelModal = true)}
 					class="w-full text-center text-sm text-gray-500 underline"
 				>
 					취소 요청
 				</button>
 			</div>
 		{/if}
-
 	</div>
 
 	<!-- Error Message -->
 	{#if form?.error}
-		<div class="mx-4 mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+		<div class="mx-4 mt-4 rounded-lg border border-red-200 bg-red-50 p-3">
 			<p class="text-sm text-red-600">{form.error}</p>
 		</div>
 	{/if}
 
 	<!-- Fixed Bottom Button -->
-	<div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4">
+	<div class="fixed right-0 bottom-0 left-0 border-t border-gray-100 bg-white p-4">
 		<button
 			type="button"
 			onclick={() => goto(`/trips/${trip.id}`)}
-			class="w-full py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+			class="w-full rounded-lg bg-blue-600 py-4 font-semibold text-white transition-colors hover:bg-blue-700"
 		>
 			여행 상세보기
 		</button>
@@ -167,17 +182,17 @@
 
 	<!-- Cancel Modal -->
 	{#if showCancelModal}
-		<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
-			<div class="bg-white rounded-2xl p-6 w-full max-w-sm">
-				<h2 class="text-xl font-bold text-center mb-6">취소 요청</h2>
-				
+		<div class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black px-4">
+			<div class="w-full max-w-sm rounded-2xl bg-white p-6">
+				<h2 class="mb-6 text-center text-xl font-bold">취소 요청</h2>
+
 				<div class="mb-6">
-					<label class="text-sm text-gray-600 mb-2 block">취소 사유</label>
+					<label class="mb-2 block text-sm text-gray-600">취소 사유</label>
 					<input
 						type="text"
 						bind:value={cancelReason}
 						placeholder="취소 사유를 입력해 주세요"
-						class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
+						class="w-full rounded-lg border border-gray-200 px-4 py-3 focus:border-blue-500 focus:outline-none"
 					/>
 				</div>
 
@@ -188,13 +203,13 @@
 							showCancelModal = false;
 							cancelReason = '';
 						}}
-						class="flex-1 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+						class="flex-1 rounded-lg border border-gray-300 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-50"
 					>
 						닫기
 					</button>
-					<form 
-						method="POST" 
-						action="?/cancelPayment" 
+					<form
+						method="POST"
+						action="?/cancelPayment"
 						class="flex-1"
 						use:enhance={() => {
 							if (!cancelReason.trim()) {
@@ -217,7 +232,7 @@
 						<button
 							type="submit"
 							disabled={isSubmitting}
-							class="w-full py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+							class="w-full rounded-lg bg-blue-600 py-3 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
 						>
 							{isSubmitting ? '처리중...' : '요청하기'}
 						</button>

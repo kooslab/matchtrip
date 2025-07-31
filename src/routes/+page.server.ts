@@ -26,15 +26,15 @@ export const load: PageServerLoad = async ({ setHeaders, parent, url }) => {
 		// but allow browser to cache static assets
 		setHeaders({
 			'cache-control': 'private, no-cache, no-store, must-revalidate',
-			'pragma': 'no-cache',
-			'expires': '0'
+			pragma: 'no-cache',
+			expires: '0'
 		});
 	} else {
 		// For non-authenticated users, allow short-term caching
 		// This improves performance for public pages
 		setHeaders({
 			'cache-control': 'public, max-age=60, s-maxage=60',
-			'vary': 'Cookie'
+			vary: 'Cookie'
 		});
 	}
 

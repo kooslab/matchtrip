@@ -165,7 +165,11 @@ const authHandler = (async ({ event, resolve }) => {
 			redirect(302, '/onboarding/role');
 		}
 		// Check if user hasn't completed onboarding
-		else if (event.locals.hasAgreedToTerms && event.locals.user.role && !event.locals.user.onboardingCompleted) {
+		else if (
+			event.locals.hasAgreedToTerms &&
+			event.locals.user.role &&
+			!event.locals.user.onboardingCompleted
+		) {
 			console.log('[REDIRECT] Redirecting to onboarding - onboardingCompleted is false');
 			// Redirect to role-specific onboarding
 			if (event.locals.user.role === 'guide') {
@@ -233,11 +237,7 @@ const authHandler = (async ({ event, resolve }) => {
 	// Remove admin route handling
 
 	// Check if guide is trying to access guide routes but is not verified
-	if (
-		isGuideOnlyRoute &&
-		!routeId?.startsWith('/api') &&
-		event.locals.user?.role === 'guide'
-	) {
+	if (isGuideOnlyRoute && !routeId?.startsWith('/api') && event.locals.user?.role === 'guide') {
 		// Debug logging
 		console.log('Guide route access check:', {
 			route: routeId,

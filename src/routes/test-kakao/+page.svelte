@@ -2,7 +2,8 @@
 	let phoneNumber = '';
 	let sender = '';
 	let templateCode = '1';
-	let text = '[#{SHOPNAME}], 안녕하세요. #{NAME}님! #{SHOPNAME}에 회원가입 해주셔서 진심으로 감사드립니다!';
+	let text =
+		'[#{SHOPNAME}], 안녕하세요. #{NAME}님! #{SHOPNAME}에 회원가입 해주셔서 진심으로 감사드립니다!';
 	let templateData = '{\n  "SHOPNAME": "매치트립",\n  "NAME": "홍길동"\n}';
 	let loading = false;
 	let result: any = null;
@@ -38,7 +39,7 @@
 			});
 
 			const data = await response.json();
-			
+
 			if (response.ok) {
 				result = data;
 			} else {
@@ -53,12 +54,12 @@
 </script>
 
 <div class="min-h-screen bg-gray-50 p-4">
-	<div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
-		<h1 class="text-2xl font-bold mb-6">Kakao AlimTalk Test</h1>
-		
+	<div class="mx-auto max-w-md rounded-lg bg-white p-6 shadow-md">
+		<h1 class="mb-6 text-2xl font-bold">Kakao AlimTalk Test</h1>
+
 		<div class="space-y-4">
 			<div>
-				<label for="phone" class="block text-sm font-medium text-gray-700 mb-1">
+				<label for="phone" class="mb-1 block text-sm font-medium text-gray-700">
 					Phone Number
 				</label>
 				<input
@@ -66,13 +67,16 @@
 					type="tel"
 					bind:value={phoneNumber}
 					placeholder="821012345678"
-					class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-color-primary"
+					class="focus:ring-color-primary w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:outline-none"
 				/>
-				<p class="text-xs text-gray-500 mt-1">Phone number in international format without + sign. For Korea: 82 + phone number without leading 0 (e.g., 821012345678)</p>
+				<p class="mt-1 text-xs text-gray-500">
+					Phone number in international format without + sign. For Korea: 82 + phone number without
+					leading 0 (e.g., 821012345678)
+				</p>
 			</div>
-			
+
 			<div>
-				<label for="sender" class="block text-sm font-medium text-gray-700 mb-1">
+				<label for="sender" class="mb-1 block text-sm font-medium text-gray-700">
 					Sender (KakaoTalk Official Account ID)
 				</label>
 				<input
@@ -80,13 +84,13 @@
 					type="text"
 					bind:value={sender}
 					placeholder="OFFICIAL-ACCOUNT-ID-123"
-					class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-color-primary"
+					class="focus:ring-color-primary w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:outline-none"
 				/>
-				<p class="text-xs text-gray-500 mt-1">Your registered KakaoTalk official account ID</p>
+				<p class="mt-1 text-xs text-gray-500">Your registered KakaoTalk official account ID</p>
 			</div>
-			
+
 			<div>
-				<label for="templateCode" class="block text-sm font-medium text-gray-700 mb-1">
+				<label for="templateCode" class="mb-1 block text-sm font-medium text-gray-700">
 					Template Code
 				</label>
 				<input
@@ -94,102 +98,108 @@
 					type="text"
 					bind:value={templateCode}
 					placeholder="123"
-					class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-color-primary"
+					class="focus:ring-color-primary w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:outline-none"
 				/>
-				<p class="text-xs text-gray-500 mt-1">The code of your approved Kakao template</p>
+				<p class="mt-1 text-xs text-gray-500">The code of your approved Kakao template</p>
 			</div>
-			
+
 			<div>
-				<label for="text" class="block text-sm font-medium text-gray-700 mb-1">
+				<label for="text" class="mb-1 block text-sm font-medium text-gray-700">
 					Text Message
 				</label>
 				<textarea
 					id="text"
 					bind:value={text}
 					rows="3"
-					class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-color-primary"
+					class="focus:ring-color-primary w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:outline-none"
 				></textarea>
-				<p class="text-xs text-gray-500 mt-1">The actual message text to send</p>
+				<p class="mt-1 text-xs text-gray-500">The actual message text to send</p>
 			</div>
-			
+
 			<div>
-				<label for="templateData" class="block text-sm font-medium text-gray-700 mb-1">
+				<label for="templateData" class="mb-1 block text-sm font-medium text-gray-700">
 					Template Data (JSON) - Optional
 				</label>
 				<textarea
 					id="templateData"
 					bind:value={templateData}
 					rows="4"
-					class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-color-primary font-mono text-sm"
+					class="focus:ring-color-primary w-full rounded-md border border-gray-300 px-3 py-2 font-mono text-sm focus:ring-2 focus:outline-none"
 				></textarea>
-				<p class="text-xs text-gray-500 mt-1">Variables for template substitution in JSON format</p>
+				<p class="mt-1 text-xs text-gray-500">Variables for template substitution in JSON format</p>
 			</div>
-			
+
 			<button
 				onclick={sendTestKakao}
 				disabled={loading || !phoneNumber || !sender || !templateCode || !text}
-				class="w-full py-2 px-4 bg-color-primary text-white rounded-md hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+				class="bg-color-primary w-full rounded-md px-4 py-2 text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-400"
 			>
 				{loading ? 'Sending...' : 'Send Test AlimTalk'}
 			</button>
 		</div>
-		
+
 		{#if error}
-			<div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
+			<div class="mt-4 rounded-md border border-red-200 bg-red-50 p-4">
 				<p class="text-sm text-red-700">Error: {error}</p>
 			</div>
 		{/if}
-		
+
 		{#if result}
-			<div class="mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
-				<p class="text-sm text-green-700 font-medium mb-2">AlimTalk sent successfully!</p>
-				<pre class="text-xs overflow-x-auto">{JSON.stringify(result, null, 2)}</pre>
-				
+			<div class="mt-4 rounded-md border border-green-200 bg-green-50 p-4">
+				<p class="mb-2 text-sm font-medium text-green-700">AlimTalk sent successfully!</p>
+				<pre class="overflow-x-auto text-xs">{JSON.stringify(result, null, 2)}</pre>
+
 				{#if result.result?.messages?.[0]}
-					<div class="mt-3 p-3 bg-white rounded border border-green-300">
-						<p class="text-xs font-medium text-gray-700 mb-1">Message Details:</p>
+					<div class="mt-3 rounded border border-green-300 bg-white p-3">
+						<p class="mb-1 text-xs font-medium text-gray-700">Message Details:</p>
 						<p class="text-xs text-gray-600">Message ID: {result.result.messages[0].to}</p>
-						<p class="text-xs text-gray-600">Status: {result.result.messages[0].status?.name || 'PENDING'}</p>
+						<p class="text-xs text-gray-600">
+							Status: {result.result.messages[0].status?.name || 'PENDING'}
+						</p>
 						{#if result.result.messages[0].status?.description}
-							<p class="text-xs text-gray-600">Description: {result.result.messages[0].status.description}</p>
+							<p class="text-xs text-gray-600">
+								Description: {result.result.messages[0].status.description}
+							</p>
 						{/if}
 					</div>
 				{/if}
 			</div>
 		{/if}
 	</div>
-	
-	<div class="max-w-md mx-auto mt-6 p-4 bg-blue-50 rounded-lg">
-		<h2 class="font-semibold text-blue-900 mb-2">Required Environment Variables:</h2>
-		<ul class="text-sm text-blue-800 space-y-1">
+
+	<div class="mx-auto mt-6 max-w-md rounded-lg bg-blue-50 p-4">
+		<h2 class="mb-2 font-semibold text-blue-900">Required Environment Variables:</h2>
+		<ul class="space-y-1 text-sm text-blue-800">
 			<li>• INFOBIP_API_KEY (required)</li>
 			<li>• INFOBIP_BASE_URL (required)</li>
 		</ul>
-		<p class="text-xs text-blue-700 mt-3">
-			Note: You need to register your KakaoTalk official account with Infobip and get templates approved before sending AlimTalk messages.
-			The sender field should be your KakaoTalk official account ID.
+		<p class="mt-3 text-xs text-blue-700">
+			Note: You need to register your KakaoTalk official account with Infobip and get templates
+			approved before sending AlimTalk messages. The sender field should be your KakaoTalk official
+			account ID.
 		</p>
 	</div>
-	
-	<div class="max-w-md mx-auto mt-4 p-4 bg-yellow-50 rounded-lg">
-		<h2 class="font-semibold text-yellow-900 mb-2">Template Usage:</h2>
-		<p class="text-sm text-yellow-800 mb-2">
+
+	<div class="mx-auto mt-4 max-w-md rounded-lg bg-yellow-50 p-4">
+		<h2 class="mb-2 font-semibold text-yellow-900">Template Usage:</h2>
+		<p class="mb-2 text-sm text-yellow-800">
 			AlimTalk requires pre-approved templates. Each template has:
 		</p>
-		<ul class="text-sm text-yellow-800 space-y-1">
+		<ul class="space-y-1 text-sm text-yellow-800">
 			<li>• Template ID: Unique identifier</li>
 			<li>• Variables: Placeholders for dynamic content</li>
 			<li>• Fixed format: Cannot be modified</li>
 		</ul>
-		<p class="text-xs text-yellow-700 mt-3">
+		<p class="mt-3 text-xs text-yellow-700">
 			Example template data for welcome message (Template ID: 1):
 		</p>
-		<pre class="text-xs bg-yellow-100 p-2 rounded mt-1 overflow-x-auto">{`{
+		<pre class="mt-1 overflow-x-auto rounded bg-yellow-100 p-2 text-xs">{`{
   "SHOPNAME": "매치트립",
   "NAME": "김철수"
 }`}</pre>
-		<p class="text-xs text-yellow-700 mt-2">
-			This will generate: "[매치트립], 안녕하세요. 김철수님! 매치트립에 회원가입 해주셔서 진심으로 감사드립니다!"
+		<p class="mt-2 text-xs text-yellow-700">
+			This will generate: "[매치트립], 안녕하세요. 김철수님! 매치트립에 회원가입 해주셔서 진심으로
+			감사드립니다!"
 		</p>
 	</div>
 </div>

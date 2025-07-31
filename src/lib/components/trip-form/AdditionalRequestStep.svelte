@@ -23,7 +23,7 @@
 	// Generate AI request
 	async function generateAIRequest() {
 		isGeneratingAI = true;
-		
+
 		try {
 			const response = await fetch('/api/ai/generate-trip-request', {
 				method: 'POST',
@@ -115,12 +115,12 @@
 		<p class="mt-2 text-xs text-gray-500">
 			{additionalRequest.length}/500자
 		</p>
-		
+
 		<!-- AI Button -->
 		<button
 			onclick={generateAIRequest}
 			disabled={isGeneratingAI}
-			class="mt-4 w-full rounded-lg bg-blue-500 py-3 px-4 font-medium text-white transition-colors hover:bg-blue-600 disabled:bg-blue-400 disabled:cursor-not-allowed"
+			class="mt-4 w-full rounded-lg bg-blue-500 px-4 py-3 font-medium text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-blue-400"
 		>
 			{isGeneratingAI ? 'AI 여행요청 생성 중...' : 'AI 일정 만들기'}
 		</button>
@@ -129,31 +129,31 @@
 
 <!-- Confirmation Dialog -->
 {#if showConfirmDialog}
-	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+	<div class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black p-4">
 		<div class="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
 			<h3 class="mb-4 text-lg font-bold text-gray-900">AI가 생성한 여행 요청사항</h3>
-			
+
 			<div class="mb-6 max-h-96 overflow-y-auto rounded-lg bg-gray-50 p-4">
-				<p class="whitespace-pre-wrap text-sm text-gray-700">{generatedContent}</p>
+				<p class="text-sm whitespace-pre-wrap text-gray-700">{generatedContent}</p>
 			</div>
-			
+
 			<div class="flex gap-3">
 				<button
 					onclick={confirmGenerated}
-					class="flex-1 rounded-lg bg-blue-500 py-2.5 px-4 font-medium text-white transition-colors hover:bg-blue-600"
+					class="flex-1 rounded-lg bg-blue-500 px-4 py-2.5 font-medium text-white transition-colors hover:bg-blue-600"
 				>
 					확인
 				</button>
 				<button
 					onclick={regenerateContent}
 					disabled={isGeneratingAI}
-					class="flex-1 rounded-lg bg-green-500 py-2.5 px-4 font-medium text-white transition-colors hover:bg-green-600 disabled:bg-green-400 disabled:cursor-not-allowed"
+					class="flex-1 rounded-lg bg-green-500 px-4 py-2.5 font-medium text-white transition-colors hover:bg-green-600 disabled:cursor-not-allowed disabled:bg-green-400"
 				>
 					{isGeneratingAI ? '생성 중...' : '다시 생성'}
 				</button>
 				<button
 					onclick={cancelGenerated}
-					class="flex-1 rounded-lg bg-gray-300 py-2.5 px-4 font-medium text-gray-700 transition-colors hover:bg-gray-400"
+					class="flex-1 rounded-lg bg-gray-300 px-4 py-2.5 font-medium text-gray-700 transition-colors hover:bg-gray-400"
 				>
 					취소
 				</button>

@@ -6,7 +6,7 @@ import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ parent }) => {
 	// Get trip data from parent layout
 	const parentData = await parent();
-	
+
 	try {
 		// Fetch all destinations from database with country and continent info
 		const allDestinations = await db
@@ -35,7 +35,7 @@ export const load: PageServerLoad = async ({ parent }) => {
 
 		allDestinations.forEach((dest) => {
 			const countryName = dest.country.name;
-			
+
 			if (!groupedDestinations[countryName]) {
 				groupedDestinations[countryName] = [];
 			}
@@ -52,11 +52,15 @@ export const load: PageServerLoad = async ({ parent }) => {
 			return a.localeCompare(b, 'ko');
 		});
 
-		sortedCountries.forEach(country => {
+		sortedCountries.forEach((country) => {
 			sortedGroupedDestinations[country] = groupedDestinations[country];
 		});
 
-		console.log('Grouped destinations by country:', Object.keys(sortedGroupedDestinations).length, 'countries');
+		console.log(
+			'Grouped destinations by country:',
+			Object.keys(sortedGroupedDestinations).length,
+			'countries'
+		);
 
 		return {
 			...parentData,

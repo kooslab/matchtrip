@@ -56,10 +56,7 @@ export const load = async ({ locals }) => {
 		.innerJoin(destinations, eq(trips.destinationId, destinations.id))
 		.innerJoin(countries, eq(destinations.countryId, countries.id))
 		.innerJoin(users, eq(trips.userId, users.id))
-		.leftJoin(payments, and(
-			eq(payments.offerId, offers.id),
-			eq(payments.status, 'completed')
-		))
+		.leftJoin(payments, and(eq(payments.offerId, offers.id), eq(payments.status, 'completed')))
 		.where(eq(offers.guideId, session.user.id))
 		.orderBy(offers.createdAt);
 

@@ -57,7 +57,7 @@
 					class="relative box-border flex w-full shrink-0 flex-row content-stretch items-center justify-between px-0 pt-0 pb-3"
 				>
 					<div
-						class="pointer-events-none absolute inset-0 border-solid border-[#f7f9fa] border-[0px_0px_1px]"
+						class="pointer-events-none absolute inset-0 border-[0px_0px_1px] border-solid border-[#f7f9fa]"
 					/>
 					<div
 						class="relative shrink-0 text-left text-[16px] leading-[0] font-bold text-nowrap text-[#052236] not-italic"

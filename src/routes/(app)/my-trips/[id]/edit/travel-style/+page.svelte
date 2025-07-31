@@ -10,13 +10,13 @@
 	let trip = $derived(data.trip);
 
 	let travelStyleStep: any;
-	
+
 	// Subscribe to store and make it reactive
 	let storeData = $state({});
-	const unsubscribe = tripEditForm.subscribe(value => {
+	const unsubscribe = tripEditForm.subscribe((value) => {
 		storeData = value;
 	});
-	
+
 	// Use reactive formData that updates when store changes
 	let formData = $derived(storeData);
 

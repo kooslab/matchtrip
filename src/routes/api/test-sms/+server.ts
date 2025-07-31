@@ -21,9 +21,12 @@ export const POST: RequestHandler = async ({ request }) => {
 		});
 	} catch (error) {
 		console.error('SMS sending error:', error);
-		return json({
-			success: false,
-			error: error instanceof Error ? error.message : 'Failed to send SMS'
-		}, { status: 500 });
+		return json(
+			{
+				success: false,
+				error: error instanceof Error ? error.message : 'Failed to send SMS'
+			},
+			{ status: 500 }
+		);
 	}
 };

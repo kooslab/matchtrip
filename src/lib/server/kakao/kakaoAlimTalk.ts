@@ -31,7 +31,9 @@ export class KakaoAlimTalkService {
 		this.baseUrl = env.INFOBIP_BASE_URL || '';
 
 		if (!this.apiKey || !this.baseUrl) {
-			console.warn('Kakao AlimTalk service not configured. Missing required environment variables.');
+			console.warn(
+				'Kakao AlimTalk service not configured. Missing required environment variables.'
+			);
 		}
 	}
 
@@ -64,9 +66,9 @@ export class KakaoAlimTalkService {
 			const response = await fetch(endpoint, {
 				method: 'POST',
 				headers: {
-					'Authorization': `App ${this.apiKey}`,
+					Authorization: `App ${this.apiKey}`,
 					'Content-Type': 'application/json',
-					'Accept': 'application/json'
+					Accept: 'application/json'
 				},
 				body: JSON.stringify(requestBody)
 			});
@@ -75,7 +77,9 @@ export class KakaoAlimTalkService {
 
 			if (!response.ok) {
 				console.error('Kakao AlimTalk API error:', data);
-				throw new Error(data.requestError?.serviceException?.text || 'Failed to send Kakao AlimTalk');
+				throw new Error(
+					data.requestError?.serviceException?.text || 'Failed to send Kakao AlimTalk'
+				);
 			}
 
 			return data;
@@ -93,7 +97,7 @@ export class KakaoAlimTalkService {
 		const endpoint = `${this.baseUrl}/kakao-alim/1/messages`;
 
 		const requestBody: InfobipKakaoRequest = {
-			messages: messages.map(message => ({
+			messages: messages.map((message) => ({
 				sender: message.sender,
 				destinations: [
 					{
@@ -112,9 +116,9 @@ export class KakaoAlimTalkService {
 			const response = await fetch(endpoint, {
 				method: 'POST',
 				headers: {
-					'Authorization': `App ${this.apiKey}`,
+					Authorization: `App ${this.apiKey}`,
 					'Content-Type': 'application/json',
-					'Accept': 'application/json'
+					Accept: 'application/json'
 				},
 				body: JSON.stringify(requestBody)
 			});
@@ -123,7 +127,9 @@ export class KakaoAlimTalkService {
 
 			if (!response.ok) {
 				console.error('Kakao AlimTalk API error:', data);
-				throw new Error(data.requestError?.serviceException?.text || 'Failed to send Kakao AlimTalk');
+				throw new Error(
+					data.requestError?.serviceException?.text || 'Failed to send Kakao AlimTalk'
+				);
 			}
 
 			return data;

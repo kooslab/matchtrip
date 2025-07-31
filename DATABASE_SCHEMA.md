@@ -184,19 +184,15 @@
 ### 핵심 관계
 
 1. **User → GuideProfile / TravelerProfile** (1:1)
-
    - 사용자 역할에 따른 확장 프로필
 
 2. **User(Traveler) → Trip** (1:N)
-
    - 한 여행자가 여러 여행 계획 생성 가능
 
 3. **Trip → Offer** (1:N)
-
    - 하나의 여행에 여러 가이드가 제안 가능
 
 4. **User(Guide) → Offer** (1:N)
-
    - 한 가이드가 여러 여행에 제안 가능
 
 5. **Offer → Payment** (1:1)

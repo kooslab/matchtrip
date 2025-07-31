@@ -15,7 +15,7 @@
 	// Helper to convert date to CalendarDate
 	function toCalendarDate(date: any): CalendarDate | undefined {
 		if (!date) return undefined;
-		
+
 		const jsDate = typeof date === 'string' ? new Date(date) : date;
 		if (jsDate instanceof Date && !isNaN(jsDate.getTime())) {
 			return new CalendarDate(
@@ -161,11 +161,11 @@
 													data-outside-month:text-gray-300
 													data-selected:bg-blue-500 data-selected:!text-white
 													data-selected:hover:bg-blue-600
-													data-selection-start:rounded-l-full data-selection-start:bg-blue-500 data-selection-start:!text-white data-selection-start:hover:bg-blue-600
 													data-selection-end:rounded-r-full data-selection-end:bg-blue-500 data-selection-end:!text-white data-selection-end:hover:bg-blue-600
+													data-selection-start:rounded-l-full data-selection-start:bg-blue-500 data-selection-start:!text-white data-selection-start:hover:bg-blue-600
 													data-today:font-semibold data-today:text-blue-600
 													data-unavailable:text-gray-300 data-unavailable:hover:bg-transparent
-													[&[data-selected][data-today]]:!text-white [&[data-selection-start][data-today]]:!text-white [&[data-selection-end][data-today]]:!text-white"
+													[&[data-selected][data-today]]:!text-white [&[data-selection-end][data-today]]:!text-white [&[data-selection-start][data-today]]:!text-white"
 												>
 													{date.day}
 												</DateRangePicker.Day>

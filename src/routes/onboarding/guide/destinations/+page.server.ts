@@ -26,39 +26,52 @@ export const load: PageServerLoad = async () => {
 		.orderBy(continents.name, countries.name, destinations.city);
 
 	// Group destinations by continent and country
-	const groupedDestinations = allDestinations.reduce((acc, dest) => {
-		const continentName = dest.continent.name;
-		const countryName = dest.country.name;
-		
-		if (!acc[continentName]) {
-			acc[continentName] = {
-				name: continentName,
-				code: dest.continent.code,
-				countries: {}
-			};
-		}
-		
-		if (!acc[continentName].countries[countryName]) {
-			acc[continentName].countries[countryName] = {
-				name: countryName,
-				code: dest.country.code,
-				cities: []
-			};
-		}
-		
-		acc[continentName].countries[countryName].cities.push({
-			id: dest.id,
-			name: dest.city
-		});
-		
-		return acc;
-	}, {} as Record<string, { name: string; code: string; countries: Record<string, { name: string; code: string; cities: Array<{ id: number; name: string }> }> }>);
+	const groupedDestinations = allDestinations.reduce(
+		(acc, dest) => {
+			const continentName = dest.continent.name;
+			const countryName = dest.country.name;
+
+			if (!acc[continentName]) {
+				acc[continentName] = {
+					name: continentName,
+					code: dest.continent.code,
+					countries: {}
+				};
+			}
+
+			if (!acc[continentName].countries[countryName]) {
+				acc[continentName].countries[countryName] = {
+					name: countryName,
+					code: dest.country.code,
+					cities: []
+				};
+			}
+
+			acc[continentName].countries[countryName].cities.push({
+				id: dest.id,
+				name: dest.city
+			});
+
+			return acc;
+		},
+		{} as Record<
+			string,
+			{
+				name: string;
+				code: string;
+				countries: Record<
+					string,
+					{ name: string; code: string; cities: Array<{ id: number; name: string }> }
+				>;
+			}
+		>
+	);
 
 	// Convert to array format for easier iteration
-	const destinationRegions = Object.values(groupedDestinations).map(continent => ({
+	const destinationRegions = Object.values(groupedDestinations).map((continent) => ({
 		name: continent.name,
 		code: continent.code,
-		countries: Object.values(continent.countries).map(country => ({
+		countries: Object.values(continent.countries).map((country) => ({
 			name: country.name,
 			code: country.code,
 			cities: country.cities

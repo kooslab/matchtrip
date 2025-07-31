@@ -117,10 +117,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 				.select({ count: sql<number>`count(*)` })
 				.from(messages)
 				.where(
-					and(
-						eq(messages.conversationId, conversationId),
-						eq(messages.senderId, conv.travelerId)
-					)
+					and(eq(messages.conversationId, conversationId), eq(messages.senderId, conv.travelerId))
 				);
 
 			const hasTravelerMessages = travelerMessages[0]?.count > 0;
@@ -129,12 +126,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 			const completedPayments = await db
 				.select({ count: sql<number>`count(*)` })
 				.from(payments)
-				.where(
-					and(
-						eq(payments.offerId, conv.offerId),
-						eq(payments.status, 'completed')
-					)
-				);
+				.where(and(eq(payments.offerId, conv.offerId), eq(payments.status, 'completed')));
 
 			const hasCompletedPayment = completedPayments[0]?.count > 0;
 
@@ -205,10 +197,7 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 				.select({ count: sql<number>`count(*)` })
 				.from(messages)
 				.where(
-					and(
-						eq(messages.conversationId, conversationId),
-						eq(messages.senderId, conv.travelerId)
-					)
+					and(eq(messages.conversationId, conversationId), eq(messages.senderId, conv.travelerId))
 				);
 
 			const hasTravelerMessages = travelerMessages[0]?.count > 0;
@@ -217,12 +206,7 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 			const completedPayments = await db
 				.select({ count: sql<number>`count(*)` })
 				.from(payments)
-				.where(
-					and(
-						eq(payments.offerId, conv.offerId),
-						eq(payments.status, 'completed')
-					)
-				);
+				.where(and(eq(payments.offerId, conv.offerId), eq(payments.status, 'completed')));
 
 			const hasCompletedPayment = completedPayments[0]?.count > 0;
 

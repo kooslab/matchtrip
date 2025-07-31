@@ -12,14 +12,14 @@ export const GET: RequestHandler = async ({ url, setHeaders }) => {
 		// Don't cache search results heavily
 		setHeaders({
 			'cache-control': 'private, max-age=60, s-maxage=60', // Cache for 1 minute
-			'vary': 'Accept-Encoding'
+			vary: 'Accept-Encoding'
 		});
 	} else {
 		// Cache general destinations list for longer
 		setHeaders({
 			'cache-control': 'public, max-age=300, s-maxage=300, stale-while-revalidate=60', // Cache for 5 minutes
 			'cdn-cache-control': 'max-age=300',
-			'vary': 'Accept-Encoding'
+			vary: 'Accept-Encoding'
 		});
 	}
 
@@ -104,4 +104,3 @@ export const GET: RequestHandler = async ({ url, setHeaders }) => {
 		return json({ results: [], error: 'Database error' }, { status: 500 });
 	}
 };
-

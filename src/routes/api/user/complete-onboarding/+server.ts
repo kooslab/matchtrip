@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 
 export const POST: RequestHandler = async ({ locals }) => {
 	console.log('[API COMPLETE ONBOARDING] Request received');
-	
+
 	// Check if user is authenticated
 	if (!locals.user) {
 		console.error('[API COMPLETE ONBOARDING] No user in locals');
@@ -14,7 +14,10 @@ export const POST: RequestHandler = async ({ locals }) => {
 	}
 
 	console.log('[API COMPLETE ONBOARDING] User:', locals.user.email, 'ID:', locals.user.id);
-	console.log('[API COMPLETE ONBOARDING] Current onboardingCompleted status:', locals.user.onboardingCompleted);
+	console.log(
+		'[API COMPLETE ONBOARDING] Current onboardingCompleted status:',
+		locals.user.onboardingCompleted
+	);
 
 	try {
 		// Update user's onboardingCompleted status

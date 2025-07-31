@@ -33,13 +33,13 @@
 	// Initialize selected cities from URL parameters
 	const initializeFromUrl = () => {
 		const destinationsParam = $page.url.searchParams.get('destinations');
-		
+
 		if (destinationsParam) {
 			// Already using proper destinations parameter
 			const ids = destinationsParam.split(',');
 			return new Set(ids);
 		}
-		
+
 		return new Set<string>();
 	};
 
@@ -92,10 +92,10 @@
 
 	// Check if any filter is active
 	let hasActiveFilters = $derived(
-		selectedFilters.destination || 
-		selectedFilters.dates || 
-		selectedFilters.people || 
-		selectedFilters.budget
+		selectedFilters.destination ||
+			selectedFilters.dates ||
+			selectedFilters.people ||
+			selectedFilters.budget
 	);
 
 	// Get status display info
@@ -284,12 +284,12 @@
 	function applyBudgetFilter() {
 		selectedFilters.budget = true;
 		const currentParams = new URLSearchParams(window.location.search);
-		
+
 		// Parse budget range
-		const [min, max] = selectedBudget.split('-').map(v => parseInt(v));
+		const [min, max] = selectedBudget.split('-').map((v) => parseInt(v));
 		if (min) currentParams.set('budgetMin', min.toString());
 		if (max) currentParams.set('budgetMax', max.toString());
-		
+
 		goto(`/trips?${currentParams.toString()}`);
 		showBudgetSelector = false;
 	}
@@ -319,7 +319,7 @@
 		} else {
 			document.body.classList.remove('modal-open');
 		}
-		
+
 		// Cleanup on unmount
 		return () => {
 			document.body.classList.remove('modal-open');
@@ -394,14 +394,19 @@
 						class="h-3 w-3 {selectedFilters.budget ? 'brightness-0 invert' : ''}"
 					/>
 				</button>
-				
+
 				{#if hasActiveFilters}
 					<button
 						onclick={clearAllFilters}
 						class="flex flex-shrink-0 items-center gap-1 rounded-full border border-red-300 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100"
 					>
 						<svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M6 18L18 6M6 6l12 12"
+							/>
 						</svg>
 						<span>필터 초기화</span>
 					</button>
@@ -426,7 +431,7 @@
 				<CitySelector
 					bind:this={citySelectorRef}
 					selectedCities={selectedCityIds}
-					availableDestinations={availableDestinations}
+					{availableDestinations}
 					onCityToggle={toggleCitySelection}
 					onClose={() => (showCitySearchModal = false)}
 					onSubmit={applyCityFilter}

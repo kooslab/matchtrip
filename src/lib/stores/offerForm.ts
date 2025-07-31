@@ -22,7 +22,7 @@ function createOfferFormStore() {
 	// Load from localStorage if available
 	const stored = browser ? localStorage.getItem('offerFormData') : null;
 	const initialData = stored ? { ...defaultData, ...JSON.parse(stored) } : defaultData;
-	
+
 	// Ensure descriptionImages is always an array
 	if (!Array.isArray(initialData.descriptionImages)) {
 		initialData.descriptionImages = [];
@@ -52,10 +52,10 @@ function createOfferFormStore() {
 		setTripId: (tripId: string) => update((data) => ({ ...data, tripId })),
 		setPricePerPerson: (price: string) => update((data) => ({ ...data, pricePerPerson: price })),
 		setDescription: (description: string) => update((data) => ({ ...data, description })),
-		addDescriptionImage: (imageUrl: string) => 
-			update((data) => ({ 
-				...data, 
-				descriptionImages: [...(data.descriptionImages || []), imageUrl] 
+		addDescriptionImage: (imageUrl: string) =>
+			update((data) => ({
+				...data,
+				descriptionImages: [...(data.descriptionImages || []), imageUrl]
 			})),
 		removeDescriptionImage: (index: number) =>
 			update((data) => ({
@@ -86,13 +86,12 @@ export const offerFormValidation = derived(offerFormStore, ($store) => {
 		tmp.innerHTML = html;
 		return tmp.textContent || tmp.innerText || '';
 	};
-	
+
 	const hasDescription = stripHtml($store.description).trim() !== '';
-	
+
 	return {
 		isPriceValid: $store.pricePerPerson.trim() !== '',
 		isDescriptionValid: hasDescription,
-		canSubmit:
-			$store.tripId !== '' && $store.pricePerPerson.trim() !== '' && hasDescription
+		canSubmit: $store.tripId !== '' && $store.pricePerPerson.trim() !== '' && hasDescription
 	};
 });

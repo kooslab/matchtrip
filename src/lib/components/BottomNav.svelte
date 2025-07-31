@@ -23,21 +23,21 @@
 </script>
 
 <div class="fixed bottom-0 left-1/2 z-40 w-full max-w-[430px] -translate-x-1/2">
-		<!-- Floating Create Trip Button - Only visible on /my-trips page -->
-		{#if showCreateButton}
-			<button
-				class="absolute -top-12 right-4 flex items-center gap-1 rounded-[20px] bg-[#1095f4] px-3.5 py-3 text-white shadow-[0px_2px_4px_0px_rgba(0,0,0,0.08)] transition-shadow hover:shadow-lg"
-				onclick={() => goto('/my-trips/create')}
-			>
-				<span class="text-xs font-bold whitespace-nowrap">새 여행 만들기</span>
-				<Plus class="h-3 w-3 opacity-80" />
-			</button>
-		{/if}
-
-		<!-- Bottom Navigation -->
-		<nav
-			class="safe-area-bottom relative rounded-t-[20px] border-t border-[#f1f1f1] bg-white/95 shadow-[0px_-4px_12px_0px_rgba(0,0,0,0.02)] backdrop-blur-sm"
+	<!-- Floating Create Trip Button - Only visible on /my-trips page -->
+	{#if showCreateButton}
+		<button
+			class="absolute -top-12 right-4 flex items-center gap-1 rounded-[20px] bg-[#1095f4] px-3.5 py-3 text-white shadow-[0px_2px_4px_0px_rgba(0,0,0,0.08)] transition-shadow hover:shadow-lg"
+			onclick={() => goto('/my-trips/create')}
 		>
+			<span class="text-xs font-bold whitespace-nowrap">새 여행 만들기</span>
+			<Plus class="h-3 w-3 opacity-80" />
+		</button>
+	{/if}
+
+	<!-- Bottom Navigation -->
+	<nav
+		class="safe-area-bottom relative rounded-t-[20px] border-t border-[#f1f1f1] bg-white/95 shadow-[0px_-4px_12px_0px_rgba(0,0,0,0.02)] backdrop-blur-sm"
+	>
 		<div class="flex items-end justify-between px-4 pt-0 pb-1">
 			{#each navItems as item}
 				{@const isActive =

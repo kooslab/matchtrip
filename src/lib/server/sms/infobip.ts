@@ -35,7 +35,7 @@ class InfobipSMS {
 
 	async sendSMS({ to, text, from }: SendSMSParams): Promise<InfobipResponse> {
 		const url = `${this.config.baseUrl}/sms/2/text/advanced`;
-		
+
 		const payload = {
 			messages: [
 				{
@@ -48,14 +48,17 @@ class InfobipSMS {
 
 		console.log('Sending SMS request to:', url);
 		console.log('Payload:', JSON.stringify(payload, null, 2));
-		console.log('Using API Key:', this.config.apiKey ? 'Yes (length: ' + this.config.apiKey.length + ')' : 'No');
+		console.log(
+			'Using API Key:',
+			this.config.apiKey ? 'Yes (length: ' + this.config.apiKey.length + ')' : 'No'
+		);
 
 		const response = await fetch(url, {
 			method: 'POST',
 			headers: {
-				'Authorization': `App ${this.config.apiKey}`,
+				Authorization: `App ${this.config.apiKey}`,
 				'Content-Type': 'application/json',
-				'Accept': 'application/json'
+				Accept: 'application/json'
 			},
 			body: JSON.stringify(payload)
 		});
@@ -69,22 +72,24 @@ class InfobipSMS {
 		}
 
 		const data = JSON.parse(responseText) as InfobipResponse;
-		
+
 		// Check message status
 		if (data.messages && data.messages.length > 0) {
 			const message = data.messages[0];
 			console.log('Message status:', message.status);
 			console.log('Message ID:', message.messageId);
 		}
-		
+
 		return data;
 	}
 
-	async sendBulkSMS(messages: Array<{ to: string; text: string; from?: string }>): Promise<InfobipResponse> {
+	async sendBulkSMS(
+		messages: Array<{ to: string; text: string; from?: string }>
+	): Promise<InfobipResponse> {
 		const url = `${this.config.baseUrl}/sms/2/text/advanced`;
-		
+
 		const payload = {
-			messages: messages.map(msg => ({
+			messages: messages.map((msg) => ({
 				destinations: [{ to: msg.to }],
 				from: msg.from || this.config.sender,
 				text: msg.text
@@ -94,9 +99,9 @@ class InfobipSMS {
 		const response = await fetch(url, {
 			method: 'POST',
 			headers: {
-				'Authorization': `App ${this.config.apiKey}`,
+				Authorization: `App ${this.config.apiKey}`,
 				'Content-Type': 'application/json',
-				'Accept': 'application/json'
+				Accept: 'application/json'
 			},
 			body: JSON.stringify(payload)
 		});
@@ -106,7 +111,7 @@ class InfobipSMS {
 			throw new Error(`Infobip API error: ${response.status} - ${error}`);
 		}
 
-		const data = await response.json() as InfobipResponse;
+		const data = (await response.json()) as InfobipResponse;
 		return data;
 	}
 }
@@ -122,7 +127,7 @@ function getInfobipSMS() {
 	if (!env.INFOBIP_SENDER) {
 		throw new Error('INFOBIP_SENDER is required in environment variables');
 	}
-	
+
 	return new InfobipSMS({
 		apiKey: env.INFOBIP_API_KEY,
 		baseUrl: env.INFOBIP_BASE_URL,

@@ -28,12 +28,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.innerJoin(trips, eq(offers.tripId, trips.id))
 		.leftJoin(payments, eq(payments.offerId, offers.id))
 		.innerJoin(users, eq(trips.userId, users.id))
-		.where(
-			and(
-				eq(offers.guideId, user.id),
-				eq(offers.status, 'accepted')
-			)
-		)
+		.where(and(eq(offers.guideId, user.id), eq(offers.status, 'accepted')))
 		.orderBy(desc(offers.updatedAt));
 
 	return {

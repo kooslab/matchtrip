@@ -67,13 +67,15 @@ function createTripEditStore() {
 		// Initialize from existing trip data
 		initializeFromTrip: (trip: any) => {
 			set({
-				destination: trip.destination ? {
-					id: trip.destination.id,
-					city: trip.destination.city,
-					country: trip.destination.country?.name || trip.destination.country,
-					latitude: trip.destination.latitude,
-					longitude: trip.destination.longitude
-				} : null,
+				destination: trip.destination
+					? {
+							id: trip.destination.id,
+							city: trip.destination.city,
+							country: trip.destination.country?.name || trip.destination.country,
+							latitude: trip.destination.latitude,
+							longitude: trip.destination.longitude
+						}
+					: null,
 				destinationId: trip.destination?.id || trip.destinationId,
 				startDate: trip.startDate ? new Date(trip.startDate) : null,
 				endDate: trip.endDate ? new Date(trip.endDate) : null,

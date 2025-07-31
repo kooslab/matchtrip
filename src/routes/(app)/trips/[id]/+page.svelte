@@ -123,7 +123,8 @@
 			<div class="flex items-center">
 				<button
 					onclick={() => goto('/trips')}
-					class="mr-3 -ml-2 rounded-lg p-2 transition-colors hover:bg-gray-100">
+					class="mr-3 -ml-2 rounded-lg p-2 transition-colors hover:bg-gray-100"
+				>
 					<img src={arrowLeftUrl} alt="Back" class="h-5 w-5" />
 				</button>
 				<h1 class="text-lg font-semibold text-gray-900">
@@ -146,7 +147,8 @@
 							? 'bg-green-100 text-green-700'
 							: trip.status === 'completed'
 								? 'bg-gray-100 text-gray-700'
-								: 'bg-yellow-100 text-yellow-700'} inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium">
+								: 'bg-yellow-100 text-yellow-700'} inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium"
+				>
 					{getStatusText(trip.status)}
 				</span>
 			</div>
@@ -213,12 +215,14 @@
 		<div class="mb-4 rounded-lg bg-white">
 			<button
 				onclick={() => (isCustomRequestOpen = !isCustomRequestOpen)}
-				class="flex w-full items-center justify-between px-4 py-3">
+				class="flex w-full items-center justify-between px-4 py-3"
+			>
 				<span class="text-sm font-medium text-gray-900">요청 사항</span>
 				<img
 					src={arrowRightUrl}
 					alt={isCustomRequestOpen ? 'Close' : 'Open'}
-					class="h-5 w-5 transition-transform {isCustomRequestOpen ? 'rotate-90' : ''}" />
+					class="h-5 w-5 transition-transform {isCustomRequestOpen ? 'rotate-90' : ''}"
+				/>
 			</button>
 			{#if isCustomRequestOpen}
 				<div class="border-t border-gray-100 px-4 pb-4">
@@ -233,12 +237,14 @@
 		<div class="mb-6 overflow-hidden rounded-lg bg-white shadow-sm transition-all duration-200">
 			<button
 				onclick={() => (isFilesOpen = !isFilesOpen)}
-				class="flex w-full items-center justify-between p-4 transition-colors hover:bg-gray-50">
+				class="flex w-full items-center justify-between p-4 transition-colors hover:bg-gray-50"
+			>
 				<span class="text-base font-medium text-gray-900">첨부 파일</span>
 				<img
 					src={arrowRightUrl}
 					alt={isFilesOpen ? 'Close' : 'Open'}
-					class="h-5 w-5 transition-transform duration-200 {isFilesOpen ? 'rotate-90' : '0'}" />
+					class="h-5 w-5 transition-transform duration-200 {isFilesOpen ? 'rotate-90' : '0'}"
+				/>
 			</button>
 			{#if isFilesOpen}
 				<div class="border-t border-gray-100 px-4 pb-4">
@@ -246,7 +252,8 @@
 						<div class="mt-3 space-y-3">
 							{#each trip.attachments as file}
 								<div
-									class="flex items-center gap-3 rounded-lg border border-gray-200 p-3 transition-colors hover:bg-gray-50">
+									class="flex items-center gap-3 rounded-lg border border-gray-200 p-3 transition-colors hover:bg-gray-50"
+								>
 									<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100">
 										<span class="text-xs font-semibold text-red-600">PDF</span>
 									</div>
@@ -255,13 +262,15 @@
 										<p class="text-xs text-gray-500">{file.size}</p>
 									</div>
 									<button
-										class="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600">
+										class="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+									>
 										<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path
 												stroke-linecap="round"
 												stroke-linejoin="round"
 												stroke-width="2"
-												d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+												d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+											/>
 										</svg>
 									</button>
 								</div>
@@ -286,12 +295,15 @@
 	</div>
 
 	<!-- Bottom Buttons -->
-	<div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+	<div
+		class="fixed bottom-0 left-1/2 w-full max-w-[430px] -translate-x-1/2 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
+	>
 		<div class="px-4 py-4">
 			{#if hasExistingOffer}
 				<button
 					onclick={handleViewOffer}
-					class="w-full rounded-lg bg-gray-500 py-3.5 text-base font-semibold text-white transition-all hover:bg-gray-600">
+					class="w-full rounded-lg bg-gray-500 py-3.5 text-base font-semibold text-white transition-all hover:bg-gray-600"
+				>
 					이미 제안함
 				</button>
 			{:else}
@@ -300,7 +312,8 @@
 					class="w-full rounded-lg py-3.5 text-base font-semibold text-white transition-all active:scale-[0.98]"
 					style="background-color: {colors.primary}"
 					onmouseover={(e) => (e.currentTarget.style.backgroundColor = colors.primaryHover)}
-					onmouseout={(e) => (e.currentTarget.style.backgroundColor = colors.primary)}>
+					onmouseout={(e) => (e.currentTarget.style.backgroundColor = colors.primary)}
+				>
 					제안하기
 				</button>
 			{/if}

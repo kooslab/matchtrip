@@ -3,7 +3,13 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { genericOAuth } from 'better-auth/plugins';
 import { db } from './server/db';
 import * as schema from './server/db/schema';
-import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, BETTER_AUTH_SECRET, KAKAO_REST_API_KEY, KAKAO_CLIENT_SECRET } from '$env/static/private';
+import {
+	GOOGLE_CLIENT_ID,
+	GOOGLE_CLIENT_SECRET,
+	BETTER_AUTH_SECRET,
+	KAKAO_REST_API_KEY,
+	KAKAO_CLIENT_SECRET
+} from '$env/static/private';
 import { PUBLIC_BETTER_AUTH_URL } from '$env/static/public';
 import { authErrorLogger } from './utils/authErrorLogger';
 
@@ -106,36 +112,39 @@ export const auth = betterAuth({
 					getUserInfo: async (data) => {
 						console.log('[KAKAO OAUTH] Custom getUserInfo called');
 						const accessToken = data.accessToken || data.access_token || data;
-						
+
 						try {
 							// Make request to Kakao API with property_keys
 							const propertyKeys = ['kakao_account.email', 'kakao_account.profile'];
 							const response = await fetch('https://kapi.kakao.com/v2/user/me', {
 								method: 'POST',
 								headers: {
-									'Authorization': `Bearer ${accessToken}`,
+									Authorization: `Bearer ${accessToken}`,
 									'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
 								},
 								body: new URLSearchParams({
-									'property_keys': JSON.stringify(propertyKeys)
+									property_keys: JSON.stringify(propertyKeys)
 								})
 							});
-							
+
 							if (!response.ok) {
 								const errorText = await response.text();
 								throw new Error(`Kakao API error: ${response.status} - ${errorText}`);
 							}
-							
+
 							const userData = await response.json();
-							console.log('[KAKAO OAUTH] Got user data from Kakao:', JSON.stringify(userData, null, 2));
-							
+							console.log(
+								'[KAKAO OAUTH] Got user data from Kakao:',
+								JSON.stringify(userData, null, 2)
+							);
+
 							// Better-auth expects email at the top level of the returned object
 							// Extract and normalize the data
 							const email = userData.kakao_account?.email;
 							if (!email) {
 								throw new Error('Email not provided by Kakao');
 							}
-							
+
 							const normalizedUser = {
 								id: userData.id?.toString(),
 								email: email,
@@ -145,8 +154,11 @@ export const auth = betterAuth({
 								// Pass the full data for mapProfileToUser if needed
 								kakao_account: userData.kakao_account
 							};
-							
-							console.log('[KAKAO OAUTH] Returning normalized user data:', JSON.stringify(normalizedUser, null, 2));
+
+							console.log(
+								'[KAKAO OAUTH] Returning normalized user data:',
+								JSON.stringify(normalizedUser, null, 2)
+							);
 							return normalizedUser;
 						} catch (error) {
 							console.error('[KAKAO OAUTH] Error in getUserInfo:', error);
@@ -154,8 +166,11 @@ export const auth = betterAuth({
 						}
 					},
 					mapProfileToUser: async (profile) => {
-						console.log('[KAKAO OAUTH] mapProfileToUser called with:', JSON.stringify(profile, null, 2));
-						
+						console.log(
+							'[KAKAO OAUTH] mapProfileToUser called with:',
+							JSON.stringify(profile, null, 2)
+						);
+
 						// Since getUserInfo already normalized the data, we can use it directly
 						// Check if this is already normalized data or raw Kakao data
 						if (profile.email && profile.id) {
@@ -168,13 +183,13 @@ export const auth = betterAuth({
 								emailVerified: profile.emailVerified
 							};
 						}
-						
+
 						// Fallback for raw Kakao data (shouldn't happen with our getUserInfo)
 						const kakaoAccount = profile.kakao_account || {};
 						if (!kakaoAccount.email) {
 							throw new Error('Email not provided by Kakao');
 						}
-						
+
 						return {
 							email: kakaoAccount.email,
 							name: kakaoAccount.profile?.nickname || 'Kakao User',

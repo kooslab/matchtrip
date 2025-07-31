@@ -15,17 +15,17 @@
 	// Initialize selected style - handle both string ID and object
 	function getInitialStyle() {
 		if (!formData.travelStyle) return null;
-		
+
 		// If it's already an object, use it
 		if (typeof formData.travelStyle === 'object' && formData.travelStyle.id) {
 			return formData.travelStyle;
 		}
-		
+
 		// If it's a string ID, find the matching object
 		if (typeof formData.travelStyle === 'string') {
-			return travelStyles.find(style => style.id === formData.travelStyle) || null;
+			return travelStyles.find((style) => style.id === formData.travelStyle) || null;
 		}
-		
+
 		return null;
 	}
 
@@ -75,7 +75,8 @@
 		<!-- Style selector button -->
 		<button
 			onclick={() => (showModal = true)}
-			class="flex w-full items-center justify-between rounded-lg bg-gray-50 px-5 py-4 transition-colors hover:bg-gray-100">
+			class="flex w-full items-center justify-between rounded-lg bg-gray-50 px-5 py-4 transition-colors hover:bg-gray-100"
+		>
 			<span class={selectedStyle ? 'text-gray-900' : 'text-gray-500'}>
 				{displayText}
 			</span>
@@ -101,7 +102,8 @@
 							stroke-linecap="round"
 							stroke-linejoin="round"
 							stroke-width="2"
-							d="M6 18L18 6M6 6l12 12" />
+							d="M6 18L18 6M6 6l12 12"
+						/>
 					</svg>
 				</button>
 			</div>
@@ -115,19 +117,22 @@
 							class="flex w-full items-center justify-between rounded-lg p-4 text-left transition-colors {selectedStyle?.id ===
 							style.id
 								? 'bg-blue-50 text-blue-600'
-								: 'hover:bg-gray-50'}">
+								: 'hover:bg-gray-50'}"
+						>
 							<span class="font-medium">{style.name}</span>
 							{#if selectedStyle?.id === style.id}
 								<svg
 									class="h-5 w-5 text-blue-600"
 									fill="none"
 									stroke="currentColor"
-									viewBox="0 0 24 24">
+									viewBox="0 0 24 24"
+								>
 									<path
 										stroke-linecap="round"
 										stroke-linejoin="round"
 										stroke-width="2"
-										d="M5 13l4 4L19 7" />
+										d="M5 13l4 4L19 7"
+									/>
 								</svg>
 							{/if}
 						</button>

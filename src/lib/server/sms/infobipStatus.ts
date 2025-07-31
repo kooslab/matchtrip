@@ -35,29 +35,29 @@ export async function getDeliveryReports(messageId?: string) {
 	}
 	const apiKey = env.INFOBIP_API_KEY;
 	const baseUrl = env.INFOBIP_BASE_URL;
-	
+
 	let url = `${baseUrl}/sms/1/reports`;
 	if (messageId) {
 		url += `?messageId=${messageId}`;
 	}
-	
+
 	console.log('Fetching delivery reports from:', url);
-	
+
 	const response = await fetch(url, {
 		method: 'GET',
 		headers: {
-			'Authorization': `App ${apiKey}`,
-			'Accept': 'application/json'
+			Authorization: `App ${apiKey}`,
+			Accept: 'application/json'
 		}
 	});
-	
+
 	const responseText = await response.text();
 	console.log('Delivery reports response:', responseText);
-	
+
 	if (!response.ok) {
 		throw new Error(`Failed to get delivery reports: ${response.status} - ${responseText}`);
 	}
-	
+
 	return JSON.parse(responseText);
 }
 
@@ -67,25 +67,25 @@ export async function getLogsForMessage(messageId: string) {
 	}
 	const apiKey = env.INFOBIP_API_KEY;
 	const baseUrl = env.INFOBIP_BASE_URL;
-	
+
 	const url = `${baseUrl}/sms/1/logs?messageId=${messageId}`;
-	
+
 	console.log('Fetching logs for message:', messageId);
-	
+
 	const response = await fetch(url, {
 		method: 'GET',
 		headers: {
-			'Authorization': `App ${apiKey}`,
-			'Accept': 'application/json'
+			Authorization: `App ${apiKey}`,
+			Accept: 'application/json'
 		}
 	});
-	
+
 	const responseText = await response.text();
 	console.log('Logs response:', responseText);
-	
+
 	if (!response.ok) {
 		throw new Error(`Failed to get logs: ${response.status} - ${responseText}`);
 	}
-	
+
 	return JSON.parse(responseText);
 }

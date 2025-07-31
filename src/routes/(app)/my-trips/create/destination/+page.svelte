@@ -5,7 +5,7 @@
 	import type { PageData } from './$types';
 
 	import { page } from '$app/stores';
-	
+
 	let { data }: { data: PageData } = $props();
 
 	let destinationStep: any;
@@ -16,16 +16,16 @@
 		tripCreateForm.updateStep(field, value);
 		formData = tripCreateForm.getData();
 	}
-	
+
 	// Check URL parameters on mount
 	const urlParams = $page.url.searchParams;
 	const destinationId = urlParams.get('id');
 	const cityName = urlParams.get('city');
-	
+
 	// If we have URL parameters and no destination is selected yet
 	if (destinationId && cityName && data.destinations) {
 		const id = parseInt(destinationId);
-		
+
 		// Find the destination in the data
 		for (const [country, destinations] of Object.entries(data.destinations)) {
 			const destination = destinations.find((d: any) => d.id === id);
@@ -39,7 +39,7 @@
 					longitude: destination.longitude
 				});
 				handleUpdate('destinationId', destination.id);
-				
+
 				// Skip to the next step immediately
 				console.log('Destination pre-selected from home, skipping to dates step');
 				goto('/my-trips/create/dates');
@@ -57,9 +57,9 @@
 
 	// Get button text
 	let buttonText = $derived(
-		formData.destination 
-			? typeof formData.destination === 'string' 
-				? `${formData.destination} 여행하기` 
+		formData.destination
+			? typeof formData.destination === 'string'
+				? `${formData.destination} 여행하기`
 				: `${formData.destination.city}, ${formData.destination.country} 여행하기`
 			: '다음'
 	);
@@ -79,7 +79,7 @@
 </div>
 
 <!-- Custom action button for destination -->
-<div class="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white">
+<div class="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-white">
 	<div class="mx-auto max-w-[430px] p-4">
 		<button
 			onclick={handleNext}

@@ -1,6 +1,14 @@
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
-import { offers, trips, payments, users, destinations, conversations, messages } from '$lib/server/db/schema';
+import {
+	offers,
+	trips,
+	payments,
+	users,
+	destinations,
+	conversations,
+	messages
+} from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { redirect, fail } from '@sveltejs/kit';
 
@@ -30,12 +38,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.leftJoin(payments, eq(payments.offerId, offers.id))
 		.innerJoin(users, eq(trips.userId, users.id))
 		.innerJoin(destinations, eq(trips.destinationId, destinations.id))
-		.where(
-			and(
-				eq(offers.id, params.id),
-				eq(offers.guideId, user.id)
-			)
-		)
+		.where(and(eq(offers.id, params.id), eq(offers.guideId, user.id)))
 		.limit(1);
 
 	if (orderData.length === 0) {
@@ -67,12 +70,7 @@ export const actions = {
 			})
 			.from(payments)
 			.innerJoin(offers, eq(payments.offerId, offers.id))
-			.where(
-				and(
-					eq(offers.id, params.id),
-					eq(offers.guideId, user.id)
-				)
-			)
+			.where(and(eq(offers.id, params.id), eq(offers.guideId, user.id)))
 			.limit(1);
 
 		if (paymentData.length === 0) {

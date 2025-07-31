@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { ChevronDown, ChevronUp } from 'lucide-svelte';
-	
+
 	// Get current year for copyright
 	const currentYear = new Date().getFullYear();
-	
+
 	// State for business info collapse
 	let businessInfoOpen = $state(false);
-	
+
 	function toggleBusinessInfo() {
 		businessInfoOpen = !businessInfoOpen;
 	}
@@ -22,9 +22,9 @@
 
 	<!-- Business Info Section with Collapsible -->
 	<div class="mx-auto mb-4 max-w-4xl px-4">
-		<button 
+		<button
 			onclick={toggleBusinessInfo}
-			class="mb-3 flex items-center justify-center gap-2 text-sm text-gray-600 hover:text-gray-800 transition-colors mx-auto"
+			class="mx-auto mb-3 flex items-center justify-center gap-2 text-sm text-gray-600 transition-colors hover:text-gray-800"
 		>
 			<span>에이전트티 사업자 정보</span>
 			{#if businessInfoOpen}
@@ -33,9 +33,9 @@
 				<ChevronDown class="h-4 w-4 text-blue-500" />
 			{/if}
 		</button>
-		
+
 		{#if businessInfoOpen}
-			<div class="text-xs text-gray-500 space-y-1 animate-in slide-in-from-top-2 duration-200">
+			<div class="animate-in slide-in-from-top-2 space-y-1 text-xs text-gray-500 duration-200">
 				<div>대표자 : 진민수 E-mail : j@agentt.kr</div>
 				<div>전화 : 010-8200-4994 (독일 +49 174 4360256)</div>
 				<div>주소 : 경기도 화성시 메타폴리스로 42 9층 901호 A13호 (반송동, 디앤씨빌딩)</div>
@@ -43,8 +43,8 @@
 			</div>
 		{/if}
 	</div>
-	
-	<div class="text-xs text-gray-400 mb-2">
+
+	<div class="mb-2 text-xs text-gray-400">
 		매치트립은 통신판매중개자이며, 통신판매의 당사자가 아닙니다.<br />
 		상품, 상품정보, 거래에 관한 의무와 책임은 판매회원에게 있습니다.
 	</div>
@@ -63,7 +63,7 @@
 			opacity: 1;
 		}
 	}
-	
+
 	.animate-in {
 		animation: slide-in-from-top 0.2s ease-out;
 	}

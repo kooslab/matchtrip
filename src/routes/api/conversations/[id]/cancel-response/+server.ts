@@ -59,9 +59,8 @@ export const POST: RequestHandler = async ({ request, locals, params }) => {
 		await db.insert(messages).values({
 			conversationId: message.conversationId,
 			senderId: user.id,
-			content: response === 'accepted' 
-				? '취소 요청이 승인되었습니다.' 
-				: '취소 요청이 거절되었습니다.',
+			content:
+				response === 'accepted' ? '취소 요청이 승인되었습니다.' : '취소 요청이 거절되었습니다.',
 			messageType: 'cancellation_response',
 			metadata: {
 				originalMessageId: messageId,
@@ -92,11 +91,7 @@ export const POST: RequestHandler = async ({ request, locals, params }) => {
 				.where(eq(offers.id, offerId));
 
 			// Get the trip ID from the offer
-			const offer = await db
-				.select()
-				.from(offers)
-				.where(eq(offers.id, offerId))
-				.limit(1);
+			const offer = await db.select().from(offers).where(eq(offers.id, offerId)).limit(1);
 
 			if (offer.length > 0) {
 				// Update trip status back to submitted

@@ -23,7 +23,6 @@
 	</div>
 {/if}
 
-
-<div class="mx-auto max-w-[430px] min-h-screen bg-white">
+<div class="mx-auto min-h-screen max-w-[430px] bg-white">
 	<slot />
 </div>

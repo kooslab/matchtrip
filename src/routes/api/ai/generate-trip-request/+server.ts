@@ -6,7 +6,7 @@ import { TRAVEL_STYLES, ACTIVITY_TYPES } from '$lib/constants/travel';
 export const POST: RequestHandler = async ({ request }) => {
 	try {
 		const data = await request.json();
-		
+
 		// Check if API key exists
 		if (!env.LLM_API_KEY_OPENAI) {
 			console.error('OpenAI API key not configured');
@@ -14,21 +14,21 @@ export const POST: RequestHandler = async ({ request }) => {
 		}
 
 		// Extract all trip details
-		const { 
-			destination, 
+		const {
+			destination,
 			destinationId,
-			startDate, 
-			endDate, 
-			adultsCount, 
-			childrenCount, 
+			startDate,
+			endDate,
+			adultsCount,
+			childrenCount,
 			babiesCount,
-			budget, 
-			travelStyle, 
+			budget,
+			travelStyle,
 			activities,
 			customRequest,
 			additionalRequest
 		} = data;
-		
+
 		// Format destination string
 		let destinationString = '미정';
 		if (destination) {
@@ -69,18 +69,24 @@ export const POST: RequestHandler = async ({ request }) => {
 		}
 
 		// Format travel style
-		const travelStyleName = travelStyle ? (TRAVEL_STYLES[travelStyle.id] || travelStyle.name || '미정') : '미정';
+		const travelStyleName = travelStyle
+			? TRAVEL_STYLES[travelStyle.id] || travelStyle.name || '미정'
+			: '미정';
 
 		// Format activities with Korean names
-		const activityNames = activities && activities.length > 0 
-			? activities.map(act => ACTIVITY_TYPES[act] || act).join(', ')
-			: '다양한 활동';
+		const activityNames =
+			activities && activities.length > 0
+				? activities.map((act) => ACTIVITY_TYPES[act] || act).join(', ')
+				: '다양한 활동';
 
 		// Include existing requests if any
 		const existingRequests = customRequest || additionalRequest || '';
 
 		// Create comprehensive prompt for OpenAI
-		const prompt = `다음 여행 정보를 바탕으로 맞춤형 여행 요청사항을 한국어로 작성해주세요. 300단어 이내로 작성하되, 일반 텍스트 형식으로 자연스럽게 작성해주세요. 마크다운이나 번호 목록을 사용하지 마세요.
+		const prompt = `데이투어 기준으로 일정표를 만들려고해.
+
+새로운 입력문구와 더불어
+아래와 같은 조건으로 여행일정표를 만들어줘.
 
 여행 정보:
 목적지: ${destinationString}
@@ -91,25 +97,29 @@ export const POST: RequestHandler = async ({ request }) => {
 선호 활동: ${activityNames}
 ${existingRequests ? `기존 요청사항: ${existingRequests}` : ''}
 
-다음 내용을 포함하여 자연스러운 문장으로 여행 요청사항을 작성해주세요:
+조건:
+- 현지 여행지명은 한국어,영어 표기법이 아니라, 현지에서 사용되는 언어표기법을 써주고 한국어로 지명을 알려줘. (예를들면 독일 베를린 Bundestag, 국회의사당)
+- 여행지명의 간단한 유래를 20-30자내외로 설명해줘 (예를 들면, 브란덴브루크문은 18세기 평화의문으로 만들어진 곳입니다. 현재는 통일의문으로 불립니다.)
+- 데이투어 내에서 이동시 도보 xx분, 대중교통 xx분으로 이동에 대한 자세한 내용을 알려줘.
+- 마이리얼트립이나, 겟유어가이드 일정표를 참고해도 좋아.
+- 맛집을 원할 경우, 구글에서 평점이 4.3이상 인곳을 추천해줘. 대략 점심시간이나 저녁일정이 있으면 센스있게 제안해줄래?
 
-여행자의 구성과 선호도를 고려한 일정 희망사항, 꼭 방문하고 싶은 장소나 체험하고 싶은 활동, 현지 음식이나 문화 체험에 대한 관심사, 가이드에게 특별히 도움받고 싶은 부분, 피하고 싶거나 주의해야 할 사항 등을 자연스럽게 연결하여 작성해주세요.
-
-문단을 나누지 말고 하나의 연속된 텍스트로 작성하되, 여행에 대한 기대와 구체적인 요청사항이 잘 드러나도록 해주세요.`;
+앞으로 모든 질문에는 위 조건에 맞게 제안해줘.`;
 
 		// Call OpenAI API
 		const response = await fetch('https://api.openai.com/v1/chat/completions', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				'Authorization': `Bearer ${env.LLM_API_KEY_OPENAI}`
+				Authorization: `Bearer ${env.LLM_API_KEY_OPENAI}`
 			},
 			body: JSON.stringify({
 				model: 'gpt-4o-mini',
 				messages: [
 					{
 						role: 'system',
-						content: '당신은 여행 계획을 도와주는 전문가입니다. 여행자의 정보를 바탕으로 구체적이고 개인화된 요청사항을 작성합니다. 일반 텍스트 형식으로만 작성하고, 마크다운, 번호 목록, 특수 문자를 사용하지 마세요.'
+						content:
+							'당신은 데이투어 일정표를 만드는 여행 전문가입니다. 주어진 조건에 맞춰 구체적이고 실용적인 일정표를 작성합니다. 현지 언어 표기법을 사용하고, 장소의 유래를 간단히 설명하며, 이동 시간을 구체적으로 제시합니다. 일반 텍스트 형식으로만 작성하고, 마크다운이나 번호 목록을 사용하지 마세요.'
 					},
 					{
 						role: 'user',

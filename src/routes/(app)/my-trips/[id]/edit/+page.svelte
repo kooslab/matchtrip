@@ -21,7 +21,9 @@
 <!-- Loading state while redirecting -->
 <div class="flex min-h-screen items-center justify-center bg-gray-50">
 	<div class="text-center">
-		<div class="mb-4 h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-blue-500"></div>
+		<div
+			class="mb-4 h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-blue-500"
+		></div>
 		<p class="text-gray-600">로딩중...</p>
 	</div>
 </div>

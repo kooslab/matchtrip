@@ -43,7 +43,8 @@
 				</h2>
 				<button
 					onclick={() => goto('/profile/traveler/edit')}
-					class="rounded-full bg-gray-200 px-3 py-1 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-300">
+					class="rounded-full bg-gray-200 px-3 py-1 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-300"
+				>
 					프로필 수정
 				</button>
 			</div>
@@ -75,34 +76,40 @@
 				<div class="divide-y divide-gray-100">
 					<a
 						href="/my-trips"
-						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50">
+						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50"
+					>
 						<span class="text-gray-800">주문 내역</span>
 						<svg
 							class="h-5 w-5 text-gray-400"
 							fill="none"
 							stroke="currentColor"
-							viewBox="0 0 24 24">
+							viewBox="0 0 24 24"
+						>
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
 								stroke-width="2"
-								d="M9 5l7 7-7 7" />
+								d="M9 5l7 7-7 7"
+							/>
 						</svg>
 					</a>
 					<a
 						href="/my-trips"
-						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50">
+						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50"
+					>
 						<span class="text-gray-800">여행 리뷰</span>
 						<svg
 							class="h-5 w-5 text-gray-400"
 							fill="none"
 							stroke="currentColor"
-							viewBox="0 0 24 24">
+							viewBox="0 0 24 24"
+						>
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
 								stroke-width="2"
-								d="M9 5l7 7-7 7" />
+								d="M9 5l7 7-7 7"
+							/>
 						</svg>
 					</a>
 				</div>
@@ -116,18 +123,21 @@
 				<div class="divide-y divide-gray-100">
 					<a
 						href="/profile/traveler/edit"
-						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50">
+						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50"
+					>
 						<span class="text-gray-800">회원 정보 수정</span>
 						<svg
 							class="h-5 w-5 text-gray-400"
 							fill="none"
 							stroke="currentColor"
-							viewBox="0 0 24 24">
+							viewBox="0 0 24 24"
+						>
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
 								stroke-width="2"
-								d="M9 5l7 7-7 7" />
+								d="M9 5l7 7-7 7"
+							/>
 						</svg>
 					</a>
 				</div>
@@ -141,50 +151,59 @@
 				<div class="divide-y divide-gray-100">
 					<a
 						href="/support"
-						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50">
+						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50"
+					>
 						<span class="text-gray-800">공지사항</span>
 						<svg
 							class="h-5 w-5 text-gray-400"
 							fill="none"
 							stroke="currentColor"
-							viewBox="0 0 24 24">
+							viewBox="0 0 24 24"
+						>
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
 								stroke-width="2"
-								d="M9 5l7 7-7 7" />
+								d="M9 5l7 7-7 7"
+							/>
 						</svg>
 					</a>
 					<a
 						href="/support"
-						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50">
+						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50"
+					>
 						<span class="text-gray-800">1:1문의</span>
 						<svg
 							class="h-5 w-5 text-gray-400"
 							fill="none"
 							stroke="currentColor"
-							viewBox="0 0 24 24">
+							viewBox="0 0 24 24"
+						>
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
 								stroke-width="2"
-								d="M9 5l7 7-7 7" />
+								d="M9 5l7 7-7 7"
+							/>
 						</svg>
 					</a>
 					<a
 						href="/faq"
-						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50">
+						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50"
+					>
 						<span class="text-gray-800">FAQ</span>
 						<svg
 							class="h-5 w-5 text-gray-400"
 							fill="none"
 							stroke="currentColor"
-							viewBox="0 0 24 24">
+							viewBox="0 0 24 24"
+						>
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
 								stroke-width="2"
-								d="M9 5l7 7-7 7" />
+								d="M9 5l7 7-7 7"
+							/>
 						</svg>
 					</a>
 				</div>
@@ -196,7 +215,8 @@
 				<div class="divide-y divide-gray-100">
 					<a
 						href="/settings/app-version"
-						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50">
+						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50"
+					>
 						<span class="text-gray-800">앱제 버전</span>
 						<div class="flex items-center space-x-2">
 							<span class="text-sm text-gray-500">v 0.1</span>
@@ -204,61 +224,72 @@
 								class="h-5 w-5 text-gray-400"
 								fill="none"
 								stroke="currentColor"
-								viewBox="0 0 24 24">
+								viewBox="0 0 24 24"
+							>
 								<path
 									stroke-linecap="round"
 									stroke-linejoin="round"
 									stroke-width="2"
-									d="M9 5l7 7-7 7" />
+									d="M9 5l7 7-7 7"
+								/>
 							</svg>
 						</div>
 					</a>
 					<a
 						href="/settings/privacy"
-						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50">
+						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50"
+					>
 						<span class="text-gray-800">개인정보처리방침</span>
 						<svg
 							class="h-5 w-5 text-gray-400"
 							fill="none"
 							stroke="currentColor"
-							viewBox="0 0 24 24">
+							viewBox="0 0 24 24"
+						>
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
 								stroke-width="2"
-								d="M9 5l7 7-7 7" />
+								d="M9 5l7 7-7 7"
+							/>
 						</svg>
 					</a>
 					<a
 						href="/terms/service"
-						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50">
+						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50"
+					>
 						<span class="text-gray-800">이용약관</span>
 						<svg
 							class="h-5 w-5 text-gray-400"
 							fill="none"
 							stroke="currentColor"
-							viewBox="0 0 24 24">
+							viewBox="0 0 24 24"
+						>
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
 								stroke-width="2"
-								d="M9 5l7 7-7 7" />
+								d="M9 5l7 7-7 7"
+							/>
 						</svg>
 					</a>
 					<a
 						href="/settings/deactivate"
-						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50">
+						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50"
+					>
 						<span class="text-gray-800">탈퇴하기</span>
 						<svg
 							class="h-5 w-5 text-gray-400"
 							fill="none"
 							stroke="currentColor"
-							viewBox="0 0 24 24">
+							viewBox="0 0 24 24"
+						>
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
 								stroke-width="2"
-								d="M9 5l7 7-7 7" />
+								d="M9 5l7 7-7 7"
+							/>
 						</svg>
 					</a>
 					<div class="flex items-center justify-between px-4 py-4">
@@ -266,8 +297,8 @@
 						<label class="relative inline-flex cursor-pointer items-center">
 							<input type="checkbox" class="peer sr-only" checked />
 							<div
-								class="peer h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-blue-500 peer-focus:outline-none after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white">
-							</div>
+								class="peer h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-blue-500 peer-focus:outline-none after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
+							></div>
 						</label>
 					</div>
 				</div>
@@ -277,7 +308,8 @@
 			<div class="mt-6 mb-4 bg-white">
 				<button
 					onclick={handleLogout}
-					class="w-full px-4 py-4 text-center text-gray-600 transition-colors hover:bg-gray-50">
+					class="w-full px-4 py-4 text-center text-gray-600 transition-colors hover:bg-gray-50"
+				>
 					로그아웃
 				</button>
 			</div>

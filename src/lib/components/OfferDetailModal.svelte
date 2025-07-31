@@ -153,7 +153,8 @@
 		<!-- Modal Content -->
 		<div
 			class="animate-slide-up relative w-full max-w-lg rounded-t-3xl bg-white shadow-xl"
-			style="height: 90vh; max-height: 90vh;">
+			style="height: 90vh; max-height: 90vh;"
+		>
 			<!-- Header -->
 			<div class="sticky top-0 z-10 rounded-t-3xl bg-white">
 				<div class="flex items-center justify-between border-b border-gray-100 p-4">
@@ -169,7 +170,8 @@
 						class="relative flex-1 py-3.5 text-sm font-medium transition-all {activeTab === 'offer'
 							? 'text-gray-900'
 							: 'text-gray-500 hover:text-gray-700'}"
-						onclick={() => (activeTab = 'offer')}>
+						onclick={() => (activeTab = 'offer')}
+					>
 						제안 정보
 						{#if activeTab === 'offer'}
 							<div class="absolute right-0 bottom-0 left-0 h-0.5 bg-gray-900"></div>
@@ -179,7 +181,8 @@
 						class="relative flex-1 py-3.5 text-sm font-medium transition-all {activeTab === 'guide'
 							? 'text-gray-900'
 							: 'text-gray-500 hover:text-gray-700'}"
-						onclick={() => (activeTab = 'guide')}>
+						onclick={() => (activeTab = 'guide')}
+					>
 						가이드 정보
 						{#if activeTab === 'guide'}
 							<div class="absolute right-0 bottom-0 left-0 h-0.5 bg-gray-900"></div>
@@ -189,7 +192,8 @@
 						class="relative flex-1 py-3.5 text-sm font-medium transition-all {activeTab === 'review'
 							? 'text-gray-900'
 							: 'text-gray-500 hover:text-gray-700'}"
-						onclick={() => (activeTab = 'review')}>
+						onclick={() => (activeTab = 'review')}
+					>
 						리뷰
 						{#if activeTab === 'review'}
 							<div class="absolute right-0 bottom-0 left-0 h-0.5 bg-gray-900"></div>
@@ -207,7 +211,8 @@
 						<!-- Price Header with Badge -->
 						<div class="px-5 pt-6 pb-8">
 							<div
-								class="inline-flex items-center {statusInfo.color} mb-4 rounded px-2.5 py-1 text-xs font-medium text-white">
+								class="inline-flex items-center {statusInfo.color} mb-4 rounded px-2.5 py-1 text-xs font-medium text-white"
+							>
 								{statusInfo.text}
 							</div>
 							<div class="flex items-baseline gap-2">
@@ -277,7 +282,8 @@
 						<div class="px-5 py-6">
 							<button
 								class="flex w-full items-center justify-between"
-								onclick={() => (itineraryExpanded = !itineraryExpanded)}>
+								onclick={() => (itineraryExpanded = !itineraryExpanded)}
+							>
 								<h4 class="font-semibold text-gray-900">제안 내용</h4>
 								<div class="h-5 w-5 flex-shrink-0">
 									<svg
@@ -286,12 +292,14 @@
 											: ''}"
 										fill="none"
 										stroke="currentColor"
-										viewBox="0 0 24 24">
+										viewBox="0 0 24 24"
+									>
 										<path
 											stroke-linecap="round"
 											stroke-linejoin="round"
 											stroke-width="2"
-											d="M19 9l-7 7-7-7"></path>
+											d="M19 9l-7 7-7-7"
+										></path>
 									</svg>
 								</div>
 							</button>
@@ -312,12 +320,14 @@
 									class="h-20 w-20 flex-shrink-0 rounded-full bg-blue-100 bg-cover bg-center"
 									style={offer.guideProfile?.profileImageUrl
 										? `background-image: url('${offer.guideProfile.profileImageUrl}')`
-										: ''}>
+										: ''}
+								>
 									{#if !offer.guideProfile?.profileImageUrl}
 										<div class="flex h-full w-full items-center justify-center text-2xl text-white">
 											<svg class="h-10 w-10" viewBox="0 0 24 24" fill="currentColor">
 												<path
-													d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+													d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+												/>
 											</svg>
 										</div>
 									{/if}
@@ -332,9 +342,11 @@
 														? 'fill-yellow-400 text-yellow-400'
 														: 'text-gray-300'}"
 													viewBox="0 0 20 20"
-													fill="currentColor">
+													fill="currentColor"
+												>
 													<path
-														d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+														d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+													/>
 												</svg>
 											{/each}
 											<span class="ml-1 text-sm font-medium text-gray-700">
@@ -347,7 +359,8 @@
 									</div>
 								</div>
 								<button
-									class="rounded-full bg-green-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-green-600">
+									class="rounded-full bg-green-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-green-600"
+								>
 									팔로우
 								</button>
 							</div>
@@ -359,19 +372,22 @@
 										class="flex w-full items-center justify-between"
 										onclick={() => {
 											/* Toggle guide info */
-										}}>
+										}}
+									>
 										<h4 class="font-semibold text-gray-900">가이드 정보</h4>
 										<div class="h-5 w-5 flex-shrink-0">
 											<svg
 												class="h-full w-full rotate-180 transform text-gray-400"
 												fill="none"
 												stroke="currentColor"
-												viewBox="0 0 24 24">
+												viewBox="0 0 24 24"
+											>
 												<path
 													stroke-linecap="round"
 													stroke-linejoin="round"
 													stroke-width="2"
-													d="M19 9l-7 7-7-7"></path>
+													d="M19 9l-7 7-7-7"
+												></path>
 											</svg>
 										</div>
 									</button>
@@ -393,9 +409,11 @@
 									<svg
 										class="mx-auto mb-2 h-16 w-16 text-gray-300"
 										viewBox="0 0 24 24"
-										fill="currentColor">
+										fill="currentColor"
+									>
 										<path
-											d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+											d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"
+										/>
 									</svg>
 									<p class="text-sm text-gray-400">사진이 없습니다</p>
 								</div>
@@ -407,9 +425,11 @@
 									<svg
 										class="mx-auto mb-4 h-20 w-20 text-gray-300"
 										viewBox="0 0 24 24"
-										fill="currentColor">
+										fill="currentColor"
+									>
 										<path
-											d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+											d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+										/>
 									</svg>
 									<h3 class="mb-2 text-lg font-medium text-gray-900">가이드 정보가 없습니다</h3>
 									<p class="text-sm text-gray-500">아직 가이드 프로필이 등록되지 않았습니다.</p>
@@ -429,12 +449,14 @@
 										class="h-16 w-16 flex-shrink-0 rounded-full bg-blue-100 bg-cover bg-center"
 										style={offer.guideProfile?.profileImageUrl
 											? `background-image: url('${offer.guideProfile.profileImageUrl}')`
-											: ''}>
+											: ''}
+									>
 										{#if !offer.guideProfile?.profileImageUrl}
 											<div class="flex h-full w-full items-center justify-center text-white">
 												<svg class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor">
 													<path
-														d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+														d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+													/>
 												</svg>
 											</div>
 										{/if}
@@ -450,9 +472,11 @@
 																? 'fill-yellow-400 text-yellow-400'
 																: 'text-gray-300'}"
 															viewBox="0 0 20 20"
-															fill="currentColor">
+															fill="currentColor"
+														>
 															<path
-																d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+																d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+															/>
 														</svg>
 													{/each}
 												</div>
@@ -484,7 +508,8 @@
 					<!-- Chat button for guide tab -->
 					<button
 						onclick={() => onStartChat(offer.id)}
-						class="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1095f4] py-4 font-medium text-white transition-colors hover:bg-blue-600">
+						class="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1095f4] py-4 font-medium text-white transition-colors hover:bg-blue-600"
+					>
 						<img src={chatIconUrl} alt="chat" class="h-5 w-5 flex-shrink-0 brightness-0 invert" />
 						<span class="text-base">대화하기</span>
 					</button>
@@ -498,7 +523,8 @@
 							</div>
 							<button
 								onclick={() => onAccept(offer.id)}
-								class="flex w-2/3 items-center justify-center gap-2 rounded-xl bg-[#1095f4] py-4 font-medium text-white transition-colors hover:bg-blue-600">
+								class="flex w-2/3 items-center justify-center gap-2 rounded-xl bg-[#1095f4] py-4 font-medium text-white transition-colors hover:bg-blue-600"
+							>
 								<img src={moneyOutIconUrl} alt="payment" class="h-5 w-5 brightness-0 invert" />
 								<span>결제하기</span>
 							</button>
@@ -506,7 +532,8 @@
 					{:else if offer.status === 'accepted'}
 						<button
 							onclick={() => onStartChat(offer.id)}
-							class="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1095f4] py-4 font-medium text-white transition-colors hover:bg-blue-600">
+							class="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1095f4] py-4 font-medium text-white transition-colors hover:bg-blue-600"
+						>
 							<img src={chatIconUrl} alt="chat" class="h-5 w-5 flex-shrink-0 brightness-0 invert" />
 							<span class="text-base">대화하기</span>
 						</button>
@@ -528,7 +555,8 @@
 								alert('리뷰를 작성하려면 먼저 가이드가 리뷰 요청을 보내야 합니다.');
 							}
 						}}
-						class="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1095f4] py-4 font-medium text-white transition-colors hover:bg-blue-600">
+						class="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1095f4] py-4 font-medium text-white transition-colors hover:bg-blue-600"
+					>
 						<img src={pencilIconUrl} alt="write review" class="h-5 w-5 brightness-0 invert" />
 						<span>리뷰 작성</span>
 					</button>

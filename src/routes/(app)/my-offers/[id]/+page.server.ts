@@ -113,12 +113,7 @@ export const load = async ({ params, locals }) => {
 	const paymentData = await db
 		.select({ count: sql<number>`count(*)` })
 		.from(payments)
-		.where(
-			and(
-				eq(payments.offerId, offerId),
-				eq(payments.status, 'completed')
-			)
-		);
+		.where(and(eq(payments.offerId, offerId), eq(payments.status, 'completed')));
 
 	const hasCompletedPayment = paymentData[0]?.count > 0;
 

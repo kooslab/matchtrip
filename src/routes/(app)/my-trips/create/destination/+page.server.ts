@@ -32,7 +32,7 @@ export const load: PageServerLoad = async () => {
 
 		allDestinations.forEach((dest) => {
 			const countryName = dest.country.name;
-			
+
 			if (!groupedDestinations[countryName]) {
 				groupedDestinations[countryName] = [];
 			}
@@ -49,11 +49,15 @@ export const load: PageServerLoad = async () => {
 			return a.localeCompare(b, 'ko');
 		});
 
-		sortedCountries.forEach(country => {
+		sortedCountries.forEach((country) => {
 			sortedGroupedDestinations[country] = groupedDestinations[country];
 		});
 
-		console.log('Grouped destinations by country:', Object.keys(sortedGroupedDestinations).length, 'countries');
+		console.log(
+			'Grouped destinations by country:',
+			Object.keys(sortedGroupedDestinations).length,
+			'countries'
+		);
 
 		return {
 			destinations: sortedGroupedDestinations

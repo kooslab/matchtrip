@@ -503,36 +503,30 @@ export const reviews = pgTable(
 );
 
 // Admin tables for admin panel functionality
-export const admins = pgTable(
-	'admins',
-	{
-		id: uuid('id').primaryKey().defaultRandom(),
-		email: text('email').notNull().unique(),
-		name: text('name'),
-		passwordHash: text('password_hash'),
-		isApproved: boolean('is_approved').notNull().default(false),
-		approvedAt: timestamp('approved_at'),
-		approvedBy: uuid('approved_by'),
-		createdAt: timestamp('created_at').defaultNow().notNull(),
-		updatedAt: timestamp('updated_at').defaultNow().notNull()
-	}
-);
+export const admins = pgTable('admins', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	email: text('email').notNull().unique(),
+	name: text('name'),
+	passwordHash: text('password_hash'),
+	isApproved: boolean('is_approved').notNull().default(false),
+	approvedAt: timestamp('approved_at'),
+	approvedBy: uuid('approved_by'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
 
-export const adminSessions = pgTable(
-	'admin_sessions',
-	{
-		id: uuid('id').primaryKey().defaultRandom(),
-		adminId: uuid('admin_id')
-			.notNull()
-			.references(() => admins.id, { onDelete: 'cascade' }),
-		expiresAt: timestamp('expires_at').notNull(),
-		token: text('token').notNull().unique(),
-		createdAt: timestamp('created_at').defaultNow().notNull(),
-		updatedAt: timestamp('updated_at').defaultNow().notNull(),
-		ipAddress: text('ip_address'),
-		userAgent: text('user_agent')
-	}
-);
+export const adminSessions = pgTable('admin_sessions', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	adminId: uuid('admin_id')
+		.notNull()
+		.references(() => admins.id, { onDelete: 'cascade' }),
+	expiresAt: timestamp('expires_at').notNull(),
+	token: text('token').notNull().unique(),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull(),
+	ipAddress: text('ip_address'),
+	userAgent: text('user_agent')
+});
 
 // Phone verifications table for storing temporary verification codes
 export const phoneVerifications = pgTable(

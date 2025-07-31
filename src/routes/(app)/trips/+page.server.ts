@@ -16,7 +16,12 @@ export const load = async ({ locals, url }) => {
 	const user = locals.user;
 
 	// Get filter parameters from URL
-	const destinationIds = url.searchParams.get('destinations')?.split(',').filter(Boolean).map(id => parseInt(id)) || [];
+	const destinationIds =
+		url.searchParams
+			.get('destinations')
+			?.split(',')
+			.filter(Boolean)
+			.map((id) => parseInt(id)) || [];
 	const startDate = url.searchParams.get('startDate');
 	const endDate = url.searchParams.get('endDate');
 	const adults = url.searchParams.get('adults');
@@ -27,7 +32,15 @@ export const load = async ({ locals, url }) => {
 	console.log('Trips page - Session from locals:', !!session, 'User from locals:', !!user);
 	console.log('Trips page - User role:', user?.role);
 	console.log('Trips page - Access granted for guide:', user?.email);
-	console.log('Trips page - Filter params:', { destinationIds, startDate, endDate, adults, children, budgetMin, budgetMax });
+	console.log('Trips page - Filter params:', {
+		destinationIds,
+		startDate,
+		endDate,
+		adults,
+		children,
+		budgetMin,
+		budgetMax
+	});
 
 	// Fetch trips that are submitted (available for guides to make offers)
 	// Include both trips without offers and trips where current guide has made offers

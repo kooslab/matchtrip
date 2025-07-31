@@ -56,7 +56,7 @@
 		Object.entries(destinations).forEach(([country, dests]) => {
 			const matchingDests = dests.filter(
 				(dest) =>
-					dest.city.toLowerCase().includes(query) || 
+					dest.city.toLowerCase().includes(query) ||
 					dest.country.name.toLowerCase().includes(query) ||
 					country.toLowerCase().includes(query)
 			);
@@ -88,7 +88,7 @@
 		}
 		return true;
 	}
-	
+
 	// Public method to expand a section
 	export function expandSection(sectionId: string) {
 		expandedSection = sectionId;

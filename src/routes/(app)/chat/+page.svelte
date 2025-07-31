@@ -105,7 +105,11 @@
 		<!-- Loading skeleton -->
 		<div class="space-y-0">
 			{#each [1, 2, 3] as _, index}
-				<div class="border-b border-gray-200/50 px-4 py-4 {index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">
+				<div
+					class="border-b border-gray-200/50 px-4 py-4 {index % 2 === 0
+						? 'bg-white'
+						: 'bg-gray-50'}"
+				>
 					<div class="flex items-start gap-3">
 						<div class="h-14 w-14 animate-pulse rounded-full bg-gray-200"></div>
 						<div class="flex-1">
@@ -164,9 +168,7 @@
 										class="h-14 w-14 rounded-full object-cover"
 									/>
 								{:else}
-									<div
-										class="flex h-14 w-14 items-center justify-center rounded-full bg-gray-200"
-									>
+									<div class="flex h-14 w-14 items-center justify-center rounded-full bg-gray-200">
 										<span class="text-lg font-medium text-gray-600">
 											{conversation.otherUser.name.charAt(0)}
 										</span>

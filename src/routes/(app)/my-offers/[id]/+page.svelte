@@ -343,89 +343,91 @@
 	<div class="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-white">
 		<div class="mx-auto max-w-[430px]">
 			<div class="pb-safe flex items-center gap-3 px-4 py-3">
-			<!-- Price Section -->
-			<div class="flex-1">
-				<p class="text-xs text-gray-600">총 결제금액</p>
-				<p class="text-lg font-bold text-gray-900">{offer.price.toLocaleString()}원</p>
-			</div>
+				<!-- Price Section -->
+				<div class="flex-1">
+					<p class="text-xs text-gray-600">총 결제금액</p>
+					<p class="text-lg font-bold text-gray-900">{offer.price.toLocaleString()}원</p>
+				</div>
 
-			<!-- Button Section -->
-			{#if offer.status === 'accepted' && tripHasEnded()}
-				{#if review?.reviewRequestedAt}
-					<button
-						disabled
-						class="flex cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-gray-400 px-8 py-3.5 text-base font-semibold text-white"
-					>
-						<Star class="h-5 w-5" />
-						요청 전송됨
-					</button>
-				{:else}
-					<button
-						onclick={requestReview}
-						disabled={isRequestingReview}
-						class="flex items-center justify-center gap-2 rounded-xl bg-[#1095f4] px-8 py-3.5 text-base font-semibold text-white disabled:opacity-50"
-					>
-						{#if isRequestingReview}
-							<span
-								class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
-							></span>
-							요청 중...
-						{:else}
-							<Star class="h-5 w-5" />
-							리뷰 요청하기
-						{/if}
-					</button>
-				{/if}
-			{:else if offer.status === 'pending' || offer.status === 'accepted'}
-				{#if canStartChat}
-					<button
-						onclick={startConversation}
-						class="flex items-center justify-center gap-2 rounded-xl bg-[#1095f4] px-8 py-3.5 text-base font-semibold text-white"
-					>
-						<img src={chatIcon} alt="" class="h-5 w-5 brightness-0 invert" />
-						대화하기
-					</button>
-				{:else}
-					<div class="text-center">
+				<!-- Button Section -->
+				{#if offer.status === 'accepted' && tripHasEnded()}
+					{#if review?.reviewRequestedAt}
 						<button
 							disabled
-							class="flex items-center justify-center gap-2 rounded-xl bg-gray-400 px-8 py-3.5 text-base font-semibold text-white cursor-not-allowed"
+							class="flex cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-gray-400 px-8 py-3.5 text-base font-semibold text-white"
+						>
+							<Star class="h-5 w-5" />
+							요청 전송됨
+						</button>
+					{:else}
+						<button
+							onclick={requestReview}
+							disabled={isRequestingReview}
+							class="flex items-center justify-center gap-2 rounded-xl bg-[#1095f4] px-8 py-3.5 text-base font-semibold text-white disabled:opacity-50"
+						>
+							{#if isRequestingReview}
+								<span
+									class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
+								></span>
+								요청 중...
+							{:else}
+								<Star class="h-5 w-5" />
+								리뷰 요청하기
+							{/if}
+						</button>
+					{/if}
+				{:else if offer.status === 'pending' || offer.status === 'accepted'}
+					{#if canStartChat}
+						<button
+							onclick={startConversation}
+							class="flex items-center justify-center gap-2 rounded-xl bg-[#1095f4] px-8 py-3.5 text-base font-semibold text-white"
 						>
 							<img src={chatIcon} alt="" class="h-5 w-5 brightness-0 invert" />
 							대화하기
 						</button>
-						<p class="mt-2 text-sm text-gray-600">
-							{hasCompletedPayment ? '고객이 먼저 메시지를 보낸 후에 채팅이 가능합니다.' : '고객이 결제를 완료하거나 메시지를 보낸 후에 채팅이 가능합니다.'}
-						</p>
-					</div>
-				{/if}
-			{:else if offer.status === 'completed'}
-				{#if review?.reviewRequestedAt}
-					<button
-						disabled
-						class="flex cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-gray-400 px-8 py-3.5 text-base font-semibold text-white"
-					>
-						<Star class="h-5 w-5" />
-						요청 전송됨
-					</button>
-				{:else}
-					<button
-						onclick={requestReview}
-						disabled={isRequestingReview}
-						class="flex items-center justify-center gap-2 rounded-xl bg-[#1095f4] px-8 py-3.5 text-base font-semibold text-white disabled:opacity-50"
-					>
-						{#if isRequestingReview}
-							<span
-								class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
-							></span>
-							요청 중...
-						{:else}
+					{:else}
+						<div class="text-center">
+							<button
+								disabled
+								class="flex cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-gray-400 px-8 py-3.5 text-base font-semibold text-white"
+							>
+								<img src={chatIcon} alt="" class="h-5 w-5 brightness-0 invert" />
+								대화하기
+							</button>
+							<p class="mt-2 text-sm text-gray-600">
+								{hasCompletedPayment
+									? '고객이 먼저 메시지를 보낸 후에 채팅이 가능합니다.'
+									: '고객이 결제를 완료하거나 메시지를 보낸 후에 채팅이 가능합니다.'}
+							</p>
+						</div>
+					{/if}
+				{:else if offer.status === 'completed'}
+					{#if review?.reviewRequestedAt}
+						<button
+							disabled
+							class="flex cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-gray-400 px-8 py-3.5 text-base font-semibold text-white"
+						>
 							<Star class="h-5 w-5" />
-							리뷰 요청하기
-						{/if}
-					</button>
+							요청 전송됨
+						</button>
+					{:else}
+						<button
+							onclick={requestReview}
+							disabled={isRequestingReview}
+							class="flex items-center justify-center gap-2 rounded-xl bg-[#1095f4] px-8 py-3.5 text-base font-semibold text-white disabled:opacity-50"
+						>
+							{#if isRequestingReview}
+								<span
+									class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
+								></span>
+								요청 중...
+							{:else}
+								<Star class="h-5 w-5" />
+								리뷰 요청하기
+							{/if}
+						</button>
+					{/if}
 				{/if}
-			{/if}
 			</div>
 		</div>
 	</div>

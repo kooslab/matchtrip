@@ -7,13 +7,13 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 export const load: PageLoad = async ({ fetch, url, depends, parent }) => {
 	// Get parent data to merge with destinations
 	const parentData = await parent();
-	
+
 	// Depend on a custom identifier for cache invalidation
 	depends('app:destinations');
-	
+
 	const searchQuery = url.searchParams.get('q') || '';
 	const cacheKey = `destinations:${searchQuery}`;
-	
+
 	// Check cache first (only for non-search queries)
 	if (!searchQuery) {
 		const cached = destinationsCache.get(cacheKey);
@@ -29,17 +29,17 @@ export const load: PageLoad = async ({ fetch, url, depends, parent }) => {
 			};
 		}
 	}
-	
+
 	try {
 		// Fetch destinations from API endpoint
 		const response = await fetch(`/api/destinations?q=${encodeURIComponent(searchQuery)}`);
-		
+
 		if (!response.ok) {
 			throw new Error('Failed to fetch destinations');
 		}
-		
+
 		const data = await response.json();
-		
+
 		// Cache the response (only for non-search queries)
 		if (!searchQuery) {
 			destinationsCache.set(cacheKey, {
@@ -47,10 +47,10 @@ export const load: PageLoad = async ({ fetch, url, depends, parent }) => {
 				timestamp: Date.now()
 			});
 		}
-		
+
 		// Get random destinations for display
 		const displayDestinations = getRandomDestinations(data.results, 6);
-		
+
 		return {
 			...parentData,
 			destinations: data.results || [],

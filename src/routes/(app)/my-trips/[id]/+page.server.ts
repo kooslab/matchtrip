@@ -110,12 +110,12 @@ export const load = async ({ params, request, locals }) => {
 		.leftJoin(guideProfiles, eq(users.id, guideProfiles.userId))
 		.where(eq(offers.tripId, tripId))
 		.orderBy(offers.createdAt);
-	
+
 	// For each offer, fetch the guide's average rating and accepted offers count
 	const offersWithStats = await Promise.all(
 		tripOffers.map(async (offer) => {
 			if (!offer.guide?.id) return offer;
-			
+
 			// Get average rating
 			const avgRatingResult = await db
 				.select({
@@ -123,18 +123,15 @@ export const load = async ({ params, request, locals }) => {
 				})
 				.from(reviews)
 				.where(eq(reviews.guideId, offer.guide.id));
-			
+
 			// Get accepted offers count
 			const acceptedOffersResult = await db
 				.select({
 					count: sql`COUNT(*)`.as('count')
 				})
 				.from(offers)
-				.where(and(
-					eq(offers.guideId, offer.guide.id),
-					eq(offers.status, 'accepted')
-				));
-			
+				.where(and(eq(offers.guideId, offer.guide.id), eq(offers.status, 'accepted')));
+
 			return {
 				...offer,
 				guideProfile: {

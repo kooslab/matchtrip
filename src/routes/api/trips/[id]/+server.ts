@@ -58,7 +58,7 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 		// Perform update
 		console.log('Executing database update for tripId:', tripId);
 		console.log('User ID:', session.user.id);
-		
+
 		try {
 			const [updatedTrip] = await db
 				.update(trips)
@@ -67,7 +67,7 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 				.returning();
 
 			console.log('Updated trip result:', updatedTrip);
-			
+
 			if (!updatedTrip) {
 				console.error('No trip was updated - possible permission issue or trip not found');
 				return json({ error: 'Failed to update trip - no rows affected' }, { status: 404 });

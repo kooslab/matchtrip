@@ -70,13 +70,13 @@
 			}
 
 			await response.json();
-			
+
 			// Invalidate all data to refresh the user session
 			await invalidateAll();
-			
+
 			// Close modal and redirect to role selection
 			if (onClose) onClose();
-			
+
 			// Redirect to role selection page
 			await goto('/select-role', { replaceState: true });
 		} catch (error) {
@@ -101,14 +101,11 @@
 
 {#if isOpen}
 	<!-- Backdrop -->
-	<div 
-		class="fixed inset-0 z-50 bg-black/50"
-		transition:fade={{ duration: 200 }}
-	>
+	<div class="fixed inset-0 z-50 bg-black/50" transition:fade={{ duration: 200 }}>
 		<!-- Modal Container -->
 		<div class="flex min-h-screen items-center justify-center p-4">
 			<!-- Modal Content -->
-			<div 
+			<div
 				class="relative w-full max-w-md rounded-2xl bg-white shadow-xl"
 				transition:fly={{ y: 50, duration: 300 }}
 				onclick={handleModalClick}
@@ -116,14 +113,11 @@
 				<!-- Header -->
 				<div class="px-6 pt-8 pb-4">
 					<h2 class="text-2xl font-bold text-gray-900">약관 동의</h2>
-					<p class="mt-2 text-base text-gray-500">
-						서비스 이용을 위해 약관에 동의해 주세요
-					</p>
+					<p class="mt-2 text-base text-gray-500">서비스 이용을 위해 약관에 동의해 주세요</p>
 				</div>
 
 				<!-- Content -->
 				<div class="px-6 pb-6">
-
 					<!-- All agreements checkbox -->
 					<button
 						onclick={toggleAllAgreements}
@@ -139,15 +133,15 @@
 						<!-- Terms agreement -->
 						<div class="flex w-full items-center gap-3 py-4">
 							<button
-								onclick={() => termsAgreed = !termsAgreed}
-								class="h-6 w-6" 
+								onclick={() => (termsAgreed = !termsAgreed)}
+								class="h-6 w-6"
 								class:checked={termsAgreed}
 							>
 								{@html IconCheckCircle}
 							</button>
 							<div class="flex flex-1 items-center justify-between">
 								<button
-									onclick={() => termsAgreed = !termsAgreed}
+									onclick={() => (termsAgreed = !termsAgreed)}
 									class="flex items-center gap-1 text-left"
 								>
 									<span class="text-base text-gray-900">이용약관 동의</span>
@@ -165,15 +159,15 @@
 						<!-- Privacy agreement -->
 						<div class="flex w-full items-center gap-3 py-4">
 							<button
-								onclick={() => privacyAgreed = !privacyAgreed}
-								class="h-6 w-6" 
+								onclick={() => (privacyAgreed = !privacyAgreed)}
+								class="h-6 w-6"
 								class:checked={privacyAgreed}
 							>
 								{@html IconCheckCircle}
 							</button>
 							<div class="flex flex-1 items-center justify-between">
 								<button
-									onclick={() => privacyAgreed = !privacyAgreed}
+									onclick={() => (privacyAgreed = !privacyAgreed)}
 									class="flex items-center gap-1 text-left"
 								>
 									<span class="text-base text-gray-900">개인정보처리방침 동의</span>
@@ -191,16 +185,16 @@
 						<!-- Marketing agreement -->
 						<div class="flex w-full items-center gap-3 py-4">
 							<button
-								onclick={() => marketingAgreed = !marketingAgreed}
-								class="h-6 w-6" 
+								onclick={() => (marketingAgreed = !marketingAgreed)}
+								class="h-6 w-6"
 								class:checked={marketingAgreed}
 							>
 								{@html IconCheckCircle}
 							</button>
 							<div class="flex flex-1 items-center justify-between">
 								<button
-									onclick={() => marketingAgreed = !marketingAgreed}
-									class="text-base text-gray-900 text-left"
+									onclick={() => (marketingAgreed = !marketingAgreed)}
+									class="text-left text-base text-gray-900"
 								>
 									마케팅 및 광고 활용 동의
 								</button>
@@ -218,7 +212,7 @@
 					<div class="flex gap-3">
 						<button
 							disabled
-							class="flex-1 rounded-xl bg-gray-100 py-4 text-base font-medium text-gray-400 cursor-not-allowed"
+							class="flex-1 cursor-not-allowed rounded-xl bg-gray-100 py-4 text-base font-medium text-gray-400"
 						>
 							취소
 						</button>
@@ -241,9 +235,9 @@
 {/if}
 
 <!-- Terms Modal -->
-<TermsModal 
+<TermsModal
 	isOpen={showTermsModal}
-	onClose={() => showTermsModal = false}
+	onClose={() => (showTermsModal = false)}
 	title={termsModalTitle}
 	type={termsModalType}
 />
@@ -251,9 +245,9 @@
 <style>
 	/* Checkbox styling */
 	.checked :global(svg path) {
-		fill: #3B82F6;
+		fill: #3b82f6;
 	}
-	
+
 	/* Ensure icons maintain their aspect ratio */
 	:global(.h-6.w-6 svg) {
 		width: 100%;

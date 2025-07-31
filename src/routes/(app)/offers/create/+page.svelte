@@ -432,7 +432,9 @@
 		</div>
 
 		<!-- Bottom Button -->
-		<div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white px-4 py-4 pb-4">
+		<div
+			class="fixed bottom-0 left-1/2 w-full max-w-[430px] -translate-x-1/2 bg-white px-4 py-4 pb-4"
+		>
 			{#if currentStep === 4}
 				<button
 					onclick={handleSubmit}
@@ -499,7 +501,7 @@
 		</div>
 
 		<!-- Bottom button -->
-		<div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] px-4 py-4 pb-4">
+		<div class="fixed bottom-0 left-1/2 w-full max-w-[430px] -translate-x-1/2 px-4 py-4 pb-4">
 			<button
 				onclick={goToHome}
 				class="w-full rounded-lg py-3.5 text-base font-semibold text-white transition-all"

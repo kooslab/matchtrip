@@ -60,7 +60,7 @@
 		<!-- Header -->
 		<header class="sticky top-0 z-10 border-b border-gray-200 bg-white">
 			<div class="flex h-14 items-center justify-between px-4">
-				<BackButton href={isGuide ? "/my-offers" : "/order-history"} />
+				<BackButton href={isGuide ? '/my-offers' : '/order-history'} />
 				<h1 class="text-lg font-semibold text-gray-900">주문 상세</h1>
 				<div class="w-6"></div>
 			</div>
@@ -90,7 +90,12 @@
 
 				<div class="space-y-3">
 					<div class="flex items-center gap-2 text-sm">
-						<svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<svg
+							class="h-4 w-4 text-gray-400"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+						>
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
@@ -107,7 +112,12 @@
 					</div>
 
 					<div class="flex items-center gap-2 text-sm">
-						<svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<svg
+							class="h-4 w-4 text-gray-400"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+						>
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
@@ -179,14 +189,18 @@
 
 			<!-- Cancel Info -->
 			<div class="text-center">
-				<button class="w-full rounded-xl bg-gray-50 py-4 text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">
+				<button
+					class="w-full rounded-xl bg-gray-50 py-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100"
+				>
 					취소 요청
 				</button>
 			</div>
 		</div>
 
 		<!-- Bottom CTA -->
-		<div class="fixed bottom-0 left-0 right-0 mx-auto max-w-[430px] border-t border-gray-200 bg-white px-4 py-4">
+		<div
+			class="fixed right-0 bottom-0 left-0 mx-auto max-w-[430px] border-t border-gray-200 bg-white px-4 py-4"
+		>
 			<button
 				onclick={() => goto(`/my-trips/${data.trip.id}`)}
 				class="w-full rounded-xl bg-[#1095f4] px-4 py-3.5 text-sm font-medium text-white transition-colors hover:bg-blue-600"

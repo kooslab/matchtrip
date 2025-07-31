@@ -295,7 +295,7 @@
 </div>
 
 <!-- Fixed Image Upload Button -->
-<div class="fixed left-0 right-0 bottom-24 z-50">
+<div class="fixed right-0 bottom-24 left-0 z-50">
 	<div class="mx-auto max-w-[430px] px-4">
 		<div class="flex justify-end">
 			<input
@@ -324,7 +324,7 @@
 
 <!-- Bottom Button -->
 <div
-	class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
+	class="fixed bottom-0 left-1/2 w-full max-w-[430px] -translate-x-1/2 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
 >
 	<div class="px-4 py-4 pb-4">
 		<button

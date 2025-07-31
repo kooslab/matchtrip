@@ -10,8 +10,8 @@
 
 	// Search state
 	let searchQuery = $state(
-		formData.destination && typeof formData.destination === 'object' 
-			? `${formData.destination.city}, ${formData.destination.country}` 
+		formData.destination && typeof formData.destination === 'object'
+			? `${formData.destination.city}, ${formData.destination.country}`
 			: ''
 	);
 	let results = $state<any[]>([]);
@@ -67,7 +67,11 @@
 
 	// Validation
 	export function validate() {
-		if (!formData.destination || typeof formData.destination !== 'object' || !formData.destination.id) {
+		if (
+			!formData.destination ||
+			typeof formData.destination !== 'object' ||
+			!formData.destination.id
+		) {
 			alert('목적지를 선택해주세요.');
 			return false;
 		}

@@ -43,235 +43,302 @@
 
 	// State
 	let searchQuery = $state('');
-	
+
 	// Initialize countries with proper expansion state
 	const initializeCountries = () => {
-		const baseCountries = availableDestinations.length > 0
-			? transformDestinationsToCountries(availableDestinations)
-			: getDefaultCountries();
-			
+		const baseCountries =
+			availableDestinations.length > 0
+				? transformDestinationsToCountries(availableDestinations)
+				: getDefaultCountries();
+
 		// Auto-expand countries that have selected cities
-		baseCountries.forEach(country => {
-			if (country.cities.some(city => selectedCities.has(city.id))) {
+		baseCountries.forEach((country) => {
+			if (country.cities.some((city) => selectedCities.has(city.id))) {
 				country.isExpanded = true;
 			}
 		});
-		
+
 		return baseCountries;
 	};
-	
+
 	// Use available destinations if provided, otherwise use default
 	let countries = $state<Country[]>(initializeCountries());
-	
+
 	function getDefaultCountries(): Country[] {
 		return [
-		{
-			id: 'korea',
-			name: '국내',
-			nameEn: 'Korea',
-			isExpanded: false,
-			cities: [
-				{ id: 'seoul', name: '서울', nameEn: 'Seoul', country: '국내', countryEn: 'Korea' },
-				{ id: 'busan', name: '부산', nameEn: 'Busan', country: '국내', countryEn: 'Korea' },
-				{ id: 'jeju', name: '제주', nameEn: 'Jeju', country: '국내', countryEn: 'Korea' },
-				{ id: 'gangneung', name: '강릉', nameEn: 'Gangneung', country: '국내', countryEn: 'Korea' },
-				{ id: 'gyeongju', name: '경주', nameEn: 'Gyeongju', country: '국내', countryEn: 'Korea' }
-			]
-		},
-		{
-			id: 'europe',
-			name: '유럽',
-			nameEn: 'Europe',
-			isExpanded: false,
-			cities: [
-				{ id: 'paris', name: '파리', nameEn: 'Paris', country: '유럽', countryEn: 'Europe' },
-				{ id: 'london', name: '런던', nameEn: 'London', country: '유럽', countryEn: 'Europe' },
-				{ id: 'rome', name: '로마', nameEn: 'Rome', country: '유럽', countryEn: 'Europe' },
-				{
-					id: 'barcelona',
-					name: '바르셀로나',
-					nameEn: 'Barcelona',
-					country: '유럽',
-					countryEn: 'Europe'
-				},
-				{ id: 'prague', name: '프라하', nameEn: 'Prague', country: '유럽', countryEn: 'Europe' },
-				{
-					id: 'amsterdam',
-					name: '암스테르담',
-					nameEn: 'Amsterdam',
-					country: '유럽',
-					countryEn: 'Europe'
-				},
-				{ id: 'berlin', name: '베를린', nameEn: 'Berlin', country: '유럽', countryEn: 'Europe' },
-				{ id: 'vienna', name: '비엔나', nameEn: 'Vienna', country: '유럽', countryEn: 'Europe' }
-			]
-		},
-		{
-			id: 'japan',
-			name: '일본',
-			nameEn: 'Japan',
-			isExpanded: false,
-			cities: [
-				{ id: 'tokyo', name: '도쿄', nameEn: 'Tokyo', country: '일본', countryEn: 'Japan' },
-				{ id: 'sapporo', name: '삿포로', nameEn: 'Sapporo', country: '일본', countryEn: 'Japan' },
-				{ id: 'osaka', name: '오사카', nameEn: 'Osaka', country: '일본', countryEn: 'Japan' },
-				{ id: 'fukuoka', name: '후쿠오카', nameEn: 'Fukuoka', country: '일본', countryEn: 'Japan' },
-				{ id: 'okinawa', name: '오키나와', nameEn: 'Okinawa', country: '일본', countryEn: 'Japan' },
-				{ id: 'nagoya', name: '나고야', nameEn: 'Nagoya', country: '일본', countryEn: 'Japan' },
-				{
-					id: 'yokohama',
-					name: '요코하마',
-					nameEn: 'Yokohama',
-					country: '일본',
-					countryEn: 'Japan'
-				}
-			]
-		},
-		{
-			id: 'america',
-			name: '미주',
-			nameEn: 'America',
-			isExpanded: false,
-			cities: [
-				{ id: 'newyork', name: '뉴욕', nameEn: 'New York', country: '미주', countryEn: 'America' },
-				{
-					id: 'losangeles',
-					name: '로스앤젤레스',
-					nameEn: 'Los Angeles',
-					country: '미주',
-					countryEn: 'America'
-				},
-				{
-					id: 'sanfrancisco',
-					name: '샌프란시스코',
-					nameEn: 'San Francisco',
-					country: '미주',
-					countryEn: 'America'
-				},
-				{
-					id: 'lasvegas',
-					name: '라스베가스',
-					nameEn: 'Las Vegas',
-					country: '미주',
-					countryEn: 'America'
-				},
-				{
-					id: 'vancouver',
-					name: '밴쿠버',
-					nameEn: 'Vancouver',
-					country: '미주',
-					countryEn: 'America'
-				},
-				{ id: 'toronto', name: '토론토', nameEn: 'Toronto', country: '미주', countryEn: 'America' },
-				{ id: 'hawaii', name: '하와이', nameEn: 'Hawaii', country: '미주', countryEn: 'America' },
-				{ id: 'cancun', name: '칸쿤', nameEn: 'Cancun', country: '미주', countryEn: 'America' }
-			]
-		},
-		{
-			id: 'australia',
-			name: '호주',
-			nameEn: 'Australia',
-			isExpanded: false,
-			cities: [
-				{ id: 'sydney', name: '시드니', nameEn: 'Sydney', country: '호주', countryEn: 'Australia' },
-				{
-					id: 'melbourne',
-					name: '멜버른',
-					nameEn: 'Melbourne',
-					country: '호주',
-					countryEn: 'Australia'
-				},
-				{
-					id: 'brisbane',
-					name: '브리즈번',
-					nameEn: 'Brisbane',
-					country: '호주',
-					countryEn: 'Australia'
-				},
-				{
-					id: 'goldcoast',
-					name: '골드코스트',
-					nameEn: 'Gold Coast',
-					country: '호주',
-					countryEn: 'Australia'
-				},
-				{ id: 'cairns', name: '케언즈', nameEn: 'Cairns', country: '호주', countryEn: 'Australia' },
-				{ id: 'perth', name: '퍼스', nameEn: 'Perth', country: '호주', countryEn: 'Australia' }
-			]
-		},
-		{
-			id: 'thailand',
-			name: '태국',
-			nameEn: 'Thailand',
-			isExpanded: false,
-			cities: [
-				{ id: 'bangkok', name: '방콕', nameEn: 'Bangkok', country: '태국', countryEn: 'Thailand' },
-				{ id: 'phuket', name: '푸켓', nameEn: 'Phuket', country: '태국', countryEn: 'Thailand' },
-				{
-					id: 'chiangmai',
-					name: '치앙마이',
-					nameEn: 'Chiang Mai',
-					country: '태국',
-					countryEn: 'Thailand'
-				},
-				{ id: 'pattaya', name: '파타야', nameEn: 'Pattaya', country: '태국', countryEn: 'Thailand' }
-			]
-		},
-		{
-			id: 'singapore',
-			name: '싱가포르',
-			nameEn: 'Singapore',
-			isExpanded: false,
-			cities: [
-				{
-					id: 'singapore',
-					name: '싱가포르',
-					nameEn: 'Singapore',
-					country: '싱가포르',
-					countryEn: 'Singapore'
-				}
-			]
-		},
-		{
-			id: 'indonesia',
-			name: '인도네시아',
-			nameEn: 'Indonesia',
-			isExpanded: false,
-			cities: [
-				{ id: 'bali', name: '발리', nameEn: 'Bali', country: '인도네시아', countryEn: 'Indonesia' },
-				{
-					id: 'jakarta',
-					name: '자카르타',
-					nameEn: 'Jakarta',
-					country: '인도네시아',
-					countryEn: 'Indonesia'
-				}
-			]
-		},
-		{
-			id: 'taiwan',
-			name: '대만',
-			nameEn: 'Taiwan',
-			isExpanded: false,
-			cities: [
-				{ id: 'taipei', name: '타이베이', nameEn: 'Taipei', country: '대만', countryEn: 'Taiwan' },
-				{
-					id: 'kaohsiung',
-					name: '가오슝',
-					nameEn: 'Kaohsiung',
-					country: '대만',
-					countryEn: 'Taiwan'
-				}
-			]
-		}
-	];
+			{
+				id: 'korea',
+				name: '국내',
+				nameEn: 'Korea',
+				isExpanded: false,
+				cities: [
+					{ id: 'seoul', name: '서울', nameEn: 'Seoul', country: '국내', countryEn: 'Korea' },
+					{ id: 'busan', name: '부산', nameEn: 'Busan', country: '국내', countryEn: 'Korea' },
+					{ id: 'jeju', name: '제주', nameEn: 'Jeju', country: '국내', countryEn: 'Korea' },
+					{
+						id: 'gangneung',
+						name: '강릉',
+						nameEn: 'Gangneung',
+						country: '국내',
+						countryEn: 'Korea'
+					},
+					{ id: 'gyeongju', name: '경주', nameEn: 'Gyeongju', country: '국내', countryEn: 'Korea' }
+				]
+			},
+			{
+				id: 'europe',
+				name: '유럽',
+				nameEn: 'Europe',
+				isExpanded: false,
+				cities: [
+					{ id: 'paris', name: '파리', nameEn: 'Paris', country: '유럽', countryEn: 'Europe' },
+					{ id: 'london', name: '런던', nameEn: 'London', country: '유럽', countryEn: 'Europe' },
+					{ id: 'rome', name: '로마', nameEn: 'Rome', country: '유럽', countryEn: 'Europe' },
+					{
+						id: 'barcelona',
+						name: '바르셀로나',
+						nameEn: 'Barcelona',
+						country: '유럽',
+						countryEn: 'Europe'
+					},
+					{ id: 'prague', name: '프라하', nameEn: 'Prague', country: '유럽', countryEn: 'Europe' },
+					{
+						id: 'amsterdam',
+						name: '암스테르담',
+						nameEn: 'Amsterdam',
+						country: '유럽',
+						countryEn: 'Europe'
+					},
+					{ id: 'berlin', name: '베를린', nameEn: 'Berlin', country: '유럽', countryEn: 'Europe' },
+					{ id: 'vienna', name: '비엔나', nameEn: 'Vienna', country: '유럽', countryEn: 'Europe' }
+				]
+			},
+			{
+				id: 'japan',
+				name: '일본',
+				nameEn: 'Japan',
+				isExpanded: false,
+				cities: [
+					{ id: 'tokyo', name: '도쿄', nameEn: 'Tokyo', country: '일본', countryEn: 'Japan' },
+					{ id: 'sapporo', name: '삿포로', nameEn: 'Sapporo', country: '일본', countryEn: 'Japan' },
+					{ id: 'osaka', name: '오사카', nameEn: 'Osaka', country: '일본', countryEn: 'Japan' },
+					{
+						id: 'fukuoka',
+						name: '후쿠오카',
+						nameEn: 'Fukuoka',
+						country: '일본',
+						countryEn: 'Japan'
+					},
+					{
+						id: 'okinawa',
+						name: '오키나와',
+						nameEn: 'Okinawa',
+						country: '일본',
+						countryEn: 'Japan'
+					},
+					{ id: 'nagoya', name: '나고야', nameEn: 'Nagoya', country: '일본', countryEn: 'Japan' },
+					{
+						id: 'yokohama',
+						name: '요코하마',
+						nameEn: 'Yokohama',
+						country: '일본',
+						countryEn: 'Japan'
+					}
+				]
+			},
+			{
+				id: 'america',
+				name: '미주',
+				nameEn: 'America',
+				isExpanded: false,
+				cities: [
+					{
+						id: 'newyork',
+						name: '뉴욕',
+						nameEn: 'New York',
+						country: '미주',
+						countryEn: 'America'
+					},
+					{
+						id: 'losangeles',
+						name: '로스앤젤레스',
+						nameEn: 'Los Angeles',
+						country: '미주',
+						countryEn: 'America'
+					},
+					{
+						id: 'sanfrancisco',
+						name: '샌프란시스코',
+						nameEn: 'San Francisco',
+						country: '미주',
+						countryEn: 'America'
+					},
+					{
+						id: 'lasvegas',
+						name: '라스베가스',
+						nameEn: 'Las Vegas',
+						country: '미주',
+						countryEn: 'America'
+					},
+					{
+						id: 'vancouver',
+						name: '밴쿠버',
+						nameEn: 'Vancouver',
+						country: '미주',
+						countryEn: 'America'
+					},
+					{
+						id: 'toronto',
+						name: '토론토',
+						nameEn: 'Toronto',
+						country: '미주',
+						countryEn: 'America'
+					},
+					{ id: 'hawaii', name: '하와이', nameEn: 'Hawaii', country: '미주', countryEn: 'America' },
+					{ id: 'cancun', name: '칸쿤', nameEn: 'Cancun', country: '미주', countryEn: 'America' }
+				]
+			},
+			{
+				id: 'australia',
+				name: '호주',
+				nameEn: 'Australia',
+				isExpanded: false,
+				cities: [
+					{
+						id: 'sydney',
+						name: '시드니',
+						nameEn: 'Sydney',
+						country: '호주',
+						countryEn: 'Australia'
+					},
+					{
+						id: 'melbourne',
+						name: '멜버른',
+						nameEn: 'Melbourne',
+						country: '호주',
+						countryEn: 'Australia'
+					},
+					{
+						id: 'brisbane',
+						name: '브리즈번',
+						nameEn: 'Brisbane',
+						country: '호주',
+						countryEn: 'Australia'
+					},
+					{
+						id: 'goldcoast',
+						name: '골드코스트',
+						nameEn: 'Gold Coast',
+						country: '호주',
+						countryEn: 'Australia'
+					},
+					{
+						id: 'cairns',
+						name: '케언즈',
+						nameEn: 'Cairns',
+						country: '호주',
+						countryEn: 'Australia'
+					},
+					{ id: 'perth', name: '퍼스', nameEn: 'Perth', country: '호주', countryEn: 'Australia' }
+				]
+			},
+			{
+				id: 'thailand',
+				name: '태국',
+				nameEn: 'Thailand',
+				isExpanded: false,
+				cities: [
+					{
+						id: 'bangkok',
+						name: '방콕',
+						nameEn: 'Bangkok',
+						country: '태국',
+						countryEn: 'Thailand'
+					},
+					{ id: 'phuket', name: '푸켓', nameEn: 'Phuket', country: '태국', countryEn: 'Thailand' },
+					{
+						id: 'chiangmai',
+						name: '치앙마이',
+						nameEn: 'Chiang Mai',
+						country: '태국',
+						countryEn: 'Thailand'
+					},
+					{
+						id: 'pattaya',
+						name: '파타야',
+						nameEn: 'Pattaya',
+						country: '태국',
+						countryEn: 'Thailand'
+					}
+				]
+			},
+			{
+				id: 'singapore',
+				name: '싱가포르',
+				nameEn: 'Singapore',
+				isExpanded: false,
+				cities: [
+					{
+						id: 'singapore',
+						name: '싱가포르',
+						nameEn: 'Singapore',
+						country: '싱가포르',
+						countryEn: 'Singapore'
+					}
+				]
+			},
+			{
+				id: 'indonesia',
+				name: '인도네시아',
+				nameEn: 'Indonesia',
+				isExpanded: false,
+				cities: [
+					{
+						id: 'bali',
+						name: '발리',
+						nameEn: 'Bali',
+						country: '인도네시아',
+						countryEn: 'Indonesia'
+					},
+					{
+						id: 'jakarta',
+						name: '자카르타',
+						nameEn: 'Jakarta',
+						country: '인도네시아',
+						countryEn: 'Indonesia'
+					}
+				]
+			},
+			{
+				id: 'taiwan',
+				name: '대만',
+				nameEn: 'Taiwan',
+				isExpanded: false,
+				cities: [
+					{
+						id: 'taipei',
+						name: '타이베이',
+						nameEn: 'Taipei',
+						country: '대만',
+						countryEn: 'Taiwan'
+					},
+					{
+						id: 'kaohsiung',
+						name: '가오슝',
+						nameEn: 'Kaohsiung',
+						country: '대만',
+						countryEn: 'Taiwan'
+					}
+				]
+			}
+		];
 	}
-	
+
 	// Transform destinations from database to country-grouped format
 	function transformDestinationsToCountries(destinations: any[]): Country[] {
 		const countryMap = new Map<string, Country>();
-		
-		destinations.forEach(dest => {
+
+		destinations.forEach((dest) => {
 			const countryKey = dest.country.id;
 			if (!countryMap.has(countryKey)) {
 				countryMap.set(countryKey, {
@@ -282,7 +349,7 @@
 					cities: []
 				});
 			}
-			
+
 			const country = countryMap.get(countryKey)!;
 			country.cities.push({
 				id: dest.id.toString(),
@@ -292,7 +359,7 @@
 				countryEn: dest.country.name
 			});
 		});
-		
+
 		return Array.from(countryMap.values());
 	}
 

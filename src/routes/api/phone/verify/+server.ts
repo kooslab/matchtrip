@@ -10,16 +10,19 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		const { phone, code } = await request.json();
 
 		if (!phone || !code) {
-			return json({
-				success: false,
-				verified: false,
-				message: '휴대폰 번호와 인증번호를 입력해주세요.'
-			}, { status: 400 });
+			return json(
+				{
+					success: false,
+					verified: false,
+					message: '휴대폰 번호와 인증번호를 입력해주세요.'
+				},
+				{ status: 400 }
+			);
 		}
 
 		// Normalize phone number (remove dashes, spaces, etc) to match what was stored
 		const normalizedPhone = phone.replace(/\D/g, '');
-		
+
 		console.log('[verify] Original phone:', phone);
 		console.log('[verify] Normalized phone:', normalizedPhone);
 		console.log('[verify] Code:', code);
@@ -28,11 +31,14 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		const { success, reason } = await verifyCode(normalizedPhone, code);
 
 		if (!success) {
-			return json({
-				success: false,
-				verified: false,
-				message: reason || '인증에 실패했습니다.'
-			}, { status: 400 });
+			return json(
+				{
+					success: false,
+					verified: false,
+					message: reason || '인증에 실패했습니다.'
+				},
+				{ status: 400 }
+			);
 		}
 
 		// If user is logged in, update their phone verification status
@@ -40,7 +46,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		if (user) {
 			await db
 				.update(users)
-				.set({ 
+				.set({
 					phone: normalizedPhone,
 					phoneVerified: true,
 					updatedAt: new Date()
@@ -55,10 +61,13 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		});
 	} catch (error) {
 		console.error('Error verifying code:', error);
-		return json({
-			success: false,
-			verified: false,
-			message: '인증 처리 중 오류가 발생했습니다.'
-		}, { status: 500 });
+		return json(
+			{
+				success: false,
+				verified: false,
+				message: '인증 처리 중 오류가 발생했습니다.'
+			},
+			{ status: 500 }
+		);
 	}
 };

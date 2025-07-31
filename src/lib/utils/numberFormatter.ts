@@ -27,24 +27,24 @@ export function handleFormattedNumberInput(
 } {
 	const cursorPos = input.selectionStart || 0;
 	const oldValue = input.value;
-	
+
 	// Count commas before cursor position
 	const commasBefore = (oldValue.substring(0, cursorPos).match(/,/g) || []).length;
-	
+
 	// Remove all non-numeric characters
 	const cleanValue = cleanNumericString(currentValue);
-	
+
 	// Format with commas for display
 	const formattedValue = formatNumberWithCommas(cleanValue);
-	
+
 	// Calculate new cursor position after formatting
 	if (cleanValue && formattedValue) {
 		setTimeout(() => {
 			const commasInNew = (formattedValue.match(/,/g) || []).length;
-			
+
 			// Find position without commas
 			let posWithoutCommas = cursorPos - commasBefore;
-			
+
 			// Add back commas for new position
 			let newPos = posWithoutCommas;
 			let commaCount = 0;
@@ -56,13 +56,13 @@ export function handleFormattedNumberInput(
 					commaCount++;
 				}
 			}
-			
+
 			// Ensure cursor position is within bounds
 			newPos = Math.max(0, Math.min(newPos, formattedValue.length));
 			input.setSelectionRange(newPos, newPos);
 		}, 0);
 	}
-	
+
 	return {
 		rawValue: cleanValue,
 		displayValue: formattedValue
@@ -79,7 +79,7 @@ export function createNumberInputHandler(
 	return function handleInput(e: Event) {
 		const input = e.target as HTMLInputElement;
 		const result = handleFormattedNumberInput(input, input.value);
-		
+
 		updateRawValue(result.rawValue);
 		updateDisplayValue(result.displayValue);
 	};
