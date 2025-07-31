@@ -58,6 +58,7 @@
 	// Collapsible states
 	let supportOpen = $state(false);
 	let partnershipOpen = $state(false);
+	let businessInfoOpen = $state(false);
 
 	// Search functionality
 	let searchQuery = $state(data.searchQuery || '');
@@ -398,7 +399,28 @@
 							<span>|</span>
 							<a href="/terms/marketing" class="hover:text-gray-700">제휴 안내</a>
 						</div>
-						<p class="text-xs text-gray-400">에이전트티 사업자 정보</p>
+						<!-- Business Info with Chevron -->
+						<button 
+							onclick={() => businessInfoOpen = !businessInfoOpen}
+							class="mb-3 flex items-center justify-center gap-2 text-xs text-gray-600 hover:text-gray-800 transition-colors mx-auto"
+						>
+							<span>에이전트티 사업자 정보</span>
+							{#if businessInfoOpen}
+								<ChevronUp class="h-3.5 w-3.5 text-blue-500" />
+							{:else}
+								<ChevronDown class="h-3.5 w-3.5 text-blue-500" />
+							{/if}
+						</button>
+						
+						{#if businessInfoOpen}
+							<div class="text-xs text-gray-500 space-y-1 mb-3">
+								<div>대표자 : 진민수 E-mail : j@agentt.kr</div>
+								<div>전화 : 010-8200-4994 (독일 +49 174 4360256)</div>
+								<div>주소 : 경기도 화성시 메타폴리스로 42 9층 901호 A13호 (반송동, 디앤씨빌딩)</div>
+								<div>사업자등록번호 : 126-56-00745 통신판매번호 : 2024-화성동탄-1329호</div>
+							</div>
+						{/if}
+						
 						<p class="text-xs text-gray-400">
 							매치트립은 통신판매중개자이며, 통신판매의 당사자가 아닙니다.<br />
 							상품, 상품정보, 거래에 관한 의무와 책임은 판매자에게 있습니다.
