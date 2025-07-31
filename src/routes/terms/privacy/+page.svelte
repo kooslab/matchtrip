@@ -129,7 +129,7 @@
 					<ul class="space-y-1">
 						<li>부서: CS팀</li>
 						<li>담당자: 진민수</li>
-						<li>연락처: j@agentt.kr</li>
+						<li>연락처: help@agentt.kr</li>
 					</ul>
 				</div>
 				
@@ -143,7 +143,7 @@
 					<ul class="space-y-1">
 						<li>부서명: CS팀</li>
 						<li>담당자: 진민수</li>
-						<li>연락처: j@agentt.kr</li>
+						<li>연락처: help@agentt.kr</li>
 					</ul>
 				</div>
 

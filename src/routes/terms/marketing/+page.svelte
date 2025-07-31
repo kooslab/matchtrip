@@ -63,7 +63,7 @@
 			<ul class="text-yellow-700">
 				<li>매치트립 웹사이트 > 마이페이지 > 설정 > 마케팅 정보 수신 설정에서 변경</li>
 				<li>수신된 이메일 또는 문자메시지 내 수신거부 링크 클릭</li>
-				<li>고객센터 문의 (이메일: help@matchtrip.com)</li>
+				<li>고객센터 문의 (이메일: help@agentt.kr)</li>
 			</ul>
 		</div>
 

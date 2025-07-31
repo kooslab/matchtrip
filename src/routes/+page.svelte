@@ -360,7 +360,7 @@
 							제휴 안내 보기
 						</a>
 						<a
-							href="mailto:partnership@matchtrip.com"
+							href="mailto:help@agentt.kr"
 							class="block text-sm font-medium text-blue-600 hover:text-blue-700"
 						>
 							이메일로 문의하기

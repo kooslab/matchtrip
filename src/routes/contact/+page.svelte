@@ -5,33 +5,6 @@
 	function goBack() {
 		window.history.back();
 	}
-
-	let name = $state('');
-	let email = $state('');
-	let subject = $state('');
-	let message = $state('');
-	let isSubmitting = $state(false);
-	let isSubmitSuccess = $state(false);
-
-	function handleSubmit(event: Event) {
-		event.preventDefault();
-		isSubmitting = true;
-
-		// Simulate a form submission
-		setTimeout(() => {
-			isSubmitting = false;
-			isSubmitSuccess = true;
-			name = '';
-			email = '';
-			subject = '';
-			message = '';
-
-			// Reset success message after a few seconds
-			setTimeout(() => {
-				isSubmitSuccess = false;
-			}, 5000);
-		}, 1500);
-	}
 </script>
 
 <div class="mx-auto max-w-3xl px-4 py-12">
@@ -76,7 +49,7 @@
 				</div>
 				<div class="ml-4">
 					<h3 class="text-sm font-medium text-gray-500">이메일</h3>
-					<p class="mt-1 text-base text-gray-900">j@agentt.kr</p>
+					<p class="mt-1 text-base text-gray-900">help@agentt.kr</p>
 				</div>
 			</div>
 
@@ -99,8 +72,7 @@
 				</div>
 				<div class="ml-4">
 					<h3 class="text-sm font-medium text-gray-500">전화</h3>
-					<p class="mt-1 text-base text-gray-900">한국 🇰🇷 010-8200-4994</p>
-					<p class="mt-1 text-base text-gray-900">독일 🇩🇪 +49 174 4360256</p>
+					<p class="mt-1 text-base text-gray-900">한국 🇰🇷 1661-0213</p>
 					<p class="text-sm text-gray-600">(평일 10:00 - 18:00)</p>
 				</div>
 			</div>
@@ -139,112 +111,39 @@
 		</div>
 	</div>
 
-	<div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
-		<div class="order-2 lg:order-1">
-			<div class="rounded-lg border border-gray-200 bg-white p-8 shadow-sm">
-				<h2 class="mb-6 text-xl font-semibold text-gray-800">문의 양식</h2>
-				{#if isSubmitSuccess}
-					<div class="mb-4 rounded-md bg-green-50 p-4 text-green-700">
-						문의가 성공적으로 전송되었습니다. 빠른 시일 내에 답변 드리겠습니다.
-					</div>
-				{/if}
-				<form onsubmit={handleSubmit} class="space-y-4">
-					<div>
-						<label for="name" class="block text-sm font-medium text-gray-700">이름</label>
-						<input
-							type="text"
-							id="name"
-							bind:value={name}
-							class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-							required
-							disabled={isSubmitting}
-						/>
-					</div>
-
-					<div>
-						<label for="email" class="block text-sm font-medium text-gray-700">이메일</label>
-						<input
-							type="email"
-							id="email"
-							bind:value={email}
-							class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-							required
-							disabled={isSubmitting}
-						/>
-					</div>
-
-					<div>
-						<label for="subject" class="block text-sm font-medium text-gray-700">제목</label>
-						<input
-							type="text"
-							id="subject"
-							bind:value={subject}
-							class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-							required
-							disabled={isSubmitting}
-						/>
-					</div>
-
-					<div>
-						<label for="message" class="block text-sm font-medium text-gray-700">메시지</label>
-						<textarea
-							id="message"
-							bind:value={message}
-							rows="4"
-							class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-							required
-							disabled={isSubmitting}
-						></textarea>
-					</div>
-
-					<div>
-						<button
-							type="submit"
-							class="w-full rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-70"
-							disabled={isSubmitting}
-						>
-							{isSubmitting ? '전송 중...' : '문의 보내기'}
-						</button>
-					</div>
-				</form>
-			</div>
-		</div>
-		<div class="order-1 lg:order-2">
-			<div class="rounded-lg bg-gray-50 p-8">
-				<h3 class="mb-4 text-lg font-semibold text-gray-800">빠른 응답을 위한 팁</h3>
-				<ul class="space-y-3 text-sm text-gray-600">
-					<li class="flex items-start">
-						<svg class="mt-0.5 mr-2 h-4 w-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-							<path
-								fill-rule="evenodd"
-								d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-								clip-rule="evenodd"
-							/>
-						</svg>
-						<span>구체적인 정보를 포함해 주세요</span>
-					</li>
-					<li class="flex items-start">
-						<svg class="mt-0.5 mr-2 h-4 w-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-							<path
-								fill-rule="evenodd"
-								d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-								clip-rule="evenodd"
-							/>
-						</svg>
-						<span>예약 번호가 있다면 함께 기재해 주세요</span>
-					</li>
-					<li class="flex items-start">
-						<svg class="mt-0.5 mr-2 h-4 w-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-							<path
-								fill-rule="evenodd"
-								d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-								clip-rule="evenodd"
-							/>
-						</svg>
-						<span>영업시간 내 연락을 권장합니다</span>
-					</li>
-				</ul>
-			</div>
-		</div>
+	<div class="rounded-lg bg-gray-50 p-8">
+		<h3 class="mb-4 text-lg font-semibold text-gray-800">빠른 응답을 위한 팁</h3>
+		<ul class="space-y-3 text-sm text-gray-600">
+			<li class="flex items-start">
+				<svg class="mt-0.5 mr-2 h-4 w-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+					<path
+						fill-rule="evenodd"
+						d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+						clip-rule="evenodd"
+					/>
+				</svg>
+				<span>구체적인 정보를 포함해 주세요</span>
+			</li>
+			<li class="flex items-start">
+				<svg class="mt-0.5 mr-2 h-4 w-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+					<path
+						fill-rule="evenodd"
+						d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+						clip-rule="evenodd"
+					/>
+				</svg>
+				<span>예약 번호가 있다면 함께 기재해 주세요</span>
+			</li>
+			<li class="flex items-start">
+				<svg class="mt-0.5 mr-2 h-4 w-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+					<path
+						fill-rule="evenodd"
+						d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+						clip-rule="evenodd"
+					/>
+				</svg>
+				<span>영업시간 내 연락을 권장합니다</span>
+			</li>
+		</ul>
 	</div>
 </div>
