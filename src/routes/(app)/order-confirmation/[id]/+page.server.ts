@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { payments, offers, trips, users, guideProfiles, destinations } from '$lib/server/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, or } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
@@ -13,43 +13,39 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	const orderId = params.id;
 
 	// Get payment/order information
-	const payment = await db
-		.select()
-		.from(payments)
-		.where(and(eq(payments.orderId, orderId), eq(payments.userId, session.user.id)))
-		.limit(1);
-
-	if (!payment || payment.length === 0) {
-		throw error(404, 'Order not found');
-	}
-
-	const paymentData = payment[0];
-
-	// Get offer information
-	const offerData = await db
+	// Check if user is either the buyer or the guide for this order
+	const paymentData = await db
 		.select({
+			payment: payments,
 			offer: offers,
 			trip: trips,
 			destination: destinations,
 			guide: users,
 			guideProfile: guideProfiles
 		})
-		.from(offers)
+		.from(payments)
+		.innerJoin(offers, eq(payments.offerId, offers.id))
 		.innerJoin(trips, eq(offers.tripId, trips.id))
 		.innerJoin(destinations, eq(trips.destinationId, destinations.id))
 		.innerJoin(users, eq(offers.guideId, users.id))
 		.leftJoin(guideProfiles, eq(offers.guideId, guideProfiles.userId))
-		.where(eq(offers.id, paymentData.offerId))
+		.where(and(
+			eq(payments.orderId, orderId),
+			or(
+				eq(payments.userId, session.user.id), // User is the buyer
+				eq(offers.guideId, session.user.id)   // User is the guide
+			)
+		))
 		.limit(1);
 
-	if (!offerData || offerData.length === 0) {
-		throw error(404, 'Offer not found');
+	if (!paymentData || paymentData.length === 0) {
+		throw error(404, 'Order not found');
 	}
 
-	const { offer, trip, destination, guide, guideProfile } = offerData[0];
+	const { payment, offer, trip, destination, guide, guideProfile } = paymentData[0];
 
 	return {
-		order: paymentData,
+		order: payment,
 		trip: {
 			...trip,
 			destination

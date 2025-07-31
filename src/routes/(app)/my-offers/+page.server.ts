@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
-import { trips, destinations, users, offers, countries } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { trips, destinations, users, offers, countries, payments } from '$lib/server/db/schema';
+import { eq, and } from 'drizzle-orm';
 
 export const load = async ({ locals }) => {
 	// Session and user are guaranteed to exist and be valid due to auth guard in hooks.server.ts
@@ -47,13 +47,19 @@ export const load = async ({ locals }) => {
 			traveler: {
 				name: users.name,
 				email: users.email
-			}
+			},
+			// Payment info (if exists)
+			paymentOrderId: payments.orderId
 		})
 		.from(offers)
 		.innerJoin(trips, eq(offers.tripId, trips.id))
 		.innerJoin(destinations, eq(trips.destinationId, destinations.id))
 		.innerJoin(countries, eq(destinations.countryId, countries.id))
 		.innerJoin(users, eq(trips.userId, users.id))
+		.leftJoin(payments, and(
+			eq(payments.offerId, offers.id),
+			eq(payments.status, 'completed')
+		))
 		.where(eq(offers.guideId, session.user.id))
 		.orderBy(offers.createdAt);
 
