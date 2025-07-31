@@ -234,7 +234,7 @@
 										stroke-width="2"
 										d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
 								</svg>
-								<span>{randomDestination.city}, {randomDestination.country}</span>
+								<span>{randomDestination.city}, {randomDestination.country?.name || randomDestination.country}</span>
 							</div>
 							<h2 class="mt-2 text-lg font-medium text-gray-900">
 								{randomMessage} <span class="text-blue-600">{randomDestination.city}</span> 어때요?
@@ -295,7 +295,7 @@
 									</div>
 									<div class="absolute bottom-2 left-2 text-left">
 										<h3 class="text-base font-semibold text-white">{destination.city}</h3>
-										<p class="text-xs text-white/90">{destination.country}</p>
+										<p class="text-xs text-white/90">{destination.country?.name || destination.country}</p>
 									</div>
 								</div>
 							</button>
