@@ -17,13 +17,13 @@
 	const userRole = $derived(data?.userRole);
 	const isGuide = $derived(userRole === 'guide');
 	const isTraveler = $derived(userRole === 'traveler');
-	
+
 	// Agreement modal state
 	let showAgreementModal = $state(false);
-	
+
 	// Loading states for social login
 	let loadingProvider = $state<'kakao' | 'google' | null>(null);
-	
+
 	// Check if user needs to agree to terms when user data changes
 	$effect(() => {
 		if (user && !data?.hasAgreedToTerms) {
@@ -76,23 +76,23 @@
 		const target = e.target as HTMLInputElement;
 		const query = target.value;
 		searchQuery = query;
-		
+
 		clearTimeout(debounceTimer);
-		
+
 		if (!query.trim()) {
 			showDropdown = false;
 			// Clear search results
 			await goto('/');
 			return;
 		}
-		
+
 		isSearching = true;
 		debounceTimer = setTimeout(async () => {
 			// Make server request with search query
-			await goto(`/?q=${encodeURIComponent(query)}`, { 
+			await goto(`/?q=${encodeURIComponent(query)}`, {
 				replaceState: true,
 				keepFocus: true,
-				noScroll: true 
+				noScroll: true
 			});
 			showDropdown = true;
 			isSearching = false;
@@ -100,11 +100,11 @@
 	}
 
 	// Select destination
-	function selectDestination(destination: typeof data.destinations[0]) {
+	function selectDestination(destination: (typeof data.destinations)[0]) {
 		// Fill the search input with the selected city
 		searchQuery = destination.city;
 		showDropdown = false;
-		
+
 		// Navigate based on user role - now using destination ID
 		if (!user) {
 			goto('/');
@@ -113,7 +113,9 @@
 			goto(`/trips?destinations=${destination.id}`, { invalidateAll: true });
 		} else if (isTraveler) {
 			// Traveler users go to create trip with selected destination
-			goto(`/my-trips/create/destination?id=${destination.id}&city=${encodeURIComponent(destination.city)}`);
+			goto(
+				`/my-trips/create/destination?id=${destination.id}&city=${encodeURIComponent(destination.city)}`
+			);
 		}
 	}
 
@@ -130,7 +132,7 @@
 {#if user}
 	<!-- Logged in user layout -->
 	<div class="min-h-screen bg-gray-50">
-		<div class="mx-auto max-w-[430px] bg-white min-h-screen">
+		<div class="mx-auto min-h-screen max-w-[430px] bg-white">
 			<!-- Header -->
 			<header class="sticky top-0 z-50 bg-white shadow-sm">
 				<div class="flex items-center justify-between px-4 py-4">
@@ -139,262 +141,268 @@
 					</button>
 					<button class="relative p-2">
 						<Bell class="h-6 w-6 text-gray-600" />
-						<span class="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500"></span>
+						<span class="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
 					</button>
 				</div>
 			</header>
 
 			<!-- Main Content -->
 			<main class="pb-24">
-		{#if isGuide}
-			<!-- Guide Specific Content -->
-			<section class="bg-white p-4">
-				<div class="flex items-center gap-2 text-xs text-gray-500">
-					<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-						/>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-						/>
-					</svg>
-					<span>Berlin, Germany</span>
-				</div>
-				<h2 class="mt-3 text-xl font-bold text-gray-900 leading-tight">
-					안녕하세요 <span class="text-blue-500">{user?.name || '여행자'}님</span>,
-				</h2>
-				<h3 class="mt-1 text-xl font-bold text-gray-900 leading-tight">
-					새로운 여행이 기다리고 있어요.
-				</h3>
-				
-				<!-- Search Bar -->
-				<div class="mt-5 relative">
-					<input
-						type="text"
-						placeholder="지금 가이드 활동을 시작해 보세요!"
-						class="w-full pl-5 pr-14 py-3.5 bg-gray-50 rounded-full text-base text-gray-700 placeholder-gray-400"
-						readonly
-					/>
-					<button class="absolute right-1.5 top-1/2 -translate-y-1/2 w-11 h-11 bg-blue-500 rounded-full flex items-center justify-center shadow-sm hover:bg-blue-600 transition-colors">
-						<svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-						</svg>
-					</button>
-				</div>
-			</section>
+				{#if isGuide}
+					<!-- Guide Specific Content -->
+					<section class="bg-white p-4">
+						<div class="flex items-center gap-2 text-xs text-gray-500">
+							<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+							</svg>
+							<span>Berlin, Germany</span>
+						</div>
+						<h2 class="mt-3 text-xl leading-tight font-bold text-gray-900">
+							안녕하세요 <span class="text-blue-500">{user?.name || '여행자'}님</span>,
+						</h2>
+						<h3 class="mt-1 text-xl leading-tight font-bold text-gray-900">
+							새로운 여행이 기다리고 있어요.
+						</h3>
 
-			<!-- Guide Banner Section -->
-			<section class="bg-white mt-3 p-4">
-				<div class="bg-gray-50 rounded-2xl p-5 flex items-center justify-between overflow-hidden">
-					<div class="flex-1">
-						<p class="text-sm text-gray-500 font-medium">What is Lorem Ipsum</p>
-						<h3 class="text-lg font-bold text-gray-900 mt-0.5">What is Lorem Ipsum</h3>
-					</div>
-					<div class="relative w-28 h-28 -mr-5">
-						<img 
-							src={beachImage} 
-							alt="Beach umbrella" 
-							class="w-full h-full object-contain"
-						/>
-					</div>
-				</div>
-				<div class="flex justify-center mt-3 gap-1.5">
-					<span class="w-1.5 h-1.5 rounded-full bg-gray-800"></span>
-					<span class="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
-					<span class="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
-					<span class="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
-				</div>
-			</section>
-		{:else if isTraveler}
-			<!-- Traveler Specific Content (Original) -->
-			<!-- Recommendation Section -->
-			{#if randomDestination}
-				<section class="bg-white p-4">
-					<div class="flex items-center gap-2 text-sm text-gray-600">
-						<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-							/>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-							/>
-						</svg>
-						<span>{randomDestination.city}, {randomDestination.country}</span>
-					</div>
-					<h2 class="mt-2 text-lg font-medium text-gray-900">
-						{randomMessage} <span class="text-blue-600">{randomDestination.city}</span> 어때요?
-					</h2>
-				</section>
-			{/if}
-		{/if}
+						<!-- Search Bar -->
+						<div class="relative mt-5">
+							<input
+								type="text"
+								placeholder="지금 가이드 활동을 시작해 보세요!"
+								class="w-full rounded-full bg-gray-50 py-3.5 pr-14 pl-5 text-base text-gray-700 placeholder-gray-400"
+								readonly />
+							<button
+								class="absolute top-1/2 right-1.5 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-blue-500 shadow-sm transition-colors hover:bg-blue-600">
+								<svg
+									class="h-5 w-5 text-white"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+									stroke-width="2.5">
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+								</svg>
+							</button>
+						</div>
+					</section>
 
-
-		<!-- Sample Destinations -->
-		<section class="mt-4 bg-white p-4">
-			{#if isGuide}
-				<h3 class="mb-3 text-sm text-gray-500">
-					내가 필요한 여행자를 찾고 계신가요?
-				</h3>
-				<h2 class="mb-4 flex items-center justify-between text-lg font-bold text-gray-900">
-					여행자 찾기
-					<button onclick={() => goto('/trips')} class="text-blue-500">
-						<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-						</svg>
-					</button>
-				</h2>
-			{:else}
-				<h3 class="mb-3 text-sm text-gray-500">
-					나에게 맞는 가이드를 찾고 계신가요?
-				</h3>
-				<h2 class="mb-4 flex items-center justify-between text-lg font-bold text-gray-900">
-					매치트립 나라별 가이드
-					<button onclick={() => goto('/trips')} class="text-blue-500">
-						<ChevronDown class="h-5 w-5" />
-					</button>
-				</h2>
-			{/if}
-			<div class="grid grid-cols-3 gap-3">
-				{#each data.displayDestinations || [] as destination}
-					<button
-						onclick={() => goto(isGuide ? `/trips?destinations=${destination.id}` : `/trips?destination=${destination.city}`)}
-						class="overflow-hidden rounded-lg"
-					>
-						<div class="relative aspect-square">
-							{#if destination.imageUrl}
-								<img
-									src={destination.imageUrl}
-									alt={destination.city}
-									class="h-full w-full object-cover"
-								/>
-							{:else}
-								<div class="flex h-full w-full items-center justify-center bg-gray-200">
-									<span class="text-gray-400">No image</span>
-								</div>
-							{/if}
-							<div
-								class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
-							></div>
-							<div class="absolute bottom-2 left-2 text-left">
-								<h3 class="text-base font-semibold text-white">{destination.city}</h3>
-								<p class="text-xs text-white/90">{destination.country}</p>
+					<!-- Guide Banner Section -->
+					<section class="mt-3 bg-white p-4">
+						<div
+							class="flex items-center justify-between overflow-hidden rounded-2xl bg-gray-50 p-5">
+							<div class="flex-1">
+								<p class="text-sm font-medium text-gray-500">What is Lorem Ipsum</p>
+								<h3 class="mt-0.5 text-lg font-bold text-gray-900">What is Lorem Ipsum</h3>
+							</div>
+							<div class="relative -mr-5 h-28 w-28">
+								<img src={beachImage} alt="Beach umbrella" class="h-full w-full object-contain" />
 							</div>
 						</div>
+						<div class="mt-3 flex justify-center gap-1.5">
+							<span class="h-1.5 w-1.5 rounded-full bg-gray-800"></span>
+							<span class="h-1.5 w-1.5 rounded-full bg-gray-300"></span>
+							<span class="h-1.5 w-1.5 rounded-full bg-gray-300"></span>
+							<span class="h-1.5 w-1.5 rounded-full bg-gray-300"></span>
+						</div>
+					</section>
+				{:else if isTraveler}
+					<!-- Traveler Specific Content (Original) -->
+					<!-- Recommendation Section -->
+					{#if randomDestination}
+						<section class="bg-white p-4">
+							<div class="flex items-center gap-2 text-sm text-gray-600">
+								<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+								</svg>
+								<span>{randomDestination.city}, {randomDestination.country}</span>
+							</div>
+							<h2 class="mt-2 text-lg font-medium text-gray-900">
+								{randomMessage} <span class="text-blue-600">{randomDestination.city}</span> 어때요?
+							</h2>
+						</section>
+					{/if}
+				{/if}
+
+				<!-- Sample Destinations -->
+				<section class="mt-4 bg-white p-4">
+					{#if isGuide}
+						<h3 class="mb-3 text-sm text-gray-500">내가 필요한 여행자를 찾고 계신가요?</h3>
+						<h2 class="mb-4 flex items-center justify-between text-lg font-bold text-gray-900">
+							여행자 찾기
+							<button onclick={() => goto('/trips')} class="text-blue-500">
+								<svg
+									class="h-5 w-5"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+									stroke-width="2">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+								</svg>
+							</button>
+						</h2>
+					{:else}
+						<h3 class="mb-3 text-sm text-gray-500">나에게 맞는 가이드를 찾고 계신가요?</h3>
+						<h2 class="mb-4 flex items-center justify-between text-lg font-bold text-gray-900">
+							매치트립 나라별 가이드
+							<button onclick={() => goto('/trips')} class="text-blue-500">
+								<ChevronDown class="h-5 w-5" />
+							</button>
+						</h2>
+					{/if}
+					<div class="grid grid-cols-3 gap-3">
+						{#each data.displayDestinations || [] as destination}
+							<button
+								onclick={() =>
+									goto(
+										isGuide
+											? `/trips?destinations=${destination.id}`
+											: `/trips?destination=${destination.city}`
+									)}
+								class="overflow-hidden rounded-lg">
+								<div class="relative aspect-square">
+									{#if destination.imageUrl}
+										<img
+											src={destination.imageUrl}
+											alt={destination.city}
+											class="h-full w-full object-cover" />
+									{:else}
+										<div class="flex h-full w-full items-center justify-center bg-gray-200">
+											<span class="text-gray-400">No image</span>
+										</div>
+									{/if}
+									<div
+										class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent">
+									</div>
+									<div class="absolute bottom-2 left-2 text-left">
+										<h3 class="text-base font-semibold text-white">{destination.city}</h3>
+										<p class="text-xs text-white/90">{destination.country}</p>
+									</div>
+								</div>
+							</button>
+						{/each}
+					</div>
+				</section>
+
+				<!-- Customer Support Center -->
+				<section class="mt-4 bg-white">
+					<button
+						onclick={() => (supportOpen = !supportOpen)}
+						class="flex w-full items-center justify-between p-4">
+						<span class="text-lg font-semibold text-gray-900">고객센터</span>
+						{#if supportOpen}
+							<ChevronUp class="h-5 w-5 text-blue-500" />
+						{:else}
+							<svg
+								class="h-5 w-5 text-blue-500"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								stroke-width="2">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+							</svg>
+						{/if}
 					</button>
-				{/each}
-			</div>
-		</section>
+					{#if supportOpen}
+						<div class="border-t px-4 pb-4">
+							<div class="space-y-3 pt-4">
+								<a href="/contact" class="block text-sm text-gray-600 hover:text-blue-600">
+									문의하기
+								</a>
+								<a href="/terms" class="block text-sm text-gray-600 hover:text-blue-600">
+									이용약관
+								</a>
+								<a href="/terms/privacy" class="block text-sm text-gray-600 hover:text-blue-600">
+									개인정보처리방침
+								</a>
+								<a
+									href="/terms/refund-policy"
+									class="block text-sm text-gray-600 hover:text-blue-600">
+									취소 및 환불 정책
+								</a>
+							</div>
+						</div>
+					{/if}
+				</section>
 
-		<!-- Customer Support Center -->
-		<section class="mt-4 bg-white">
-			<button
-				onclick={() => (supportOpen = !supportOpen)}
-				class="flex w-full items-center justify-between p-4"
-			>
-				<span class="text-lg font-semibold text-gray-900">고객센터</span>
-				{#if supportOpen}
-					<ChevronUp class="h-5 w-5 text-blue-500" />
-				{:else}
-					<svg class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-					</svg>
-				{/if}
-			</button>
-			{#if supportOpen}
-				<div class="border-t px-4 pb-4">
-					<div class="space-y-3 pt-4">
-						<a href="/contact" class="block text-sm text-gray-600 hover:text-blue-600">
-							문의하기
-						</a>
-						<a href="/terms" class="block text-sm text-gray-600 hover:text-blue-600">
-							이용약관
-						</a>
-						<a href="/terms/privacy" class="block text-sm text-gray-600 hover:text-blue-600">
-							개인정보처리방침
-						</a>
-						<a href="/terms/refund-policy" class="block text-sm text-gray-600 hover:text-blue-600">
-							취소 및 환불 정책
-						</a>
-					</div>
-				</div>
-			{/if}
-		</section>
+				<!-- Affiliate Marketing Partnership -->
+				<section class="mt-4 bg-white">
+					<button
+						onclick={() => (partnershipOpen = !partnershipOpen)}
+						class="flex w-full items-center justify-between p-4">
+						<span class="text-lg font-semibold text-gray-900">제휴 문의</span>
+						{#if partnershipOpen}
+							<ChevronUp class="h-5 w-5 text-blue-500" />
+						{:else}
+							<svg
+								class="h-5 w-5 text-blue-500"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								stroke-width="2">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+							</svg>
+						{/if}
+					</button>
+					{#if partnershipOpen}
+						<div class="border-t px-4 pb-4">
+							<div class="space-y-3 pt-4">
+								<p class="text-sm text-gray-600">매치트립과 함께 성장하고 싶으신가요?</p>
+								<a
+									href="/terms/marketing"
+									class="block text-sm font-medium text-blue-600 hover:text-blue-700">
+									제휴 안내 보기
+								</a>
+								<a
+									href="mailto:help@agentt.kr"
+									class="block text-sm font-medium text-blue-600 hover:text-blue-700">
+									이메일로 문의하기
+								</a>
+							</div>
+						</div>
+					{/if}
+				</section>
 
-		<!-- Affiliate Marketing Partnership -->
-		<section class="mt-4 bg-white">
-			<button
-				onclick={() => (partnershipOpen = !partnershipOpen)}
-				class="flex w-full items-center justify-between p-4"
-			>
-				<span class="text-lg font-semibold text-gray-900">제휴 문의</span>
-				{#if partnershipOpen}
-					<ChevronUp class="h-5 w-5 text-blue-500" />
-				{:else}
-					<svg class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-					</svg>
-				{/if}
-			</button>
-			{#if partnershipOpen}
-				<div class="border-t px-4 pb-4">
-					<div class="space-y-3 pt-4">
-						<p class="text-sm text-gray-600">
-							매치트립과 함께 성장하고 싶으신가요?
+				<!-- Footer -->
+				<footer class="mt-8 bg-gray-100 p-4 text-center">
+					<div class="space-y-4">
+						<div class="flex justify-center gap-3 text-xs text-gray-500">
+							<a href="/terms" class="hover:text-gray-700">이용약관</a>
+							<span>|</span>
+							<a href="/terms/privacy" class="hover:text-gray-700">개인정보처리방침</a>
+							<span>|</span>
+							<a href="/terms/refund-policy" class="hover:text-gray-700">취소 및 환불 정책</a>
+							<span>|</span>
+							<a href="/terms/marketing" class="hover:text-gray-700">제휴 안내</a>
+						</div>
+						<p class="text-xs text-gray-400">에이전트티 사업자 정보</p>
+						<p class="text-xs text-gray-400">
+							매치트립은 통신판매중개자이며, 통신판매의 당사자가 아닙니다.<br />
+							상품, 상품정보, 거래에 관한 의무와 책임은 판매자에게 있습니다.
 						</p>
-						<a
-							href="/terms/marketing"
-							class="block text-sm font-medium text-blue-600 hover:text-blue-700"
-						>
-							제휴 안내 보기
-						</a>
-						<a
-							href="mailto:help@agentt.kr"
-							class="block text-sm font-medium text-blue-600 hover:text-blue-700"
-						>
-							이메일로 문의하기
-						</a>
+						<p class="text-xs text-gray-500">© 2025 Matchtrip. All rights reserved.</p>
 					</div>
-				</div>
-			{/if}
-		</section>
-
-		<!-- Footer -->
-		<footer class="mt-8 bg-gray-100 p-4 text-center">
-			<div class="space-y-4">
-				<div class="flex justify-center gap-3 text-xs text-gray-500">
-					<a href="/terms" class="hover:text-gray-700">이용약관</a>
-					<span>|</span>
-					<a href="/terms/privacy" class="hover:text-gray-700">개인정보처리방침</a>
-					<span>|</span>
-					<a href="/terms/refund-policy" class="hover:text-gray-700">취소 및 환불 정책</a>
-					<span>|</span>
-					<a href="/terms/marketing" class="hover:text-gray-700">제휴 안내</a>
-				</div>
-				<p class="text-xs text-gray-400">
-					에이전트티 사업자 정보
-				</p>
-				<p class="text-xs text-gray-400">
-					매치트립은 통신판매중개자이며, 통신판매의 당사자가 아닙니다.<br />
-					상품, 상품정보, 거래에 관한 의무와 책임은 판매자에게 있습니다.
-				</p>
-				<p class="text-xs text-gray-500">
-					© 2025 Matchtrip. All rights reserved.
-				</p>
-			</div>
-		</footer>
-	</main>
+				</footer>
+			</main>
 
 			<!-- Bottom Navigation -->
 			{#if isTraveler}
@@ -406,48 +414,34 @@
 	</div>
 {:else}
 	<!-- Non-logged in user layout -->
-	<div class="relative h-screen w-full max-w-[430px] mx-auto overflow-hidden">
+	<div class="relative mx-auto h-screen w-full max-w-[430px] overflow-hidden">
 		<!-- Background Image -->
-		<div 
+		<div
 			class="absolute inset-0 bg-cover bg-center bg-no-repeat"
-			style="background-image: url({bgImage})"
-		>
+			style="background-image: url({bgImage})">
 			<!-- Dark overlay -->
 			<div class="absolute inset-0 bg-black/30"></div>
 		</div>
 
 		<!-- Content -->
-		<div class="relative z-10 flex flex-col h-full">
-			<!-- Status bar -->
-			<div class="flex justify-between items-center px-4 py-2 text-white text-sm">
-				<span>5:13</span>
-				<div class="flex items-center gap-1">
-					<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-						<path d="M1 9l2-2v8a2 2 0 002 2h14a2 2 0 002-2V7l2 2V9a2 2 0 00-2 2v4a2 2 0 002 2h1v2h-1a4 4 0 01-4-4V7a2 2 0 00-2-2H7a2 2 0 00-2 2v8a4 4 0 01-4 4H0v-2h1a2 2 0 002-2v-4a2 2 0 00-2-2z"/>
-					</svg>
-					<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-						<path d="M17 12a5 5 0 10-10 0 5 5 0 0010 0z"/>
-					</svg>
-					<svg class="w-6 h-4" fill="currentColor" viewBox="0 0 24 24">
-						<rect x="2" y="7" width="19" height="10" rx="1"/>
-						<rect x="22" y="10" width="1" height="4" rx="0.5"/>
-					</svg>
-				</div>
-			</div>
-
+		<div class="relative z-10 flex h-full flex-col">
 			<!-- Main content -->
-			<div class="flex-1 flex flex-col justify-center items-center px-8 text-center text-white">
-				<h1 class="text-4xl font-bold mb-4 text-white" style="font-family: 'Pretendard', sans-serif;">match trip</h1>
-				<p class="text-lg mb-8">Match Your Trip, Make It Yours</p>
+			<div class="flex flex-1 flex-col items-center justify-end px-8 pb-32 text-center text-white">
+				<h1
+					class="mb-4 text-5xl font-bold text-white"
+					style="font-family: 'Pretendard', sans-serif;">
+					Matchtrip
+				</h1>
+				<p class="mb-8 text-lg text-gray-300">Match Your Trip, Make It Yours</p>
 			</div>
 
 			<!-- Bottom section -->
 			<div class="px-6 pb-8">
-				<p class="text-white text-center mb-6">Sign in with Social Networks</p>
-				
+				<p class="mb-6 text-center text-white">Sign in with Social Networks</p>
+
 				<!-- Social login buttons -->
-				<div class="flex justify-center gap-4 mb-8">
-					<button 
+				<div class="mb-8 flex justify-center gap-4">
+					<button
 						onclick={async () => {
 							if (loadingProvider) return;
 							loadingProvider = 'kakao';
@@ -462,20 +456,23 @@
 								loadingProvider = null;
 							}
 						}}
-						class="w-12 h-12 rounded-full bg-yellow-400 flex items-center justify-center hover:bg-yellow-500 transition-colors relative disabled:opacity-50 disabled:cursor-not-allowed"
-						disabled={loadingProvider !== null}
-					>
+						class="relative flex h-12 w-12 items-center justify-center rounded-full bg-yellow-400 transition-colors hover:bg-yellow-500 disabled:cursor-not-allowed disabled:opacity-50"
+						disabled={loadingProvider !== null}>
 						{#if loadingProvider === 'kakao'}
 							<div class="absolute inset-0 flex items-center justify-center">
-								<div class="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+								<div
+									class="h-5 w-5 animate-spin rounded-full border-2 border-black border-t-transparent">
+								</div>
 							</div>
 						{:else}
-							<svg class="w-6 h-6" viewBox="0 0 24 24">
-								<path fill="#000000" d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.557 1.707 4.8 4.27 6.054-.188.702-.682 2.545-.78 2.939-.123.49.18.483.376.351.155-.103 2.466-1.675 3.464-2.353.541.08 1.1.12 1.67.12 4.97 0 9-3.186 9-7.116C21 6.185 16.97 3 12 3z"/>
+							<svg class="h-6 w-6" viewBox="0 0 24 24">
+								<path
+									fill="#000000"
+									d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.557 1.707 4.8 4.27 6.054-.188.702-.682 2.545-.78 2.939-.123.49.18.483.376.351.155-.103 2.466-1.675 3.464-2.353.541.08 1.1.12 1.67.12 4.97 0 9-3.186 9-7.116C21 6.185 16.97 3 12 3z" />
 							</svg>
 						{/if}
 					</button>
-					<button 
+					<button
 						onclick={async () => {
 							if (loadingProvider) return;
 							loadingProvider = 'google';
@@ -490,38 +487,44 @@
 								loadingProvider = null;
 							}
 						}}
-						class="w-12 h-12 rounded-full bg-white flex items-center justify-center hover:bg-gray-100 transition-colors relative disabled:opacity-50 disabled:cursor-not-allowed"
-						disabled={loadingProvider !== null}
-					>
+						class="relative flex h-12 w-12 items-center justify-center rounded-full bg-white transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+						disabled={loadingProvider !== null}>
 						{#if loadingProvider === 'google'}
 							<div class="absolute inset-0 flex items-center justify-center">
-								<div class="w-5 h-5 border-2 border-gray-600 border-t-transparent rounded-full animate-spin"></div>
+								<div
+									class="h-5 w-5 animate-spin rounded-full border-2 border-gray-600 border-t-transparent">
+								</div>
 							</div>
 						{:else}
-							<svg class="w-6 h-6" viewBox="0 0 24 24">
-								<path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-								<path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-								<path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-								<path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+							<svg class="h-6 w-6" viewBox="0 0 24 24">
+								<path
+									fill="#4285F4"
+									d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+								<path
+									fill="#34A853"
+									d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+								<path
+									fill="#FBBC05"
+									d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+								<path
+									fill="#EA4335"
+									d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
 							</svg>
 						{/if}
 					</button>
 				</div>
 
 				<!-- Bottom text -->
-				<p class="text-white/80 text-center text-sm">@Matchtrip.co.kr</p>
+				<p class="text-center text-sm text-white/80">@Matchtrip.co.kr</p>
 			</div>
 
 			<!-- Bottom bar indicator -->
 			<div class="flex justify-center pb-2">
-				<div class="w-32 h-1 bg-white rounded-full"></div>
+				<div class="h-1 w-32 rounded-full bg-white"></div>
 			</div>
 		</div>
 	</div>
 {/if}
 
 <!-- Agreement Modal -->
-<AgreementModal 
-	isOpen={showAgreementModal} 
-	{user}
-/>
+<AgreementModal isOpen={showAgreementModal} {user} />

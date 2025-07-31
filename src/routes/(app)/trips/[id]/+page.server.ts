@@ -8,7 +8,7 @@ export const load = (async ({ params, locals }) => {
 	const session = locals.session;
 
 	if (!session || !session.user) {
-		throw redirect(303, '/signin');
+		throw redirect(303, '/');
 	}
 
 	// Check if user is a guide using locals

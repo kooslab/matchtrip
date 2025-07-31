@@ -19,7 +19,7 @@ export const load = async ({ request, locals }) => {
 	// Redirect if not logged in
 	if (!session?.user) {
 		console.log('Order history page - No session, redirecting to signin');
-		throw redirect(302, '/signin');
+		throw redirect(302, '/');
 	}
 
 	// First, let's check if there are any payments for this user

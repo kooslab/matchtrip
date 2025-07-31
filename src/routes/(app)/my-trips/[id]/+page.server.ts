@@ -28,7 +28,7 @@ export const load = async ({ params, request, locals }) => {
 	// Redirect if not logged in
 	if (!session?.user) {
 		console.log('Trip details page - No session, redirecting to signin');
-		throw redirect(302, '/signin');
+		throw redirect(302, '/');
 	}
 
 	const tripId = params.id;

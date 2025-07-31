@@ -148,17 +148,7 @@ const authHandler = (async ({ event, resolve }) => {
 	}
 
 	// Handle redirects BEFORE calling svelteKitHandler to ensure we have fresh user data
-	// Handle signin route - redirect authenticated users to appropriate pages
-	if (routeId === '/signin' && session && event.locals.user) {
-		// Always redirect to home page - the modal will handle agreements there
-		redirect(302, '/');
-	}
-
-	// Handle auth route redirects - redirect to home page
-	if (routeId?.startsWith('/(auth)') && session && event.locals.user) {
-		// Always redirect to home page - the modal will handle agreements there
-		redirect(302, '/');
-	}
+	// No specific redirects needed here since we removed /signin route
 
 	// Handle first-time users landing on home page - redirect to onboarding
 	if (routeId === '/' && session && event.locals.user) {
@@ -234,7 +224,7 @@ const authHandler = (async ({ event, resolve }) => {
 	// Handle protected app routes that require authentication
 	const isAppRoute = routeId?.startsWith('/(app)');
 	if (isAppRoute && !session?.user) {
-		redirect(302, '/signin');
+		redirect(302, '/');
 	}
 
 	// Handle protected routes that require specific roles (guide-only routes)

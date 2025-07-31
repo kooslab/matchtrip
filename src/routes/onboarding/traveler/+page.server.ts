@@ -3,7 +3,7 @@ import { redirect } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.session?.user) {
-		redirect(302, '/signin');
+		redirect(302, '/');
 	}
 
 	// Only travelers can access this page

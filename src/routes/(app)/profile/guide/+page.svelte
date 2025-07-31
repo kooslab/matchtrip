@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { ChevronRight } from 'lucide-svelte';
 	import BottomNav from '$lib/components/BottomNav.svelte';
 	import GuideBottomNav from '$lib/components/GuideBottomNav.svelte';
+	import { authClient } from '$lib/authClient';
 
 	const { data } = $props();
 
@@ -19,17 +20,14 @@
 	// Logout handler
 	async function handleLogout() {
 		try {
-			const response = await fetch('/api/auth/sign-out', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' }
+			await authClient.signOut({
+				fetchOptions: {
+					method: 'POST'
+				}
 			});
-
-			if (response.ok) {
-				// Redirect to home page after logout
-				await goto('/');
-			} else {
-				console.error('Logout failed:', response.status);
-			}
+			// Invalidate all data and navigate to home
+			await invalidateAll();
+			await goto('/', { invalidateAll: true });
 		} catch (error) {
 			console.error('Logout error:', error);
 		}

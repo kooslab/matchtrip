@@ -7,11 +7,21 @@ import type { RequestHandler } from './$types';
 export const GET: RequestHandler = async ({ url, setHeaders }) => {
 	const q = url.searchParams.get('q')?.trim();
 
-	// Set cache headers for better performance
-	setHeaders({
-		'cache-control': 'public, max-age=300, s-maxage=300', // Cache for 5 minutes
-		'cdn-cache-control': 'max-age=300'
-	});
+	// Set cache headers based on query type
+	if (q) {
+		// Don't cache search results heavily
+		setHeaders({
+			'cache-control': 'private, max-age=60, s-maxage=60', // Cache for 1 minute
+			'vary': 'Accept-Encoding'
+		});
+	} else {
+		// Cache general destinations list for longer
+		setHeaders({
+			'cache-control': 'public, max-age=300, s-maxage=300, stale-while-revalidate=60', // Cache for 5 minutes
+			'cdn-cache-control': 'max-age=300',
+			'vary': 'Accept-Encoding'
+		});
+	}
 
 	// If no query, return all destinations
 	if (!q || q.length === 0) {

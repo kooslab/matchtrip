@@ -8,7 +8,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	// You must have user info in locals (e.g., from your auth system)
 	const userId = locals.user?.id;
 	if (!userId) {
-		throw redirect(302, '/signin');
+		throw redirect(302, '/');
 	}
 
 	// Fetch user info

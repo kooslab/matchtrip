@@ -55,7 +55,7 @@
 		e.preventDefault();
 
 		if (!$session.data) {
-			goto(`/signin?redirect=/review?token=${token}`);
+			goto(`/?redirect=/review?token=${token}`);
 			return;
 		}
 
@@ -173,7 +173,7 @@
 								리뷰를 작성하려면 로그인이 필요합니다.
 								<button
 									type="button"
-									onclick={() => goto(`/signin?redirect=/review?token=${token}`)}
+									onclick={() => goto(`/?redirect=/review?token=${token}`)}
 									class="ml-1 font-medium text-yellow-900 underline"
 								>
 									로그인하기

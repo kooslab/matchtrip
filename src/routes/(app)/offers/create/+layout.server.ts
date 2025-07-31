@@ -6,7 +6,7 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 	const user = locals.user;
 
 	if (!session?.user || !user) {
-		redirect(303, '/signin');
+		redirect(303, '/');
 	}
 
 	// Check if user is a guide

@@ -9,7 +9,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const user = locals.user;
 
 	if (!session?.user || !user) {
-		redirect(302, '/signin');
+		redirect(302, '/');
 	}
 
 	// Check if user is a guide

@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { authClient } from '$lib/auth-client';
+	import { goto, invalidateAll } from '$app/navigation';
+	import BottomNav from '$lib/components/BottomNav.svelte';
+	import { authClient } from '$lib/authClient';
 	import { Bell } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 
@@ -13,7 +14,9 @@
 					method: 'POST'
 				}
 			});
-			goto('/');
+			// Invalidate all data and navigate to home
+			await invalidateAll();
+			await goto('/', { invalidateAll: true });
 		} catch (error) {
 			console.error('로그아웃 실패:', error);
 		}
