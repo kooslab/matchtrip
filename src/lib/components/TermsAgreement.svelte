@@ -105,7 +105,7 @@
 		<label for="check-terms" class="ml-2 text-gray-700">
 			이용약관 동의 <span class="text-red-500">(필수)</span>
 		</label>
-		<a href="/terms" target="_blank" class="ml-auto text-sm text-blue-500 hover:underline"
+		<a href="/terms/service" target="_blank" class="ml-auto text-sm text-blue-500 hover:underline"
 			>내용보기</a
 		>
 	</div>

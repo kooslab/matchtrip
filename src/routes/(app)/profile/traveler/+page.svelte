@@ -230,7 +230,7 @@
 						</svg>
 					</a>
 					<a
-						href="/settings/terms"
+						href="/terms/service"
 						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50">
 						<span class="text-gray-800">이용약관</span>
 						<svg

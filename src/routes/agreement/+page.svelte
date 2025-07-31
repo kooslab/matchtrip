@@ -111,7 +111,7 @@
 							<span class="text-xs font-medium text-red-500">(필수)</span>
 						</div>
 						<a
-							href="/terms"
+							href="/terms/service"
 							target="_blank"
 							class="mt-1 inline-block text-xs text-blue-600 hover:underline"
 						>
