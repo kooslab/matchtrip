@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import IconSend from '$lib/icons/IconSend.svelte';
+	import IconSend from '$lib/icons/icon-arrow-right-small-mono.svg?raw';
 	import IconAi from '$lib/icons/IconAi.svelte';
 
 	interface Message {
@@ -186,7 +186,7 @@
 					text-white transition-colors
 					hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-300"
 			>
-				<IconSend class="h-5 w-5" />
+				{@html IconSend}
 			</button>
 		</div>
 	</div>

@@ -2,10 +2,6 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-	apiKey: process.env.LLM_API_KEY_OPENAI
-});
-
 const SYSTEM_PROMPT = `데이투어 기준으로 일정표를 만들려고해.
 
 새로운 입력문구와 더불어
@@ -21,6 +17,10 @@ const SYSTEM_PROMPT = `데이투어 기준으로 일정표를 만들려고해.
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
+		const openai = new OpenAI({
+			apiKey: process.env.OPENAI_API_KEY
+		});
+
 		const { message, conversationHistory = [] } = await request.json();
 
 		if (!message) {

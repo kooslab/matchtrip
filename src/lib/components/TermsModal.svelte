@@ -88,7 +88,7 @@
 							src="/terms/privacy"
 							class="h-[60vh] w-full border-0"
 							title="개인정보처리방침"
-						/>
+						></iframe>
 					{:else if type === 'marketing'}
 						<div class="space-y-4 text-sm text-gray-700">
 							<h3 class="font-bold">마케팅 정보 수신 동의</h3>
