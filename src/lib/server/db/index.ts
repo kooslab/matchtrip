@@ -19,7 +19,20 @@ if (!databaseUrl) {
 	throw new Error('DATABASE_URL is not set');
 }
 
+// Parse and display database URL without password
+const parseDatabaseUrl = (url: string) => {
+	try {
+		const urlObj = new URL(url);
+		const { protocol, hostname, port, pathname, username } = urlObj;
+		const portStr = port ? `:${port}` : '';
+		return `${protocol}//${username}:****@${hostname}${portStr}${pathname}`;
+	} catch {
+		return 'Invalid database URL format';
+	}
+};
+
 console.log('[DB] Connecting to database...');
+console.log('[DB] Database URL:', parseDatabaseUrl(databaseUrl));
 
 // Configure postgres client with connection pooling for better performance
 const client = postgres(databaseUrl, {
