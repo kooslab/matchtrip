@@ -60,75 +60,7 @@
 	let partnershipOpen = $state(false);
 	let businessInfoOpen = $state(false);
 
-	// Search functionality
-	let searchQuery = $state(data.searchQuery || '');
-	let showDropdown = $state(false);
-	let searchInput: HTMLInputElement;
-	let debounceTimer: ReturnType<typeof setTimeout>;
-	let isSearching = $state(false);
-
-	// Use server-side filtered destinations
-	const filteredDestinations = $derived(
-		searchQuery.trim() && data.destinations ? data.destinations : []
-	);
-
-	// Debounced search handler - now makes server request
-	async function handleSearch(e: Event) {
-		const target = e.target as HTMLInputElement;
-		const query = target.value;
-		searchQuery = query;
-
-		clearTimeout(debounceTimer);
-
-		if (!query.trim()) {
-			showDropdown = false;
-			// Clear search results
-			await goto('/');
-			return;
-		}
-
-		isSearching = true;
-		debounceTimer = setTimeout(async () => {
-			// Make server request with search query
-			await goto(`/?q=${encodeURIComponent(query)}`, {
-				replaceState: true,
-				keepFocus: true,
-				noScroll: true
-			});
-			showDropdown = true;
-			isSearching = false;
-		}, 300);
-	}
-
-	// Select destination
-	function selectDestination(destination: (typeof data.destinations)[0]) {
-		// Fill the search input with the selected city
-		searchQuery = destination.city;
-		showDropdown = false;
-
-		// Navigate based on user role - now using destination ID
-		if (!user) {
-			goto('/');
-		} else if (isGuide) {
-			// Guide users go to trips page with destination ID filter
-			goto(`/trips?destinations=${destination.id}`, { invalidateAll: true });
-		} else if (isTraveler) {
-			// Traveler users go to create trip with selected destination
-			goto(
-				`/my-trips/create/destination?id=${destination.id}&city=${encodeURIComponent(destination.city)}`
-			);
-		}
-	}
-
-	// Close dropdown when clicking outside
-	function handleClickOutside(e: MouseEvent) {
-		if (searchInput && !searchInput.contains(e.target as Node)) {
-			showDropdown = false;
-		}
-	}
 </script>
-
-<svelte:window onclick={handleClickOutside} />
 
 {#if user}
 	<!-- Logged in user layout -->
@@ -181,10 +113,12 @@
 							<input
 								type="text"
 								placeholder="지금 가이드 활동을 시작해 보세요!"
-								class="w-full rounded-full bg-gray-50 py-3.5 pr-14 pl-5 text-base text-gray-700 placeholder-gray-400"
+								class="w-full rounded-full bg-gray-50 py-3.5 pr-14 pl-5 text-base text-gray-700 placeholder-gray-400 cursor-pointer"
 								readonly
+								onclick={() => goto('/trips')}
 							/>
 							<button
+								onclick={() => goto('/trips')}
 								class="absolute top-1/2 right-1.5 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-blue-500 shadow-sm transition-colors hover:bg-blue-600"
 							>
 								<svg
@@ -252,6 +186,35 @@
 							<h2 class="mt-2 text-lg font-medium text-gray-900">
 								{randomMessage} <span class="text-blue-600">{randomDestination.city}</span> 어때요?
 							</h2>
+
+							<!-- Search Bar -->
+							<div class="relative mt-5">
+								<input
+									type="text"
+									placeholder="어디로 가고 싶으신가요?"
+									class="w-full rounded-full bg-gray-50 py-3.5 pr-14 pl-5 text-base text-gray-700 placeholder-gray-400 cursor-pointer"
+									readonly
+									onclick={() => goto('/my-trips/create/destination')}
+								/>
+								<button
+									onclick={() => goto('/my-trips/create/destination')}
+									class="absolute top-1/2 right-1.5 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-blue-500 shadow-sm transition-colors hover:bg-blue-600"
+								>
+									<svg
+										class="h-5 w-5 text-white"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+										stroke-width="2.5"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+										/>
+									</svg>
+								</button>
+							</div>
 						</section>
 					{/if}
 				{/if}
