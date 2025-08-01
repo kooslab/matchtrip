@@ -71,7 +71,7 @@
 			<button
 				onclick={sendTestSMS}
 				disabled={loading || !phoneNumber}
-				class="bg-color-primary w-full rounded-md px-4 py-2 text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-400"
+				class="bg-primary w-full rounded-md px-4 py-2 text-white transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-gray-400"
 			>
 				{loading ? 'Sending...' : 'Send Test SMS'}
 			</button>

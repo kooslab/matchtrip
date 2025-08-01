@@ -1,21 +1,41 @@
 import { json } from '@sveltejs/kit';
 import { kakaoAlimTalk } from '$lib/server/kakao/kakaoAlimTalk';
 import type { RequestHandler } from './$types';
+import { env } from '$env/dynamic/private';
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
-		const { to, sender, templateCode, text, templateData } = await request.json();
+		const requestBody = await request.json();
+		const { to, templateCode, text, templateData } = requestBody;
 
-		if (!to || !sender || !templateCode || !text) {
+		console.log('=== Test Kakao API Endpoint ===');
+		console.log('Received request body:', JSON.stringify(requestBody, null, 2));
+		console.log('===============================');
+
+		if (!to || !templateCode || !text) {
 			return json(
-				{ error: 'Missing required fields: to, sender, templateCode, text' },
+				{ error: 'Missing required fields: to, templateCode, text' },
 				{ status: 400 }
 			);
 		}
 
+		if (!env.KAKAO_CHANNEL_PROFILE_KEY) {
+			console.error('KAKAO_CHANNEL_PROFILE_KEY is not set in environment variables');
+			return json(
+				{ error: 'KAKAO_CHANNEL_PROFILE_KEY is not configured in environment variables' },
+				{ status: 500 }
+			);
+		}
+
+		console.log('Calling kakaoAlimTalk.sendAlimTalk with:', {
+			to,
+			templateCode,
+			text,
+			templateData
+		});
+
 		const result = await kakaoAlimTalk.sendAlimTalk({
 			to,
-			sender,
 			templateCode,
 			text,
 			templateData

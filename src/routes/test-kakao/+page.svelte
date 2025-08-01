@@ -1,6 +1,5 @@
 <script lang="ts">
 	let phoneNumber = '';
-	let sender = '';
 	let templateCode = '1';
 	let text =
 		'[#{SHOPNAME}], 안녕하세요. #{NAME}님! #{SHOPNAME}에 회원가입 해주셔서 진심으로 감사드립니다!';
@@ -8,6 +7,13 @@
 	let loading = false;
 	let result: any = null;
 	let error: string | null = null;
+	let requestBody: any = null;
+	let logs: any = null;
+	let loadingLogs = false;
+	let logsError: string | null = null;
+	let reports: any = null;
+	let loadingReports = false;
+	let reportsError: string | null = null;
 
 	async function sendTestKakao() {
 		loading = true;
@@ -24,18 +30,40 @@
 				return;
 			}
 
+			// Show what we send to our API
+			const apiRequestBody = {
+				to: phoneNumber,
+				templateCode: templateCode,
+				text: text,
+				templateData: parsedTemplateData
+			};
+
+			// Show what actually gets sent to Infobip
+			requestBody = {
+				messages: [
+					{
+						sender: 'KAKAO_CHANNEL_PROFILE_KEY (from env)',
+						destinations: [
+							{
+								to: phoneNumber
+							}
+						],
+						content: {
+							templateCode: templateCode,
+							text: text,
+							type: 'TEMPLATE',
+							...(parsedTemplateData ? { templateData: parsedTemplateData } : {})
+						}
+					}
+				]
+			};
+
 			const response = await fetch('/api/test-kakao', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({
-					to: phoneNumber,
-					sender: sender,
-					templateCode: templateCode,
-					text: text,
-					templateData: parsedTemplateData
-				})
+				body: JSON.stringify(apiRequestBody)
 			});
 
 			const data = await response.json();
@@ -49,6 +77,85 @@
 			error = err instanceof Error ? err.message : 'Network error';
 		} finally {
 			loading = false;
+		}
+	}
+
+	async function fetchLogs() {
+		loadingLogs = true;
+		logsError = null;
+		logs = null;
+
+		try {
+			// Get the message ID from the result if available
+			const messageId = result?.result?.messages?.[0]?.to;
+			const bulkId = result?.result?.bulkId;
+
+			// Calculate time range (last 5 minutes to now + 1 minute)
+			const now = new Date();
+			const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+			const oneMinuteLater = new Date(now.getTime() + 60 * 1000);
+
+			const response = await fetch('/api/test-kakao-logs', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					messageId,
+					bulkId,
+					sentSince: fiveMinutesAgo.toISOString(),
+					sentUntil: oneMinuteLater.toISOString(),
+					limit: 10
+				})
+			});
+
+			const data = await response.json();
+
+			if (response.ok) {
+				logs = data.result;
+			} else {
+				logsError = data.error || 'Failed to fetch logs';
+			}
+		} catch (err) {
+			logsError = err instanceof Error ? err.message : 'Network error';
+		} finally {
+			loadingLogs = false;
+		}
+	}
+
+	async function fetchDeliveryReports() {
+		loadingReports = true;
+		reportsError = null;
+		reports = null;
+
+		try {
+			// Get the message ID and bulk ID from the result if available
+			const messageId = result?.result?.messages?.[0]?.messageId;
+			const bulkId = result?.result?.bulkId;
+
+			const response = await fetch('/api/test-kakao-reports', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					messageId,
+					bulkId,
+					limit: 10
+				})
+			});
+
+			const data = await response.json();
+
+			if (response.ok) {
+				reports = data.result;
+			} else {
+				reportsError = data.error || 'Failed to fetch delivery reports';
+			}
+		} catch (err) {
+			reportsError = err instanceof Error ? err.message : 'Network error';
+		} finally {
+			loadingReports = false;
 		}
 	}
 </script>
@@ -75,19 +182,6 @@
 				</p>
 			</div>
 
-			<div>
-				<label for="sender" class="mb-1 block text-sm font-medium text-gray-700">
-					Sender (KakaoTalk Official Account ID)
-				</label>
-				<input
-					id="sender"
-					type="text"
-					bind:value={sender}
-					placeholder="OFFICIAL-ACCOUNT-ID-123"
-					class="focus:ring-color-primary w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:outline-none"
-				/>
-				<p class="mt-1 text-xs text-gray-500">Your registered KakaoTalk official account ID</p>
-			</div>
 
 			<div>
 				<label for="templateCode" class="mb-1 block text-sm font-medium text-gray-700">
@@ -131,12 +225,20 @@
 
 			<button
 				onclick={sendTestKakao}
-				disabled={loading || !phoneNumber || !sender || !templateCode || !text}
-				class="bg-color-primary w-full rounded-md px-4 py-2 text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-400"
+				disabled={loading || !phoneNumber || !templateCode || !text}
+				class="bg-primary w-full rounded-md px-4 py-2 text-white transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-gray-400"
 			>
 				{loading ? 'Sending...' : 'Send Test AlimTalk'}
 			</button>
 		</div>
+
+		{#if requestBody}
+			<div class="mt-4 rounded-md border border-gray-200 bg-gray-50 p-4">
+				<p class="mb-2 text-sm font-medium text-gray-700">Actual Infobip API Request Body:</p>
+				<pre class="overflow-x-auto rounded bg-gray-100 p-2 text-xs">{JSON.stringify(requestBody, null, 2)}</pre>
+				<p class="mt-2 text-xs text-gray-600">Note: The sender field will be replaced with the actual KAKAO_CHANNEL_PROFILE_KEY value from environment variables on the server.</p>
+			</div>
+		{/if}
 
 		{#if error}
 			<div class="mt-4 rounded-md border border-red-200 bg-red-50 p-4">
@@ -164,6 +266,110 @@
 					</div>
 				{/if}
 			</div>
+			
+			<div class="mt-3 flex gap-2">
+				<button
+					onclick={fetchLogs}
+					disabled={loadingLogs}
+					class="flex-1 rounded-md bg-gray-600 px-4 py-2 text-white transition-colors hover:bg-gray-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+				>
+					{loadingLogs ? 'Fetching...' : 'Fetch Logs'}
+				</button>
+				<button
+					onclick={fetchDeliveryReports}
+					disabled={loadingReports}
+					class="flex-1 rounded-md bg-indigo-600 px-4 py-2 text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+				>
+					{loadingReports ? 'Fetching...' : 'Fetch Reports'}
+				</button>
+			</div>
+		{/if}
+
+		{#if logsError}
+			<div class="mt-4 rounded-md border border-orange-200 bg-orange-50 p-4">
+				<p class="text-sm text-orange-700">Logs Error: {logsError}</p>
+			</div>
+		{/if}
+
+		{#if logs}
+			<div class="mt-4 rounded-md border border-blue-200 bg-blue-50 p-4">
+				<p class="mb-2 text-sm font-medium text-blue-700">Message Logs:</p>
+				<pre class="overflow-x-auto rounded bg-blue-100 p-2 text-xs">{JSON.stringify(logs, null, 2)}</pre>
+				
+				{#if logs.results && logs.results.length > 0}
+					<div class="mt-3 space-y-2">
+						<p class="text-xs font-medium text-blue-700">Log Details:</p>
+						{#each logs.results as log}
+							<div class="rounded border border-blue-300 bg-white p-3 text-xs">
+								<p><strong>Message ID:</strong> {log.messageId}</p>
+								<p><strong>To:</strong> {log.to}</p>
+								<p><strong>Status:</strong> {log.status?.name || 'Unknown'}</p>
+								{#if log.status?.description}
+									<p><strong>Description:</strong> {log.status.description}</p>
+								{/if}
+								<p><strong>Sent At:</strong> {log.sentAt ? new Date(log.sentAt).toLocaleString() : 'N/A'}</p>
+								{#if log.doneAt}
+									<p><strong>Done At:</strong> {new Date(log.doneAt).toLocaleString()}</p>
+								{/if}
+								{#if log.price}
+									<p><strong>Price:</strong> {log.price.pricePerMessage} {log.price.currency}</p>
+								{/if}
+							</div>
+						{/each}
+					</div>
+				{:else}
+					<p class="mt-2 text-xs text-blue-600">No logs found for the specified time range.</p>
+				{/if}
+			</div>
+		{/if}
+
+		{#if reportsError}
+			<div class="mt-4 rounded-md border border-purple-200 bg-purple-50 p-4">
+				<p class="text-sm text-purple-700">Reports Error: {reportsError}</p>
+			</div>
+		{/if}
+
+		{#if reports}
+			<div class="mt-4 rounded-md border border-indigo-200 bg-indigo-50 p-4">
+				<p class="mb-2 text-sm font-medium text-indigo-700">Delivery Reports:</p>
+				<pre class="overflow-x-auto rounded bg-indigo-100 p-2 text-xs">{JSON.stringify(reports, null, 2)}</pre>
+				
+				{#if reports.results && reports.results.length > 0}
+					<div class="mt-3 space-y-2">
+						<p class="text-xs font-medium text-indigo-700">Report Details:</p>
+						{#each reports.results as report}
+							<div class="rounded border border-indigo-300 bg-white p-3 text-xs">
+								<p><strong>Bulk ID:</strong> {report.bulkId || 'N/A'}</p>
+								<p><strong>Message ID:</strong> {report.messageId}</p>
+								<p><strong>To:</strong> {report.to}</p>
+								<p><strong>Status:</strong> 
+									<span class="{report.status?.name === 'DELIVERED' ? 'text-green-600' : report.status?.name === 'PENDING' ? 'text-yellow-600' : 'text-red-600'}">
+										{report.status?.name || 'Unknown'}
+									</span>
+								</p>
+								{#if report.status?.description}
+									<p><strong>Description:</strong> {report.status.description}</p>
+								{/if}
+								{#if report.status?.groupName}
+									<p><strong>Group:</strong> {report.status.groupName}</p>
+								{/if}
+								<p><strong>Sent At:</strong> {report.sentAt ? new Date(report.sentAt).toLocaleString() : 'N/A'}</p>
+								{#if report.doneAt}
+									<p><strong>Done At:</strong> {new Date(report.doneAt).toLocaleString()}</p>
+								{/if}
+								{#if report.error}
+									<p class="text-red-600"><strong>Error:</strong> {JSON.stringify(report.error)}</p>
+								{/if}
+								{#if report.price}
+									<p><strong>Price:</strong> {report.price.pricePerMessage} {report.price.currency}</p>
+								{/if}
+							</div>
+						{/each}
+					</div>
+				{:else}
+					<p class="mt-2 text-xs text-indigo-600">No delivery reports found.</p>
+				{/if}
+			</div>
 		{/if}
 	</div>
 
@@ -172,11 +378,12 @@
 		<ul class="space-y-1 text-sm text-blue-800">
 			<li>• INFOBIP_API_KEY (required)</li>
 			<li>• INFOBIP_BASE_URL (required)</li>
+			<li>• KAKAO_CHANNEL_PROFILE_KEY (required)</li>
 		</ul>
 		<p class="mt-3 text-xs text-blue-700">
 			Note: You need to register your KakaoTalk official account with Infobip and get templates
-			approved before sending AlimTalk messages. The sender field should be your KakaoTalk official
-			account ID.
+			approved before sending AlimTalk messages. The KAKAO_CHANNEL_PROFILE_KEY should be set in
+			your environment variables.
 		</p>
 	</div>
 
