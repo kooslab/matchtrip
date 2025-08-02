@@ -543,29 +543,6 @@
 						</div>
 					</div>
 				{/if}
-
-				{#if isVerificationSent && showVerificationStep}
-					<div class="rounded-lg bg-white p-6 opacity-75 shadow-sm">
-						<div>
-							<label class="mb-2 block text-sm font-medium text-gray-700"> 휴대폰 번호 </label>
-							<div class="flex gap-2">
-								<input
-									type="tel"
-									value={formData.phone}
-									disabled
-									class="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-base"
-								/>
-								<button
-									onclick={editPhone}
-									class="rounded-lg px-4 py-3 text-sm font-medium transition-colors"
-									style="background-color: #f3f4f6; color: #6b7280;"
-								>
-									재전송
-								</button>
-							</div>
-						</div>
-					</div>
-				{/if}
 			</div>
 
 			<!-- Action Button -->
