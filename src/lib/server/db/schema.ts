@@ -575,6 +575,8 @@ export const products = pgTable(
 		price: integer('price').notNull(), // Price in cents
 		currency: varchar('currency', { length: 3 }).notNull().default('KRW'),
 		status: productStatusEnum('status').notNull().default('draft'),
+		duration: integer('duration'), // Duration in hours
+		languages: jsonb('languages').$type<string[]>(), // Languages the guide can speak
 		fileIds: uuid('file_ids').array(), // Array of file upload IDs
 		imageUrl: text('image_url'), // Main product image
 		rating: integer('rating'), // Average rating (1-5)

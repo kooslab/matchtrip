@@ -241,7 +241,7 @@
 						<h3 class="mb-3 text-sm text-gray-500">나에게 맞는 가이드를 찾고 계신가요?</h3>
 						<h2 class="mb-4 flex items-center justify-between text-lg font-bold text-gray-900">
 							매치트립 나라별 가이드
-							<button onclick={() => goto('/trips')} class="text-blue-500">
+							<button onclick={() => goto('/products')} class="text-blue-500">
 								<ChevronDown class="h-5 w-5" />
 							</button>
 						</h2>

@@ -34,23 +34,23 @@
 		</header>
 
 		<!-- Filters -->
-		<div class="flex justify-between px-4 py-3 border-b">
+		<div class="flex items-center gap-3 px-4 py-3">
 			<button
 				onclick={() => filterBy = 'all'}
-				class="px-3 py-1.5 text-sm rounded-full transition-colors {filterBy === 'all' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700'}"
+				class="px-3 py-1.5 text-sm rounded-full transition-colors {filterBy === 'all' ? 'bg-gray-900 text-white' : 'text-gray-600'}"
 			>
 				전체 {products.length}
 			</button>
 			<button
 				onclick={() => filterBy = 'latest'}
-				class="px-3 py-1.5 text-sm rounded-full transition-colors {filterBy === 'latest' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700'}"
+				class="px-3 py-1.5 text-sm transition-colors {filterBy === 'latest' ? 'text-gray-900 font-medium' : 'text-gray-600'}"
 			>
-				최신순
+				최신순 ↓
 			</button>
 		</div>
 
 		<!-- Main Content -->
-		<main class="px-4 py-4">
+		<main class="pb-4">
 			{#if products.length === 0}
 				<div class="flex flex-col items-center justify-center py-16 text-center">
 					<div class="mb-4 text-gray-400">
@@ -71,10 +71,27 @@
 					</p>
 				</div>
 			{:else}
-				<div class="grid grid-cols-2 gap-4">
-					{#each products as product}
-						<ProductCard {product} />
-					{/each}
+				<div class="px-4">
+					<div class="grid grid-cols-3 gap-3">
+						{#each products.slice(0, 6) as product, index}
+							<ProductCard {product} />
+						{/each}
+					</div>
+					
+					{#if products.length > 6}
+						<!-- Promotional Banner -->
+						<div class="my-6 rounded-lg bg-blue-50 p-4">
+							<p class="text-xs text-gray-600 mb-1">What is Lorem Ipsum</p>
+							<h3 class="text-sm font-bold text-gray-900">What is Lorem Ipsum</h3>
+						</div>
+						
+						<!-- Rest of products -->
+						<div class="grid grid-cols-3 gap-3">
+							{#each products.slice(6) as product}
+								<ProductCard {product} />
+							{/each}
+						</div>
+					{/if}
 				</div>
 			{/if}
 		</main>

@@ -101,7 +101,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 🌐 **[Arctic](https://github.com/pilcrowOnPaper/arctic)** - OAuth 2.0 library
 - 📧 **[Resend](https://resend.com/)** - Email API
 - 💾 **[AWS S3](https://aws.amazon.com/s3/)** - File storage with R2 compatible API
-- 🎬 **[TinyMCE](https://www.tiny.cloud/)** - Rich text editor
 - 💳 **[Toss Payments](https://www.tosspayments.com/)** - Payment processing
 
 ## Project Structure
@@ -163,7 +162,6 @@ Required environment variables (see `.env.example`):
 - `PUBLIC_BETTER_AUTH_URL` - Public URL for auth redirects
 - `GOOGLE_CLIENT_ID/SECRET` - Google OAuth credentials
 - `R2_*` - R2/S3 storage configuration
-- `VITE_TINYMCE_API_KEY` - TinyMCE editor key
 
 ## SvelteKit Navigation Rules
 
@@ -191,6 +189,28 @@ Required environment variables (see `.env.example`):
 - Only use lucide-svelte icons if the required icon is not found in custom icons
 - Additional icon libraries available: phosphor-svelte (use only as last resort)
 - When an icon is needed, ask the user if they want to use an alternative if not found in custom icons
+
+## Rich Text Editor Component
+
+- **IMPORTANT**: We have a reusable `RichTextEditor` component at `src/lib/components/RichTextEditor.svelte`
+- **Always use this component** instead of TinyMCE or creating custom contenteditable implementations
+- Features:
+  - Contenteditable div with rich text editing
+  - Built-in image upload with drag & drop
+  - Customizable placeholder, height, and helper text
+  - Auto-saves with 300ms debounce
+  - Responsive image handling
+- Usage example:
+  ```svelte
+  <RichTextEditor
+    value={content}
+    onchange={(newContent) => content = newContent}
+    placeholder="Enter content..."
+    minHeight="300px"
+    showImageButton={true}
+    showHelperText={true}
+  />
+  ```
 
 ## Common Development Tasks
 

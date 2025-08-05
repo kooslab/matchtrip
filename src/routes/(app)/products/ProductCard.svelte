@@ -46,17 +46,35 @@
 		div.innerHTML = html;
 		return div.textContent || div.innerText || '';
 	};
+	
+	// Extract first image from description HTML
+	const getFirstImageFromDescription = (html: string): string | null => {
+		if (!html) return null;
+		
+		// Create a temporary div to parse HTML
+		const div = document.createElement('div');
+		div.innerHTML = html;
+		
+		// Find the first img tag
+		const firstImg = div.querySelector('img');
+		return firstImg ? firstImg.src : null;
+	};
+	
+	// Get thumbnail image - either from imageUrl or first image in description
+	const thumbnailImage = $derived(
+		product.imageUrl || getFirstImageFromDescription(product.description)
+	);
 </script>
 
 <button
 	onclick={() => goto(`/products/${product.id}`)}
-	class="block w-full overflow-hidden rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow text-left"
+	class="block w-full text-left"
 >
 	<!-- Image -->
-	<div class="relative aspect-[4/3] overflow-hidden bg-gray-100">
-		{#if product.imageUrl}
+	<div class="relative aspect-square overflow-hidden rounded-2xl bg-gray-100">
+		{#if thumbnailImage}
 			<img
-				src={product.imageUrl}
+				src={thumbnailImage}
 				alt={product.title}
 				class="h-full w-full object-cover"
 			/>
@@ -68,27 +86,29 @@
 				</svg>
 			</div>
 		{/if}
+		
+		<!-- Badge (if needed) -->
+		{#if product.isNew}
+			<div class="absolute top-2 left-2">
+				<span class="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">NEW</span>
+			</div>
+		{:else if product.isHot}
+			<div class="absolute top-2 left-2">
+				<span class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">HOT</span>
+			</div>
+		{/if}
 	</div>
 	
 	<!-- Content -->
-	<div class="p-3">
-		<!-- Title and Description -->
-		<h3 class="text-sm font-medium text-gray-900 line-clamp-2">{product.title}</h3>
-		<p class="mt-1 text-xs text-gray-500 line-clamp-2">
-			{getPlainTextDescription(product.description)}
+	<div class="mt-2">
+		<!-- Destination -->
+		<h3 class="text-sm font-bold text-gray-900">
+			{product.destination?.city || product.title}
+		</h3>
+		
+		<!-- Guide name or description -->
+		<p class="text-xs text-gray-500 mt-0.5">
+			{product.guide?.name || product.guideProfile?.username || '독일'}
 		</p>
-		
-		<!-- Price -->
-		<div class="mt-2">
-			<span class="text-base font-bold text-gray-900">{formatPrice(product.price)}원</span>
-		</div>
-		
-		<!-- Rating -->
-		{#if product.rating}
-			<div class="mt-1 flex items-center gap-1">
-				<Star class="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-				<span class="text-xs font-medium text-gray-900">{product.rating.toFixed(1)}</span>
-			</div>
-		{/if}
 	</div>
 </button>

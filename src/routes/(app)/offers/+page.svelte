@@ -3,7 +3,7 @@
 	import { page } from '$app/stores';
 	import { useSession } from '$lib/authClient';
 	import { onMount } from 'svelte';
-	import Editor from '@tinymce/tinymce-svelte';
+	import RichTextEditor from '$lib/components/RichTextEditor.svelte';
 
 	// Authentication is now handled server-side in +page.server.ts
 	const session = useSession();
@@ -23,44 +23,9 @@
 
 	// Check if mobile device
 	let isMobile = $state(false);
-
-	// TinyMCE configuration - mobile optimized with stacked toolbar
-	const editorConfig = {
-		height: isMobile ? 300 : 400,
-		menubar: false,
-		mobile: {
-			theme: 'silver', // Use silver theme for better mobile control
-			plugins: ['lists', 'autolink', 'link'],
-			toolbar_mode: 'wrap' // Enable toolbar wrapping
-		},
-		plugins: ['lists', 'autolink', 'link', 'preview', 'visualblocks', 'wordcount'],
-		toolbar_mode: 'wrap', // Enable toolbar wrapping for all devices
-		toolbar: isMobile
-			? [
-					'undo redo | bold italic underline',
-					'bullist numlist | outdent indent',
-					'link | removeformat | preview'
-				].join(' | ')
-			: 'undo redo | blocks | bold italic underline | bullist numlist outdent indent | link removeformat | preview',
-		content_style:
-			'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; line-height: 1.6; padding: 8px; }',
-		branding: false,
-		resize: false,
-		statusbar: false,
-		toolbar_sticky: false,
-		setup: (editor: any) => {
-			editor.on('init', () => {
-				// Ensure mobile-friendly behavior
-				if (isMobile) {
-					editor.getBody().style.fontSize = '16px'; // Prevent zoom on iOS
-					editor.getBody().style.minHeight = '200px';
-				}
-			});
-		}
-	};
-
-	// Simple textarea fallback for very small screens
-	let useSimpleEditor = $state(false);
+	
+	// Rich text editor reference
+	let editorRef: RichTextEditor;
 
 	// Fetch trip details
 	async function fetchTrip() {
@@ -171,7 +136,6 @@
 			isMobile =
 				window.innerWidth < 768 ||
 				/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-			useSimpleEditor = false; // Start with TinyMCE editor by default, user can switch
 		}
 	});
 
@@ -297,22 +261,13 @@
 
 			<!-- Itinerary Section -->
 			<div class="mb-6">
-				<div class="mb-2 flex items-center justify-between">
-					<label class="block text-sm font-medium text-gray-700"> 여행일정 </label>
-					<button
-						type="button"
-						onclick={() => (useSimpleEditor = !useSimpleEditor)}
-						class="text-xs text-blue-600 underline hover:text-blue-800"
-					>
-						{useSimpleEditor ? '고급 편집기 사용' : '간단 편집기 사용'}
-					</button>
-				</div>
-
-				{#if useSimpleEditor}
-					<!-- Simple textarea for very small screens -->
-					<textarea
-						bind:value={itinerary}
-						placeholder="여행 일정을 작성해주세요...
+				<label class="mb-2 block text-sm font-medium text-gray-700"> 여행일정 </label>
+				
+				<RichTextEditor
+					bind:this={editorRef}
+					value={itinerary}
+					onchange={(value) => (itinerary = value)}
+					placeholder="여행 일정을 작성해주세요...
 
 예시:
 09:00 - 호텔에서 출발
@@ -320,24 +275,16 @@
 11:30 - 북촌 한옥마을 산책
 13:00 - 점심식사 (인사동 전통 음식점)
 ..."
-						class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-						rows="12"
-						style="font-size: 16px; line-height: 1.5;"
-					></textarea>
-				{:else}
-					<!-- TinyMCE Editor -->
-					<div class="rounded-lg border border-gray-300 {isMobile ? 'mobile-editor' : ''}">
-						<Editor
-							apiKey={import.meta.env.VITE_TINYMCE_API_KEY || 'no-api-key'}
-							conf={editorConfig}
-							bind:value={itinerary}
-						/>
-					</div>
-				{/if}
-
-				<p class="mt-2 text-xs text-gray-500">
-					여행 일정을 구체적으로 작성해주세요. 시간, 장소, 활동 등을 포함하면 더 좋습니다.
-				</p>
+					minHeight="300px"
+					showImageButton={true}
+					showHelperText={true}
+					helperTitle="작성 팁"
+					helperItems={[
+						'• 시간대별로 구체적인 일정을 작성해주세요',
+						'• 장소와 활동을 명확히 기재해주세요',
+						'• 이미지를 추가하면 더 매력적인 제안이 됩니다'
+					]}
+				/>
 			</div>
 
 			<!-- Submit Button -->
@@ -355,75 +302,9 @@
 {/if}
 
 <style>
-	/* Mobile-specific styles for TinyMCE with stacked toolbar */
-	:global(.mobile-editor .tox-tinymce) {
-		border-radius: 0.5rem;
-	}
-
-	/* Enable toolbar wrapping and stacking */
-	:global(.mobile-editor .tox-toolbar-overlord) {
-		flex-wrap: wrap;
-	}
-
-	:global(.mobile-editor .tox-toolbar) {
-		flex-wrap: wrap;
-		padding: 6px 4px;
-		min-height: auto;
-	}
-
-	:global(.mobile-editor .tox-toolbar__primary) {
-		flex-wrap: wrap;
-		justify-content: flex-start;
-	}
-
-	:global(.mobile-editor .tox-toolbar__group) {
-		margin: 2px 4px 2px 0;
-		flex-wrap: wrap;
-	}
-
-	:global(.mobile-editor .tox-tbtn) {
-		margin: 1px;
-		min-width: 36px;
-		height: 36px;
-		flex-shrink: 0;
-	}
-
-	:global(.mobile-editor .tox-tbtn__select-label) {
-		font-size: 12px;
-	}
-
-	:global(.mobile-editor .tox-edit-area__iframe) {
-		min-height: 250px !important;
-	}
-
-	/* Ensure textarea doesn't zoom on iOS */
-	textarea {
-		font-size: 16px;
+	/* Ensure no zoom on iOS for inputs */
+	:global(input[type="text"], input[type="number"], textarea) {
+		font-size: 16px !important;
 		-webkit-appearance: none;
-		border-radius: 0.5rem;
-	}
-
-	/* Mobile responsive adjustments */
-	@media (max-width: 640px) {
-		:global(.mobile-editor .tox-toolbar) {
-			padding: 4px 2px;
-		}
-
-		:global(.mobile-editor .tox-tbtn) {
-			min-width: 32px;
-			height: 32px;
-		}
-
-		:global(.mobile-editor .tox-toolbar__group) {
-			margin: 1px 2px 1px 0;
-		}
-	}
-
-	/* Very small screens */
-	@media (max-width: 480px) {
-		:global(.mobile-editor .tox-tbtn) {
-			min-width: 28px;
-			height: 28px;
-		}
 	}
 </style>
