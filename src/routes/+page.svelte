@@ -253,7 +253,7 @@
 									goto(
 										isGuide
 											? `/trips?destinations=${destination.id}`
-											: `/trips?destination=${destination.city}`
+											: `/products?destination=${destination.id}`
 									)}
 								class="overflow-hidden rounded-lg"
 							>

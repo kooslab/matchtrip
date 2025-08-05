@@ -550,6 +550,47 @@ export const phoneVerifications = pgTable(
 export type Admin = typeof admins.$inferSelect;
 export type AdminSession = typeof adminSessions.$inferSelect;
 
+// Define enum for product status
+export const productStatusEnum = pgEnum('product_status', [
+	'draft',
+	'active',
+	'inactive',
+	'archived'
+]);
+export type ProductStatus = (typeof productStatusEnum.enumValues)[number];
+
+// Products table for guide-created trip products
+export const products = pgTable(
+	'products',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		guideId: uuid('guide_id')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
+		destinationId: integer('destination_id')
+			.notNull()
+			.references(() => destinations.id, { onDelete: 'restrict' }),
+		title: text('title').notNull(),
+		description: text('description').notNull(), // Rich text content
+		price: integer('price').notNull(), // Price in cents
+		currency: varchar('currency', { length: 3 }).notNull().default('KRW'),
+		status: productStatusEnum('status').notNull().default('draft'),
+		fileIds: uuid('file_ids').array(), // Array of file upload IDs
+		imageUrl: text('image_url'), // Main product image
+		rating: integer('rating'), // Average rating (1-5)
+		reviewCount: integer('review_count').notNull().default(0),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at').defaultNow().notNull()
+	},
+	(table) => ({
+		// Add indexes for frequently queried columns
+		guideIdIdx: index('products_guide_id_idx').on(table.guideId),
+		destinationIdIdx: index('products_destination_id_idx').on(table.destinationId),
+		statusIdx: index('products_status_idx').on(table.status),
+		guideStatusIdx: index('products_guide_status_idx').on(table.guideId, table.status)
+	})
+);
+
 // Type exports for main tables
 export type User = typeof users.$inferSelect;
 export type Trip = typeof trips.$inferSelect;
@@ -557,3 +598,4 @@ export type Offer = typeof offers.$inferSelect;
 export type Destination = typeof destinations.$inferSelect;
 export type Country = typeof countries.$inferSelect;
 export type Continent = typeof continents.$inferSelect;
+export type Product = typeof products.$inferSelect;

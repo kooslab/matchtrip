@@ -71,6 +71,13 @@
 		<div class="divide-y divide-gray-100">
 			<button
 				class="flex w-full items-center justify-between px-4 py-3 hover:bg-gray-50"
+				onclick={() => goto('/products/create')}
+			>
+				<span class="text-gray-700">여행 상품 만들기</span>
+				<ChevronRight class="h-5 w-5 text-gray-400" />
+			</button>
+			<button
+				class="flex w-full items-center justify-between px-4 py-3 hover:bg-gray-50"
 				onclick={() => goto('/profile/guide/orders')}
 			>
 				<span class="text-gray-700">매출/정산 내역</span>
