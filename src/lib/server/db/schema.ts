@@ -359,12 +359,16 @@ export const payments = pgTable(
 	'payments',
 	{
 		id: uuid('id').primaryKey().defaultRandom(),
+		// Trip payment fields (nullable for product payments)
 		tripId: uuid('trip_id')
-			.notNull()
 			.references(() => trips.id, { onDelete: 'restrict' }),
 		offerId: uuid('offer_id')
-			.notNull()
 			.references(() => offers.id, { onDelete: 'restrict' }),
+		// Product payment fields (nullable for trip payments)
+		productId: uuid('product_id')
+			.references(() => products.id, { onDelete: 'restrict' }),
+		productOfferId: uuid('product_offer_id')
+			.references(() => productOffers.id, { onDelete: 'restrict' }),
 		userId: uuid('user_id')
 			.notNull()
 			.references(() => users.id, { onDelete: 'restrict' }),
@@ -384,8 +388,14 @@ export const payments = pgTable(
 		userIdIdx: index('payments_user_id_idx').on(table.userId),
 		tripIdIdx: index('payments_trip_id_idx').on(table.tripId),
 		offerIdIdx: index('payments_offer_id_idx').on(table.offerId),
+		productIdIdx: index('payments_product_id_idx').on(table.productId),
+		productOfferIdIdx: index('payments_product_offer_id_idx').on(table.productOfferId),
 		statusIdx: index('payments_status_idx').on(table.status),
 		paymentKeyIdx: index('payments_payment_key_idx').on(table.paymentKey)
+		// Note: Check constraint should be added manually to database if needed:
+		// ALTER TABLE payments ADD CONSTRAINT payment_type_check 
+		// CHECK ((trip_id IS NOT NULL AND offer_id IS NOT NULL AND product_id IS NULL AND product_offer_id IS NULL) 
+		//     OR (product_id IS NOT NULL AND product_offer_id IS NOT NULL AND trip_id IS NULL AND offer_id IS NULL));
 	})
 );
 

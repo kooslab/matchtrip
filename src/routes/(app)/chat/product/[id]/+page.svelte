@@ -405,6 +405,8 @@
 								{message} 
 								{currentUserId}
 								{userRole}
+								{product}
+								guide={otherUser}
 							/>
 						{:else if message.messageType === 'image'}
 							<ImageMessage 

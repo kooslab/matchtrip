@@ -1,14 +1,21 @@
 <script lang="ts">
+	import ProductPaymentModal from './ProductPaymentModal.svelte';
+	
 	interface Props {
 		message: any;
 		currentUserId: string;
 		userRole: 'traveler' | 'guide';
+		product: any;
+		guide: any;
+		productOfferId?: string;
 	}
 	
-	const { message, currentUserId, userRole }: Props = $props();
+	const { message, currentUserId, userRole, product, guide, productOfferId }: Props = $props();
 	
 	const isOwnMessage = $derived(message.senderId === currentUserId);
 	const offerData = $derived(message.metadata as { price: number; duration: number });
+	
+	let showPaymentModal = $state(false);
 	
 	// Format price with commas
 	function formatPrice(price: number) {
@@ -17,9 +24,15 @@
 	
 	// Handle accept offer
 	async function handleAccept() {
-		// TODO: Implement accept offer logic
-		console.log('Accept offer:', message.id);
+		showPaymentModal = true;
 	}
+	
+	// Create product offer object for payment modal
+	const productOffer = $derived({
+		id: productOfferId || message.id,
+		price: offerData.price,
+		duration: offerData.duration
+	});
 </script>
 
 <div class="bg-white rounded-2xl border shadow-sm p-4 max-w-xs">
@@ -73,3 +86,14 @@
 		</div>
 	{/if}
 </div>
+
+<!-- Payment Modal -->
+{#if showPaymentModal && !isOwnMessage && userRole === 'traveler'}
+	<ProductPaymentModal
+		isOpen={showPaymentModal}
+		onClose={() => showPaymentModal = false}
+		{productOffer}
+		{product}
+		{guide}
+	/>
+{/if}

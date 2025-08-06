@@ -42,19 +42,35 @@
 			return;
 		}
 
+		// Determine which API endpoint to use based on payment type
+		const isProductPayment = pendingPayment.type === 'product';
+		const confirmEndpoint = isProductPayment 
+			? '/api/product-payments/confirm' 
+			: '/api/payments/confirm';
+		
 		// Confirm payment with server
 		try {
-			const response = await fetch('/api/payments/confirm', {
+			const response = await fetch(confirmEndpoint, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({
-					paymentKey,
-					orderId,
-					amount: parseInt(amount),
-					offerId: pendingPayment.offerId
-				})
+				body: JSON.stringify(
+					isProductPayment 
+						? {
+							paymentKey,
+							orderId,
+							amount: parseInt(amount),
+							productOfferId: pendingPayment.productOfferId,
+							productId: pendingPayment.productId
+						}
+						: {
+							paymentKey,
+							orderId,
+							amount: parseInt(amount),
+							offerId: pendingPayment.offerId
+						}
+				)
 			});
 
 			const result = await response.json();
@@ -65,9 +81,15 @@
 				// Clear pending payment
 				sessionStorage.removeItem('pendingPayment');
 
-				// Redirect to order confirmation page after 2 seconds
+				// Redirect based on payment type
 				setTimeout(() => {
-					goto(`/order-confirmation/${orderId}`);
+					if (isProductPayment) {
+						// For product payments, go back to chat
+						goto(`/chat/product/${pendingPayment.productOfferId || pendingPayment.productId}`);
+					} else {
+						// For trip payments, go to order confirmation
+						goto(`/order-confirmation/${orderId}`);
+					}
 				}, 2000);
 			} else {
 				console.error('Payment confirmation failed:', result);
