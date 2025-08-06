@@ -400,9 +400,22 @@ export const conversationStatusEnum = pgEnum('conversation_status', [
 export const messageTypeEnum = pgEnum('message_type', [
 	'text',
 	'cancellation_request',
-	'cancellation_response'
+	'cancellation_response',
+	'offer',
+	'image',
+	'file'
 ]);
+
+// Product offer status enum
+export const productOfferStatusEnum = pgEnum('product_offer_status', [
+	'pending',
+	'accepted',
+	'rejected',
+	'expired'
+]);
+
 export type ConversationStatus = (typeof conversationStatusEnum.enumValues)[number];
+export type ProductOfferStatus = (typeof productOfferStatusEnum.enumValues)[number];
 
 // Conversations table for chat between travelers and guides
 export const conversations = pgTable(
@@ -593,6 +606,94 @@ export const products = pgTable(
 	})
 );
 
+// Product Conversations table for chat about products
+export const productConversations = pgTable(
+	'product_conversations',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		productId: uuid('product_id')
+			.notNull()
+			.references(() => products.id, { onDelete: 'cascade' }),
+		travelerId: uuid('traveler_id')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
+		guideId: uuid('guide_id')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
+		status: conversationStatusEnum('status').notNull().default('active'),
+		lastMessageAt: timestamp('last_message_at'),
+		travelerLastReadAt: timestamp('traveler_last_read_at'),
+		guideLastReadAt: timestamp('guide_last_read_at'),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at').defaultNow().notNull()
+	},
+	(table) => ({
+		// Add indexes for frequently queried columns
+		productIdIdx: index('product_conversations_product_id_idx').on(table.productId),
+		travelerIdIdx: index('product_conversations_traveler_id_idx').on(table.travelerId),
+		guideIdIdx: index('product_conversations_guide_id_idx').on(table.guideId),
+		statusIdx: index('product_conversations_status_idx').on(table.status),
+		// Unique constraint: one conversation per product-traveler pair
+		uniqueProductTraveler: index('unique_product_traveler').on(table.productId, table.travelerId)
+	})
+);
+
+// Product Messages table for messages in product conversations
+export const productMessages = pgTable(
+	'product_messages',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		conversationId: uuid('conversation_id')
+			.notNull()
+			.references(() => productConversations.id, { onDelete: 'cascade' }),
+		senderId: uuid('sender_id')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
+		content: text('content'), // Can be null for non-text messages
+		messageType: messageTypeEnum('message_type').notNull().default('text'),
+		metadata: jsonb('metadata'), // For storing offer details, file info, etc.
+		isEdited: boolean('is_edited').notNull().default(false),
+		editedAt: timestamp('edited_at'),
+		isDeleted: boolean('is_deleted').notNull().default(false),
+		createdAt: timestamp('created_at').defaultNow().notNull()
+	},
+	(table) => ({
+		conversationIdIdx: index('product_messages_conversation_id_idx').on(table.conversationId),
+		senderIdIdx: index('product_messages_sender_id_idx').on(table.senderId),
+		createdAtIdx: index('product_messages_created_at_idx').on(table.createdAt)
+	})
+);
+
+// Product Offers table for tracking offers within product chats
+export const productOffers = pgTable(
+	'product_offers',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		messageId: uuid('message_id')
+			.notNull()
+			.references(() => productMessages.id, { onDelete: 'cascade' })
+			.unique(),
+		conversationId: uuid('conversation_id')
+			.notNull()
+			.references(() => productConversations.id, { onDelete: 'cascade' }),
+		guideId: uuid('guide_id')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
+		price: integer('price').notNull(), // Price in cents/won
+		duration: integer('duration').notNull(), // Duration in days
+		status: productOfferStatusEnum('status').notNull().default('pending'),
+		expiresAt: timestamp('expires_at'),
+		acceptedAt: timestamp('accepted_at'),
+		rejectedAt: timestamp('rejected_at'),
+		createdAt: timestamp('created_at').defaultNow().notNull()
+	},
+	(table) => ({
+		conversationIdIdx: index('product_offers_conversation_id_idx').on(table.conversationId),
+		guideIdIdx: index('product_offers_guide_id_idx').on(table.guideId),
+		statusIdx: index('product_offers_status_idx').on(table.status)
+	})
+);
+
 // Type exports for main tables
 export type User = typeof users.$inferSelect;
 export type Trip = typeof trips.$inferSelect;
@@ -601,3 +702,6 @@ export type Destination = typeof destinations.$inferSelect;
 export type Country = typeof countries.$inferSelect;
 export type Continent = typeof continents.$inferSelect;
 export type Product = typeof products.$inferSelect;
+export type ProductConversation = typeof productConversations.$inferSelect;
+export type ProductMessage = typeof productMessages.$inferSelect;
+export type ProductOffer = typeof productOffers.$inferSelect;

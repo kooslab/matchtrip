@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
-	import { ChevronRight } from 'lucide-svelte';
+	import { ChevronRight, Package } from 'lucide-svelte';
 	import BottomNav from '$lib/components/BottomNav.svelte';
 	import GuideBottomNav from '$lib/components/GuideBottomNav.svelte';
+	import ProductDetailModal from '$lib/components/ProductDetailModal.svelte';
 	import { authClient } from '$lib/authClient';
 
 	const { data } = $props();
@@ -11,11 +12,47 @@
 	const user = $derived(data?.user);
 	const guideProfile = $derived(data?.guideProfile);
 	const userName = $derived(user?.name || '사용자');
+	const myProducts = $derived(data?.myProducts || []);
 
 	// Stats
 	const completedTrips = $derived(guideProfile?.completedTrips || 3);
 	const acceptedOffers = $derived(guideProfile?.acceptedOffers || 0);
 	const rating = $derived(guideProfile?.rating || 4.9);
+	
+	// Modal state for product detail
+	let selectedProduct = $state<any>(null);
+	let isModalOpen = $state(false);
+	
+	// Handle product click
+	const handleProductClick = async (productId: string) => {
+		const product = myProducts.find(p => p.id === productId);
+		if (product) {
+			// Fetch full product details
+			try {
+				const response = await fetch(`/api/products/${productId}`);
+				if (response.ok) {
+					selectedProduct = await response.json();
+					isModalOpen = true;
+				}
+			} catch (error) {
+				console.error('Failed to fetch product:', error);
+				// Fall back to basic product info
+				selectedProduct = product;
+				isModalOpen = true;
+			}
+		}
+	};
+	
+	// Handle modal close
+	const handleModalClose = () => {
+		isModalOpen = false;
+		selectedProduct = null;
+	};
+	
+	// Format price with commas
+	const formatPrice = (price: number) => {
+		return new Intl.NumberFormat('ko-KR').format(price);
+	};
 
 	// Logout handler
 	async function handleLogout() {
@@ -75,6 +112,18 @@
 			>
 				<span class="text-gray-700">여행 상품 만들기</span>
 				<ChevronRight class="h-5 w-5 text-gray-400" />
+			</button>
+			<button
+				class="flex w-full items-center justify-between px-4 py-3 hover:bg-gray-50"
+				onclick={() => goto('/profile/guide/products')}
+			>
+				<span class="text-gray-700">내 상품 목록</span>
+				<span class="flex items-center gap-2">
+					{#if myProducts.length > 0}
+						<span class="text-sm text-blue-600">{myProducts.length}</span>
+					{/if}
+					<ChevronRight class="h-5 w-5 text-gray-400" />
+				</span>
 			</button>
 			<button
 				class="flex w-full items-center justify-between px-4 py-3 hover:bg-gray-50"
@@ -210,3 +259,10 @@
 	<!-- Bottom Navigation -->
 	<GuideBottomNav />
 </div>
+
+<!-- Product Detail Modal -->
+<ProductDetailModal 
+	product={selectedProduct} 
+	bind:isOpen={isModalOpen} 
+	onClose={handleModalClose} 
+/>

@@ -1,36 +1,16 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { users, guideProfiles, products, destinations } from '$lib/server/db/schema';
+import { products, destinations, users, guideProfiles } from '$lib/server/db/schema';
 import { eq, desc } from 'drizzle-orm';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	// You must have user info in locals (e.g., from your auth system)
 	const userId = locals.user?.id;
 	if (!userId) {
 		throw redirect(302, '/');
 	}
 
-	// Fetch user info
-	const user = await db
-		.select()
-		.from(users)
-		.where(eq(users.id, userId))
-		.limit(1)
-		.then((rows) => rows[0]);
-	if (!user) {
-		return { user: null, userRole: null, userName: null, guideProfile: null, myProducts: [] };
-	}
-
-	// Fetch guide profile (if exists)
-	const guideProfile = await db
-		.select()
-		.from(guideProfiles)
-		.where(eq(guideProfiles.userId, userId))
-		.limit(1)
-		.then((rows) => rows[0]);
-
-	// Fetch guide's products
+	// Fetch guide's products with full details
 	const myProducts = await db
 		.select({
 			id: products.id,
@@ -48,18 +28,29 @@ export const load: PageServerLoad = async ({ locals }) => {
 			destination: {
 				id: destinations.id,
 				city: destinations.city
+			},
+			guide: {
+				id: users.id,
+				name: users.name,
+				image: users.image
+			},
+			guideProfile: {
+				username: guideProfiles.username,
+				profileImageUrl: guideProfiles.profileImageUrl,
+				currentLocation: guideProfiles.currentLocation,
+				languages: guideProfiles.languages,
+				isVerified: guideProfiles.isVerified
 			}
 		})
 		.from(products)
 		.leftJoin(destinations, eq(products.destinationId, destinations.id))
+		.leftJoin(users, eq(products.guideId, users.id))
+		.leftJoin(guideProfiles, eq(products.guideId, guideProfiles.userId))
 		.where(eq(products.guideId, userId))
 		.orderBy(desc(products.createdAt));
 
 	return {
-		user,
-		userRole: user.role,
-		userName: user.name,
-		guideProfile,
-		myProducts
+		myProducts,
+		user: locals.user
 	};
 };

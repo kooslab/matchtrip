@@ -7,7 +7,7 @@
 
 	interface Conversation {
 		id: string;
-		offerId: string;
+		type: 'trip' | 'product';
 		status: string;
 		lastMessageAt: string | null;
 		lastMessageContent: string | null;
@@ -20,7 +20,10 @@
 			role: string;
 			image: string | null;
 		};
-		offer: {
+		title: string;
+		subtitle: string;
+		productImage?: string;
+		offer?: {
 			id: string;
 			title: string;
 			price: number;
@@ -41,7 +44,7 @@
 
 	async function loadConversations() {
 		try {
-			const response = await fetch('/api/conversations');
+			const response = await fetch('/api/conversations/all');
 			if (response.ok) {
 				const data = await response.json();
 				conversations = data.conversations;
@@ -52,6 +55,14 @@
 			error = '대화 목록을 불러오는데 실패했습니다.';
 		} finally {
 			loading = false;
+		}
+	}
+	
+	function navigateToChat(conversation: Conversation) {
+		if (conversation.type === 'product') {
+			goto(`/chat/product/${conversation.id}`);
+		} else {
+			goto(`/chat/${conversation.id}`);
 		}
 	}
 
@@ -155,7 +166,7 @@
 						: ''}"
 				>
 					<button
-						onclick={() => goto(`/chat/${conversation.id}`)}
+						onclick={() => navigateToChat(conversation)}
 						class="w-full px-4 py-4 text-left"
 					>
 						<div class="flex items-start gap-3">
@@ -188,7 +199,11 @@
 										<h3 class="text-primary text-sm font-semibold">
 											{conversation.otherUser.name}
 										</h3>
-										{#if conversation.offer.status === 'pending'}
+										{#if conversation.type === 'product'}
+											<span class="bg-green-100 text-green-700 px-1.5 py-0.5 text-xs rounded">
+												상품
+											</span>
+										{:else if conversation.offer?.status === 'pending'}
 											<span
 												class="bg-color-success inline-flex rounded px-2 py-0.5 text-xs font-medium text-white"
 											>

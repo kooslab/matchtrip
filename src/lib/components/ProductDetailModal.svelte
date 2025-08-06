@@ -1,14 +1,48 @@
 <script lang="ts">
 	import { ChevronDown, ChevronRight, X, Download, MessageCircle } from 'lucide-svelte';
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 	
 	interface Props {
 		product: any;
 		isOpen: boolean;
 		onClose: () => void;
+		showGuideTab?: boolean;
+		showReviewTab?: boolean;
+		showContactButton?: boolean;
 	}
 	
-	const { product, isOpen = $bindable(), onClose }: Props = $props();
+	const { product, isOpen = $bindable(), onClose, showGuideTab = true, showReviewTab = true, showContactButton = true }: Props = $props();
+	
+	// Handle contact button click
+	const handleContactClick = async () => {
+		if (!product) return;
+		
+		try {
+			// Create or get existing product conversation
+			const response = await fetch('/api/product-conversations/create', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					productId: product.id,
+					guideId: product.guide?.id || product.guideId
+				})
+			});
+			
+			if (response.ok) {
+				const { conversationId } = await response.json();
+				// Navigate to product chat page
+				await goto(`/chat/product/${conversationId}`);
+				onClose();
+			} else {
+				console.error('Failed to create conversation');
+			}
+		} catch (error) {
+			console.error('Error creating conversation:', error);
+		}
+	};
 	
 	// Tab state
 	let activeTab = $state<'product' | 'guide' | 'review'>('product');
@@ -113,22 +147,26 @@
 				<div class="flex border-t">
 					<button
 						onclick={() => activeTab = 'product'}
-						class="flex-1 py-3 text-center text-sm font-medium transition-colors {activeTab === 'product' ? 'text-primary border-b-2 border-primary' : 'text-gray-500'}"
+						class="{showGuideTab && showReviewTab ? 'flex-1' : 'w-full'} py-3 text-center text-sm font-medium transition-colors {activeTab === 'product' ? 'text-primary border-b-2 border-primary' : 'text-gray-500'}"
 					>
 						상품 정보
 					</button>
-					<button
-						onclick={() => activeTab = 'guide'}
-						class="flex-1 py-3 text-center text-sm font-medium transition-colors {activeTab === 'guide' ? 'text-primary border-b-2 border-primary' : 'text-gray-500'}"
-					>
-						가이드 정보
-					</button>
-					<button
-						onclick={() => activeTab = 'review'}
-						class="flex-1 py-3 text-center text-sm font-medium transition-colors {activeTab === 'review' ? 'text-primary border-b-2 border-primary' : 'text-gray-500'}"
-					>
-						리뷰 <span class="text-gray-400">{product.reviewCount || 88}</span>
-					</button>
+					{#if showGuideTab}
+						<button
+							onclick={() => activeTab = 'guide'}
+							class="flex-1 py-3 text-center text-sm font-medium transition-colors {activeTab === 'guide' ? 'text-primary border-b-2 border-primary' : 'text-gray-500'}"
+						>
+							가이드 정보
+						</button>
+					{/if}
+					{#if showReviewTab}
+						<button
+							onclick={() => activeTab = 'review'}
+							class="flex-1 py-3 text-center text-sm font-medium transition-colors {activeTab === 'review' ? 'text-primary border-b-2 border-primary' : 'text-gray-500'}"
+						>
+							리뷰 <span class="text-gray-400">{product.reviewCount || 88}</span>
+						</button>
+					{/if}
 				</div>
 			</div>
 
@@ -200,7 +238,7 @@
 
 						<!-- Other sections... -->
 					</div>
-				{:else if activeTab === 'guide'}
+				{:else if activeTab === 'guide' && showGuideTab}
 					<!-- Guide Info Tab -->
 					<div class="p-4">
 						<div class="flex items-center gap-4 mb-6">
@@ -246,7 +284,7 @@
 							</div>
 						{/if}
 					</div>
-				{:else}
+				{:else if activeTab === 'review' && showReviewTab}
 					<!-- Reviews Tab -->
 					<div class="p-4">
 						<div class="text-center py-8">
@@ -258,12 +296,17 @@
 			</div>
 
 			<!-- Footer with Action Button -->
-			<div class="flex-shrink-0 bg-white border-t p-4">
-				<button class="w-full bg-blue-500 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-blue-600 transition-colors">
-					<MessageCircle class="w-5 h-5" />
-					문의하기
-				</button>
-			</div>
+			{#if showContactButton}
+				<div class="flex-shrink-0 bg-white border-t p-4">
+					<button 
+						onclick={handleContactClick}
+						class="w-full bg-blue-500 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-blue-600 transition-colors"
+					>
+						<MessageCircle class="w-5 h-5" />
+						문의하기
+					</button>
+				</div>
+			{/if}
 		</div>
 	</div>
 {/if}
