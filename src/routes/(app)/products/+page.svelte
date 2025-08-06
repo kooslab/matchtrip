@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { ArrowLeft } from 'lucide-svelte';
+	import { onMount } from 'svelte';
 	import ProductCard from './ProductCard.svelte';
+	import ProductDetailModal from '$lib/components/ProductDetailModal.svelte';
 	
 	const { data } = $props();
 	
@@ -12,6 +14,59 @@
 	
 	// Filter state
 	let filterBy = $state<'all' | 'latest'>('all');
+	
+	// Modal state
+	let selectedProduct = $state<any>(null);
+	let isModalOpen = $state(false);
+	
+	// Handle product click
+	const handleProductClick = async (productId: string) => {
+		// Find the product in our current list
+		const product = products.find(p => p.id === productId);
+		if (product) {
+			selectedProduct = product;
+			isModalOpen = true;
+			// Update URL with query parameter
+			const url = new URL(window.location.href);
+			url.searchParams.set('productId', productId);
+			window.history.pushState({}, '', url.toString());
+		} else {
+			// If product not in list, fetch it
+			try {
+				const response = await fetch(`/api/products/${productId}`);
+				if (response.ok) {
+					selectedProduct = await response.json();
+					isModalOpen = true;
+					const url = new URL(window.location.href);
+					url.searchParams.set('productId', productId);
+					window.history.pushState({}, '', url.toString());
+				}
+			} catch (error) {
+				console.error('Failed to fetch product:', error);
+			}
+		}
+	};
+	
+	// Handle modal close
+	const handleModalClose = () => {
+		isModalOpen = false;
+		selectedProduct = null;
+		// Remove query parameter
+		const url = new URL(window.location.href);
+		url.searchParams.delete('productId');
+		window.history.pushState({}, '', url.toString());
+	};
+	
+	// Check if we should open modal on mount (if URL has product ID in query)
+	onMount(() => {
+		if (typeof window !== 'undefined') {
+			const urlParams = new URLSearchParams(window.location.search);
+			const productId = urlParams.get('productId');
+			if (productId) {
+				handleProductClick(productId);
+			}
+		}
+	});
 </script>
 
 <div class="min-h-screen bg-gray-50">
@@ -74,7 +129,7 @@
 				<div class="px-4">
 					<div class="grid grid-cols-3 gap-3">
 						{#each products.slice(0, 6) as product, index}
-							<ProductCard {product} />
+							<ProductCard {product} onclick={() => handleProductClick(product.id)} />
 						{/each}
 					</div>
 					
@@ -88,7 +143,7 @@
 						<!-- Rest of products -->
 						<div class="grid grid-cols-3 gap-3">
 							{#each products.slice(6) as product}
-								<ProductCard {product} />
+								<ProductCard {product} onclick={() => handleProductClick(product.id)} />
 							{/each}
 						</div>
 					{/if}
@@ -97,3 +152,10 @@
 		</main>
 	</div>
 </div>
+
+<!-- Product Detail Modal -->
+<ProductDetailModal 
+	product={selectedProduct} 
+	bind:isOpen={isModalOpen} 
+	onClose={handleModalClose} 
+/>

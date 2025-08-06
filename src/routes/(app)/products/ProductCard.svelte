@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { Star } from 'lucide-svelte';
 	import type { Product } from '$lib/server/db/schema';
 	
@@ -31,9 +30,10 @@
 				profileImageUrl: string | null;
 			} | null;
 		};
+		onclick?: () => void;
 	}
 	
-	const { product }: Props = $props();
+	const { product, onclick }: Props = $props();
 	
 	// Format price with commas
 	const formatPrice = (price: number) => {
@@ -47,9 +47,9 @@
 		return div.textContent || div.innerText || '';
 	};
 	
-	// Extract first image from description HTML
+	// Extract first image from description HTML (client-side only)
 	const getFirstImageFromDescription = (html: string): string | null => {
-		if (!html) return null;
+		if (!html || typeof window === 'undefined') return null;
 		
 		// Create a temporary div to parse HTML
 		const div = document.createElement('div');
@@ -62,12 +62,12 @@
 	
 	// Get thumbnail image - either from imageUrl or first image in description
 	const thumbnailImage = $derived(
-		product.imageUrl || getFirstImageFromDescription(product.description)
+		product.imageUrl || (typeof window !== 'undefined' ? getFirstImageFromDescription(product.description) : null)
 	);
 </script>
 
 <button
-	onclick={() => goto(`/products/${product.id}`)}
+	onclick={onclick || (() => {})}
 	class="block w-full text-left"
 >
 	<!-- Image -->
