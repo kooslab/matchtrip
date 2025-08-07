@@ -20,7 +20,7 @@
 			filtered = orders.filter(order => 
 				order.payment.status === 'completed' && (
 					order.type === 'product' || 
-					(order.type === 'trip' && new Date(order.endDate) > new Date())
+					(order.type === 'trip' && 'endDate' in order && new Date(order.endDate) > new Date())
 				)
 			);
 		} else if (activeTab === 'completed') {
@@ -28,6 +28,7 @@
 			filtered = orders.filter(order => 
 				order.payment.status === 'completed' && 
 				order.type === 'trip' &&
+				'endDate' in order &&
 				new Date(order.endDate) <= new Date()
 			);
 		}
@@ -48,7 +49,7 @@
 		orders.filter(order => 
 			order.payment.status === 'completed' && (
 				order.type === 'product' || 
-				(order.type === 'trip' && new Date(order.endDate) > new Date())
+				(order.type === 'trip' && 'endDate' in order && new Date(order.endDate) > new Date())
 			)
 		).length
 	);
@@ -56,6 +57,7 @@
 		orders.filter(order => 
 			order.payment.status === 'completed' && 
 			order.type === 'trip' &&
+			'endDate' in order &&
 			new Date(order.endDate) <= new Date()
 		).length
 	);
@@ -63,6 +65,7 @@
 	function isTripCompleted(order: any) {
 		return order.type === 'trip' && 
 			order.payment.status === 'completed' && 
+			'endDate' in order &&
 			new Date(order.endDate) <= new Date();
 	}
 
@@ -244,16 +247,16 @@
 					<div class="mb-3">
 						<h3 class="font-bold text-lg text-gray-900 mb-2">
 							{#if order.type === 'trip'}
-								{order.destination?.city || '알 수 없는 도시'}, {order.destination?.country || ''}
+								{'destination' in order ? (order.destination?.city || '알 수 없는 도시') + ', ' + (order.destination?.country || '') : '알 수 없는 도시'}
 							{:else}
-								{order.productTitle || '알 수 없는 상품'}
+								{'productTitle' in order ? order.productTitle : '알 수 없는 상품'}
 							{/if}
 						</h3>
 						
 						<div class="flex items-center gap-1 mb-1 text-gray-600">
 							<img src={CalendarCheckIcon} alt="Calendar" class="h-4 w-4" style="filter: brightness(0) saturate(100%) invert(40%) sepia(7%) saturate(497%) hue-rotate(175deg) brightness(92%) contrast(87%);" />
 							<span class="text-sm">
-								{#if order.type === 'trip'}
+								{#if order.type === 'trip' && 'startDate' in order && 'endDate' in order}
 									{formatDateRange(order.startDate, order.endDate, {
 										locale: $userLocale,
 										timezone: $userTimezone,
@@ -262,8 +265,10 @@
 									<span class="text-blue-500 ml-1">
 										{Math.ceil((new Date(order.endDate) - new Date(order.startDate)) / (1000 * 60 * 60 * 24))}박 {Math.ceil((new Date(order.endDate) - new Date(order.startDate)) / (1000 * 60 * 60 * 24)) + 1}일
 									</span>
-								{:else}
+								{:else if 'productDuration' in order}
 									{order.productDuration ? `${order.productDuration}일 일정` : '일정 미정'}
+								{:else}
+									일정 미정
 								{/if}
 							</span>
 						</div>
@@ -271,8 +276,8 @@
 						<div class="flex items-center gap-1 mb-2 text-gray-600">
 							<img src={UserTwoIcon} alt="People" class="h-4 w-4" style="filter: brightness(0) saturate(100%) invert(40%) sepia(7%) saturate(497%) hue-rotate(175deg) brightness(92%) contrast(87%);" />
 							<span class="text-sm">
-								{#if order.type === 'trip'}
-									성인 {order.adultsCount || 0}명{order.childrenCount > 0 ? ` • 아동 ${order.childrenCount}명` : ''}
+								{#if order.type === 'trip' && 'adultsCount' in order}
+									성인 {order.adultsCount || 0}명{'childrenCount' in order && order.childrenCount > 0 ? ` • 아동 ${order.childrenCount}명` : ''}
 								{:else}
 									1명
 								{/if}
@@ -280,23 +285,11 @@
 						</div>
 						
 						<!-- Additional Info with gray background -->
-						{#if order.type === 'trip'}
+						{#if order.type === 'trip' && 'travelMethod' in order && order.travelMethod}
 							<div class="flex flex-wrap gap-2 mb-2">
-								{#if order.budgetMin || order.budgetMax}
-									<span class="inline-flex items-center px-2 py-1 rounded bg-gray-100 text-xs text-gray-700">
-										{formatBudget(order.budgetMin, order.budgetMax)}
-									</span>
-								{/if}
-								{#if order.travelMethod}
-									<span class="inline-flex items-center px-2 py-1 rounded bg-gray-100 text-xs text-gray-700">
-										{formatTravelMethod(order.travelMethod)}
-									</span>
-								{/if}
-								{#if order.accommodationType}
-									<span class="inline-flex items-center px-2 py-1 rounded bg-gray-100 text-xs text-gray-700">
-										{order.accommodationType === 'hotel' ? '호텔' : order.accommodationType === 'airbnb' ? '에어비앤비' : order.accommodationType === 'hostel' ? '호스텔' : order.accommodationType === 'other' ? '기타' : order.accommodationType}
-									</span>
-								{/if}
+								<span class="inline-flex items-center px-2 py-1 rounded bg-gray-100 text-xs text-gray-700">
+									{formatTravelMethod(order.travelMethod)}
+								</span>
 							</div>
 						{/if}
 					</div>
@@ -315,7 +308,7 @@
 						<div></div>
 					</div>
 					
-					{#if isTripCompleted(order)}
+					{#if isTripCompleted(order) && order.type === 'trip' && 'id' in order}
 						<button
 							onclick={(e) => goToReview(order.id, e)}
 							class="w-full flex items-center justify-center gap-1 rounded-lg bg-blue-500 px-4 py-2.5 text-white text-sm font-medium hover:bg-blue-600 mt-3"

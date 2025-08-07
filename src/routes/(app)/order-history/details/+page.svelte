@@ -1,59 +1,67 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { Receipt, Calendar, MapPin, User, CreditCard, ArrowLeft } from 'lucide-svelte';
+	import ArrowBackIcon from '$lib/icons/icon-arrow-back-android-mono.svg';
+	import CalendarCheckIcon from '$lib/icons/icon-calendar-check-mono.svg';
+	import UserTwoIcon from '$lib/icons/icon-user-two-mono.svg';
 
 	let { data } = $props();
 	let order = $derived(data.order);
+	
+	$effect(() => {
+		console.log('Order data:', order);
+		console.log('Order type:', order?.type);
+		console.log('Order id:', order?.id);
+		console.log('Should show button:', order?.type === 'trip' && order?.id);
+	});
 
 	function formatDate(date: Date | string | null) {
 		if (!date) return '날짜 정보 없음';
 		const dateObj = typeof date === 'string' ? new Date(date) : date;
-		return dateObj.toLocaleDateString('ko-KR', {
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric'
-		});
+		
+		// Format as YYYY. MM. DD
+		const year = dateObj.getFullYear();
+		const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+		const day = String(dateObj.getDate()).padStart(2, '0');
+		
+		return `${year}. ${month}. ${day}`;
 	}
 
 	function formatDateTime(date: Date | string | null) {
 		if (!date) return '날짜 정보 없음';
 		const dateObj = typeof date === 'string' ? new Date(date) : date;
-		return dateObj.toLocaleString('ko-KR', {
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit'
-		});
+		
+		const year = dateObj.getFullYear();
+		const month = dateObj.getMonth() + 1;
+		const day = dateObj.getDate();
+		const hours = dateObj.getHours();
+		const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+		const period = hours < 12 ? '오전' : '오후';
+		const displayHours = hours % 12 || 12;
+		
+		return `${year}년 ${month}월 ${day}일 ${period} ${displayHours}:${minutes}`;
 	}
 
-	function formatTravelMethod(method: string | null) {
-		if (!method) return '미정';
-
-		const methodMap: Record<string, string> = {
-			walking: '도보',
-			driving: '자동차',
-			public_transport: '대중교통',
-			bike: '자전거',
-			'walking+public_transport': '도보+대중교통',
-			'walking+bike': '도보+자전거',
-			'walking+driving': '도보+자동차',
-			'walking+driving+public_transport': '도보+자동차+대중교통',
-			'walking+driving+bike': '도보+자동차+자전거',
-			'walking+driving+public_transport+bike': '모든 교통수단',
-			other: '기타'
-		};
-
-		return methodMap[method] || method;
+	function formatPaymentDate(date: Date | string | null) {
+		if (!date) return '';
+		const dateObj = typeof date === 'string' ? new Date(date) : date;
+		
+		const year = dateObj.getFullYear();
+		const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+		const day = String(dateObj.getDate()).padStart(2, '0');
+		
+		return `${year}. ${month}. ${day} 결제`;
 	}
 
-	function goToTripDetails(tripId: string) {
-		goto(`/my-trips/${tripId}`);
+	function formatDuration(startDate: Date | string, endDate: Date | string) {
+		const start = typeof startDate === 'string' ? new Date(startDate) : startDate;
+		const end = typeof endDate === 'string' ? new Date(endDate) : endDate;
+		const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+		return `${days}박 ${days + 1}일`;
 	}
 
 	function getPaymentStatusText(status: string) {
 		const statusMap: Record<string, string> = {
-			completed: '결제 완료',
+			completed: '여행 완료',
 			cancelled: '결제 취소',
 			pending: '결제 대기',
 			failed: '결제 실패',
@@ -62,68 +70,46 @@
 		return statusMap[status] || status;
 	}
 
-	function getPaymentStatusColor(status: string) {
-		const colorMap: Record<string, string> = {
-			completed: 'bg-emerald-600 text-white',
-			cancelled: 'bg-red-100 text-red-800',
-			pending: 'bg-yellow-100 text-yellow-800',
-			failed: 'bg-red-100 text-red-800',
-			refunded: 'bg-purple-100 text-purple-800'
+	function goToTripDetails() {
+		if (order.type === 'trip' && order.id) {
+			goto(`/my-trips/${order.id}`);
+		}
+	}
+	
+	function goToProductChat() {
+		if (order.type === 'product' && order.id) {
+			goto(`/chat/product/${order.id}`);
+		}
+	}
+
+	function formatPhoneNumber(phone: string | null) {
+		if (!phone) return '전화번호 미등록';
+		// Format phone number as XXX-XXXX-XXXX
+		const cleaned = phone.replace(/\D/g, '');
+		if (cleaned.length === 11) {
+			return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 7)}-${cleaned.slice(7)}`;
+		}
+		if (cleaned.length === 10) {
+			return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+		}
+		return phone;
+	}
+
+	function formatPaymentMethod(method: string | null) {
+		if (!method) return '결제 정보 없음';
+		
+		const methodMap: Record<string, string> = {
+			'CARD': '카드',
+			'TOSSPAY': '토스페이',
+			'VIRTUAL_ACCOUNT': '가상계좌',
+			'TRANSFER': '계좌이체',
+			'MOBILE_PHONE': '휴대폰',
+			'CULTURE_GIFT_CERTIFICATE': '문화상품권',
+			'BOOK_GIFT_CERTIFICATE': '도서문화상품권',
+			'GAME_GIFT_CERTIFICATE': '게임문화상품권'
 		};
-		return colorMap[status] || 'bg-gray-100 text-gray-800';
-	}
-
-	let showCancelModal = $state(false);
-
-	async function cancelPayment() {
-		showCancelModal = true;
-	}
-
-	async function confirmCancelPayment() {
-		if (!order.conversationId) {
-			alert('대화방을 찾을 수 없습니다. 고객센터에 문의해주세요.');
-			showCancelModal = false;
-			return;
-		}
-
-		try {
-			// Send cancellation request message to the appropriate chat
-			const chatUrl = order.type === 'trip' 
-				? `/api/conversations/${order.conversationId}`
-				: `/api/product-conversations/${order.conversationId}`;
-			
-			const response = await fetch(chatUrl, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					messageType: 'cancellation_request',
-					content: '결제 취소 요청',
-					metadata: {
-						reason: '고객이 결제를 취소하려고 합니다.',
-						paymentId: order.payment.id,
-						offerId: order.offer?.id || null,
-						productOfferId: order.productOffer?.id || null,
-						status: 'pending'
-					}
-				})
-			});
-
-			if (response.ok) {
-				showCancelModal = false;
-				// Redirect to the appropriate chat
-				if (order.type === 'trip') {
-					goto(`/chat/${order.conversationId}`);
-				} else {
-					goto(`/chat/product/${order.conversationId}`);
-				}
-			} else {
-				throw new Error('Failed to send cancellation request');
-			}
-		} catch (err) {
-			console.error('Error sending cancellation request:', err);
-			alert('취소 요청 전송에 실패했습니다. 다시 시도해주세요.');
-			showCancelModal = false;
-		}
+		
+		return methodMap[method] || method;
 	}
 </script>
 
@@ -131,229 +117,305 @@
 	<title>주문 상세 - MatchTrip</title>
 </svelte:head>
 
-<div class="mx-auto max-w-md px-4 py-8">
-	<!-- Header -->
-	<div class="mb-8">
-		<button
-			class="mb-4 flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800"
-			onclick={() => goto('/order-history')}
-		>
-			<ArrowLeft class="h-4 w-4" />
-			주문 내역으로 돌아가기
-		</button>
-		<h1 class="text-3xl font-bold text-gray-900">주문 상세</h1>
-	</div>
-
-	<!-- Order Summary -->
-	<div class="mb-8 rounded-lg border border-gray-200 bg-white p-6">
-		<div class="mb-4 flex items-start justify-between gap-4">
-			<div class="flex-1">
-				<h2 class="text-xl font-semibold text-gray-900">
-					{#if order.type === 'trip'}
-						{order.destination?.city || '알 수 없는 도시'}, {order.destination?.country || '알 수 없는 국가'}
-					{:else}
-						{order.productTitle || '알 수 없는 상품'}
-					{/if}
-				</h2>
-				<p class="mt-1 text-sm text-gray-500">
-					주문 번호: <span class="font-mono text-xs">{order.payment.id}</span>
-				</p>
+<div class="min-h-screen bg-white">
+	<div class="max-w-md mx-auto relative bg-white overflow-hidden flex flex-col h-screen">
+		<!-- Header -->
+		<div class="sticky top-0 z-10 bg-white/95 backdrop-blur">
+			<div class="h-14 px-4 py-2.5 flex items-center justify-center">
+				<div class="w-full flex items-center justify-between">
+					<button
+						onclick={() => goto('/order-history')}
+						class="w-5 h-5 relative"
+					>
+						<img src={ArrowBackIcon} alt="Back" class="w-full h-full" />
+					</button>
+					<div class="absolute left-1/2 -translate-x-1/2 text-center text-primary text-base font-bold">
+						주문 상세
+					</div>
+					<div class="w-5 h-5"></div>
+				</div>
 			</div>
-			<span
-				class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium whitespace-nowrap {getPaymentStatusColor(
-					order.payment.status
-				)}"
-			>
-				{getPaymentStatusText(order.payment.status)}
-			</span>
 		</div>
 
-		<div class="space-y-6">
-			<!-- Trip/Product Information -->
-			<div>
-				<h3 class="mb-4 text-lg font-medium text-gray-900">
-					{order.type === 'trip' ? '여행 정보' : '상품 정보'}
-				</h3>
-				<div class="space-y-3">
-					{#if order.type === 'trip'}
-						<div class="flex items-start gap-3">
-							<Calendar class="mt-0.5 h-5 w-5 text-gray-400" />
-							<div>
-								<p class="text-sm font-medium text-gray-900">여행 일정</p>
-								<p class="text-sm text-gray-600">
-									{formatDate(order.startDate)} ~ {formatDate(order.endDate)}
-								</p>
-							</div>
-						</div>
-
-						<div class="flex items-start gap-3">
-							<MapPin class="mt-0.5 h-5 w-5 text-gray-400" />
-							<div>
-								<p class="text-sm font-medium text-gray-900">인원</p>
-								<p class="text-sm text-gray-600">
-									성인 {order.adultsCount || 0}명{order.childrenCount > 0
-										? `, 유아 ${order.childrenCount}명`
-										: ''}
-								</p>
-							</div>
-						</div>
-
-						{#if order.travelMethod}
-							<div class="flex items-start gap-3">
-								<MapPin class="mt-0.5 h-5 w-5 text-gray-400" />
-								<div>
-									<p class="text-sm font-medium text-gray-900">이동 수단</p>
-									<p class="text-sm text-gray-600">
-										{formatTravelMethod(order.travelMethod)}
-									</p>
+		<!-- Content -->
+		<div class="flex-1 overflow-y-auto" style="padding-bottom: {order ? '80px' : '32px'}">
+			<div class="w-full flex flex-col gap-0">
+				<!-- Payment Date Section -->
+				<div class="px-4 py-5 border-b-4 border-gray-f7">
+					<div class="flex flex-col gap-4">
+						<div class="pb-2 border-b border-gray-100/50 flex items-center justify-between">
+							<div class="flex items-center gap-2">
+								<div class="text-primary text-[13px] font-semibold">
+									{formatPaymentDate(order.payment.paidAt || order.payment.createdAt)}
 								</div>
 							</div>
-						{/if}
-					{:else}
-						<!-- Product specific info -->
-						{#if order.productDuration}
-							<div class="flex items-start gap-3">
-								<Calendar class="mt-0.5 h-5 w-5 text-gray-400" />
-								<div>
-									<p class="text-sm font-medium text-gray-900">상품 일정</p>
-									<p class="text-sm text-gray-600">
-										{order.productDuration}일 일정
-									</p>
-								</div>
-							</div>
-						{/if}
+						</div>
 						
+						<!-- Trip Info Card -->
+						<div class="flex flex-col gap-3">
+							<div class="flex items-center justify-between">
+								<div class="px-2 py-0.5 bg-secondary text-white text-[11px] font-medium rounded">
+									{getPaymentStatusText(order.payment.status)}
+								</div>
+							</div>
+							
+							<div class="flex flex-col gap-4">
+								<div class="flex items-center gap-1">
+									<div class="flex-1 text-primary text-base font-bold">
+										{#if order.type === 'trip'}
+											{order.destination?.city || '알 수 없는 도시'}, {order.destination?.country || '알 수 없는 국가'}
+										{:else}
+											{order.productTitle || '알 수 없는 상품'}
+										{/if}
+									</div>
+								</div>
+								
+								<div class="flex flex-col gap-2">
+									{#if order.type === 'trip'}
+										<div class="flex items-center gap-1">
+											<img src={CalendarCheckIcon} alt="Calendar" class="w-4 h-4" style="filter: brightness(0) saturate(100%) invert(60%) sepia(8%) saturate(506%) hue-rotate(175deg) brightness(91%) contrast(86%);" />
+											<div class="text-gray-66 text-xs">
+												{formatDate(order.startDate)} ~ {formatDate(order.endDate)}
+											</div>
+											<div class="text-color-primary text-xs font-semibold">
+												{formatDuration(order.startDate, order.endDate)}
+											</div>
+										</div>
+										<div class="flex items-center gap-1">
+											<img src={UserTwoIcon} alt="People" class="w-4 h-4" style="filter: brightness(0) saturate(100%) invert(60%) sepia(8%) saturate(506%) hue-rotate(175deg) brightness(91%) contrast(86%);" />
+											<div class="flex items-center text-gray-66 text-xs">
+												<span>성인 {order.adultsCount || 0}명</span>
+												{#if order.childrenCount > 0}
+													<span class="text-gray-c1 mx-1">・</span>
+													<span>아동 {order.childrenCount}명</span>
+												{/if}
+											</div>
+										</div>
+									{:else if order.productDuration}
+										<div class="flex items-center gap-1">
+											<img src={CalendarCheckIcon} alt="Calendar" class="w-4 h-4" style="filter: brightness(0) saturate(100%) invert(60%) sepia(8%) saturate(506%) hue-rotate(175deg) brightness(91%) contrast(86%);" />
+											<div class="text-gray-66 text-xs">
+												{order.productDuration}일 일정
+											</div>
+										</div>
+									{/if}
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Order Info Section -->
+				<div class="px-4 py-5 border-b-4 border-gray-f7">
+					<div class="flex items-center justify-between mb-4">
+						<div class="flex items-center gap-2">
+							<div class="text-primary text-base font-bold">
+								주문자 정보
+							</div>
+						</div>
+					</div>
+					
+					<div class="flex flex-col gap-2">
+						<div class="flex items-center gap-3">
+							<div class="w-12 text-secondary text-[13px]">주문자</div>
+							<div class="text-gray-66 text-[13px]">{order.user?.name || '이름 없음'}</div>
+						</div>
+						<div class="flex items-center gap-3">
+							<div class="w-12 text-secondary text-[13px]">휴대폰</div>
+							<div class="text-gray-66 text-[13px]">{formatPhoneNumber(order.user?.phone)}</div>
+						</div>
+						<div class="flex items-start gap-3">
+							<div class="w-12 text-secondary text-[13px]">결제일시</div>
+							<div class="flex-1 text-gray-66 text-[13px]">
+								{formatDateTime(order.payment.paidAt || order.payment.createdAt)}
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Review Section (if trip is completed and has review) -->
+				{#if order.review}
+					<div class="px-4 py-5 border-b-4 border-gray-f7">
+						<div class="flex items-center justify-between mb-4">
+							<div class="flex items-center gap-2">
+								<div class="text-primary text-base font-bold">
+									작성 리뷰
+								</div>
+							</div>
+						</div>
+						
+						<div class="flex flex-col gap-3">
+							<div class="text-gray-66 text-[13px] leading-5">
+								{order.review.content}
+							</div>
+							
+							{#if order.review.images && order.review.images.length > 0}
+								<div class="flex gap-2">
+									{#each order.review.images.slice(0, 2) as image}
+										<div class="flex-1 h-[100px] bg-gray-f7 rounded-xl border border-gray-100/20 overflow-hidden">
+											<img src={image} alt="Review" class="w-full h-full object-cover" />
+										</div>
+									{/each}
+									{#if order.review.images.length < 3}
+										{#each Array(3 - order.review.images.length) as _}
+											<div class="flex-1 h-[100px] opacity-0"></div>
+										{/each}
+									{/if}
+								</div>
+							{/if}
+							
+							{#if order.review.tags && order.review.tags.length > 0}
+								<div class="flex flex-wrap gap-2">
+									{#each order.review.tags as tag}
+										<div class="px-3 py-1.5 bg-white rounded-2xl border border-gray-100/50">
+											<div class="text-gray-66 text-[11px] font-medium">
+												{tag}
+											</div>
+										</div>
+									{/each}
+								</div>
+							{/if}
+						</div>
+					</div>
+				{/if}
+
+				<!-- Payment Details Section -->
+				<div class="px-4 py-5 border-b-8 border-gray-f7">
+					<div class="flex items-center justify-between mb-4">
+						<div class="flex items-center gap-2">
+							<div class="text-primary text-base font-bold">
+								결제 정보
+							</div>
+						</div>
+					</div>
+					
+					<div class="flex flex-col gap-5">
+						<div class="flex flex-col gap-2">
+							<div class="flex flex-col gap-5">
+								<div class="pb-5 border-b border-gray-e8 flex flex-col gap-3">
+									<div class="flex items-center justify-between">
+										<div class="text-secondary text-[13px]">총 상품금액 (1개)</div>
+										<div class="text-primary text-[13px]">{order.payment.amount.toLocaleString()}원</div>
+									</div>
+								</div>
+								
+								<div class="flex items-center justify-between">
+									<div class="text-primary text-base font-bold">총 결제금액</div>
+									<div class="text-primary text-base font-bold">{order.payment.amount.toLocaleString()}원</div>
+								</div>
+							</div>
+							
+							<div class="flex items-center justify-between">
+								<div class="text-gray-99 text-xs">결제방법</div>
+								<div class="text-gray-99 text-xs">
+									{formatPaymentMethod(order.payment.paymentMethod)}
+								</div>
+							</div>
+						</div>
+						
+						{#if order.payment.status === 'completed'}
+							<div class="mt-4 pt-4 border-t border-gray-e8">
+								<button
+									onclick={() => alert('결제 취소 요청 기능은 준비 중입니다.')}
+									class="w-full py-2 text-center text-gray-66 text-[13px] hover:text-gray-900 transition-colors"
+								>
+									결제 취소하기
+								</button>
+							</div>
+						{/if}
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Bottom Action Button -->
+		<div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-f1 shadow-[0px_-5px_20px_rgba(0,0,0,0.08)] z-50">
+			<div class="max-w-md mx-auto w-full">
+				<div class="px-4 py-4">
+					{#if order?.type === 'trip' && order?.id}
+						<button
+							onclick={goToTripDetails}
+							class="w-full h-12 bg-color-primary rounded-[9px] flex items-center justify-center hover:bg-blue-600 transition-colors"
+						>
+							<div class="text-white text-sm font-semibold">
+								여행 상세보기
+							</div>
+						</button>
+					{:else if order?.type === 'product' && order?.id}
+						<button
+							onclick={goToProductChat}
+							class="w-full h-12 bg-color-primary rounded-[9px] flex items-center justify-center hover:bg-blue-600 transition-colors"
+						>
+							<div class="text-white text-sm font-semibold">
+								채팅으로 이동
+							</div>
+						</button>
+					{:else}
+						<button
+							onclick={() => goto('/order-history')}
+							class="w-full h-12 bg-gray-200 rounded-[9px] flex items-center justify-center"
+						>
+							<div class="text-gray-700 text-sm font-semibold">
+								주문 목록으로
+							</div>
+						</button>
 					{/if}
-
-					<div class="flex items-start gap-3">
-						<User class="mt-0.5 h-5 w-5 text-gray-400" />
-						<div>
-							<p class="text-sm font-medium text-gray-900">가이드</p>
-							<p class="text-sm text-gray-600">
-								{order.guide?.name || '알 수 없는 가이드'}
-							</p>
-							<p class="text-xs text-gray-500">{order.guide?.email || ''}</p>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<!-- Payment Information -->
-			<div>
-				<h3 class="mb-4 text-lg font-medium text-gray-900">결제 정보</h3>
-				<div class="space-y-3">
-					<div class="flex items-start gap-3">
-						<CreditCard class="mt-0.5 h-5 w-5 text-gray-400" />
-						<div>
-							<p class="text-sm font-medium text-gray-900">결제 수단</p>
-							<p class="text-sm text-gray-600">
-								{order.payment.paymentMethod || '카드'}
-							</p>
-						</div>
-					</div>
-
-					<div class="flex items-start gap-3">
-						<Receipt class="mt-0.5 h-5 w-5 text-gray-400" />
-						<div>
-							<p class="text-sm font-medium text-gray-900">
-								{order.payment.status === 'cancelled' ? '취소 일시' : '결제 일시'}
-							</p>
-							<p class="text-sm text-gray-600">
-								{formatDateTime(
-									order.payment.updatedAt || order.payment.paidAt || order.payment.createdAt
-								)}
-							</p>
-						</div>
-					</div>
-
-					<div class="mt-4 rounded-lg bg-gray-50 p-4">
-						<div class="flex items-center justify-between">
-							<span class="text-sm font-medium text-gray-900">총 결제 금액</span>
-							<span
-								class="text-2xl font-bold {order.payment.status === 'cancelled'
-									? 'text-gray-500 line-through'
-									: 'text-pink-600'}"
-							>
-								{order.payment.amount.toLocaleString()}원
-							</span>
-						</div>
-					</div>
 				</div>
 			</div>
 		</div>
 	</div>
-
-	<!-- Product Description (Product only) -->
-	{#if order.type === 'product' && order.productDescription}
-		<div class="mb-8 rounded-lg border border-gray-200 bg-white p-6">
-			<h3 class="mb-4 text-lg font-medium text-gray-900">상품 설명</h3>
-			<div class="prose prose-sm max-w-none text-gray-700 prose-img:rounded-lg prose-img:my-4">
-				{@html order.productDescription}
-			</div>
-		</div>
-	{/if}
-
-	<!-- Itinerary (Trip only) -->
-	{#if order.type === 'trip' && order.offer?.itinerary}
-		<div class="mb-8 rounded-lg border border-gray-200 bg-white p-6">
-			<h3 class="mb-4 text-lg font-medium text-gray-900">여행 일정</h3>
-			<div class="prose prose-sm max-w-none text-gray-700">
-				{@html order.offer.itinerary}
-			</div>
-		</div>
-	{/if}
-
-	<!-- Custom Request (Trip only) -->
-	{#if order.type === 'trip' && order.customRequest}
-		<div class="mb-8 rounded-lg border border-gray-200 bg-white p-6">
-			<h3 class="mb-4 text-lg font-medium text-gray-900">특별 요청사항</h3>
-			<p class="text-gray-700">{order.customRequest}</p>
-		</div>
-	{/if}
-
-	<!-- Actions -->
-	<div class="flex justify-center gap-3">
-		{#if order.type === 'trip' && order.id}
-			<button
-				onclick={() => goToTripDetails(order.id)}
-				class="rounded-lg bg-pink-500 px-8 py-3 font-medium text-white hover:bg-pink-600"
-			>
-				여행 상세보기
-			</button>
-		{/if}
-		{#if order.payment.status === 'completed'}
-			<button
-				onclick={cancelPayment}
-				class="rounded-lg bg-gray-500 px-8 py-3 font-medium text-white hover:bg-gray-600"
-			>
-				결제 취소
-			</button>
-		{/if}
-	</div>
-	
-	<!-- Cancel Payment Modal -->
-	{#if showCancelModal}
-		<div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
-			<div class="w-full max-w-sm rounded-2xl bg-white p-6">
-				<h2 class="mb-4 text-center text-xl font-bold">결제 취소</h2>
-				<p class="mb-6 text-center text-gray-600">
-					정말 결제를 취소하시겠습니까?
-				</p>
-				<div class="flex gap-3">
-					<button
-						onclick={() => showCancelModal = false}
-						class="flex-1 rounded-lg border border-gray-300 py-3 font-medium text-gray-700 hover:bg-gray-50"
-					>
-						취소
-					</button>
-					<button
-						onclick={confirmCancelPayment}
-						class="flex-1 rounded-lg bg-red-500 py-3 font-medium text-white hover:bg-red-600"
-					>
-						결제 취소
-					</button>
-				</div>
-			</div>
-		</div>
-	{/if}
 </div>
+
+<style>
+	:global(.text-primary) {
+		color: #052236;
+	}
+	
+	:global(.text-secondary) {
+		color: #8ea0ac;
+	}
+	
+	:global(.text-color-primary) {
+		color: #1095f4;
+	}
+	
+	:global(.text-color-orange) {
+		color: #f75b2b;
+	}
+	
+	:global(.text-gray-66) {
+		color: #536b7c;
+	}
+	
+	:global(.text-gray-99) {
+		color: #919fa8;
+	}
+	
+	:global(.text-gray-c1) {
+		color: #c1c1c1;
+	}
+	
+	:global(.bg-secondary) {
+		background-color: #8ea0ac;
+	}
+	
+	:global(.bg-color-primary) {
+		background-color: #1095f4;
+	}
+	
+	:global(.bg-gray-f7) {
+		background-color: #f7f9fa;
+	}
+	
+	:global(.border-gray-f7) {
+		border-color: #f7f9fa;
+	}
+	
+	:global(.border-gray-f1) {
+		border-color: #f1f1f1;
+	}
+	
+	:global(.border-gray-e8) {
+		border-color: #e8e8e8;
+	}
+</style>

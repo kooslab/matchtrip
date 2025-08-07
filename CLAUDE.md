@@ -178,10 +178,49 @@ Required environment variables (see `.env.example`):
 
 ## UI Layout Rules
 
+### CRITICAL: Mobile Viewport Constraints
+- **ALWAYS wrap ALL pages in a mobile viewport container**: `<div class="max-w-md mx-auto">`
+  - This is MANDATORY for every single page component
+  - Apply to the outermost wrapper div of every route
+  - Never allow content to extend beyond mobile viewport width
+  - Example structure:
+    ```svelte
+    <div class="min-h-screen bg-white">
+      <div class="max-w-md mx-auto relative">
+        <!-- All page content goes here -->
+      </div>
+    </div>
+    ```
+
+### Fixed Elements and Mobile Viewport
+- **Fixed bottom elements MUST also respect mobile viewport**:
+  ```svelte
+  <div class="fixed bottom-0 left-0 right-0">
+    <div class="max-w-md mx-auto">
+      <!-- Fixed content here -->
+    </div>
+  </div>
+  ```
+- **Fixed headers MUST also respect mobile viewport**:
+  ```svelte
+  <div class="sticky top-0 z-10">
+    <div class="max-w-md mx-auto">
+      <!-- Header content -->
+    </div>
+  </div>
+  ```
+
+### Bottom Navigation Spacing
 - **Bottom Navigation Spacing**: ALWAYS add `pb-24` (96px bottom padding) to any fixed bottom elements when BottomNav is present
   - Apply to action buttons, floating buttons, or any fixed bottom UI elements
   - This prevents the BottomNav from covering important UI elements
   - Example: `<div class="fixed bottom-0 left-0 right-0 p-4 pb-24">`
+
+### Mobile-First Design Principles
+- Design for mobile viewport (390px - 430px) FIRST
+- Test all UI components within max-w-md container
+- Never use fixed widths larger than mobile viewport
+- Always use responsive units (%, rem, viewport units) within the container
 
 ## Icons to Use
 
