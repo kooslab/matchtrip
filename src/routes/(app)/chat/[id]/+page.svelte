@@ -413,7 +413,7 @@
 	}
 </script>
 
-<div class="fixed inset-0 flex flex-col bg-white">
+<div class="fixed inset-0 mx-auto flex max-w-md flex-col bg-white">
 	{#if !loading}
 		<!-- Header -->
 		<div class="safe-area-top bg-white">

@@ -31,6 +31,8 @@ import ArrowBack from '$lib/icons/icon-arrow-back-android-mono.svg';
 	let sending = $state(false);
 	let showOfferModal = $state(false);
 	let showOptions = $state(false);
+	let showCancelModal = $state(false);
+	let selectedCancelRequest = $state<any>(null);
 	let messagesContainer: HTMLDivElement;
 	let pollingInterval: ReturnType<typeof setInterval>;
 	
@@ -47,6 +49,44 @@ import ArrowBack from '$lib/icons/icon-arrow-back-android-mono.svg';
 				top: messagesContainer.scrollHeight,
 				behavior: smooth ? 'smooth' : 'instant'
 			});
+		}
+	}
+
+	// Handle cancellation request actions
+	function handleCancelRequestClick(message: any) {
+		if (message.messageType === 'cancellation_request') {
+			// Only show modal for travelers
+			if (userRole === 'traveler') {
+				selectedCancelRequest = message;
+				showCancelModal = true;
+			}
+		}
+	}
+
+	async function handleCancelResponse(response: 'accepted' | 'declined') {
+		if (!selectedCancelRequest || !selectedCancelRequest.metadata) return;
+
+		try {
+			const res = await fetch(`/api/product-conversations/${conversation.id}/cancel-response`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					messageId: selectedCancelRequest.id,
+					response,
+					paymentId: selectedCancelRequest.metadata.paymentId,
+					productOfferId: selectedCancelRequest.metadata.productOfferId
+				})
+			});
+
+			if (!res.ok) throw new Error('Failed to send response');
+
+			// Refresh messages
+			await fetchConversation();
+			showCancelModal = false;
+			selectedCancelRequest = null;
+		} catch (err) {
+			console.error('Error sending cancel response:', err);
+			alert('응답 전송 중 오류가 발생했습니다.');
 		}
 	}
 	
@@ -327,7 +367,7 @@ import ArrowBack from '$lib/icons/icon-arrow-back-android-mono.svg';
 	});
 </script>
 
-<div class="fixed inset-0 flex flex-col bg-white">
+<div class="fixed inset-0 mx-auto flex max-w-md flex-col bg-white">
 	<!-- Header -->
 	<div class="safe-area-top bg-white">
 		<div class="flex items-center justify-between px-4 py-4">
@@ -412,6 +452,49 @@ import ArrowBack from '$lib/icons/icon-arrow-back-android-mono.svg';
 						{#if message.messageType === 'text'}
 							<div class="{message.senderId === currentUserId ? 'bg-blue-500 text-white' : 'bg-gray-100'} rounded-2xl px-4 py-2">
 								<p class="text-sm">{message.content}</p>
+							</div>
+						{:else if message.messageType === 'cancellation_request'}
+							<div class="max-w-[300px] overflow-hidden rounded-lg border-2 border-blue-500 bg-white">
+								<div class="border-b border-dashed border-blue-300 px-4 py-3">
+									<p class="text-center font-semibold text-gray-900">취소 요청</p>
+								</div>
+								<div class="border-b border-dashed border-blue-300 px-4 py-3">
+									<p class="text-center text-gray-700">
+										{message.metadata?.reason || '고객이 결제 취소를 요청하였습니다.'}
+									</p>
+								</div>
+								<div class="px-4 py-3">
+									{#if message.metadata?.status === 'accepted'}
+										<p class="text-center font-medium text-green-600">✓ 취소가 승인되었습니다</p>
+									{:else if message.metadata?.status === 'declined'}
+										<p class="text-center font-medium text-red-600">✗ 취소가 거절되었습니다</p>
+									{:else}
+										{#if userRole === 'traveler'}
+											<button
+												type="button"
+												onclick={() => handleCancelRequestClick(message)}
+												class="w-full rounded bg-blue-600 py-2 font-medium text-white transition-colors hover:bg-blue-700"
+											>
+												확인하기
+											</button>
+										{:else}
+											<p class="text-center text-sm text-gray-500">
+												고객의 응답을 기다리고 있습니다
+											</p>
+										{/if}
+									{/if}
+								</div>
+							</div>
+						{:else if message.messageType === 'cancellation_response'}
+							<div class="max-w-[280px] rounded-lg bg-gray-100 px-4 py-3">
+								<p class="mb-1 text-sm font-semibold">
+									취소 {message.metadata?.response === 'accepted' ? '승인' : '거절'}
+								</p>
+								<p class="text-sm text-gray-600">
+									{message.metadata?.response === 'accepted'
+										? '결제 취소가 승인되었습니다.'
+										: '취소 요청이 거절되었습니다.'}
+								</p>
 							</div>
 						{:else if message.messageType === 'offer'}
 							<OfferMessage 
@@ -549,6 +632,38 @@ import ArrowBack from '$lib/icons/icon-arrow-back-android-mono.svg';
 		onSubmit={handleOfferSubmit}
 		{sending}
 	/>
+{/if}
+
+<!-- Cancellation Confirmation Modal -->
+{#if showCancelModal && selectedCancelRequest}
+	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
+		<div class="w-full max-w-sm rounded-2xl bg-white p-6">
+			<h2 class="mb-6 text-center text-xl font-bold">취소 확인</h2>
+
+			<div class="mb-6 rounded-lg bg-gray-50 p-4">
+				<p class="text-center text-sm text-gray-600">
+					{selectedCancelRequest.metadata?.reason || '취소 사유가 제공되지 않았습니다.'}
+				</p>
+			</div>
+
+			<div class="flex gap-3">
+				<button
+					type="button"
+					onclick={() => handleCancelResponse('declined')}
+					class="flex-1 rounded-lg border border-gray-300 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-50"
+				>
+					거절
+				</button>
+				<button
+					type="button"
+					onclick={() => handleCancelResponse('accepted')}
+					class="flex-1 rounded-lg bg-blue-600 py-3 font-medium text-white transition-colors hover:bg-blue-700"
+				>
+					수락하기
+				</button>
+			</div>
+		</div>
+	</div>
 {/if}
 
 <style>

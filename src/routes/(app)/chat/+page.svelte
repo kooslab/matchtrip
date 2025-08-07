@@ -111,7 +111,7 @@
 	<title>채팅 - MatchTrip</title>
 </svelte:head>
 
-<div class="min-h-screen bg-gray-50/50">
+<div class="mx-auto min-h-screen max-w-md bg-gray-50/50">
 	{#if loading}
 		<!-- Loading skeleton -->
 		<div class="space-y-0">

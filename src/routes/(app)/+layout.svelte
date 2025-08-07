@@ -10,7 +10,7 @@
 	let isGuide = $derived(userRole === 'guide');
 	let isTraveler = $derived(userRole === 'traveler');
 
-	// Hide bottom nav for offers/create routes, trips detail pages, my-trips detail pages, my-offers detail pages, write-review pages, edit pages, guide order detail pages, order-confirmation pages, my-trips/create pages, products pages, and product chat pages
+	// Hide bottom nav for offers/create routes, trips detail pages, my-trips detail pages, my-offers detail pages, write-review pages, edit pages, guide order detail pages, order-confirmation pages, my-trips/create pages, products pages, product chat pages, and order-history detail pages
 	let hideBottomNav = $derived(
 		$page.url.pathname.startsWith('/offers/create') ||
 			$page.url.pathname.match(/^\/trips\/[^\/]+$/) ||
@@ -22,7 +22,8 @@
 			$page.url.pathname.startsWith('/order-confirmation/') ||
 			$page.url.pathname.startsWith('/my-trips/create/') ||
 			$page.url.pathname.startsWith('/products') ||
-			$page.url.pathname.startsWith('/chat/product/')
+			$page.url.pathname.startsWith('/chat/product/') ||
+			$page.url.pathname.startsWith('/order-history/details')
 	);
 	
 	// Hide top nav for chat pages (both regular and product chat)
