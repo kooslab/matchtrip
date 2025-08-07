@@ -211,7 +211,7 @@
 											</span>
 										{/if}
 									</div>
-									<div class="text-gray-99 text-xs font-medium">
+									<div class="text-gray-500 text-xs font-medium">
 										{formatMessageTime(conversation.lastMessageAt)}
 									</div>
 								</div>
@@ -219,7 +219,7 @@
 								<!-- Last message -->
 								<div class="mt-1 flex items-end justify-between">
 									<div class="min-w-0 flex-1">
-										<p class="text-gray-99 line-clamp-2 text-sm leading-5">
+										<p class="text-gray-500 line-clamp-2 text-sm leading-5">
 											{#if conversation.lastMessageContent}
 												{truncateMessage(conversation.lastMessageContent, 60)}
 											{:else}

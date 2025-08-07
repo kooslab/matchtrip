@@ -3,7 +3,8 @@
 	import { goto } from '$app/navigation';
 	import { onMount, onDestroy } from 'svelte';
 	import { tick } from 'svelte';
-	import { Send, ChevronLeft, MoreHorizontal, Package, Plus } from 'lucide-svelte';
+	import { Send, MoreHorizontal, Package, Plus } from 'lucide-svelte';
+import ArrowBack from '$lib/icons/icon-arrow-back-android-mono.svg';
 	import { formatDate, formatTime } from '$lib/utils/dateFormatter';
 	import { validateFile } from '$lib/utils/fileValidator';
 	import OfferModal from './OfferModal.svelte';
@@ -328,27 +329,38 @@
 
 <div class="fixed inset-0 flex flex-col bg-white">
 	<!-- Header -->
-	<div class="safe-area-top border-b border-gray-100 bg-white/95 backdrop-blur-sm">
-		<div class="flex items-center justify-between px-4 py-2.5">
-			<button onclick={() => goto('/chat')} class="h-5 w-5 p-0">
-				<ChevronLeft class="h-5 w-5" style="color: #1095f4;" />
+	<div class="safe-area-top bg-white">
+		<div class="flex items-center justify-between px-4 py-4">
+			<!-- Back Button -->
+			<button 
+				onclick={() => goto('/chat')} 
+				class="flex items-center justify-center p-0"
+				aria-label="Go back to chat list"
+			>
+				<img src={ArrowBack} alt="Back" class="h-6 w-6" style="filter: brightness(0) saturate(100%) invert(27%) sepia(90%) saturate(1574%) hue-rotate(196deg) brightness(94%) contrast(96%);" />
 			</button>
 			
-			<div class="flex items-center gap-1">
-				{#if otherUser.image}
-					<img src={otherUser.image} alt={otherUser.name} class="h-7 w-7 rounded-full border border-gray-100 object-cover" />
-				{:else}
-					<div class="flex h-7 w-7 items-center justify-center rounded-full border border-gray-100 bg-[#003e8114]">
-						<span class="text-primary text-xs font-medium">
-							{otherUser.name.charAt(0).toUpperCase()}
-						</span>
+			<!-- Guide Name and Avatar -->
+			<div class="flex flex-1 items-center justify-center">
+				{#if otherUser}
+					<div class="flex items-center gap-2">
+						{#if otherUser.image}
+							<img src={otherUser.image} alt={otherUser.name} class="h-8 w-8 rounded-full object-cover" />
+						{:else}
+							<div class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200">
+								<span class="text-sm font-medium text-gray-600">
+									{otherUser.name?.charAt(0).toUpperCase()}
+								</span>
+							</div>
+						{/if}
+						<span class="text-lg font-semibold text-gray-900">{otherUser.name || 'Guide'}</span>
 					</div>
 				{/if}
-				<span class="text-primary text-base font-bold">{otherUser.name}</span>
 			</div>
 			
-			<button class="h-5 w-5 p-0">
-				<MoreHorizontal class="text-primary h-5 w-5" />
+			<!-- More Options Button -->
+			<button class="flex items-center justify-center p-0">
+				<MoreHorizontal class="h-6 w-6 text-gray-400" />
 			</button>
 		</div>
 	</div>
@@ -421,6 +433,13 @@
 								{message}
 								{currentUserId}
 							/>
+						{:else if message.messageType === 'system'}
+							<!-- System Message -->
+							<div class="flex justify-center">
+								<div class="rounded-full bg-gray-100 px-4 py-2 text-xs text-gray-600">
+									{message.content}
+								</div>
+							</div>
 						{/if}
 						<p class="mt-1 text-xs text-gray-500">
 							{formatTime(message.createdAt)}

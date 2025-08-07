@@ -24,10 +24,18 @@
 			$page.url.pathname.startsWith('/products') ||
 			$page.url.pathname.startsWith('/chat/product/')
 	);
+	
+	// Hide top nav for chat pages (both regular and product chat)
+	let hideTopNav = $derived(
+		$page.url.pathname.startsWith('/chat/product/') ||
+		$page.url.pathname.match(/^\/chat\/[^\/]+$/)
+	);
 </script>
 
 <!-- Top Navigation -->
-<TopNav />
+{#if !hideTopNav}
+	<TopNav />
+{/if}
 
 <div class="flex min-h-screen flex-col {(isTraveler || isGuide) && !hideBottomNav ? 'pb-20' : ''}">
 	<slot />

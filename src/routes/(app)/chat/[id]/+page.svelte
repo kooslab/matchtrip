@@ -413,38 +413,47 @@
 	}
 </script>
 
-<div class="fixed inset-0 flex flex-col bg-white pt-16 pb-20 md:pt-20">
+<div class="fixed inset-0 flex flex-col bg-white">
 	{#if !loading}
 		<!-- Header -->
-		<div class="safe-area-top border-b border-gray-100 bg-white/95 backdrop-blur-sm">
-			<div class="flex items-center justify-between px-4 py-2.5">
-				<button onclick={handleBackButton} class="h-5 w-5 p-0">
-					<div class="h-5 w-5" style="color: #1095f4;">
+		<div class="safe-area-top bg-white">
+			<div class="flex items-center justify-between px-4 py-4">
+				<!-- Back Button -->
+				<button 
+					onclick={() => goto('/chat')} 
+					class="flex items-center justify-center p-0"
+					aria-label="Go back to chat list"
+				>
+					<div class="h-6 w-6" style="color: #1095f4;">
 						{@html ArrowBackIcon.replace('fill="#8B95A1"', 'fill="currentColor"')}
 					</div>
 				</button>
-
-				<div class="flex items-center gap-1">
-					{#if otherPerson?.image}
-						<img
-							src={otherPerson.image}
-							alt={otherPersonName}
-							class="h-7 w-7 rounded-full border border-gray-100 object-cover"
-						/>
-					{:else}
-						<div
-							class="flex h-7 w-7 items-center justify-center rounded-full border border-gray-100 bg-[#003e8114]"
-						>
-							<span class="text-primary text-xs font-medium">
-								{otherPersonName.charAt(0).toUpperCase()}
-							</span>
+				
+				<!-- User Name and Avatar -->
+				<div class="flex flex-1 items-center justify-center">
+					{#if otherPerson}
+						<div class="flex items-center gap-2">
+							{#if otherPerson.image}
+								<img 
+									src={otherPerson.image} 
+									alt={otherPersonName} 
+									class="h-8 w-8 rounded-full object-cover" 
+								/>
+							{:else}
+								<div class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200">
+									<span class="text-sm font-medium text-gray-600">
+										{otherPersonName?.charAt(0).toUpperCase()}
+									</span>
+								</div>
+							{/if}
+							<span class="text-lg font-semibold text-gray-900">{otherPersonName || 'User'}</span>
 						</div>
 					{/if}
-					<span class="text-primary text-base font-bold">{otherPersonName}</span>
 				</div>
-
-				<button class="h-5 w-5 p-0">
-					<MoreHorizontal class="text-primary h-5 w-5" />
+				
+				<!-- More Options Button -->
+				<button class="flex items-center justify-center p-0">
+					<MoreHorizontal class="h-6 w-6 text-gray-400" />
 				</button>
 			</div>
 		</div>
