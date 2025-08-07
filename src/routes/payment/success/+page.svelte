@@ -28,8 +28,35 @@
 			return;
 		}
 
-		const pendingPayment = JSON.parse(pendingPaymentStr);
-		console.log('Pending payment from session:', pendingPayment);
+		let pendingPayment;
+		try {
+			pendingPayment = JSON.parse(pendingPaymentStr);
+			console.log('Pending payment from session:', pendingPayment);
+			
+			// Validate required fields for product payments
+			if (pendingPayment.type === 'product') {
+				if (!pendingPayment.productId) {
+					console.error('Invalid payment data: missing productId');
+					error = '결제 정보가 올바르지 않습니다. 다시 시도해주세요.';
+					sessionStorage.removeItem('pendingPayment');
+					isProcessing = false;
+					return;
+				}
+				
+				// Check if this is old payment data without conversationId
+				if (!pendingPayment.conversationId || pendingPayment.conversationId === 'undefined') {
+					console.warn('Old payment data detected without conversationId');
+					// Clear old data
+					sessionStorage.removeItem('pendingPayment');
+				}
+			}
+		} catch (err) {
+			console.error('Failed to parse payment data:', err);
+			error = '결제 정보를 처리할 수 없습니다.';
+			sessionStorage.removeItem('pendingPayment');
+			isProcessing = false;
+			return;
+		}
 
 		// Verify amount matches
 		if (parseInt(amount) !== pendingPayment.amount) {
@@ -84,8 +111,14 @@
 				// Redirect based on payment type
 				setTimeout(() => {
 					if (isProductPayment) {
-						// For product payments, go back to chat
-						goto(`/chat/product/${pendingPayment.productOfferId || pendingPayment.productId}`);
+						// For product payments, go back to chat with conversation ID
+						// If conversationId is missing or 'undefined', go to products page instead
+						if (pendingPayment.conversationId && pendingPayment.conversationId !== 'undefined') {
+							goto(`/chat/product/${pendingPayment.conversationId}`);
+						} else {
+							console.warn('ConversationId missing in payment data, redirecting to products page');
+							goto('/products');
+						}
 					} else {
 						// For trip payments, go to order confirmation
 						goto(`/order-confirmation/${orderId}`);

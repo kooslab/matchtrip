@@ -23,6 +23,7 @@
 	const userRole = $derived(data.userRole);
 	const currentUserId = $derived(data.currentUserId);
 	
+	
 	// State
 	let messages = $state(data.messages || []);
 	let newMessage = $state('');
@@ -407,6 +408,8 @@
 								{userRole}
 								{product}
 								guide={otherUser}
+								productOfferId={message.productOfferId}
+								conversationId={conversation?.id}
 							/>
 						{:else if message.messageType === 'image'}
 							<ImageMessage 

@@ -413,7 +413,8 @@ export const messageTypeEnum = pgEnum('message_type', [
 	'cancellation_response',
 	'offer',
 	'image',
-	'file'
+	'file',
+	'system'
 ]);
 
 // Product offer status enum

@@ -7,9 +7,10 @@
 		productOffer: any;
 		product: any;
 		guide: any;
+		conversationId?: string;
 	}
 
-	let { isOpen = $bindable(), onClose, productOffer, product, guide }: Props = $props();
+	let { isOpen = $bindable(), onClose, productOffer, product, guide, conversationId }: Props = $props();
 
 	let paymentWidget: any = $state(null);
 	let isLoading = $state(false);
@@ -132,20 +133,43 @@
 		error = null;
 
 		try {
+			// Get conversation ID from URL if not provided as prop
+			let finalConversationId = conversationId;
+			if (!finalConversationId || finalConversationId === 'undefined') {
+				// Try to extract from current URL as fallback
+				const pathParts = window.location.pathname.split('/');
+				const chatIndex = pathParts.indexOf('chat');
+				const productIndex = pathParts.indexOf('product');
+				if (chatIndex >= 0 && productIndex === chatIndex + 1 && pathParts[productIndex + 1]) {
+					finalConversationId = pathParts[productIndex + 1];
+					console.log('Extracted conversationId from URL:', finalConversationId);
+				}
+			}
+			
+			// Validate conversation ID
+			if (!finalConversationId || finalConversationId === 'undefined' || finalConversationId === 'null') {
+				console.error('Critical: Cannot proceed with payment - conversationId is missing');
+				error = '결제를 진행할 수 없습니다. 페이지를 새로고침 후 다시 시도해주세요.';
+				isProcessingPayment = false;
+				return;
+			}
+			
 			const orderId = generateOrderId();
 			const orderName = `${product.title} - ${guide.name || '가이드'} 서비스`;
-
+			
 			// Store order info in session storage for later verification
-			sessionStorage.setItem(
-				'pendingPayment',
-				JSON.stringify({
-					productOfferId: productOffer.id,
-					productId: product.id,
-					amount: productOffer.price,
-					orderId,
-					type: 'product' // Important: mark as product payment
-				})
-			);
+			const paymentData = {
+				productOfferId: productOffer.id,
+				productId: product.id,
+				conversationId: finalConversationId,
+				amount: productOffer.price,
+				orderId,
+				type: 'product',
+				version: 2  // Add version to track data structure changes
+			};
+			
+			console.log('Storing payment data:', paymentData);
+			sessionStorage.setItem('pendingPayment', JSON.stringify(paymentData));
 
 			// Request payment
 			await paymentWidget.requestPayment({

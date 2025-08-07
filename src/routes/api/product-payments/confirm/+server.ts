@@ -47,13 +47,16 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				.where(eq(productOffers.id, productOfferId))
 				.limit(1);
 			
-			if (offer) {
-				offerData = offer;
-				
-				// Verify amount matches the offer price
-				if (amount !== offer.price) {
-					return json({ success: false, error: '결제 금액이 일치하지 않습니다.' }, { status: 400 });
-				}
+			if (!offer) {
+				// If productOfferId was provided but not found, it's an error
+				return json({ success: false, error: '제안을 찾을 수 없습니다.' }, { status: 404 });
+			}
+			
+			offerData = offer;
+			
+			// Verify amount matches the offer price
+			if (amount !== offer.price) {
+				return json({ success: false, error: '결제 금액이 일치하지 않습니다.' }, { status: 400 });
 			}
 		} else {
 			// If no specific offer, verify amount matches product price
@@ -97,11 +100,12 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		// Start a transaction to update database
 		try {
 			// Create payment record
+			// Only include productOfferId if it's valid and exists in the database
 			const [newPayment] = await db
 				.insert(payments)
 				.values({
 					productId,
-					productOfferId: productOfferId || null,
+					productOfferId: offerData ? productOfferId : null,  // Only set if offer exists
 					userId: user.id,
 					amount,
 					currency: 'KRW',

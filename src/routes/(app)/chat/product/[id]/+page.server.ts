@@ -1,7 +1,7 @@
 import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { productConversations, productMessages, products, users, destinations } from '$lib/server/db/schema';
+import { productConversations, productMessages, products, users, destinations, productOffers } from '$lib/server/db/schema';
 import { eq, desc } from 'drizzle-orm';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
@@ -10,6 +10,12 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	
 	if (!userId) {
 		throw redirect(302, '/login');
+	}
+	
+	// Handle invalid conversation ID (e.g., 'undefined' from old payment sessions)
+	if (!conversationId || conversationId === 'undefined' || conversationId === 'null') {
+		console.warn('Invalid conversation ID attempted:', conversationId);
+		throw redirect(302, '/products');
 	}
 	
 	// Fetch conversation details
@@ -66,7 +72,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		throw error(404, 'Product not found');
 	}
 	
-	// Fetch messages
+	// Fetch messages with product offer data
 	const messages = await db
 		.select({
 			id: productMessages.id,
@@ -84,10 +90,12 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 				email: users.email,
 				role: users.role,
 				image: users.image
-			}
+			},
+			productOfferId: productOffers.id
 		})
 		.from(productMessages)
 		.leftJoin(users, eq(productMessages.senderId, users.id))
+		.leftJoin(productOffers, eq(productMessages.id, productOffers.messageId))
 		.where(eq(productMessages.conversationId, conversationId))
 		.orderBy(productMessages.createdAt);
 	

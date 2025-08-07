@@ -8,9 +8,10 @@
 		product: any;
 		guide: any;
 		productOfferId?: string;
+		conversationId?: string;
 	}
 	
-	const { message, currentUserId, userRole, product, guide, productOfferId }: Props = $props();
+	const { message, currentUserId, userRole, product, guide, productOfferId, conversationId }: Props = $props();
 	
 	const isOwnMessage = $derived(message.senderId === currentUserId);
 	const offerData = $derived(message.metadata as { price: number; duration: number });
@@ -29,7 +30,7 @@
 	
 	// Create product offer object for payment modal
 	const productOffer = $derived({
-		id: productOfferId || message.id,
+		id: productOfferId || null,  // Use the actual productOfferId from database, or null if not present
 		price: offerData.price,
 		duration: offerData.duration
 	});
@@ -95,5 +96,6 @@
 		{productOffer}
 		{product}
 		{guide}
+		{conversationId}
 	/>
 {/if}
