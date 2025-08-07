@@ -28,7 +28,7 @@
 	}: Props = $props();
 	
 	let editorRef: HTMLDivElement;
-	let fileInput: HTMLInputElement;
+	let fileInput = $state<HTMLInputElement>();
 	let updateTimer: ReturnType<typeof setTimeout>;
 	let isInitialLoad = true;
 	let hasPlaceholder = $state(true);

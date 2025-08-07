@@ -20,17 +20,25 @@
 {#if isOpen}
 	<!-- Backdrop -->
 	<div
+		role="button"
+		tabindex="0"
 		class="fixed inset-0 z-[60] bg-black/50"
 		transition:fade={{ duration: 200 }}
 		onclick={onClose}
+		onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && onClose()}
+		aria-label="Close modal"
 	>
 		<!-- Modal Container -->
 		<div class="flex min-h-screen items-center justify-center p-4">
 			<!-- Modal Content -->
 			<div
+				role="dialog"
+				aria-modal="true"
+				tabindex="-1"
 				class="relative flex max-h-[80vh] w-full max-w-md flex-col rounded-2xl bg-white shadow-xl"
 				transition:fly={{ y: 50, duration: 300 }}
 				onclick={handleModalClick}
+				onkeydown={(e) => e.key === 'Escape' && onClose()}
 			>
 				<!-- Header -->
 				<div class="flex items-center gap-3 border-b border-gray-100 px-6 py-4">

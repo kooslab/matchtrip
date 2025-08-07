@@ -24,3 +24,6 @@ vite.config.ts.timestamp-*
 
 uploads
 usage_tracking*.json
+
+# mcp
+.serena/
