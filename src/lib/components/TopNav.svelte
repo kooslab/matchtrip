@@ -7,7 +7,7 @@
 	class="fixed top-0 left-1/2 z-40 w-full max-w-[430px] -translate-x-1/2 border-b border-gray-200 bg-white"
 >
 	<div class="flex h-14 items-center justify-between px-4">
-		<h1 class="text-xl font-bold text-gray-900">Matchtrip</h1>
+		<a href="/" class="text-xl font-bold text-gray-900">Matchtrip</a>
 
 		<div class="flex items-center gap-4">
 			<button class="text-gray-600 hover:text-gray-900">

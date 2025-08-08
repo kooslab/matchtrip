@@ -19,7 +19,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Code Style Guidelines
 
-- **DRY Principle**: Always follow Don't Repeat Yourself - extract reusable code into functions, components, or utilities
+- **DRY Principle (CRITICAL)**: ALWAYS follow Don't Repeat Yourself
+  - If code appears more than once, create a reusable component immediately
+  - Extract repeated logic into functions, components, or utilities
+  - Never duplicate code - always look for opportunities to componentize
+  - When similar UI patterns appear, create a shared component in `src/lib/components/`
 - **SOLID Principles**:
   - **Single Responsibility**: Each function/component should have one clear purpose
   - **Open/Closed**: Code should be open for extension but closed for modification

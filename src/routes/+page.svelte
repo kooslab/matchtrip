@@ -4,8 +4,7 @@
 	import BottomNav from '$lib/components/BottomNav.svelte';
 	import GuideBottomNav from '$lib/components/GuideBottomNav.svelte';
 	import AgreementModal from '$lib/components/AgreementModal.svelte';
-	import logo from '$lib/images/Matchtrip.png';
-	import logoHQ from '$lib/images/Matchtrip-hq.jpg';
+	import Logo from '$lib/components/Logo.svelte';
 	import bgImage from '$lib/images/bg.png';
 	import beachImage from '$lib/images/beach.png';
 
@@ -74,9 +73,7 @@
 			<!-- Header -->
 			<header class="sticky top-0 z-50 bg-white shadow-sm">
 				<div class="flex items-center justify-between px-4 py-4">
-					<button onclick={() => goto('/')} class="flex items-center">
-						<img src={logo} alt="Matchtrip" class="h-4 w-auto" />
-					</button>
+					<Logo />
 					<button class="relative p-2">
 						<Bell class="h-6 w-6 text-gray-600" />
 						<span class="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
