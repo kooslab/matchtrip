@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import airplaneImg from '$lib/images/airplane.png';
+	import infoIcon from '$lib/icons/icon-info-circle-mono.svg';
 	
 	const { data } = $props();
 	
@@ -9,48 +10,67 @@
 	function goToHome() {
 		goto('/');
 	}
+	
+	function handleConfirm() {
+		// Just close/dismiss the info box or do nothing for now
+	}
 </script>
 
-<div class="flex min-h-screen flex-col bg-white">
-	<!-- Content -->
-	<div class="flex flex-1 flex-col items-center justify-center px-4 text-center pt-20">
-		<!-- Airplane Image -->
-		<div class="mb-8">
-			<img 
-				src={airplaneImg} 
-				alt="여행 제안 완료" 
-				class="h-48 w-auto"
-			/>
+<div class="h-screen bg-gray-50 overflow-hidden">
+	<div class="mx-auto max-w-md h-full flex flex-col bg-white">
+		<!-- Header without border - Fixed height -->
+		<div class="text-center py-4 flex-shrink-0">
+			<h1 class="text-lg font-bold">Matchtrip</h1>
 		</div>
 		
-		<!-- Success Message -->
-		<h1 class="mb-3 text-2xl font-bold text-gray-900">
-			여행제안이 완료되었습니다.
-		</h1>
-		<p class="text-base text-gray-500">
-			Match Your Trip, Make It Yours
-		</p>
-		
-		<!-- Info Box -->
-		<div class="mt-auto mb-8 w-full max-w-[430px]">
-			<div class="flex items-center gap-2 rounded-lg bg-gray-100 px-4 py-3">
-				<div class="flex h-6 w-6 items-center justify-center rounded-full bg-green-500 text-white text-xs">
-					i
-				</div>
-				<p class="text-sm text-gray-700">
-					여행 제안이 수락되면 알림으로 안내해드려요
+		<!-- Main Content - Flexible center -->
+		<div class="flex-1 flex flex-col items-center justify-center px-5 min-h-0">
+			<!-- Airplane Image - Responsive size -->
+			<div class="mb-6">
+				<img 
+					src={airplaneImg} 
+					alt="상품 등록 완료" 
+					class="h-32 sm:h-36 w-auto"
+				/>
+			</div>
+			
+			<!-- Success Message -->
+			<div class="text-center">
+				<h2 class="text-xl font-bold text-gray-900 mb-2">
+					여행제안이 완료되었습니다.
+				</h2>
+				<p class="text-sm text-gray-500">
+					Match Your Trip, Make It Yours
 				</p>
-				<button class="ml-auto text-xs text-gray-500">
-					확인
-				</button>
 			</div>
 		</div>
 		
-		<!-- Bottom Button -->
-		<div class="w-full max-w-[430px] px-4 pb-8">
+		<!-- Bottom Section - Fixed height -->
+		<div class="px-5 pb-6 flex-shrink-0">
+			<!-- Info Box -->
+			<div class="mb-4">
+				<div class="flex items-center gap-3 rounded-xl bg-gray-50 px-4 py-3">
+					<img 
+						src={infoIcon}
+						alt="정보"
+						class="w-6 h-6 flex-shrink-0"
+					/>
+					<p class="text-sm text-gray-700 flex-1">
+						여행 제안이 수락되면 알림으로 안내해드려요
+					</p>
+					<button 
+						onclick={handleConfirm}
+						class="text-xs text-gray-400"
+					>
+						확인
+					</button>
+				</div>
+			</div>
+			
+			<!-- Bottom Button -->
 			<button
 				onclick={goToHome}
-				class="w-full rounded-lg bg-blue-500 py-4 text-white font-medium"
+				class="w-full rounded-xl bg-blue-500 py-3.5 text-white font-medium"
 			>
 				돌아가기
 			</button>

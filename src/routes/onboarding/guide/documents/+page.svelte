@@ -33,7 +33,7 @@
 		},
 		{
 			id: 'insurance',
-			title: '자동 보험',
+			title: '자동차 보험',
 			description: '지원되는 파일 형식: pdf, pptx, hwp, docx, jpg, png , gif'
 		},
 		{

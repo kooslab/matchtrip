@@ -53,11 +53,10 @@
 			});
 			
 			// Navigate to next step
-			goto('/products/create/description');
+			await goto('/products/create/description');
 		} catch (error) {
 			console.error('Error saving price:', error);
 			window.alert('저장 중 오류가 발생했습니다');
-		} finally {
 			isSubmitting = false;
 		}
 	}

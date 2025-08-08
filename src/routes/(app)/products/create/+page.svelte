@@ -13,6 +13,7 @@
 	let selectedDestinationId = $state(productData.destinationId);
 	let expandedContinents = $state<Set<string>>(new Set());
 	let expandedCountries = $state<Set<string>>(new Set());
+	let isNavigating = $state(false);
 	
 	// Toggle continent expansion
 	function toggleContinent(continentName: string) {
@@ -106,20 +107,27 @@
 	
 	// Navigate to next step
 	async function navigateToNext() {
-		if (!selectedDestinationId) return;
+		if (!selectedDestinationId || isNavigating) return;
 		
-		// Save to cookies via API
-		await fetch('/api/products/create/save-step', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				step: 'destination',
-				data: { destinationId: selectedDestinationId }
-			})
-		});
+		isNavigating = true;
 		
-		// Navigate to next step
-		goto('/products/create/price');
+		try {
+			// Save to cookies via API
+			await fetch('/api/products/create/save-step', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					step: 'destination',
+					data: { destinationId: selectedDestinationId }
+				})
+			});
+			
+			// Navigate to next step
+			await goto('/products/create/price');
+		} catch (error) {
+			console.error('Navigation error:', error);
+			isNavigating = false;
+		}
 	}
 </script>
 
@@ -218,9 +226,10 @@
 				<div class="mx-auto max-w-[430px] p-4">
 					<button
 						onclick={navigateToNext}
-						class="w-full rounded-lg bg-blue-500 py-4 font-semibold text-white transition-colors hover:bg-blue-600"
+						disabled={isNavigating}
+						class="w-full rounded-lg bg-blue-500 py-4 font-semibold text-white transition-colors hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
 					>
-						다음
+						{isNavigating ? '저장 중...' : '다음'}
 					</button>
 				</div>
 			</div>

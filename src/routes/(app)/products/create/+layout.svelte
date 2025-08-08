@@ -22,6 +22,9 @@
 	let currentStepIndex = $derived(
 		currentPath === 'success' ? steps.length - 1 : currentStep ? currentStep.number - 1 : 0
 	);
+	
+	// Hide header on success page
+	let isSuccessPage = $derived(currentPath === 'success');
 
 	function handleBack() {
 		if (currentPath === 'success') {
@@ -41,24 +44,26 @@
 
 <div class="min-h-screen bg-gray-50">
 	<div class="mx-auto min-h-screen max-w-[430px] bg-white">
-		<!-- Header -->
-		<header class="sticky top-0 z-50 bg-white border-b">
-			<div class="flex items-center px-4 py-4">
-				<button onclick={handleBack} class="p-1">
-					<ArrowLeft class="h-6 w-6 text-blue-500" />
-				</button>
-				<h1 class="flex-1 text-center text-lg font-semibold">내 상품 등록</h1>
-				<div class="w-8"></div>
-			</div>
+		<!-- Header - Hidden on success page -->
+		{#if !isSuccessPage}
+			<header class="sticky top-0 z-50 bg-white border-b">
+				<div class="flex items-center px-4 py-4">
+					<button onclick={handleBack} class="p-1">
+						<ArrowLeft class="h-6 w-6 text-blue-500" />
+					</button>
+					<h1 class="flex-1 text-center text-lg font-semibold">내 상품 등록</h1>
+					<div class="w-8"></div>
+				</div>
 
-			<!-- Progress bar -->
-			<div class="h-1 bg-gray-100">
-				<div
-					class="h-full bg-blue-500 transition-all duration-300"
-					style="width: {((currentStepIndex + 1) / steps.length) * 100}%"
-				></div>
-			</div>
-		</header>
+				<!-- Progress bar -->
+				<div class="h-1 bg-gray-100">
+					<div
+						class="h-full bg-blue-500 transition-all duration-300"
+						style="width: {((currentStepIndex + 1) / steps.length) * 100}%"
+					></div>
+				</div>
+			</header>
+		{/if}
 
 		<!-- Content -->
 		<main>

@@ -46,11 +46,10 @@
 			});
 			
 			// Navigate to next step
-			goto('/products/create/languages');
+			await goto('/products/create/languages');
 		} catch (error) {
 			console.error('Error saving duration:', error);
 			window.alert('저장 중 오류가 발생했습니다');
-		} finally {
 			isSubmitting = false;
 		}
 	}

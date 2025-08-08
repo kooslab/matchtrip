@@ -33,6 +33,7 @@
 	let updateTimer: ReturnType<typeof setTimeout>;
 	let isInitialLoad = true;
 	let hasPlaceholder = $state(true);
+	let lastKnownRange: Range | null = null;
 	
 	// Initialize editor with existing value
 	$effect(() => {
@@ -242,8 +243,20 @@
 				// Focus editor to ensure we have a cursor position
 				editorRef?.focus();
 				
+				// Restore the saved range if available
+				if (lastKnownRange) {
+					const selection = window.getSelection();
+					if (selection) {
+						selection.removeAllRanges();
+						selection.addRange(lastKnownRange);
+					}
+				}
+				
 				// Insert temporary image with loading state
 				insertImageAtCursor(tempUrl, true);
+				
+				// Clear the saved range
+				lastKnownRange = null;
 				
 				// Upload to server
 				const formData = new FormData();
@@ -349,19 +362,39 @@
 	
 	// Handle image button click
 	function handleImageButtonClick() {
-		// Save current selection before file dialog opens
-		const selection = window.getSelection();
-		const range = selection?.getRangeAt(0);
-		
-		fileInput?.click();
-		
-		// Restore selection after a brief delay
-		setTimeout(() => {
-			if (range && selection) {
+		// Focus the editor first if it's not focused
+		if (editorRef && document.activeElement !== editorRef) {
+			editorRef.focus();
+			
+			// Place cursor at the end if no selection
+			const selection = window.getSelection();
+			if (selection && (!selection.rangeCount || selection.rangeCount === 0)) {
+				const range = document.createRange();
+				range.selectNodeContents(editorRef);
+				range.collapse(false); // Collapse to end
 				selection.removeAllRanges();
 				selection.addRange(range);
 			}
-		}, 10);
+		}
+		
+		// Save current selection before file dialog opens
+		const selection = window.getSelection();
+		let range = null;
+		
+		// Check if there's a selection range
+		if (selection && selection.rangeCount > 0) {
+			range = selection.getRangeAt(0);
+		} else if (editorRef) {
+			// If no selection, create a range at the end of the content
+			range = document.createRange();
+			range.selectNodeContents(editorRef);
+			range.collapse(false); // Collapse to end
+		}
+		
+		// Store the range for use after file selection
+		lastKnownRange = range;
+		
+		fileInput?.click();
 	}
 	
 	// Clear placeholder on focus

@@ -67,11 +67,10 @@
 			});
 			
 			// Navigate to next step
-			goto('/products/create/attachments');
+			await goto('/products/create/attachments');
 		} catch (error) {
 			console.error('Error saving languages:', error);
 			window.alert('저장 중 오류가 발생했습니다');
-		} finally {
 			isSubmitting = false;
 		}
 	}

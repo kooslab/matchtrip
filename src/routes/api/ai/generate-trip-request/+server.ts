@@ -8,7 +8,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		const data = await request.json();
 
 		// Check if API key exists
-		if (!env.LLM_API_KEY_OPENAI) {
+		if (!env.LLM_API_KEY) {
 			console.error('OpenAI API key not configured');
 			return json({ error: 'AI service not configured' }, { status: 500 });
 		}
@@ -111,7 +111,7 @@ ${existingRequests ? `기존 요청사항: ${existingRequests}` : ''}
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				Authorization: `Bearer ${env.LLM_API_KEY_OPENAI}`
+				Authorization: `Bearer ${env.LLM_API_KEY}`
 			},
 			body: JSON.stringify({
 				model: 'gpt-4o-mini',

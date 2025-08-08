@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { Paperclip, X } from 'lucide-svelte';
+	import pdfImage from '$lib/images/pdf.png';
 	
 	const { data } = $props();
 	
@@ -118,14 +119,14 @@
 		uploadedFiles = uploadedFiles.filter(f => f.id !== fileId);
 	}
 	
-	// Skip step
-	function handleSkip() {
-		goto('/products/create/review');
+	// Skip step - directly create product without files
+	async function handleSkip() {
+		await handleSubmit(true);
 	}
 	
-	// Submit
-	async function handleSubmit() {
-		if (uploadedFiles.length === 0) {
+	// Submit and create product
+	async function handleSubmit(skipFiles = false) {
+		if (!skipFiles && uploadedFiles.length === 0) {
 			const confirm = window.confirm('첨부 파일 없이 계속하시겠습니까?');
 			if (!confirm) return;
 		}
@@ -133,23 +134,44 @@
 		isSubmitting = true;
 		
 		try {
-			// Save file IDs to cookies
-			const fileIds = uploadedFiles.map(f => f.id);
-			await fetch('/api/products/create/save-step', {
+			// Save file IDs to cookies if any
+			if (uploadedFiles.length > 0) {
+				const fileIds = uploadedFiles.map(f => f.id);
+				const saveResponse = await fetch('/api/products/create/save-step', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						step: 'attachments',
+						data: { fileIds }
+					})
+				});
+				
+				if (!saveResponse.ok) {
+					throw new Error('Failed to save attachments');
+				}
+			}
+			
+			// Create the product via API
+			const response = await fetch('/api/products/create', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-					step: 'attachments',
-					data: { fileIds }
+					fileIds: uploadedFiles.map(f => f.id)
 				})
 			});
 			
-			// Navigate to next step
-			goto('/products/create/review');
+			if (!response.ok) {
+				const error = await response.json();
+				throw new Error(error.message || 'Failed to create product');
+			}
+			
+			const data = await response.json();
+			
+			// Navigate to success page
+			await goto(`/products/create/success?id=${data.productId}`);
 		} catch (error) {
-			console.error('Error saving attachments:', error);
-			window.alert('저장 중 오류가 발생했습니다');
-		} finally {
+			console.error('Error creating product:', error);
+			window.alert(error.message || '상품 생성 중 오류가 발생했습니다');
 			isSubmitting = false;
 		}
 	}
@@ -160,7 +182,7 @@
 	<div class="px-4 pt-6 pb-4">
 		<div class="flex items-start justify-between">
 			<div>
-				<h2 class="text-lg text-gray-600">여행을 언내할 파일을 업로드해 주세요</h2>
+				<h2 class="text-lg text-gray-600">여행을 안내할 파일을 업로드해 주세요</h2>
 				<p class="mt-2 text-sm text-gray-500">참고 파일</p>
 			</div>
 			<button
@@ -202,10 +224,8 @@
 					<div class="rounded-lg border border-gray-200 p-3">
 						<div class="flex items-center justify-between">
 							<div class="flex items-center gap-3 flex-1 min-w-0">
-								<div class="rounded bg-red-50 p-2 flex-shrink-0">
-									<svg class="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-										<path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-5L9 2H4z" />
-									</svg>
+								<div class="flex-shrink-0">
+									<img src={pdfImage} alt="PDF" class="h-8 w-8 object-contain" />
 								</div>
 								<div class="flex-1 min-w-0">
 									<p class="text-sm font-medium text-gray-900 truncate">{file.name}</p>
@@ -247,7 +267,7 @@
 				disabled={uploading || isSubmitting}
 				class="w-full rounded-lg bg-blue-500 py-4 text-white font-medium disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
 			>
-				{isSubmitting ? '저장 중...' : '다음 등록'}
+				{isSubmitting ? '저장 중...' : '상품 등록'}
 			</button>
 		</div>
 	</div>
