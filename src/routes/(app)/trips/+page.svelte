@@ -10,10 +10,8 @@
 	import chevronRightIconUrl from '$lib/icons/icon-arrow-right-small-mono.svg';
 	import CitySelector from '$lib/components/CitySelector.svelte';
 	import type { City } from '$lib/components/CitySelector.svelte';
-	import { DateRangePicker } from 'bits-ui';
-	import CalendarBlank from 'phosphor-svelte/lib/CalendarBlank';
-	import CaretLeft from 'phosphor-svelte/lib/CaretLeft';
-	import CaretRight from 'phosphor-svelte/lib/CaretRight';
+	import { CalendarDate } from '@internationalized/date';
+	import DateRangePickerModal from '$lib/components/DateRangePickerModal.svelte';
 	import { page } from '$app/stores';
 
 	let { data } = $props();
@@ -48,15 +46,9 @@
 	let selectedCityIds = $state<Set<string>>(initializeFromUrl());
 	let citySelectorRef: CitySelector;
 
-	// Set initial filter state based on URL
-	if (selectedCityIds.size > 0) {
-		selectedFilters.destination = true;
-	}
-
 	// Date range picker state
 	let showDateRangePicker = $state(false);
-	let selectedDateRange = $state<{ start?: Date; end?: Date }>({});
-	let dateRangeOpen = $state(false);
+	let selectedDateRange = $state<{ start?: CalendarDate; end?: CalendarDate }>({});
 
 	// People count selector state
 	let showPeopleSelector = $state(false);
@@ -65,6 +57,49 @@
 		children: 0,
 		infants: 0
 	});
+	
+	// Initialize filters from URL parameters
+	const urlParams = $page.url.searchParams;
+	
+	// Set destination filter if in URL
+	if (selectedCityIds.size > 0) {
+		selectedFilters.destination = true;
+	}
+	
+	// Set date filter if in URL
+	if (urlParams.get('startDate') && urlParams.get('endDate')) {
+		selectedFilters.dates = true;
+		const startDate = new Date(urlParams.get('startDate')!);
+		const endDate = new Date(urlParams.get('endDate')!);
+		selectedDateRange = {
+			start: new CalendarDate(
+				startDate.getFullYear(),
+				startDate.getMonth() + 1,
+				startDate.getDate()
+			),
+			end: new CalendarDate(
+				endDate.getFullYear(),
+				endDate.getMonth() + 1,
+				endDate.getDate()
+			)
+		};
+	}
+	
+	// Set people filter if in URL
+	if (urlParams.get('adults') || urlParams.get('children') || urlParams.get('infants')) {
+		selectedFilters.people = true;
+		if (urlParams.get('adults')) peopleCount.adults = parseInt(urlParams.get('adults')!);
+		if (urlParams.get('children')) peopleCount.children = parseInt(urlParams.get('children')!);
+		if (urlParams.get('infants')) peopleCount.infants = parseInt(urlParams.get('infants')!);
+	}
+	
+	// Set budget filter if in URL
+	if (urlParams.get('budgetMin') && urlParams.get('budgetMax')) {
+		selectedFilters.budget = true;
+		const min = urlParams.get('budgetMin');
+		const max = urlParams.get('budgetMax');
+		selectedBudget = `${min}-${max}`;
+	}
 
 	// Budget selector state
 	let showBudgetSelector = $state(false);
@@ -77,7 +112,7 @@
 
 	// Clear all filters
 	function clearAllFilters() {
-		selectedCityIds.clear();
+		selectedCityIds = new Set<string>();
 		selectedDateRange = {};
 		peopleCount = { adults: 2, children: 0, infants: 0 };
 		selectedBudget = '100-200';
@@ -182,16 +217,43 @@
 	// Date range functions
 	function openDateRangePicker() {
 		showDateRangePicker = true;
-		dateRangeOpen = true;
 		selectedFilters.dates = true;
 	}
 
-	function applyDateFilter() {
-		if (selectedDateRange.start && selectedDateRange.end) {
+	// Format CalendarDate for display
+	function formatCalendarDate(calendarDate: CalendarDate | undefined) {
+		if (!calendarDate) return '';
+		
+		const jsDate = new Date(
+			calendarDate.year,
+			calendarDate.month - 1,
+			calendarDate.day
+		);
+		
+		return new Intl.DateTimeFormat('ko-KR', {
+			year: 'numeric',
+			month: 'long',
+			day: 'numeric'
+		}).format(jsDate);
+	}
+
+	function applyDateFilter(dates: { start?: CalendarDate; end?: CalendarDate }) {
+		selectedDateRange = dates;
+		
+		if (dates.start && dates.end) {
 			selectedFilters.dates = true;
-			// Convert to Date objects if needed and format
-			const startDate = new Date(selectedDateRange.start);
-			const endDate = new Date(selectedDateRange.end);
+			
+			// Convert CalendarDate to JS Date and format
+			const startDate = new Date(
+				dates.start.year,
+				dates.start.month - 1,
+				dates.start.day
+			);
+			const endDate = new Date(
+				dates.end.year,
+				dates.end.month - 1,
+				dates.end.day
+			);
 
 			// Format dates as YYYY-MM-DD
 			const formatDateString = (date: Date) => {
@@ -208,16 +270,30 @@
 			currentParams.set('startDate', startDateStr);
 			currentParams.set('endDate', endDateStr);
 			goto(`/trips?${currentParams.toString()}`);
+		} else {
+			// Clear date filter if no dates selected
+			selectedFilters.dates = false;
+			const currentParams = new URLSearchParams(window.location.search);
+			currentParams.delete('startDate');
+			currentParams.delete('endDate');
+			goto(`/trips?${currentParams.toString()}`);
 		}
 		showDateRangePicker = false;
-		dateRangeOpen = false;
 	}
 
 	// Format date range for display
 	const dateRangeDisplay = $derived(() => {
 		if (selectedDateRange.start && selectedDateRange.end) {
-			const start = new Date(selectedDateRange.start);
-			const end = new Date(selectedDateRange.end);
+			const start = new Date(
+				selectedDateRange.start.year,
+				selectedDateRange.start.month - 1,
+				selectedDateRange.start.day
+			);
+			const end = new Date(
+				selectedDateRange.end.year,
+				selectedDateRange.end.month - 1,
+				selectedDateRange.end.day
+			);
 			return `${formatDate(start, { format: 'short' })} - ${formatDate(end, { format: 'short' })}`;
 		}
 		return '';
@@ -243,6 +319,9 @@
 
 	// Format people count for display
 	const peopleCountDisplay = $derived(() => {
+		// Only show count if filter is actually active
+		if (!selectedFilters.people) return '';
+		
 		const total = peopleCount.adults + peopleCount.children + peopleCount.infants;
 		if (total > 0) {
 			const parts = [];
@@ -303,6 +382,9 @@
 
 	// Format budget for display
 	const budgetDisplay = $derived(() => {
+		// Only show budget if filter is actually active
+		if (!selectedFilters.budget) return '';
+		
 		const option = budgetOptions.find((opt) => opt.value === selectedBudget);
 		return option?.label || '';
 	});
@@ -343,11 +425,15 @@
 						: 'border border-gray-300 bg-white text-gray-700 hover:border-gray-400'}"
 				>
 					<span
-						>여행지 {selectedCityIds.size > 0
-							? `${selectedCityIds.size}곳`
-							: uniqueDestinations > 0
-								? `${uniqueDestinations}곳`
-								: ''}</span
+						>{selectedCityIds.size === 0
+							? '전체'
+							: selectedCityIds.size === 1
+								? (() => {
+									const cityId = Array.from(selectedCityIds)[0];
+									const city = availableDestinations.find(d => d.id.toString() === cityId);
+									return city ? city.city : '1곳';
+								})()
+								: `여행지 ${selectedCityIds.size}곳`}</span
 					>
 					<img
 						src={chevronRightIconUrl}
@@ -361,7 +447,7 @@
 						? 'border-gray-900 bg-gray-900 text-white'
 						: 'border border-gray-300 bg-white text-gray-700 hover:border-gray-400'}"
 				>
-					<span>{dateRangeDisplay() || '일정'}</span>
+					<span>{dateRangeDisplay() || '일정 전체'}</span>
 					<img
 						src={chevronRightIconUrl}
 						alt=""
@@ -374,7 +460,7 @@
 						? 'border-gray-900 bg-gray-900 text-white'
 						: 'border border-gray-300 bg-white text-gray-700 hover:border-gray-400'}"
 				>
-					<span>{peopleCountDisplay() || '인원'}</span>
+					<span>{peopleCountDisplay() || '인원 전체'}</span>
 					<img
 						src={chevronRightIconUrl}
 						alt=""
@@ -387,7 +473,7 @@
 						? 'border-gray-900 bg-gray-900 text-white'
 						: 'border border-gray-300 bg-white text-gray-700 hover:border-gray-400'}"
 				>
-					<span>{budgetDisplay() || '예산'}</span>
+					<span>{budgetDisplay() || '예산 전체'}</span>
 					<img
 						src={chevronRightIconUrl}
 						alt=""
@@ -420,7 +506,7 @@
 		<div class="fixed inset-0 z-50 flex items-end justify-center">
 			<!-- Backdrop -->
 			<div
-				class="absolute inset-0 bg-black/20 backdrop-blur-sm"
+				class="absolute inset-0 bg-black/60"
 				onclick={() => (showCitySearchModal = false)}
 			></div>
 
@@ -436,145 +522,26 @@
 					onClose={() => (showCitySearchModal = false)}
 					onSubmit={applyCityFilter}
 					submitText={`${selectedCityIds.size}개 지역`}
-					showBackButton={true}
 				/>
-
-				<!-- Bottom indicator for swipe -->
-				<div class="pointer-events-none absolute right-0 bottom-0 left-0 flex justify-center pb-2">
-					<div class="h-[5px] w-[134px] rounded-[100px] bg-[#052236]"></div>
-				</div>
 			</div>
 		</div>
 	{/if}
 
 	<!-- Date Range Picker Modal -->
-	{#if showDateRangePicker}
-		<div class="fixed inset-0 z-50 flex items-end justify-center">
-			<!-- Backdrop -->
-			<div
-				class="absolute inset-0 bg-black/20 backdrop-blur-sm"
-				onclick={() => (showDateRangePicker = false)}
-			></div>
-
-			<!-- Modal Content -->
-			<div class="animate-slide-up relative w-full max-w-lg rounded-t-[40px] bg-white shadow-xl">
-				<div class="px-6 pt-6 pb-8">
-					<h2 class="mb-6 text-center text-lg font-semibold">여행 일정 선택</h2>
-
-					<DateRangePicker.Root bind:value={selectedDateRange}>
-						<!-- Calendar displayed directly -->
-						<DateRangePicker.Calendar class="w-full">
-							{#snippet children({ months, weekdays })}
-								<DateRangePicker.Header class="mb-4 flex items-center justify-between px-4">
-									<DateRangePicker.PrevButton
-										class="inline-flex size-10 items-center justify-center rounded-lg transition-colors hover:bg-gray-100"
-									>
-										<CaretLeft class="size-5" />
-									</DateRangePicker.PrevButton>
-									<DateRangePicker.Heading class="text-base font-medium" />
-									<DateRangePicker.NextButton
-										class="inline-flex size-10 items-center justify-center rounded-lg transition-colors hover:bg-gray-100"
-									>
-										<CaretRight class="size-5" />
-									</DateRangePicker.NextButton>
-								</DateRangePicker.Header>
-
-								<DateRangePicker.Grid class="w-full px-4">
-									<DateRangePicker.GridHead>
-										<DateRangePicker.GridRow class="mb-2 flex w-full justify-between">
-											{#each weekdays as day}
-												<DateRangePicker.HeadCell
-													class="w-10 text-center text-sm font-medium text-gray-500"
-												>
-													{day.slice(0, 1)}
-												</DateRangePicker.HeadCell>
-											{/each}
-										</DateRangePicker.GridRow>
-									</DateRangePicker.GridHead>
-									<DateRangePicker.GridBody>
-										{#each months[0].weeks as weekDates}
-											<DateRangePicker.GridRow class="mb-1 flex w-full justify-between">
-												{#each weekDates as date}
-													<DateRangePicker.Cell
-														{date}
-														month={months[0].value}
-														class="relative size-10 p-0 text-center"
-													>
-														<DateRangePicker.Day
-															class="size-full rounded-lg text-sm text-gray-900 transition-colors hover:bg-gray-100
-																data-[in-range]:bg-blue-100 data-[in-range]:text-gray-900 data-[outside-month]:text-gray-400 
-																data-[selected]:bg-blue-500 data-[selected]:font-medium
-																data-[selected]:text-white data-[unavailable]:text-gray-300
-																data-[unavailable]:hover:bg-transparent"
-														>
-															{date.day}
-														</DateRangePicker.Day>
-													</DateRangePicker.Cell>
-												{/each}
-											</DateRangePicker.GridRow>
-										{/each}
-									</DateRangePicker.GridBody>
-								</DateRangePicker.Grid>
-							{/snippet}
-						</DateRangePicker.Calendar>
-
-						<!-- Selected date display -->
-						{#if selectedDateRange.start || selectedDateRange.end}
-							<div class="mt-6 grid grid-cols-2 gap-4 px-6">
-								<div>
-									<label class="mb-1 block text-xs text-gray-500">출발일</label>
-									<div class="text-sm font-medium">
-										{selectedDateRange.start
-											? formatDate(selectedDateRange.start, { format: 'medium' })
-											: '-'}
-									</div>
-								</div>
-								<div>
-									<label class="mb-1 block text-xs text-gray-500">도착일</label>
-									<div class="text-sm font-medium">
-										{selectedDateRange.end
-											? formatDate(selectedDateRange.end, { format: 'medium' })
-											: '-'}
-									</div>
-								</div>
-							</div>
-						{/if}
-
-						<div class="mt-6 grid grid-cols-2 gap-3 px-6">
-							<button
-								onclick={() => (showDateRangePicker = false)}
-								class="rounded-xl border border-gray-200 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-50"
-							>
-								취소
-							</button>
-							<button
-								onclick={applyDateFilter}
-								disabled={!selectedDateRange.start || !selectedDateRange.end}
-								class="rounded-xl py-3 font-medium transition-colors
-									{selectedDateRange.start && selectedDateRange.end
-									? 'bg-blue-500 text-white hover:bg-blue-600'
-									: 'cursor-not-allowed bg-gray-200 text-gray-400'}"
-							>
-								적용
-							</button>
-						</div>
-					</DateRangePicker.Root>
-				</div>
-
-				<!-- Bottom indicator for swipe -->
-				<div class="pointer-events-none absolute right-0 bottom-0 left-0 flex justify-center pb-2">
-					<div class="h-[5px] w-[134px] rounded-[100px] bg-[#052236]"></div>
-				</div>
-			</div>
-		</div>
-	{/if}
+	<DateRangePickerModal
+		open={showDateRangePicker}
+		bind:value={selectedDateRange}
+		onClose={() => (showDateRangePicker = false)}
+		onApply={applyDateFilter}
+		title="여행 일정"
+	/>
 
 	<!-- People Selector Modal -->
 	{#if showPeopleSelector}
 		<div class="fixed inset-0 z-50 flex items-end justify-center">
 			<!-- Backdrop -->
 			<div
-				class="absolute inset-0 bg-black/20 backdrop-blur-sm"
+				class="absolute inset-0 bg-black/60"
 				onclick={() => (showPeopleSelector = false)}
 			></div>
 
@@ -584,12 +551,7 @@
 					<div class="mb-6 flex items-center justify-between">
 						<h2 class="text-lg font-semibold">인원</h2>
 						<button
-							onclick={() => {
-								// Reset to defaults
-								peopleCount.adults = 2;
-								peopleCount.children = 0;
-								peopleCount.infants = 0;
-							}}
+							onclick={() => (showPeopleSelector = false)}
 							class="text-gray-400 hover:text-gray-600"
 						>
 							<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -597,7 +559,7 @@
 									stroke-linecap="round"
 									stroke-linejoin="round"
 									stroke-width="2"
-									d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+									d="M6 18L18 6M6 6l12 12"
 								/>
 							</svg>
 						</button>
@@ -607,7 +569,7 @@
 						<!-- Adults -->
 						<div class="flex items-center justify-between">
 							<div>
-								<div class="font-medium text-gray-900">어른 {peopleCount.adults}명</div>
+								<div class="font-medium text-gray-900">어른</div>
 								<div class="text-sm text-gray-500">만 13세 이상</div>
 							</div>
 							<div class="flex items-center gap-3">
@@ -763,7 +725,7 @@
 		<div class="fixed inset-0 z-50 flex items-end justify-center">
 			<!-- Backdrop -->
 			<div
-				class="absolute inset-0 bg-black/20 backdrop-blur-sm"
+				class="absolute inset-0 bg-black/60"
 				onclick={() => (showBudgetSelector = false)}
 			></div>
 
