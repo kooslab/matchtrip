@@ -12,7 +12,7 @@ export const PATCH: RequestHandler = async ({ request, locals }) => {
 
 	try {
 		const updates = await request.json();
-		const allowedFields = ['name', 'phone', 'birthDate'];
+		const allowedFields = ['name', 'phone', 'birthDate', 'image'];
 
 		// Filter out any fields that aren't allowed
 		const filteredUpdates: Record<string, any> = {};

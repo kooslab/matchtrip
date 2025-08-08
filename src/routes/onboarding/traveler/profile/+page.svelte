@@ -37,15 +37,16 @@
 	// Also restore profile image if it exists
 	let profileImageUrl = $state(storeData.profileImageUrl || '');
 
-	// Check required data immediately and redirect if missing
-	if (!storeData.name || !storeData.phone) {
-		// Redirect immediately without showing any content
-		goto('/onboarding/traveler');
-	} else {
-		isInitialized = true;
-	}
-
 	onMount(() => {
+		// Check required data and redirect if missing
+		if (!storeData.name || !storeData.phone) {
+			goto('/onboarding/traveler');
+			return;
+		}
+		
+		// Set initialized after client-side check
+		isInitialized = true;
+		
 		// Initialize dateValue if birthDate exists
 		if (formData.birthDate) {
 			const parts = formData.birthDate.split('-');
@@ -184,7 +185,8 @@
 				body: JSON.stringify({
 					name: storeData.name,
 					phone: storeData.phone,
-					birthDate: formData.birthDate
+					birthDate: formData.birthDate,
+					image: profileImageUrl || null
 				})
 			});
 
@@ -199,8 +201,8 @@
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-					phone: storeData.phone
-					// Add any other traveler-specific fields here if needed
+					phone: storeData.phone,
+					profileImageUrl: profileImageUrl || null
 				})
 			});
 

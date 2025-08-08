@@ -1,30 +1,56 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
-	import { colors } from '$lib/constants/colors';
-	import iconCheck from '$lib/icons/icon-check-circle-mono.svg';
+	import walkImage from '$lib/images/walk.png';
+	import iconInfo from '$lib/icons/icon-info-circle-mono.svg';
 
-	onMount(() => {
-		// Redirect to my-trips after 2 seconds
-		setTimeout(() => {
-			// Use window.location for a hard refresh to ensure session is updated
-			window.location.href = '/my-trips';
-		}, 2000);
-	});
+	function handleStart() {
+		goto('/my-trips');
+	}
 </script>
 
-<div class="flex min-h-screen items-center justify-center bg-white px-4">
-	<div class="text-center">
-		<div class="mb-6 flex justify-center">
-			<img
-				src={iconCheck}
-				alt="완료"
-				class="h-20 w-20"
-				style="filter: invert(59%) sepia(97%) saturate(1564%) hue-rotate(121deg) brightness(95%) contrast(94%);"
-			/>
+<div class="min-h-screen bg-white">
+	<div class="max-w-md mx-auto relative min-h-screen flex flex-col">
+		<!-- Header with logo -->
+		<div class="p-4 pt-8">
+			<h1 class="text-center text-2xl font-bold text-gray-900">Matchtrip</h1>
 		</div>
-		<h1 class="text-primary mb-2 text-2xl font-bold">프로필 등록 완료!</h1>
-		<p class="text-secondary mb-8">이제 매치트립을 시작할 수 있습니다</p>
-		<div class="text-secondary text-sm">잠시 후 내 여행 페이지로 이동합니다...</div>
+
+		<!-- Main content -->
+		<div class="flex-1 flex flex-col items-center justify-center px-6 pb-20">
+			<!-- Traveler illustration -->
+			<div class="mb-8">
+				<img src={walkImage} alt="여행자" class="w-48 h-48 object-contain" />
+			</div>
+
+			<!-- Welcome message -->
+			<h2 class="text-2xl font-bold text-gray-900 mb-3 text-center">
+				회원가입이 완료되었습니다.
+			</h2>
+			<p class="text-gray-500 text-center mb-12">
+				Match Your Trip, Make It Yours
+			</p>
+
+			<!-- Info message -->
+			<div class="w-full bg-green-50 rounded-lg p-4 flex items-start gap-3 mb-8">
+				<img src={iconInfo} alt="정보" class="w-5 h-5 mt-0.5 flex-shrink-0" 
+					style="filter: invert(74%) sepia(76%) saturate(401%) hue-rotate(82deg) brightness(90%) contrast(88%);" />
+				<p class="text-sm text-green-700">
+					당신에게 딱 맞는 여행, 지금 간편하게 받아보세요
+				</p>
+			</div>
+		</div>
+
+		<!-- Bottom button -->
+		<div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100">
+			<div class="max-w-md mx-auto p-4">
+				<button
+					onclick={handleStart}
+					class="w-full h-12 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition-colors"
+				>
+					홈으로
+				</button>
+			</div>
+		</div>
 	</div>
 </div>

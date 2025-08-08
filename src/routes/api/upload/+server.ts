@@ -73,9 +73,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		// Upload to R2 if configured, otherwise use mock
 		if (r2Client) {
 			try {
-				// Use public bucket for destination and guide profile images, private bucket for others
-				const isPublic =
-					type === 'destination' || type === 'guide-profile' || type === 'traveler-profile' || type === 'content';
+				// Use public bucket for destination and content images, private bucket for profile images
+				const isPublic = type === 'destination' || type === 'content';
 				// If marked as public but no public bucket, still use private bucket but generate public URL
 				const bucketName =
 					isPublic && R2_PUBLIC_BUCKET_NAME ? R2_PUBLIC_BUCKET_NAME : R2_BUCKET_NAME;

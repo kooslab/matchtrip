@@ -55,15 +55,16 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 		}
 
 		// Check if user is authenticated for private images
-		if (imagePath?.includes('traveler-profile') && !locals.user) {
-			throw error(401, 'Unauthorized');
+		// Profile images (guide and traveler) are accessible to any authenticated user
+		if ((imagePath?.includes('traveler-profile') || imagePath?.includes('guide-profile')) && !locals.user) {
+			throw error(401, 'Unauthorized - Please login to view profile images');
 		}
 
 		// If R2 is configured, generate presigned URL
 		if (r2Client && (R2_BUCKET_NAME || R2_PUBLIC_BUCKET_NAME)) {
 			// Determine which bucket to use based on the image type
 			const isPublicImage =
-				imagePath?.includes('destination/') || imagePath?.includes('guide-profile/') || imagePath?.includes('content/');
+				imagePath?.includes('destination/') || imagePath?.includes('content/');
 			const bucketName =
 				isPublicImage && R2_PUBLIC_BUCKET_NAME ? R2_PUBLIC_BUCKET_NAME : R2_BUCKET_NAME;
 
