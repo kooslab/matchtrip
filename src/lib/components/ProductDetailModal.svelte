@@ -242,7 +242,7 @@
 					<!-- Guide Info Tab -->
 					<div class="p-4">
 						<div class="flex items-center gap-4 mb-6">
-							<div class="w-20 h-20 rounded-full bg-gray-200 overflow-hidden">
+							<div class="w-20 h-20 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
 								{#if product.guideProfile?.profileImageUrl || product.guide?.image}
 									<img 
 										src={product.guideProfile?.profileImageUrl || product.guide?.image} 
@@ -257,30 +257,70 @@
 									</div>
 								{/if}
 							</div>
-							<div>
-								<h2 class="text-lg font-bold">{product.guide?.name || product.guideProfile?.username || '가이드'}</h2>
+							<div class="flex-1">
+								<h2 class="text-lg font-bold text-gray-900">{product.guide?.name || product.guideProfile?.username || '가이드'}</h2>
 								{#if product.guideProfile?.isVerified}
-									<span class="text-xs text-green-600">✓ 인증된 가이드</span>
+									<div class="flex items-center gap-1 mt-1">
+										<svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+											<path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+										</svg>
+										<span class="text-xs text-green-600 font-medium">인증된 가이드</span>
+									</div>
 								{/if}
-								<p class="text-sm text-gray-600 mt-1">{product.guideProfile?.currentLocation || ''}</p>
+								{#if product.guideProfile?.currentLocation}
+									<p class="text-sm text-gray-600 mt-1 flex items-center gap-1">
+										<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+										</svg>
+										{product.guideProfile.currentLocation}
+									</p>
+								{/if}
 							</div>
 						</div>
 						
 						{#if product.guideProfile?.introduction}
+							<div class="mb-6 p-4 bg-gray-50 rounded-lg">
+								<h3 class="font-semibold mb-2 text-gray-900">소개</h3>
+								<p class="text-sm text-gray-600 whitespace-pre-wrap">{product.guideProfile.introduction}</p>
+							</div>
+						{/if}
+						
+						{#if product.guideProfile?.experience}
 							<div class="mb-6">
-								<h3 class="font-semibold mb-2">소개</h3>
-								<p class="text-sm text-gray-600">{product.guideProfile.introduction}</p>
+								<h3 class="font-semibold mb-2 text-gray-900">경력</h3>
+								<p class="text-sm text-gray-600">{product.guideProfile.experience}</p>
 							</div>
 						{/if}
 						
 						{#if product.guideProfile?.languages && product.guideProfile.languages.length > 0}
 							<div class="mb-6">
-								<h3 class="font-semibold mb-2">사용 가능 언어</h3>
+								<h3 class="font-semibold mb-2 text-gray-900">사용 가능 언어</h3>
 								<div class="flex flex-wrap gap-2">
 									{#each product.guideProfile.languages as language}
-										<span class="px-3 py-1 bg-gray-100 text-sm rounded-full">{language}</span>
+										<span class="px-3 py-1 bg-blue-50 text-blue-700 text-sm rounded-full font-medium">{language}</span>
 									{/each}
 								</div>
+							</div>
+						{/if}
+						
+						{#if product.guideProfile?.activityAreas && product.guideProfile.activityAreas.length > 0}
+							<div class="mb-6">
+								<h3 class="font-semibold mb-2 text-gray-900">활동 지역</h3>
+								<div class="flex flex-wrap gap-2">
+									{#each product.guideProfile.activityAreas as area}
+										<span class="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">{area}</span>
+									{/each}
+								</div>
+							</div>
+						{/if}
+						
+						{#if !product.guideProfile?.introduction && !product.guideProfile?.experience && !product.guideProfile?.languages?.length && !product.guideProfile?.activityAreas?.length}
+							<div class="text-center py-8">
+								<svg class="w-12 h-12 mx-auto text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+								</svg>
+								<p class="text-gray-500">가이드 정보가 아직 등록되지 않았습니다</p>
 							</div>
 						{/if}
 					</div>

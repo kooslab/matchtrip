@@ -8,6 +8,7 @@
 	const { data } = $props();
 	
 	// Get data from server
+	const destinations = $derived(data.destinations || []);
 	const products = $derived(data.products || []);
 	const selectedDestination = $derived(data.selectedDestination);
 	const user = $derived(data.user);
@@ -88,25 +89,58 @@
 			</div>
 		</header>
 
-		<!-- Filters -->
-		<div class="flex items-center gap-3 px-4 py-3">
-			<button
-				onclick={() => filterBy = 'all'}
-				class="px-3 py-1.5 text-sm rounded-full transition-colors {filterBy === 'all' ? 'bg-gray-900 text-white' : 'text-gray-600'}"
-			>
-				전체 {products.length}
-			</button>
-			<button
-				onclick={() => filterBy = 'latest'}
-				class="px-3 py-1.5 text-sm transition-colors {filterBy === 'latest' ? 'text-gray-900 font-medium' : 'text-gray-600'}"
-			>
-				최신순 ↓
-			</button>
-		</div>
+		<!-- Show destinations if no specific destination selected -->
+		{#if !selectedDestination && destinations.length > 0}
+			<main class="p-4">
+				<h2 class="text-lg font-semibold text-gray-900 mb-4">여행 지역 선택</h2>
+				<div class="grid grid-cols-2 gap-4">
+					{#each destinations as destination}
+						<button
+							onclick={() => goto(`/products?destination=${destination.id}`)}
+							class="text-left group"
+						>
+							<div class="relative overflow-hidden rounded-lg aspect-[4/3] mb-2">
+								{#if destination.imageUrl}
+									<img 
+										src={destination.imageUrl} 
+										alt={destination.city}
+										class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+									/>
+								{:else}
+									<div class="h-full w-full bg-gray-200 flex items-center justify-center">
+										<span class="text-gray-400">No image</span>
+									</div>
+								{/if}
+							</div>
+							<div class="px-1">
+								<h3 class="font-semibold text-sm text-gray-900">{destination.city}</h3>
+								<p class="text-xs text-gray-600">{destination.country?.name}</p>
+								<p class="text-xs text-blue-600 mt-0.5">{destination.productCount}개 상품</p>
+							</div>
+						</button>
+					{/each}
+				</div>
+			</main>
+		{:else if selectedDestination}
+			<!-- Filters for selected destination -->
+			<div class="flex items-center gap-3 px-4 py-3">
+				<button
+					onclick={() => filterBy = 'all'}
+					class="px-3 py-1.5 text-sm rounded-full transition-colors {filterBy === 'all' ? 'bg-gray-900 text-white' : 'text-gray-600'}"
+				>
+					전체 {products.length}
+				</button>
+				<button
+					onclick={() => filterBy = 'latest'}
+					class="px-3 py-1.5 text-sm transition-colors {filterBy === 'latest' ? 'text-gray-900 font-medium' : 'text-gray-600'}"
+				>
+					최신순 ↓
+				</button>
+			</div>
 
-		<!-- Main Content -->
-		<main class="pb-4">
-			{#if products.length === 0}
+			<!-- Main Content -->
+			<main class="pb-4">
+				{#if products.length === 0}
 				<div class="flex flex-col items-center justify-center py-16 text-center">
 					<div class="mb-4 text-gray-400">
 						<svg class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -150,6 +184,23 @@
 				</div>
 			{/if}
 		</main>
+		{:else}
+			<!-- No destinations available -->
+			<div class="flex flex-col items-center justify-center py-16 text-center">
+				<div class="mb-4 text-gray-400">
+					<svg class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
+							d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+					</svg>
+				</div>
+				<h2 class="text-lg font-medium text-gray-900 mb-2">
+					등록된 여행 상품이 없습니다
+				</h2>
+				<p class="text-sm text-gray-500">
+					곧 새로운 상품이 등록될 예정입니다
+				</p>
+			</div>
+		{/if}
 	</div>
 </div>
 

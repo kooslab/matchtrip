@@ -59,6 +59,11 @@
 	let supportOpen = $state(false);
 	let partnershipOpen = $state(false);
 	let businessInfoOpen = $state(false);
+	
+	// Handle navigation to products
+	function handleNavigateToProducts() {
+		goto('/products');
+	}
 
 </script>
 
@@ -239,12 +244,13 @@
 						</h2>
 					{:else}
 						<h3 class="mb-3 text-sm text-gray-500">나에게 맞는 가이드를 찾고 계신가요?</h3>
-						<h2 class="mb-4 flex items-center justify-between text-lg font-bold text-gray-900">
-							매치트립 나라별 가이드
-							<button onclick={() => goto('/products')} class="text-blue-500">
-								<ChevronDown class="h-5 w-5" />
-							</button>
-						</h2>
+						<button 
+							onclick={() => handleNavigateToProducts()} 
+							class="mb-4 flex w-full items-center justify-between text-lg font-bold text-gray-900 hover:text-blue-600 transition-colors"
+						>
+							<span>매치트립 나라별 가이드</span>
+							<ChevronDown class="h-5 w-5 text-blue-500" />
+						</button>
 					{/if}
 					<div class="grid grid-cols-3 gap-3">
 						{#each data.displayDestinations || [] as destination}

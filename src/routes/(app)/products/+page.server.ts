@@ -1,10 +1,42 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
 import { products, destinations, countries, users, guideProfiles } from '$lib/server/db/schema';
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and, sql, count } from 'drizzle-orm';
 
 export const load: PageServerLoad = async ({ url, locals }) => {
 	const destinationId = url.searchParams.get('destination');
+	
+	// If no destination selected, show destinations with products
+	if (!destinationId) {
+		// Get destinations that have active products
+		const destinationsWithProducts = await db
+			.select({
+				id: destinations.id,
+				city: destinations.city,
+				imageUrl: destinations.imageUrl,
+				country: {
+					id: countries.id,
+					name: countries.name
+				},
+				productCount: count(products.id)
+			})
+			.from(destinations)
+			.leftJoin(countries, eq(destinations.countryId, countries.id))
+			.innerJoin(products, and(
+				eq(products.destinationId, destinations.id),
+				eq(products.status, 'active')
+			))
+			.groupBy(destinations.id, countries.id, countries.name)
+			.having(sql`${count(products.id)} > 0`)
+			.orderBy(sql`${count(products.id)} DESC`);
+		
+		return {
+			destinations: destinationsWithProducts,
+			products: [],
+			selectedDestination: null,
+			user: locals.user
+		};
+	}
 	
 	// Get destination info if provided
 	let selectedDestination = null;
@@ -70,6 +102,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		.orderBy(sql`${products.createdAt} DESC`);
 	
 	return {
+		destinations: [],
 		products: productsList,
 		selectedDestination,
 		user: locals.user

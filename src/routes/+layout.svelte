@@ -2,6 +2,7 @@
 	import '../app.css';
 	import { navigating } from '$app/stores';
 	import { preloadCommonRoutes } from '$lib/utils/preloader';
+	import NavigationProgress from '$lib/components/NavigationProgress.svelte';
 
 	let { data } = $props();
 
@@ -16,12 +17,8 @@
 	});
 </script>
 
-<!-- Global Loading Bar -->
-{#if typeof window !== 'undefined' && $navigating}
-	<div class="fixed top-0 left-0 z-50 h-1 w-full bg-gray-200">
-		<div class="h-full animate-pulse bg-gradient-to-r from-blue-500 to-pink-500"></div>
-	</div>
-{/if}
+<!-- Global Navigation Progress Bar -->
+<NavigationProgress />
 
 <div class="mx-auto min-h-screen max-w-[430px] bg-white">
 	<slot />
