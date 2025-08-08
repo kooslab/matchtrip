@@ -338,8 +338,8 @@
 	</header>
 
 	<!-- Content -->
-	<div class="px-4 py-6">
-		<div class="mx-auto max-w-sm">
+	<div class="px-6 py-6">
+		<div class="mx-auto" style="max-width: 280px;">
 			<!-- Title -->
 			<div class="mb-6">
 				<h2 class="mb-2 text-lg font-semibold text-gray-900">회원가입</h2>

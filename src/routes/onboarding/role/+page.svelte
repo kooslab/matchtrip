@@ -70,9 +70,9 @@
 		</div>
 
 		<!-- Content -->
-		<div class="flex-1 px-6 py-8">
+		<div class="flex-1 px-6 pt-8 pb-4">
 			<h1 class="mb-2 text-2xl font-bold text-gray-900">회원 유형 선택</h1>
-			<p class="mb-8 text-base text-gray-500">회원 유형을 선택해주세요</p>
+			<p class="mb-6 text-base text-gray-500">회원 유형을 선택해주세요</p>
 
 			<!-- Role Selection Cards -->
 			<div class="space-y-4">
