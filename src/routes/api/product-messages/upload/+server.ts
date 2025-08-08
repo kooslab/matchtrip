@@ -55,15 +55,14 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		}
 		
 		// Upload file to R2/S3
-		const fileBuffer = await file.arrayBuffer();
-		const fileName = `product-chat/${conversationId}/${Date.now()}-${file.name}`;
 		const uploadResult = await uploadToR2(
-			Buffer.from(fileBuffer),
-			fileName,
-			file.type
+			file,
+			'product-message'
 		);
 		
-		if (!uploadResult.success || !uploadResult.url) {
+		console.log('Upload result:', uploadResult);
+		
+		if (!uploadResult || !uploadResult.url) {
 			return json({ error: 'File upload failed' }, { status: 500 });
 		}
 		
@@ -72,7 +71,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			.insert(fileUploads)
 			.values({
 				userId,
-				filename: fileName,
+				filename: uploadResult.key,
 				originalName: file.name,
 				fileType: file.type,
 				fileSize: file.size,
@@ -82,6 +81,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			.returning();
 		
 		// Create message with file metadata
+		console.log('About to save message with URL:', uploadResult.url);
 		const [newMessage] = await db
 			.insert(productMessages)
 			.values({
@@ -133,6 +133,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			.where(eq(productMessages.id, newMessage.id))
 			.limit(1);
 		
+		console.log('Returning message:', messageWithSender[0]);
 		return json(messageWithSender[0]);
 		
 	} catch (error) {

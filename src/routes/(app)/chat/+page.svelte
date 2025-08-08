@@ -122,10 +122,22 @@
 						: 'bg-gray-50'}"
 				>
 					<div class="flex items-start gap-3">
-						<div class="h-14 w-14 animate-pulse rounded-full bg-gray-200"></div>
-						<div class="flex-1">
-							<div class="h-5 w-24 animate-pulse rounded bg-gray-200"></div>
-							<div class="mt-2 h-4 w-full animate-pulse rounded bg-gray-200"></div>
+						<!-- Avatar skeleton -->
+						<div class="h-12 w-12 animate-pulse rounded-full bg-gray-200 shrink-0"></div>
+						<div class="flex-1 min-w-0">
+							<!-- Name and time skeleton -->
+							<div class="flex items-center justify-between mb-1.5">
+								<div class="flex items-center gap-2">
+									<div class="h-4 w-20 animate-pulse rounded bg-gray-200"></div>
+									<div class="h-3.5 w-12 animate-pulse rounded-full bg-gray-200"></div>
+								</div>
+								<div class="h-3 w-14 animate-pulse rounded bg-gray-200"></div>
+							</div>
+							<!-- Message skeleton -->
+							<div class="space-y-1">
+								<div class="h-4 w-full animate-pulse rounded bg-gray-200"></div>
+								<div class="h-4 w-11/12 animate-pulse rounded bg-gray-200"></div>
+							</div>
 						</div>
 					</div>
 				</div>

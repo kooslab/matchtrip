@@ -152,6 +152,7 @@ Uses AWS S3/R2 for file uploads with presigned URLs:
 - Public bucket for profile images
 - Private bucket for documents and certifications
 - Image optimization and migration utilities
+- **IMPORTANT**: All images and files must be uploaded to the private bucket unless explicitly specified otherwise
 
 ## Environment Variables
 

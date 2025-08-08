@@ -64,7 +64,8 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 		if (r2Client && (R2_BUCKET_NAME || R2_PUBLIC_BUCKET_NAME)) {
 			// Determine which bucket to use based on the image type
 			const isPublicImage =
-				imagePath?.includes('destination/') || imagePath?.includes('content/');
+				imagePath?.includes('destination/') || 
+				imagePath?.includes('content/');
 			const bucketName =
 				isPublicImage && R2_PUBLIC_BUCKET_NAME ? R2_PUBLIC_BUCKET_NAME : R2_BUCKET_NAME;
 

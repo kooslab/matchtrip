@@ -45,8 +45,7 @@ export async function uploadToR2(
 			type === 'destination' ||
 			type === 'guide-profile' ||
 			type === 'traveler-profile' ||
-			type === 'content' ||
-			type === 'product-message';
+			type === 'content';
 		// If marked as public but no public bucket, still use private bucket but generate public URL
 		const bucketName = isPublic && R2_PUBLIC_BUCKET_NAME ? R2_PUBLIC_BUCKET_NAME : R2_BUCKET_NAME;
 		const uploadedToPublicBucket = bucketName === R2_PUBLIC_BUCKET_NAME;
@@ -67,7 +66,7 @@ export async function uploadToR2(
 		// Note: File upload tracking should be done by the caller since it requires userId
 
 		// Generate URL for public access
-		const url = uploadedToPublicBucket
+		const url = uploadedToPublicBucket && R2_PUBLIC_URL
 			? `${R2_PUBLIC_URL}/${filename}`
 			: `/api/images/${filename}`;
 
@@ -76,7 +75,10 @@ export async function uploadToR2(
 		// Development mock
 		if (dev) {
 			devImageStorage.set(filename, { buffer, contentType: file.type });
-			return { url: `/api/images/${filename}`, key: filename };
+			console.log('Dev mode - storing image with filename:', filename);
+			const url = `/api/images/${filename}`;
+			console.log('Dev mode - returning URL:', url);
+			return { url, key: filename };
 		}
 		throw new Error('R2 client not configured');
 	}
