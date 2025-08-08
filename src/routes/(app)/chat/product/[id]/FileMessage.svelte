@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { FileText, Download } from 'lucide-svelte';
+	import { Download } from 'lucide-svelte';
+	import ClipIcon from '$lib/icons/icon-clip-mono.svg';
 	
 	interface Props {
 		message: any;
@@ -12,8 +13,10 @@
 	const fileData = $derived(message.metadata as { 
 		filename: string; 
 		fileSize: number; 
-		url: string 
+		url: string;
+		isUploading?: boolean;
 	});
+	const isUploading = $derived(fileData?.isUploading || false);
 	
 	// Format file size
 	function formatFileSize(bytes: number) {
@@ -24,8 +27,21 @@
 	
 	// Handle file download
 	async function handleDownload() {
+		if (isUploading) return;
+		
+		// If it's a blob URL (from optimistic update), don't try to download it
+		if (fileData.url.startsWith('blob:')) {
+			alert('파일이 아직 업로드 중입니다. 잠시 후 다시 시도해주세요.');
+			return;
+		}
+		
 		try {
+			// Fetch the file from our API (which now streams PDFs directly)
 			const response = await fetch(fileData.url);
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+			
 			const blob = await response.blob();
 			const downloadUrl = window.URL.createObjectURL(blob);
 			const link = document.createElement('a');
@@ -42,10 +58,15 @@
 	}
 </script>
 
-<div class="{isOwnMessage ? 'bg-blue-500' : 'bg-gray-100'} rounded-2xl p-3 max-w-xs">
+<div class="{isOwnMessage ? 'bg-blue-500' : 'bg-gray-100'} rounded-2xl p-3 max-w-xs relative {isUploading ? 'opacity-70' : ''}">
 	<div class="flex items-center gap-3">
 		<div class="{isOwnMessage ? 'bg-blue-400' : 'bg-gray-200'} p-2 rounded-lg">
-			<FileText class="h-6 w-6 {isOwnMessage ? 'text-white' : 'text-gray-600'}" />
+			<img 
+				src={ClipIcon} 
+				alt="File attachment" 
+				class="h-6 w-6"
+				style="filter: {isOwnMessage ? 'brightness(0) invert(1)' : ''}"
+			/>
 		</div>
 		
 		<div class="flex-1 min-w-0">
@@ -57,11 +78,29 @@
 			</p>
 		</div>
 		
-		<button
-			onclick={handleDownload}
-			class="{isOwnMessage ? 'text-white hover:bg-blue-400' : 'text-gray-600 hover:bg-gray-200'} p-1.5 rounded-full transition-colors"
-		>
-			<Download class="h-4 w-4" />
-		</button>
+		{#if !isUploading}
+			<button
+				onclick={handleDownload}
+				class="{isOwnMessage ? 'text-white hover:bg-blue-400' : 'text-gray-600 hover:bg-gray-200'} p-1.5 rounded-full transition-colors"
+				title="파일 다운로드"
+			>
+				<Download class="h-4 w-4" />
+			</button>
+		{:else}
+			<!-- Loading spinner -->
+			<div class="h-4 w-4 animate-spin rounded-full border-2 {isOwnMessage ? 'border-white border-t-transparent' : 'border-gray-600 border-t-transparent'}"></div>
+		{/if}
 	</div>
 </div>
+
+<style>
+	@keyframes spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+	
+	.animate-spin {
+		animation: spin 1s linear infinite;
+	}
+</style>

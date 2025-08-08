@@ -287,7 +287,6 @@ import ArrowBack from '$lib/icons/icon-arrow-back-android-mono.svg';
 			
 			if (response.ok) {
 				const message = await response.json();
-				console.log('Received uploaded message:', message);
 				// Replace optimistic message with real one
 				messages = messages.map(m => 
 					m.id === tempMessage.id ? message : m
@@ -334,6 +333,42 @@ import ArrowBack from '$lib/icons/icon-arrow-back-android-mono.svg';
 			return;
 		}
 		
+		// Check 5MB limit
+		if (file.size > 5 * 1024 * 1024) {
+			alert('파일 크기는 5MB를 초과할 수 없습니다.');
+			input.value = '';
+			return;
+		}
+		
+		// Create a local URL for the file to show immediately
+		const localFileUrl = URL.createObjectURL(file);
+		
+		// Add optimistic message with loading state
+		const tempMessage = {
+			id: `temp-file-${Date.now()}`,
+			senderId: currentUserId,
+			content: null,
+			messageType: 'file',
+			metadata: {
+				url: localFileUrl,
+				filename: file.name,
+				fileSize: file.size,
+				fileType: file.type,
+				isUploading: true
+			},
+			createdAt: new Date().toISOString(),
+			sender: {
+				id: currentUserId,
+				name: data.session?.user?.name || 'Me',
+				email: data.session?.user?.email || '',
+				role: userRole,
+				image: data.session?.user?.image || null
+			},
+			isOptimistic: true
+		};
+		
+		messages = [...messages, tempMessage];
+		await scrollToBottom();
 		sending = true;
 		
 		try {
@@ -349,11 +384,24 @@ import ArrowBack from '$lib/icons/icon-arrow-back-android-mono.svg';
 			
 			if (response.ok) {
 				const message = await response.json();
-				messages = [...messages, message];
-				await scrollToBottom();
+				// Replace optimistic message with real one
+				messages = messages.map(m => 
+					m.id === tempMessage.id ? message : m
+				);
+				// Clean up the local URL
+				URL.revokeObjectURL(localFileUrl);
+			} else {
+				// Remove optimistic message on error
+				messages = messages.filter(m => m.id !== tempMessage.id);
+				URL.revokeObjectURL(localFileUrl);
+				alert('파일 업로드에 실패했습니다.');
 			}
 		} catch (error) {
 			console.error('Failed to upload file:', error);
+			// Remove optimistic message on error
+			messages = messages.filter(m => m.id !== tempMessage.id);
+			URL.revokeObjectURL(localFileUrl);
+			alert('파일 업로드 중 오류가 발생했습니다.');
 		} finally {
 			sending = false;
 			// Reset input

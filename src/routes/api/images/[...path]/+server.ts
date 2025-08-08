@@ -79,10 +79,31 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 			});
 
 			try {
-				// Generate presigned URL with 1 hour expiration
+				// For file downloads (PDFs), stream the content instead of redirecting
+				// This avoids CORS issues with R2 presigned URLs
+				if (imagePath?.includes('product-message/') && imagePath?.endsWith('.pdf')) {
+					const response = await r2Client.send(command);
+					const body = response.Body as any;
+					const chunks = [];
+					
+					for await (const chunk of body) {
+						chunks.push(chunk);
+					}
+					
+					const buffer = Buffer.concat(chunks);
+					
+					return new Response(buffer, {
+						headers: {
+							'Content-Type': 'application/pdf',
+							'Content-Disposition': `attachment; filename="${imagePath.split('/').pop()}"`,
+							'Cache-Control': 'private, max-age=3600',
+							'Access-Control-Allow-Origin': origin || 'http://localhost:5173'
+						}
+					});
+				}
+				
+				// For images, generate presigned URL and redirect
 				const presignedUrl = await getSignedUrl(r2Client, command, { expiresIn: 3600 });
-
-				// Redirect to the presigned URL
 				throw redirect(302, presignedUrl);
 			} catch (r2Error: any) {
 				// If it's a redirect (which is what we want), re-throw it

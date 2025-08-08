@@ -60,8 +60,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			'product-message'
 		);
 		
-		console.log('Upload result:', uploadResult);
-		
 		if (!uploadResult || !uploadResult.url) {
 			return json({ error: 'File upload failed' }, { status: 500 });
 		}
@@ -81,7 +79,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			.returning();
 		
 		// Create message with file metadata
-		console.log('About to save message with URL:', uploadResult.url);
 		const [newMessage] = await db
 			.insert(productMessages)
 			.values({
@@ -133,7 +130,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			.where(eq(productMessages.id, newMessage.id))
 			.limit(1);
 		
-		console.log('Returning message:', messageWithSender[0]);
 		return json(messageWithSender[0]);
 		
 	} catch (error) {

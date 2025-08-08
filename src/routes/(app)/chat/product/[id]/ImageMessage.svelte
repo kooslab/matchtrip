@@ -8,7 +8,6 @@
 	
 	const isOwnMessage = $derived(message.senderId === currentUserId);
 	const imageUrl = $derived(message.metadata?.url || message.content);
-	$inspect('ImageMessage imageUrl:', imageUrl);
 	const isUploading = $derived(message.metadata?.isUploading || false);
 	
 	let showFullImage = $state(false);
@@ -42,11 +41,8 @@
 	{#if isUploading}
 		<!-- Loading overlay -->
 		<div class="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/30">
-			<div class="flex flex-col items-center gap-2">
-				<!-- Loading spinner -->
-				<div class="h-8 w-8 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
-				<span class="text-xs text-white font-medium">업로드 중...</span>
-			</div>
+			<!-- Loading spinner -->
+			<div class="h-8 w-8 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
 		</div>
 	{/if}
 </div>

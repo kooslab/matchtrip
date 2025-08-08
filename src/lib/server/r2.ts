@@ -75,9 +75,7 @@ export async function uploadToR2(
 		// Development mock
 		if (dev) {
 			devImageStorage.set(filename, { buffer, contentType: file.type });
-			console.log('Dev mode - storing image with filename:', filename);
 			const url = `/api/images/${filename}`;
-			console.log('Dev mode - returning URL:', url);
 			return { url, key: filename };
 		}
 		throw new Error('R2 client not configured');
