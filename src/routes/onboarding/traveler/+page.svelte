@@ -322,10 +322,11 @@
 	}
 </script>
 
-<div class="min-h-screen bg-gray-50">
-	<!-- Header -->
-	<header class="sticky top-0 z-10 bg-white shadow-sm">
-		<div class="flex h-14 items-center px-4">
+<div class="min-h-screen bg-white overflow-x-hidden">
+	<div class="w-full px-4 mx-auto" style="max-width: min(100vw, 430px);">
+		<!-- Header -->
+		<header class="sticky top-0 z-10 bg-white shadow-sm">
+			<div class="flex h-14 items-center px-4">
 			<button onclick={handleBack} class="mr-4 -ml-2 p-2">
 				<img
 					src={arrowLeftUrl}
@@ -334,12 +335,11 @@
 					style="filter: invert(37%) sepia(94%) saturate(2831%) hue-rotate(196deg) brightness(101%) contrast(91%);"
 				/>
 			</button>
-		</div>
-	</header>
+			</div>
+		</header>
 
-	<!-- Content -->
-	<div class="px-4 py-6">
-		<div class="mx-auto max-w-sm">
+		<!-- Content -->
+		<div class="py-6">
 			<!-- Title -->
 			<div class="mb-6">
 				<h2 class="mb-2 text-lg font-semibold text-gray-900">회원가입</h2>
@@ -364,7 +364,7 @@
 									maxlength="6"
 									inputmode="numeric"
 									pattern="[0-9]*"
-									class="w-full max-w-[180px] rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-1 focus:outline-none"
+									class="flex-1 min-w-0 rounded-lg border border-gray-300 px-3 py-3 text-base focus:ring-1 focus:outline-none"
 									style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1;"
 									onfocus={(e) => (e.target.style.borderColor = colors.primary)}
 									onblur={(e) => (e.target.style.borderColor = '')}
@@ -436,7 +436,7 @@
 									inputmode="numeric"
 									pattern="[0-9]*"
 									disabled={isVerificationSent}
-									class="w-full max-w-[180px] rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-1 focus:outline-none disabled:bg-gray-50"
+									class="flex-1 min-w-0 rounded-lg border border-gray-300 px-3 py-3 text-base focus:ring-1 focus:outline-none disabled:bg-gray-50"
 									style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1;"
 									onfocus={(e) => (e.target.style.borderColor = colors.primary)}
 									onblur={(e) => (e.target.style.borderColor = '')}
@@ -463,7 +463,7 @@
 									<button
 										onclick={sendVerificationCode}
 										disabled={isSendingCode || !canProceedPhone()}
-										class="rounded-lg px-4 py-3 text-sm font-medium text-white transition-colors disabled:opacity-50"
+										class="rounded-lg px-3 py-3 text-xs font-medium text-white transition-colors disabled:opacity-50 whitespace-nowrap"
 										style="background-color: {isSendingCode || !canProceedPhone()
 											? '#CBD5E1'
 											: colors.primary}"
@@ -497,7 +497,7 @@
 									type="text"
 									bind:value={formData.name}
 									placeholder="홍길동"
-									class="w-full max-w-[180px] rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-1 focus:outline-none"
+									class="flex-1 min-w-0 rounded-lg border border-gray-300 px-3 py-3 text-base focus:ring-1 focus:outline-none"
 									style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1;"
 									onfocus={(e) => (e.target.style.borderColor = colors.primary)}
 									onblur={(e) => (e.target.style.borderColor = '')}
@@ -510,7 +510,7 @@
 								<button
 									onclick={handleNameComplete}
 									disabled={!canProceedName()}
-									class="rounded-lg px-4 py-3 text-sm font-medium text-white transition-colors disabled:opacity-50"
+									class="rounded-lg px-3 py-3 text-xs font-medium text-white transition-colors disabled:opacity-50 whitespace-nowrap"
 									style="background-color: {canProceedName() ? colors.primary : '#CBD5E1'}"
 								>
 									확인
@@ -530,7 +530,7 @@
 									type="text"
 									value={formData.name}
 									disabled
-									class="w-full max-w-[180px] rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-base"
+									class="flex-1 min-w-0 rounded-lg border border-gray-200 bg-gray-50 px-3 py-3 text-base"
 								/>
 								<button
 									onclick={editName}
