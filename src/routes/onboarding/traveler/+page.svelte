@@ -338,8 +338,8 @@
 	</header>
 
 	<!-- Content -->
-	<div class="px-6 py-6">
-		<div class="mx-auto" style="max-width: 280px;">
+	<div class="px-4 py-6">
+		<div class="mx-auto max-w-sm">
 			<!-- Title -->
 			<div class="mb-6">
 				<h2 class="mb-2 text-lg font-semibold text-gray-900">회원가입</h2>
@@ -364,7 +364,7 @@
 									maxlength="6"
 									inputmode="numeric"
 									pattern="[0-9]*"
-									class="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-1 focus:outline-none"
+									class="w-full max-w-[180px] rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-1 focus:outline-none"
 									style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1;"
 									onfocus={(e) => (e.target.style.borderColor = colors.primary)}
 									onblur={(e) => (e.target.style.borderColor = '')}
@@ -436,7 +436,7 @@
 									inputmode="numeric"
 									pattern="[0-9]*"
 									disabled={isVerificationSent}
-									class="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-1 focus:outline-none disabled:bg-gray-50"
+									class="w-full max-w-[180px] rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-1 focus:outline-none disabled:bg-gray-50"
 									style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1;"
 									onfocus={(e) => (e.target.style.borderColor = colors.primary)}
 									onblur={(e) => (e.target.style.borderColor = '')}
@@ -497,7 +497,7 @@
 									type="text"
 									bind:value={formData.name}
 									placeholder="홍길동"
-									class="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-1 focus:outline-none"
+									class="w-full max-w-[180px] rounded-lg border border-gray-300 px-4 py-3 text-base focus:ring-1 focus:outline-none"
 									style="--tw-ring-color: {colors.primary}; --tw-border-opacity: 1;"
 									onfocus={(e) => (e.target.style.borderColor = colors.primary)}
 									onblur={(e) => (e.target.style.borderColor = '')}
@@ -530,7 +530,7 @@
 									type="text"
 									value={formData.name}
 									disabled
-									class="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-base"
+									class="w-full max-w-[180px] rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-base"
 								/>
 								<button
 									onclick={editName}
