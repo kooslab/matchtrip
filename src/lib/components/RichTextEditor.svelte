@@ -1,5 +1,6 @@
 <script lang="ts">
 	import cameraUrl from '$lib/icons/icon-camera-mono.svg';
+	import xIconUrl from '$lib/icons/icon-x-mono.svg';
 	
 	interface Props {
 		value?: string;
@@ -87,6 +88,20 @@
 		}
 	}
 	
+	// Handle image deletion
+	function handleImageDelete(event: MouseEvent) {
+		event.preventDefault();
+		event.stopPropagation();
+		
+		const button = event.currentTarget as HTMLElement;
+		const container = button.closest('.image-container');
+		
+		if (container) {
+			container.remove();
+			handleInput();
+		}
+	}
+
 	// Insert image at cursor position with optional loading state
 	function insertImageAtCursor(imageUrl: string, isLoading: boolean = false) {
 		const selection = window.getSelection();
@@ -94,12 +109,22 @@
 			// If no selection, append at the end
 			if (editorRef) {
 				const container = document.createElement('div');
-				container.className = 'relative inline-block';
+				container.className = 'image-container relative inline-block';
 				
 				const img = document.createElement('img');
 				img.src = imageUrl;
 				img.className = 'my-4 max-w-full rounded-lg';
 				img.alt = '업로드된 이미지';
+				
+				// Add delete button
+				if (!isLoading) {
+					const deleteButton = document.createElement('button');
+					deleteButton.className = 'image-delete-button';
+					deleteButton.innerHTML = `<img src="${xIconUrl}" alt="삭제" class="w-4 h-4" />`;
+					deleteButton.onclick = handleImageDelete;
+					deleteButton.type = 'button';
+					container.appendChild(deleteButton);
+				}
 				
 				if (isLoading) {
 					img.style.opacity = '0.5';
@@ -145,13 +170,23 @@
 		
 		// Create container for image with loading state
 		const container = document.createElement('div');
-		container.className = 'relative inline-block';
+		container.className = 'image-container relative inline-block';
 		
 		// Create image element
 		const img = document.createElement('img');
 		img.src = imageUrl;
 		img.className = 'my-4 max-w-full rounded-lg';
 		img.alt = '업로드된 이미지';
+		
+		// Add delete button
+		if (!isLoading) {
+			const deleteButton = document.createElement('button');
+			deleteButton.className = 'image-delete-button';
+			deleteButton.innerHTML = `<img src="${xIconUrl}" alt="삭제" class="w-4 h-4" />`;
+			deleteButton.onclick = handleImageDelete;
+			deleteButton.type = 'button';
+			container.appendChild(deleteButton);
+		}
 		
 		if (isLoading) {
 			img.style.opacity = '0.5';
@@ -243,10 +278,13 @@
 								// Remove loading attribute
 								container.removeAttribute('data-loading');
 								
-								// If container only has the image, replace container with just the image
-								if (container.children.length === 1) {
-									container.replaceWith(img);
-								}
+								// Add delete button after successful upload
+								const deleteButton = document.createElement('button');
+								deleteButton.className = 'image-delete-button';
+								deleteButton.innerHTML = `<img src="${xIconUrl}" alt="삭제" class="w-4 h-4" />`;
+								deleteButton.onclick = handleImageDelete;
+								deleteButton.type = 'button';
+								container.insertBefore(deleteButton, container.firstChild);
 							}
 						});
 						
@@ -446,6 +484,41 @@
 		margin: 1rem 0;
 		border-radius: 0.5rem;
 		cursor: default;
+	}
+	
+	/* Image container styles */
+	.rich-text-editor :global(.image-container) {
+		position: relative;
+		display: inline-block;
+		margin: 1rem 0;
+	}
+	
+	/* Image delete button styles */
+	.rich-text-editor :global(.image-delete-button) {
+		position: absolute;
+		top: 8px;
+		right: 8px;
+		width: 28px;
+		height: 28px;
+		border-radius: 50%;
+		background-color: rgba(0, 0, 0, 0.7);
+		border: none;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: background-color 0.2s;
+		z-index: 10;
+		padding: 0;
+	}
+	
+	.rich-text-editor :global(.image-delete-button:hover) {
+		background-color: rgba(0, 0, 0, 0.9);
+	}
+	
+	.rich-text-editor :global(.image-delete-button img) {
+		filter: brightness(0) invert(1);
+		margin: 0;
 	}
 	
 	/* Loading container styles */
