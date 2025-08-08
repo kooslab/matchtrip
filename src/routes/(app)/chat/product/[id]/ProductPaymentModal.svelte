@@ -19,6 +19,14 @@
 	let hasInitialized = false;
 	let isProcessingPayment = $state(false);
 
+	// Ensure price is always a number for consistent handling
+	const priceValue = $derived(typeof productOffer.price === 'string' ? parseInt(productOffer.price) : productOffer.price);
+
+	// Format price with commas
+	function formatPrice(price: number) {
+		return new Intl.NumberFormat('ko-KR').format(price);
+	}
+
 	// Check if payment can proceed - simplified
 	const canProceedPayment = $derived(!isLoading && !!paymentWidget && !isProcessingPayment);
 
@@ -94,9 +102,7 @@
 				customerKey: ANONYMOUS
 			});
 
-			// Set payment amount - ensure price is a number
-			const priceValue = typeof productOffer.price === 'string' ? parseInt(productOffer.price) : productOffer.price;
-
+			// Set payment amount - use the already calculated priceValue
 			await widgets.setAmount({
 				currency: 'KRW',
 				value: priceValue
@@ -162,7 +168,7 @@
 				productOfferId: productOffer.id,
 				productId: product.id,
 				conversationId: finalConversationId,
-				amount: productOffer.price,
+				amount: priceValue,
 				orderId,
 				type: 'product',
 				version: 2  // Add version to track data structure changes
@@ -279,7 +285,7 @@
 							<div class="mt-3 flex justify-between border-t border-gray-200 pt-3">
 								<span class="font-semibold text-gray-900">총 금액</span>
 								<span class="text-lg font-bold text-[#1095f4]"
-									>{productOffer.price.toLocaleString()}원</span
+									>{formatPrice(priceValue)}원</span
 								>
 							</div>
 						</div>
