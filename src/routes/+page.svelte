@@ -386,7 +386,7 @@
 							<span>|</span>
 							<a href="/terms/refund-policy" class="hover:text-gray-700">취소 및 환불 정책</a>
 							<span>|</span>
-							<a href="/terms/marketing" class="hover:text-gray-700">제휴 안내</a>
+							<a href="/terms/service-guide" class="hover:text-gray-700">가이드 이용약관</a>
 						</div>
 						<!-- Business Info with Chevron -->
 						<button
@@ -403,10 +403,11 @@
 
 						{#if businessInfoOpen}
 							<div class="mb-3 space-y-1 text-xs text-gray-500">
-								<div>대표자 : 진민수 E-mail : j@agentt.kr</div>
-								<div>전화 : 010-8200-4994 (독일 +49 174 4360256)</div>
-								<div>주소 : 경기도 화성시 메타폴리스로 42 9층 901호 A13호 (반송동, 디앤씨빌딩)</div>
-								<div>사업자등록번호 : 126-56-00745 통신판매번호 : 2024-화성동탄-1329호</div>
+								<div>상호명 : 에이전트티　대표 : 진민수　개인정보책임자 : 진민수</div>
+								<div>사업자 등록번호 : 126-56-00745</div>
+								<div>통신판매업신고번호 : 제2024-화성동탄-1329호</div>
+								<div>관광사업등록번호 : 제20244-00003호　이메일 : <a href="mailto:help@agentt.kr" class="text-gray-500 underline">help@agentt.kr</a></div>
+								<div>주소 : 경기도 화성시 메타폴리스로 42, 9층 901호 (반송동,디앤씨빌딩)</div>
 							</div>
 						{/if}
 
@@ -414,7 +415,14 @@
 							매치트립은 통신판매중개자이며, 통신판매의 당사자가 아닙니다.<br />
 							상품, 상품정보, 거래에 관한 의무와 책임은 판매자에게 있습니다.
 						</p>
-						<p class="text-xs text-gray-500">© 2025 Matchtrip. All rights reserved.</p>
+						<p class="text-xs text-gray-400 mt-3">
+							매치트립이 소유,운영,관리하는 웹사이트내의 상품, 판매자의정보, 사진, 디자인<br />
+							등을 포함한 일체의 컨텐츠의 대한 무단복제, 배포,스크랩 등의 행위는 저작권법<br />
+							등 관련 법령에 의해 엄격하게 금지합니다.<br />
+							매치트립은 서울보증보험의 인허가보증보험에 가입되어 있습니다.<br />
+							인허가 보증보험 : 3천만원
+						</p>
+						<p class="text-xs text-gray-500 mt-4">© 2025 MatchTrip. All rights reserved.</p>
 					</div>
 				</footer>
 			</main>
