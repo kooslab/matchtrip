@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { products, users, guideProfiles, destinations, countries, fileUploads } from '$lib/server/db/schema';
-import { eq, inArray } from 'drizzle-orm';
+import { products, users, guideProfiles, destinations, countries, fileUploads, productConversations, payments } from '$lib/server/db/schema';
+import { eq, inArray, and } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
 
 // UUID validation regex
@@ -113,5 +113,181 @@ export const GET: RequestHandler = async ({ params }) => {
 	} catch (error) {
 		console.error('Error fetching product:', error);
 		return json({ error: 'Failed to fetch product' }, { status: 500 });
+	}
+};
+
+export const PUT: RequestHandler = async ({ params, request, locals }) => {
+	const productId = params.id;
+	const userId = locals.user?.id;
+	
+	if (!userId) {
+		return json({ error: 'Unauthorized' }, { status: 401 });
+	}
+	
+	if (!productId || !uuidRegex.test(productId)) {
+		return json({ error: 'Invalid product ID' }, { status: 400 });
+	}
+
+	try {
+		// Check if product exists and belongs to current user
+		const existingProduct = await db
+			.select({ id: products.id, guideId: products.guideId })
+			.from(products)
+			.where(eq(products.id, productId))
+			.limit(1);
+
+		if (!existingProduct.length) {
+			return json({ error: 'Product not found' }, { status: 404 });
+		}
+
+		if (existingProduct[0].guideId !== userId) {
+			return json({ error: 'Not authorized to update this product' }, { status: 403 });
+		}
+
+		// Check restrictions before allowing update
+		const [conversations, completedPayments] = await Promise.all([
+			db.select({ id: productConversations.id })
+				.from(productConversations)
+				.where(
+					and(
+						eq(productConversations.productId, productId),
+						eq(productConversations.status, 'active')
+					)
+				),
+			db.select({ id: payments.id })
+				.from(payments)
+				.where(
+					and(
+						eq(payments.productId, productId),
+						eq(payments.status, 'completed')
+					)
+				)
+		]);
+
+		const isRestricted = conversations.length > 0 || completedPayments.length > 0;
+		if (isRestricted) {
+			return json({ 
+				error: 'Product cannot be modified',
+				reason: completedPayments.length > 0 
+					? 'Product has completed payments'
+					: 'Product has active conversations'
+			}, { status: 409 });
+		}
+
+		// Parse and validate request body
+		const updateData = await request.json();
+		const { title, description, price, destinationId, duration, languages, fileIds } = updateData;
+
+		// Validate required fields
+		if (!title || !description || !price || !destinationId) {
+			return json({ error: 'Missing required fields: title, description, price, destinationId' }, { status: 400 });
+		}
+
+		// Validate price is positive integer
+		if (typeof price !== 'number' || price <= 0) {
+			return json({ error: 'Price must be a positive number' }, { status: 400 });
+		}
+
+		// Validate destination exists
+		const destination = await db
+			.select({ id: destinations.id })
+			.from(destinations)
+			.where(eq(destinations.id, destinationId))
+			.limit(1);
+
+		if (!destination.length) {
+			return json({ error: 'Invalid destination ID' }, { status: 400 });
+		}
+
+		// Update the product
+		const updatedProduct = await db
+			.update(products)
+			.set({
+				title: title.trim(),
+				description: description.trim(),
+				price: Math.floor(price),
+				destinationId,
+				duration: duration || null,
+				languages: languages || [],
+				fileIds: fileIds || [],
+				updatedAt: new Date()
+			})
+			.where(eq(products.id, productId))
+			.returning({
+				id: products.id,
+				title: products.title,
+				description: products.description,
+				price: products.price,
+				status: products.status,
+				updatedAt: products.updatedAt
+			});
+
+		return json({
+			success: true,
+			product: updatedProduct[0]
+		});
+
+	} catch (error) {
+		console.error('Error updating product:', error);
+		return json({ error: 'Failed to update product' }, { status: 500 });
+	}
+};
+
+export const DELETE: RequestHandler = async ({ params, locals }) => {
+	const productId = params.id;
+	const userId = locals.user?.id;
+	
+	if (!userId) {
+		return json({ error: 'Unauthorized' }, { status: 401 });
+	}
+	
+	if (!productId || !uuidRegex.test(productId)) {
+		return json({ error: 'Invalid product ID' }, { status: 400 });
+	}
+
+	try {
+		// Check if product exists and belongs to current user
+		const existingProduct = await db
+			.select({ id: products.id, guideId: products.guideId })
+			.from(products)
+			.where(eq(products.id, productId))
+			.limit(1);
+
+		if (!existingProduct.length) {
+			return json({ error: 'Product not found' }, { status: 404 });
+		}
+
+		if (existingProduct[0].guideId !== userId) {
+			return json({ error: 'Not authorized to delete this product' }, { status: 403 });
+		}
+
+		// Check restrictions before allowing deletion
+		const [conversations, completedPayments] = await Promise.all([
+			db.select({ id: productConversations.id })
+				.from(productConversations)
+				.where(eq(productConversations.productId, productId)),
+			db.select({ id: payments.id })
+				.from(payments)
+				.where(eq(payments.productId, productId))
+		]);
+
+		const isRestricted = conversations.length > 0 || completedPayments.length > 0;
+		if (isRestricted) {
+			return json({ 
+				error: 'Product cannot be deleted',
+				reason: completedPayments.length > 0 
+					? 'Product has payment history'
+					: 'Product has conversation history'
+			}, { status: 409 });
+		}
+
+		// Delete the product
+		await db.delete(products).where(eq(products.id, productId));
+
+		return json({ success: true, message: 'Product deleted successfully' });
+
+	} catch (error) {
+		console.error('Error deleting product:', error);
+		return json({ error: 'Failed to delete product' }, { status: 500 });
 	}
 };

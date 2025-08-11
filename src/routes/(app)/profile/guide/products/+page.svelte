@@ -14,6 +14,29 @@
 	let selectedProduct = $state<any>(null);
 	let isModalOpen = $state(false);
 	
+	// Product restrictions cache
+	let productRestrictions = $state<Record<string, any>>({});
+	
+	// Extract first image from HTML description
+	function extractFirstImage(htmlContent: string): string | null {
+		if (!htmlContent) return null;
+		
+		// Create a temporary element to parse HTML
+		const temp = document.createElement('div');
+		temp.innerHTML = htmlContent;
+		
+		// Find the first img tag
+		const firstImg = temp.querySelector('img');
+		if (firstImg && firstImg.src) {
+			// Return the src, excluding icon images
+			if (!firstImg.classList.contains('w-4') && !firstImg.classList.contains('h-4')) {
+				return firstImg.src;
+			}
+		}
+		
+		return null;
+	}
+
 	// Handle product click to view details
 	const handleProductClick = async (productId: string) => {
 		const product = myProducts.find(p => p.id === productId);
@@ -37,6 +60,69 @@
 			}
 		}
 	};
+
+	// Check restrictions for a product
+	const checkProductRestrictions = async (productId: string) => {
+		if (productRestrictions[productId]) return productRestrictions[productId];
+		
+		try {
+			const response = await fetch(`/api/products/${productId}/restrictions`);
+			if (response.ok) {
+				const restrictions = await response.json();
+				productRestrictions[productId] = restrictions;
+				productRestrictions = { ...productRestrictions };
+				return restrictions;
+			}
+		} catch (error) {
+			console.error('Error checking restrictions:', error);
+		}
+		
+		return { canEdit: true, canDelete: true };
+	};
+
+	// Handle edit click
+	const handleEditClick = async (productId: string, event: Event) => {
+		event.stopPropagation();
+		
+		const restrictions = await checkProductRestrictions(productId);
+		if (!restrictions.canEdit) {
+			window.alert(restrictions.reason || '이 상품은 수정할 수 없습니다.');
+			return;
+		}
+		
+		await goto(`/products/edit/${productId}`);
+	};
+
+	// Handle delete click  
+	const handleDeleteClick = async (productId: string, event: Event) => {
+		event.stopPropagation();
+		
+		const restrictions = await checkProductRestrictions(productId);
+		if (!restrictions.canDelete) {
+			window.alert(restrictions.reason || '이 상품은 삭제할 수 없습니다.');
+			return;
+		}
+		
+		const confirmed = window.confirm('정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.');
+		if (!confirmed) return;
+		
+		try {
+			const response = await fetch(`/api/products/${productId}`, {
+				method: 'DELETE'
+			});
+			
+			if (!response.ok) {
+				const error = await response.json();
+				throw new Error(error.error || 'Delete failed');
+			}
+			
+			// Refresh the page to update the list
+			window.location.reload();
+		} catch (error) {
+			console.error('Error deleting product:', error);
+			window.alert(error.message || '상품 삭제에 실패했습니다');
+		}
+	};
 	
 	// Handle modal close
 	const handleModalClose = () => {
@@ -57,6 +143,11 @@
 				handleProductClick(productId);
 			}
 		}
+		
+		// Preload restrictions for all products
+		myProducts.forEach(product => {
+			checkProductRestrictions(product.id);
+		});
 	});
 	
 	// Format price with commas
@@ -148,6 +239,10 @@
 				<!-- Products List -->
 				<div class="divide-y divide-gray-100">
 					{#each myProducts as product}
+						{@const restrictions = productRestrictions[product.id]}
+						{@const canEdit = !restrictions || restrictions.canEdit}
+						{@const canDelete = !restrictions || restrictions.canDelete}
+						{@const firstDescImage = extractFirstImage(product.description)}
 						<div class="p-4 hover:bg-gray-50 transition-colors">
 							<button
 								onclick={() => handleProductClick(product.id)}
@@ -156,9 +251,9 @@
 								<div class="flex gap-4">
 									<!-- Product Image -->
 									<div class="flex-shrink-0 w-24 h-24 bg-gray-200 rounded-lg overflow-hidden">
-										{#if product.imageUrl}
+										{#if product.imageUrl || firstDescImage}
 											<img 
-												src={product.imageUrl} 
+												src={product.imageUrl || firstDescImage} 
 												alt={product.title}
 												class="w-full h-full object-cover"
 											/>
@@ -172,7 +267,17 @@
 									<!-- Product Info -->
 									<div class="flex-1">
 										<div class="flex items-start justify-between mb-1">
-											<h3 class="font-semibold text-gray-900">{product.title}</h3>
+											<div class="flex-1">
+												<h3 class="font-semibold text-gray-900">{product.title}</h3>
+												{#if !canEdit}
+													<div class="flex items-center gap-1 mt-1">
+														<svg class="w-3 h-3 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+															<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-1a2 2 0 00-2-2H6a2 2 0 00-2 2v1a2 2 0 002 2zM13 10V9a1 1 0 10-2 0v1m2 0a1 1 0 11-2 0" />
+														</svg>
+														<span class="text-xs text-orange-600">수정 제한</span>
+													</div>
+												{/if}
+											</div>
 											<span class={`px-2 py-1 text-xs rounded-full ${getStatusColor(product.status)}`}>
 												{getStatusText(product.status)}
 											</span>
@@ -208,15 +313,23 @@
 									상세보기
 								</button>
 								<button
-									onclick={() => goto(`/products/edit/${product.id}`)}
-									class="flex-1 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-1"
+									onclick={(e) => handleEditClick(product.id, e)}
+									disabled={!canEdit}
+									class="flex-1 py-2 text-sm border rounded-lg transition-colors flex items-center justify-center gap-1 {canEdit 
+										? 'text-gray-700 border-gray-300 hover:bg-gray-50' 
+										: 'text-gray-400 border-gray-200 cursor-not-allowed'}"
+									title={!canEdit ? '수정이 제한된 상품입니다' : ''}
 								>
 									<Edit class="w-4 h-4" />
 									수정
 								</button>
 								<button
-									onclick={() => window.confirm('정말 삭제하시겠습니까?') && console.log('Delete:', product.id)}
-									class="px-4 py-2 text-sm text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition-colors flex items-center justify-center gap-1"
+									onclick={(e) => handleDeleteClick(product.id, e)}
+									disabled={!canDelete}
+									class="px-4 py-2 text-sm border rounded-lg transition-colors flex items-center justify-center gap-1 {canDelete 
+										? 'text-red-600 border-red-600 hover:bg-red-50' 
+										: 'text-gray-400 border-gray-200 cursor-not-allowed'}"
+									title={!canDelete ? '삭제가 제한된 상품입니다' : ''}
 								>
 									<Trash2 class="w-4 h-4" />
 								</button>
