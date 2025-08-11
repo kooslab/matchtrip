@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ChevronDown, ChevronRight, X, Download, MessageCircle } from 'lucide-svelte';
+	import { ChevronDown, ChevronRight, X, Download, MessageCircle, Edit, Trash2 } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	
@@ -10,9 +10,22 @@
 		showGuideTab?: boolean;
 		showReviewTab?: boolean;
 		showContactButton?: boolean;
+		showEditDelete?: boolean;
+		onEdit?: () => void;
+		onDelete?: () => void;
 	}
 	
-	const { product, isOpen = $bindable(), onClose, showGuideTab = true, showReviewTab = true, showContactButton = true }: Props = $props();
+	const { 
+		product, 
+		isOpen = $bindable(), 
+		onClose, 
+		showGuideTab = true, 
+		showReviewTab = true, 
+		showContactButton = true,
+		showEditDelete = false,
+		onEdit,
+		onDelete
+	}: Props = $props();
 	
 	// Handle contact button click
 	const handleContactClick = async () => {
@@ -139,8 +152,31 @@
 					<button onclick={onClose} class="p-1">
 						<ChevronDown class="h-6 w-6" />
 					</button>
-					<h2 class="font-semibold text-lg">{product.destination?.city || product.title}</h2>
-					<div class="w-8"></div>
+					<h2 class="font-semibold text-lg flex-1 text-center">{product.destination?.city || product.title}</h2>
+					{#if showEditDelete}
+						<div class="flex items-center gap-2">
+							{#if onEdit}
+								<button 
+									onclick={onEdit}
+									class="p-1 text-gray-600 hover:text-blue-600 transition-colors"
+									title="수정"
+								>
+									<Edit class="h-5 w-5" />
+								</button>
+							{/if}
+							{#if onDelete}
+								<button 
+									onclick={onDelete}
+									class="p-1 text-gray-600 hover:text-red-600 transition-colors"
+									title="삭제"
+								>
+									<Trash2 class="h-5 w-5" />
+								</button>
+							{/if}
+						</div>
+					{:else}
+						<div class="w-8"></div>
+					{/if}
 				</div>
 				
 				<!-- Tabs -->

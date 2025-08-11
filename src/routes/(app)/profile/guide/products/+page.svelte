@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { ChevronLeft, Plus, Edit, Trash2, Eye, Package } from 'lucide-svelte';
+	import { ChevronLeft, Plus, Package } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import ProductDetailModal from '$lib/components/ProductDetailModal.svelte';
-	import GuideBottomNav from '$lib/components/GuideBottomNav.svelte';
 	
 	const { data } = $props();
 	
@@ -196,28 +195,36 @@
 </script>
 
 <div class="min-h-screen bg-gray-50">
-	<div class="mx-auto min-h-screen max-w-[430px] bg-white">
+	<div class="mx-auto min-h-screen max-w-md bg-white">
 		<!-- Header -->
 		<header class="sticky top-0 z-50 bg-white border-b">
 			<div class="flex items-center px-4 py-4">
 				<button onclick={() => goto('/profile/guide')} class="p-1">
-					<ChevronLeft class="h-6 w-6" />
+					<ChevronLeft class="h-6 w-6 text-blue-500" />
 				</button>
-				<h1 class="flex-1 text-center text-lg font-semibold">내 상품 목록</h1>
-				<button 
-					onclick={() => goto('/products/create')}
-					class="p-1"
-				>
-					<Plus class="h-6 w-6 text-blue-500" />
-				</button>
+				<h1 class="flex-1 text-center text-lg font-semibold">내 상품 관리</h1>
+				<div class="w-8"></div>
 			</div>
 		</header>
 
 		<!-- Main Content -->
-		<main class="pb-24">
+		<main class="pb-20">
+			<!-- Product Count and Filter -->
+			<div class="flex items-center justify-between px-4 py-3 border-b">
+				<div class="text-sm">
+					전체 <span class="font-semibold text-blue-500">{myProducts.length}</span>
+				</div>
+				<button class="text-sm text-gray-600 flex items-center gap-1">
+					최신순
+					<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+					</svg>
+				</button>
+			</div>
+
 			{#if myProducts.length === 0}
 				<!-- Empty State -->
-				<div class="flex flex-col items-center justify-center py-16 text-center">
+				<div class="flex flex-col items-center justify-center py-32 text-center">
 					<div class="mb-4 text-gray-400">
 						<svg class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
@@ -230,120 +237,82 @@
 					<p class="text-sm text-gray-500 mb-6">
 						첫 번째 여행 상품을 만들어보세요!
 					</p>
-					<button
-						onclick={() => goto('/products/create')}
-						class="px-6 py-2 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
-					>
-						상품 만들기
-					</button>
 				</div>
 			{:else}
-				<!-- Products List -->
-				<div class="divide-y divide-gray-100">
+				<!-- Products Grid -->
+				<div class="grid grid-cols-2 gap-3 p-4">
 					{#each myProducts as product}
-						{@const restrictions = productRestrictions[product.id]}
-						{@const canEdit = !restrictions || restrictions.canEdit}
-						{@const canDelete = !restrictions || restrictions.canDelete}
 						{@const firstDescImage = extractFirstImage(product.description)}
-						<div class="p-4 hover:bg-gray-50 transition-colors">
-							<button
-								onclick={() => handleProductClick(product.id)}
-								class="w-full text-left"
-							>
-								<div class="flex gap-4">
-									<!-- Product Image -->
-									<div class="flex-shrink-0 w-24 h-24 bg-gray-200 rounded-lg overflow-hidden">
-										{#if product.imageUrl || firstDescImage}
-											<img 
-												src={product.imageUrl || firstDescImage} 
-												alt={product.title}
-												class="w-full h-full object-cover"
-											/>
-										{:else}
-											<div class="w-full h-full flex items-center justify-center text-gray-400">
-												<Package class="w-8 h-8" />
-											</div>
-										{/if}
+						<button
+							onclick={() => handleProductClick(product.id)}
+							class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+						>
+							<!-- Product Image -->
+							<div class="relative aspect-[4/3] bg-gray-200">
+								{#if product.imageUrl || firstDescImage}
+									<img 
+										src={product.imageUrl || firstDescImage} 
+										alt={product.title}
+										class="w-full h-full object-cover"
+									/>
+								{:else}
+									<div class="w-full h-full flex items-center justify-center text-gray-400">
+										<Package class="w-8 h-8" />
 									</div>
-									
-									<!-- Product Info -->
-									<div class="flex-1">
-										<div class="flex items-start justify-between mb-1">
-											<div class="flex-1">
-												<h3 class="font-semibold text-gray-900">{product.title}</h3>
-												{#if !canEdit}
-													<div class="flex items-center gap-1 mt-1">
-														<svg class="w-3 h-3 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-															<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-1a2 2 0 00-2-2H6a2 2 0 00-2 2v1a2 2 0 002 2zM13 10V9a1 1 0 10-2 0v1m2 0a1 1 0 11-2 0" />
-														</svg>
-														<span class="text-xs text-orange-600">수정 제한</span>
-													</div>
-												{/if}
-											</div>
-											<span class={`px-2 py-1 text-xs rounded-full ${getStatusColor(product.status)}`}>
-												{getStatusText(product.status)}
-											</span>
-										</div>
-										
-										{#if product.destination}
-											<p class="text-sm text-gray-600 mb-1">{product.destination.city}</p>
-										{/if}
-										
-										<p class="text-sm font-medium text-gray-900 mb-1">
-											{formatPrice(product.price)}원
-											<span class="text-gray-500 font-normal">/ 1인</span>
-										</p>
-										
-										<div class="flex items-center gap-4 text-xs text-gray-500">
-											{#if product.rating}
-												<span>⭐ {product.rating}</span>
-											{/if}
-											<span>리뷰 {product.reviewCount || 0}</span>
-											<span>{formatDate(product.createdAt)}</span>
-										</div>
+								{/if}
+								
+								<!-- Status Badge -->
+								{#if product.status === 'published'}
+									<div class="absolute top-2 left-2 px-2 py-1 bg-blue-500 text-white text-xs rounded">
+										가우디
+									</div>
+								{:else if product.status === 'draft'}
+									<div class="absolute top-2 left-2 px-2 py-1 bg-gray-500 text-white text-xs rounded">
+										임시저장
+									</div>
+								{/if}
+							</div>
+							
+							<!-- Product Info -->
+							<div class="p-3">
+								<h3 class="font-medium text-sm text-gray-600 line-clamp-2 mb-2 text-left">
+									{product.title}
+								</h3>
+								
+								<div class="flex items-start justify-between mb-1">
+									<div class="text-base font-bold text-gray-900">
+										{formatPrice(product.price)}원
 									</div>
 								</div>
-							</button>
-							
-							<!-- Action Buttons -->
-							<div class="flex gap-2 mt-3">
-								<button
-									onclick={() => handleProductClick(product.id)}
-									class="flex-1 py-2 text-sm text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors flex items-center justify-center gap-1"
-								>
-									<Eye class="w-4 h-4" />
-									상세보기
-								</button>
-								<button
-									onclick={(e) => handleEditClick(product.id, e)}
-									disabled={!canEdit}
-									class="flex-1 py-2 text-sm border rounded-lg transition-colors flex items-center justify-center gap-1 {canEdit 
-										? 'text-gray-700 border-gray-300 hover:bg-gray-50' 
-										: 'text-gray-400 border-gray-200 cursor-not-allowed'}"
-									title={!canEdit ? '수정이 제한된 상품입니다' : ''}
-								>
-									<Edit class="w-4 h-4" />
-									수정
-								</button>
-								<button
-									onclick={(e) => handleDeleteClick(product.id, e)}
-									disabled={!canDelete}
-									class="px-4 py-2 text-sm border rounded-lg transition-colors flex items-center justify-center gap-1 {canDelete 
-										? 'text-red-600 border-red-600 hover:bg-red-50' 
-										: 'text-gray-400 border-gray-200 cursor-not-allowed'}"
-									title={!canDelete ? '삭제가 제한된 상품입니다' : ''}
-								>
-									<Trash2 class="w-4 h-4" />
-								</button>
+								
+								<div class="flex items-center gap-1 text-xs text-gray-600">
+									{#if product.reviewCount && product.reviewCount > 0}
+										<span class="text-yellow-500">⭐</span>
+										<span>{product.rating || 0}</span>
+										<span class="text-gray-500">({product.reviewCount})</span>
+									{:else}
+										<span class="text-gray-400">아직 리뷰가 없습니다</span>
+									{/if}
+								</div>
 							</div>
-						</div>
+						</button>
 					{/each}
 				</div>
 			{/if}
 		</main>
 
-		<!-- Bottom Navigation -->
-		<GuideBottomNav />
+		<!-- Floating Create Button -->
+		<div class="fixed bottom-0 left-0 right-0 pointer-events-none z-50">
+			<div class="max-w-md mx-auto relative">
+				<button
+					onclick={() => goto('/products/create')}
+					class="absolute bottom-8 right-4 px-4 py-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-all hover:scale-105 flex items-center justify-center gap-2 shadow-lg pointer-events-auto text-sm font-medium"
+				>
+					새 상품 만들기
+					<Plus class="w-5 h-5" />
+				</button>
+			</div>
+		</div>
 	</div>
 </div>
 
@@ -355,4 +324,15 @@
 	showGuideTab={false}
 	showReviewTab={false}
 	showContactButton={false}
+	showEditDelete={true}
+	onEdit={() => {
+		if (selectedProduct) {
+			handleEditClick(selectedProduct.id, new Event('click'));
+		}
+	}}
+	onDelete={() => {
+		if (selectedProduct) {
+			handleDeleteClick(selectedProduct.id, new Event('click'));
+		}
+	}}
 />
