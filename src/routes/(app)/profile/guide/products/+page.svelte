@@ -21,16 +21,18 @@
 	function extractFirstImage(htmlContent: string): string | null {
 		if (!htmlContent) return null;
 		
-		// Create a temporary element to parse HTML
-		const temp = document.createElement('div');
-		temp.innerHTML = htmlContent;
+		// Use regex to extract img src during SSR
+		// This works both on server and client
+		const imgRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
+		const matches = [...htmlContent.matchAll(imgRegex)];
 		
-		// Find the first img tag
-		const firstImg = temp.querySelector('img');
-		if (firstImg && firstImg.src) {
-			// Return the src, excluding icon images
-			if (!firstImg.classList.contains('w-4') && !firstImg.classList.contains('h-4')) {
-				return firstImg.src;
+		for (const match of matches) {
+			const imgTag = match[0];
+			const src = match[1];
+			
+			// Skip icon images (checking for w-4 or h-4 classes)
+			if (!imgTag.includes('w-4') && !imgTag.includes('h-4')) {
+				return src;
 			}
 		}
 		
