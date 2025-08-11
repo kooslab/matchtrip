@@ -58,11 +58,18 @@
 			return;
 		}
 
-		// Verify amount matches
-		if (parseInt(amount) !== pendingPayment.amount) {
+		// Verify amount matches (ensure both are numbers for comparison)
+		const urlAmount = parseInt(amount);
+		const sessionAmount = typeof pendingPayment.amount === 'string' ? parseInt(pendingPayment.amount) : pendingPayment.amount;
+		
+		if (urlAmount !== sessionAmount) {
 			console.error('Amount mismatch:', {
-				urlAmount: parseInt(amount),
-				sessionAmount: pendingPayment.amount
+				urlAmount,
+				urlAmountType: typeof urlAmount,
+				sessionAmount,
+				sessionAmountType: typeof sessionAmount,
+				originalUrlAmount: amount,
+				originalSessionAmount: pendingPayment.amount
 			});
 			error = '결제 금액이 일치하지 않습니다.';
 			isProcessing = false;
@@ -87,14 +94,14 @@
 						? {
 							paymentKey,
 							orderId,
-							amount: parseInt(amount),
+							amount: urlAmount,  // Use the already parsed integer
 							productOfferId: pendingPayment.productOfferId,
 							productId: pendingPayment.productId
 						}
 						: {
 							paymentKey,
 							orderId,
-							amount: parseInt(amount),
+							amount: urlAmount,  // Use the already parsed integer
 							offerId: pendingPayment.offerId
 						}
 				)

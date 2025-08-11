@@ -13,17 +13,22 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		}
 
 		const { paymentKey, orderId, amount, productOfferId, productId } = await request.json();
+		
+		// Ensure amount is a number for consistent comparison
+		const paymentAmount = typeof amount === 'string' ? parseInt(amount) : amount;
 
 		console.log('Product payment confirmation request received:', {
 			paymentKey,
 			orderId,
-			amount,
+			amount: paymentAmount,
+			amountType: typeof amount,
+			originalAmount: amount,
 			productOfferId,
 			productId,
 			userId: user.id
 		});
 
-		if (!paymentKey || !orderId || !amount || !productId) {
+		if (!paymentKey || !orderId || !paymentAmount || !productId) {
 			return json({ success: false, error: '필수 정보가 누락되었습니다.' }, { status: 400 });
 		}
 
@@ -54,13 +59,31 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			
 			offerData = offer;
 			
-			// Verify amount matches the offer price
-			if (amount !== offer.price) {
+			// Verify amount matches the offer price (ensure both are numbers)
+			const offerPrice = typeof offer.price === 'string' ? parseInt(offer.price) : offer.price;
+			console.log('Price comparison (offer):', {
+				paymentAmount,
+				offerPrice,
+				offerPriceType: typeof offer.price,
+				match: paymentAmount === offerPrice
+			});
+			
+			if (paymentAmount !== offerPrice) {
+				console.error('Price mismatch with offer:', { paymentAmount, offerPrice });
 				return json({ success: false, error: '결제 금액이 일치하지 않습니다.' }, { status: 400 });
 			}
 		} else {
-			// If no specific offer, verify amount matches product price
-			if (amount !== productData.price) {
+			// If no specific offer, verify amount matches product price (ensure both are numbers)
+			const productPrice = typeof productData.price === 'string' ? parseInt(productData.price) : productData.price;
+			console.log('Price comparison (product):', {
+				paymentAmount,
+				productPrice,
+				productPriceType: typeof productData.price,
+				match: paymentAmount === productPrice
+			});
+			
+			if (paymentAmount !== productPrice) {
+				console.error('Price mismatch with product:', { paymentAmount, productPrice });
 				return json({ success: false, error: '결제 금액이 일치하지 않습니다.' }, { status: 400 });
 			}
 		}
@@ -81,7 +104,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			body: JSON.stringify({
 				paymentKey,
 				orderId,
-				amount
+				amount: paymentAmount  // Use the normalized amount
 			})
 		});
 
@@ -107,7 +130,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 					productId,
 					productOfferId: offerData ? productOfferId : null,  // Only set if offer exists
 					userId: user.id,
-					amount,
+					amount: paymentAmount,  // Use the normalized amount
 					currency: 'KRW',
 					paymentKey,
 					orderId,

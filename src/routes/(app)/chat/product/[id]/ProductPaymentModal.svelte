@@ -20,7 +20,7 @@
 	let isProcessingPayment = $state(false);
 
 	// Ensure price is always a number for consistent handling
-	const priceValue = $derived(typeof productOffer.price === 'string' ? parseInt(productOffer.price) : productOffer.price);
+	const priceValue = $derived(typeof productOffer.price === 'string' ? parseInt(productOffer.price) : Number(productOffer.price));
 
 	// Format price with commas
 	function formatPrice(price: number) {
@@ -164,17 +164,22 @@
 			const orderName = `${product.title} - ${guide.name || '가이드'} 서비스`;
 			
 			// Store order info in session storage for later verification
+			// Ensure amount is stored as a number
 			const paymentData = {
 				productOfferId: productOffer.id,
 				productId: product.id,
 				conversationId: finalConversationId,
-				amount: priceValue,
+				amount: Number(priceValue),  // Explicitly convert to number
 				orderId,
 				type: 'product',
 				version: 2  // Add version to track data structure changes
 			};
 			
-			console.log('Storing payment data:', paymentData);
+			console.log('Storing payment data:', {
+				...paymentData,
+				amountType: typeof paymentData.amount,
+				priceValueType: typeof priceValue
+			});
 			sessionStorage.setItem('pendingPayment', JSON.stringify(paymentData));
 
 			// Request payment
