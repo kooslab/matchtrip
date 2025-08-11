@@ -186,7 +186,9 @@
 							<div class="relative shrink-0">
 								{#if conversation.otherUser.image}
 									<img
-										src={conversation.otherUser.image}
+										src={conversation.otherUser.image.startsWith('http') || conversation.otherUser.image.startsWith('/') 
+											? conversation.otherUser.image 
+											: `/api/images/${conversation.otherUser.image}`}
 										alt={conversation.otherUser.name}
 										class="h-14 w-14 rounded-full object-cover"
 									/>

@@ -56,6 +56,16 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 			throw error(403, 'Forbidden');
 		}
 
+		// Handle Google OAuth profile images
+		// Google OAuth image IDs are typically base64-like strings without slashes
+		if (imagePath && !imagePath.includes('/')) {
+			// This appears to be a Google OAuth profile image ID
+			// Construct the full Google URL and redirect to it
+			const googleImageUrl = `https://lh3.googleusercontent.com/a/${imagePath}`;
+			console.log('[Image API] Redirecting to Google profile image:', googleImageUrl);
+			throw redirect(302, googleImageUrl);
+		}
+
 		// Handle destination images - redirect to public bucket
 		if (imagePath?.startsWith('destination/')) {
 			if (R2_PUBLIC_URL) {
