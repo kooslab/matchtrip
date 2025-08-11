@@ -36,22 +36,31 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
 	}
 	
 	try {
-		// Create product
-		const [newProduct] = await db
-			.insert(products)
-			.values({
-				guideId: locals.user.id,
-				destinationId: productData.destinationId,
-				title: productData.title || `상품 - ${new Date().toLocaleDateString()}`,
-				description: productData.description,
-				price: productData.price,
-				currency: 'KRW',
-				duration: productData.duration,
-				languages: productData.languages || [],
-				fileIds: productData.fileIds || [],
-				status: 'active'
-			})
-			.returning();
+		// Use transaction to ensure atomicity
+		const newProduct = await db.transaction(async (tx) => {
+			// Generate unique title if not provided
+			const { generateProductTitle } = await import('$lib/utils/product-title');
+			const title = productData.title || await generateProductTitle(tx);
+			
+			// Create product with generated title
+			const [product] = await tx
+				.insert(products)
+				.values({
+					guideId: locals.user.id,
+					destinationId: productData.destinationId,
+					title,
+					description: productData.description,
+					price: productData.price,
+					currency: 'KRW',
+					duration: productData.duration,
+					languages: productData.languages || [],
+					fileIds: productData.fileIds || [],
+					status: 'active'
+				})
+				.returning();
+			
+			return product;
+		});
 		
 		// Clear cookie
 		cookies.delete('product_create_data', { path: '/' });
@@ -66,4 +75,4 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
 			error: 'Failed to create product. Please try again.' 
 		}, { status: 500 });
 	}
-};
+};;

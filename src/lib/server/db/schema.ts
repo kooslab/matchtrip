@@ -617,6 +617,14 @@ export const products = pgTable(
 	})
 );
 
+// Product sequences table for generating unique MT-YYYYMM-XXXXXX format titles
+export const productSequences = pgTable('product_sequences', {
+	yearMonth: varchar('year_month', { length: 6 }).primaryKey(), // '202508'
+	lastSequence: integer('last_sequence').notNull().default(0),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
 // Product Conversations table for chat about products
 export const productConversations = pgTable(
 	'product_conversations',
