@@ -23,6 +23,7 @@
 			$page.url.pathname.startsWith('/my-trips/create/') ||
 			$page.url.pathname.startsWith('/products') ||
 			$page.url.pathname.startsWith('/profile/guide/products') ||
+			$page.url.pathname.startsWith('/profile/guide/edit') ||
 			$page.url.pathname.startsWith('/chat/product/') ||
 			$page.url.pathname.startsWith('/order-history/details')
 	);

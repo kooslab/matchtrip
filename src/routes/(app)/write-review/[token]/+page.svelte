@@ -18,7 +18,7 @@
 
 	const minCharacters = 10;
 	let charactersCount = $derived(reviewText.length);
-	let canSubmit = $derived(rating > 0 && charactersCount >= minCharacters);
+	let canSubmit = $derived(rating > 0 && reviewText.length >= minCharacters);
 
 	// Predefined review tags with emojis
 	const reviewTags = [
@@ -86,7 +86,7 @@
 	}
 
 	async function submitReview() {
-		if (!canSubmit) return;
+		if (!(rating > 0 && reviewText.length >= minCharacters)) return;
 
 		isSubmitting = true;
 		error = '';
@@ -148,7 +148,7 @@
 	<!-- Header -->
 	<div class="sticky top-0 z-10 border-b border-gray-200 bg-white">
 		<div class="flex h-[52px] items-center px-4">
-			<button onclick={() => goto('/my-trips')} class="-ml-1 p-1">
+			<button onclick={() => goto(data.reviewType === 'trip' ? '/my-trips' : '/order-history')} class="-ml-1 p-1">
 				<img src={arrowBackIcon} alt="뒤로가기" class="h-6 w-6" />
 			</button>
 			<h1 class="flex-1 text-center text-[17px] font-semibold text-gray-900">리뷰 작성하기</h1>
@@ -163,7 +163,11 @@
 			<div class="flex items-center gap-4">
 				{#if data.guideProfile?.profileImageUrl}
 					<img
-						src={data.guideProfile.profileImageUrl}
+						src={data.guideProfile.profileImageUrl.startsWith('http') 
+							? data.guideProfile.profileImageUrl
+							: data.guideProfile.profileImageUrl.startsWith('/api/images/') 
+								? data.guideProfile.profileImageUrl 
+								: `/api/images/${data.guideProfile.profileImageUrl}`}
 						alt={data.guide.name}
 						class="h-16 w-16 rounded-full object-cover"
 					/>
@@ -176,19 +180,32 @@
 				{/if}
 				<div class="flex-1">
 					<h2 class="text-lg font-semibold text-gray-900">{data.guide.name}</h2>
-					<p class="text-sm text-gray-600">
-						{data.destination?.city || '알 수 없는 도시'}, {data.country?.name || '알 수 없는 국가'}
-					</p>
-					<p class="mt-1 text-xs text-gray-500">
-						{formatDateRange(data.trip.startDate, data.trip.endDate)}
-					</p>
+					{#if data.reviewType === 'trip'}
+						<p class="text-sm text-gray-600">
+							{data.destination?.city || '알 수 없는 도시'}, {data.country?.name || '알 수 없는 국가'}
+						</p>
+						<p class="mt-1 text-xs text-gray-500">
+							{formatDateRange(data.trip.startDate, data.trip.endDate)}
+						</p>
+					{:else if data.reviewType === 'product'}
+						<p class="text-sm text-gray-600">
+							{data.product?.title || '상품'}
+						</p>
+						{#if data.productOffer}
+							<p class="mt-1 text-xs text-gray-500">
+								{data.productOffer.duration}일 일정
+							</p>
+						{/if}
+					{/if}
 				</div>
 			</div>
 		</div>
 
 		<!-- Rating Section -->
 		<div class="px-4 pt-8">
-			<h3 class="mb-4 text-base font-semibold text-gray-900">가이드는 어떠셨나요?</h3>
+			<h3 class="mb-4 text-base font-semibold text-gray-900">
+				{data.reviewType === 'trip' ? '가이드는 어떠셨나요?' : '상품은 어떠셨나요?'}
+			</h3>
 			<div class="flex justify-center gap-3">
 				{#each [1, 2, 3, 4, 5] as value}
 					<button
@@ -232,15 +249,17 @@
 			<div class="relative">
 				<textarea
 					bind:value={reviewText}
-					placeholder="가이드와 함께한 여행은 어떠셨나요? 좋았던 점, 아쉬웠던 점을 자유롭게 작성해주세요."
+					placeholder={data.reviewType === 'trip' 
+						? "가이드와 함께한 여행은 어떠셨나요? 좋았던 점, 아쉬웠던 점을 자유롭게 작성해주세요."
+						: "상품은 어떠셨나요? 좋았던 점, 아쉬웠던 점을 자유롭게 작성해주세요."}
 					class="min-h-[200px] w-full resize-none rounded-lg border border-gray-300 p-4 focus:border-transparent focus:ring-2 focus:ring-[#1095f4] focus:outline-none"
 				></textarea>
 				<div
-					class="absolute right-3 bottom-3 text-xs {charactersCount < minCharacters
+					class="absolute right-3 bottom-3 text-xs {reviewText.length < minCharacters
 						? 'text-red-500'
 						: 'text-gray-500'}"
 				>
-					{charactersCount}자 {#if charactersCount < minCharacters}(최소 {minCharacters}자){/if}
+					{reviewText.length}자 {#if reviewText.length < minCharacters}(최소 {minCharacters}자){/if}
 				</div>
 			</div>
 		</div>
@@ -315,8 +334,8 @@
 			<div class="px-4 py-3 pb-8">
 				<button
 					onclick={submitReview}
-					disabled={!canSubmit || isSubmitting}
-					class="w-full rounded-xl py-3.5 font-semibold text-white transition-colors {canSubmit &&
+					disabled={!(rating > 0 && reviewText.length >= minCharacters) || isSubmitting}
+					class="w-full rounded-xl py-3.5 font-semibold text-white transition-colors {rating > 0 && reviewText.length >= minCharacters &&
 					!isSubmitting
 						? 'bg-[#1095f4] hover:bg-blue-600'
 						: 'bg-gray-300'}"

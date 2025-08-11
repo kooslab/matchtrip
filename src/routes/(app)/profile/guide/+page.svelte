@@ -79,7 +79,7 @@
 			<h2 class="text-lg font-semibold">안녕하세요! {userName} 님</h2>
 			<button
 				class="rounded-full bg-gray-200 px-3 py-1 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-300"
-				onclick={() => window.window.alert('프로필 수정 준비중')}
+				onclick={() => goto('/profile/guide/edit')}
 			>
 				프로필 수정
 			</button>
@@ -127,14 +127,14 @@
 			</button>
 			<button
 				class="flex w-full items-center justify-between px-4 py-3 hover:bg-gray-50"
-				onclick={() => goto('/profile/guide/orders')}
+				onclick={() => goto('/profile/guide/revenue')}
 			>
 				<span class="text-gray-700">매출/정산 내역</span>
 				<ChevronRight class="h-5 w-5 text-gray-400" />
 			</button>
 			<button
 				class="flex w-full items-center justify-between px-4 py-3 hover:bg-gray-50"
-				onclick={() => window.alert('결제/취소 내역 준비중')}
+				onclick={() => goto('/profile/guide/orders')}
 			>
 				<span class="text-gray-700">결제/취소 내역</span>
 				<ChevronRight class="h-5 w-5 text-gray-400" />

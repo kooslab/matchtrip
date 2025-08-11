@@ -57,8 +57,8 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 		}
 
 		// Handle Google OAuth profile images
-		// Google OAuth image IDs are typically base64-like strings without slashes
-		if (imagePath && !imagePath.includes('/')) {
+		// Google OAuth image IDs are typically base64-like strings without slashes and without file extensions
+		if (imagePath && !imagePath.includes('/') && !imagePath.includes('.')) {
 			// This appears to be a Google OAuth profile image ID
 			// Construct the full Google URL and redirect to it
 			const googleImageUrl = `https://lh3.googleusercontent.com/a/${imagePath}`;
@@ -81,13 +81,24 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 			}
 		}
 
+		// Handle legacy profile image paths (without folder prefix)
+		// If the path looks like a profile image but doesn't have a folder prefix, add it
+		let finalImagePath = imagePath;
+		if (imagePath && !imagePath.includes('/') && imagePath.includes('.')) {
+			// This looks like a legacy profile image path (e.g., "1753318207705-vt7lb45ndhq.png")
+			// Try to determine the correct folder based on the pattern
+			// Most guide profile images follow this pattern
+			finalImagePath = `guide-profile/${imagePath}`;
+			console.log('[Image API] Legacy path detected, trying:', finalImagePath);
+		}
+
 		// Check if user is authenticated for private images
 		// Profile images (guide and traveler) are accessible to any authenticated user
 		// Destination images are public and don't require authentication
-		const requiresAuth = imagePath?.includes('traveler-profile') || 
-			imagePath?.includes('guide-profile') ||
-			imagePath?.includes('product_attachment') ||
-			imagePath?.includes('trip_attachment');
+		const requiresAuth = finalImagePath?.includes('traveler-profile') || 
+			finalImagePath?.includes('guide-profile') ||
+			finalImagePath?.includes('product_attachment') ||
+			finalImagePath?.includes('trip_attachment');
 			
 		if (requiresAuth && !locals.user) {
 			throw error(401, 'Unauthorized - Please login to view this image');
@@ -105,13 +116,13 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 
 			const command = new GetObjectCommand({
 				Bucket: bucketName,
-				Key: imagePath
+				Key: finalImagePath
 			});
 
 			try {
 				// For file downloads (PDFs), stream the content instead of redirecting
 				// This avoids CORS issues with R2 presigned URLs
-				if (imagePath?.includes('product-message/') && imagePath?.endsWith('.pdf')) {
+				if (finalImagePath?.includes('product-message/') && finalImagePath?.endsWith('.pdf')) {
 					const response = await r2Client.send(command);
 					const body = response.Body as any;
 					const chunks = [];
@@ -125,7 +136,7 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 					return new Response(buffer, {
 						headers: {
 							'Content-Type': 'application/pdf',
-							'Content-Disposition': `attachment; filename="${imagePath.split('/').pop()}"`,
+							'Content-Disposition': `attachment; filename="${finalImagePath.split('/').pop()}"`,
 							'Cache-Control': 'private, max-age=3600',
 							'Access-Control-Allow-Origin': origin || 'http://localhost:5173'
 						}
@@ -149,10 +160,10 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 				const buffer = Buffer.concat(chunks);
 				
 				// Determine content type from file extension
-				const contentType = imagePath?.endsWith('.png') ? 'image/png' :
-					imagePath?.endsWith('.jpg') || imagePath?.endsWith('.jpeg') ? 'image/jpeg' :
-					imagePath?.endsWith('.webp') ? 'image/webp' :
-					imagePath?.endsWith('.svg') ? 'image/svg+xml' :
+				const contentType = finalImagePath?.endsWith('.png') ? 'image/png' :
+					finalImagePath?.endsWith('.jpg') || finalImagePath?.endsWith('.jpeg') ? 'image/jpeg' :
+					finalImagePath?.endsWith('.webp') ? 'image/webp' :
+					finalImagePath?.endsWith('.svg') ? 'image/svg+xml' :
 					'image/png'; // default
 				
 				return new Response(buffer, {
@@ -182,11 +193,23 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 
 				// Extract error message
 				const errorMessage = r2Error?.message || r2Error?.toString() || 'Unknown error';
-				console.error(`[Image API] Failed to fetch image "${imagePath}":`, errorMessage);
+				console.error(`[Image API] Failed to fetch image "${finalImagePath}":`, errorMessage);
 				
-				// If it's a NoSuchKey error, return 404
+				// If it's a NoSuchKey error, return a placeholder image
 				if (errorMessage.includes('NoSuchKey') || errorMessage.includes('Not Found')) {
-					throw error(404, 'Image not found');
+					console.log('[Image API] Image not found, returning placeholder');
+					// Return a simple SVG placeholder
+					const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+						<rect width="100" height="100" fill="#e5e7eb"/>
+						<text x="50" y="50" font-family="sans-serif" font-size="40" fill="#6b7280" text-anchor="middle" dy=".3em">?</text>
+					</svg>`;
+					return new Response(svg, {
+						headers: {
+							'Content-Type': 'image/svg+xml',
+							'Cache-Control': 'public, max-age=3600',
+							'Access-Control-Allow-Origin': origin || 'http://localhost:5173'
+						}
+					});
 				}
 				
 				throw error(500, `Failed to fetch image: ${errorMessage}`);
@@ -194,8 +217,8 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 		}
 
 		// For development without R2, check in-memory storage
-		if (dev && imagePath) {
-			const storedImage = devImageStorage.get(imagePath);
+		if (dev && finalImagePath) {
+			const storedImage = devImageStorage.get(finalImagePath);
 			if (storedImage) {
 				return new Response(storedImage.buffer, {
 					status: 200,

@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
-import { reviews, trips, users } from '$lib/server/db/schema';
+import { reviews, trips, users, products } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 
 // Submit a review using a token (from email link)
@@ -31,7 +31,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		const review = await db.query.reviews.findFirst({
 			where: eq(reviews.reviewToken, token),
 			with: {
-				trip: true
+				trip: true,
+				product: true
 			}
 		});
 
@@ -84,6 +85,7 @@ export const GET: RequestHandler = async ({ url }) => {
 						destination: true
 					}
 				},
+				product: true,
 				guide: {
 					columns: {
 						id: true,
@@ -111,6 +113,7 @@ export const GET: RequestHandler = async ({ url }) => {
 			review,
 			isSubmitted,
 			trip: review.trip,
+			product: review.product,
 			guide: review.guide,
 			offer: review.offer
 		});

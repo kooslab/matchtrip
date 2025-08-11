@@ -1,9 +1,10 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
-import { products, productOffers, payments, productMessages, productConversations } from '$lib/server/db/schema';
+import { products, productOffers, payments, productMessages, productConversations, reviews } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { env } from '$env/dynamic/private';
+import { nanoid } from 'nanoid';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
 	try {
@@ -142,6 +143,21 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 			console.log('Payment record created:', newPayment.id);
 
+			// Create review token for the product purchase
+			const reviewToken = nanoid(32);
+			await db.insert(reviews).values({
+				productId,
+				productOfferId: offerData ? productOfferId : null,
+				guideId: productData.guideId,
+				travelerId: user.id,
+				rating: 0, // Will be updated when review is submitted
+				content: '', // Will be updated when review is submitted
+				reviewToken,
+				reviewRequestedAt: new Date() // Automatically request review on payment
+			});
+
+			console.log('Review token created for product purchase');
+
 			// If there's a product offer, update its status to accepted
 			if (offerData) {
 				await db
@@ -156,6 +172,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 				// Send a system message to the conversation
 				if (offerData.conversationId) {
+					// Add payment completion message
 					await db
 						.insert(productMessages)
 						.values({
@@ -163,6 +180,17 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 							senderId: user.id,
 							content: '결제가 완료되었습니다. 가이드가 곧 연락드릴 예정입니다.',
 							messageType: 'system'
+						});
+					
+					// Add review request message
+					const reviewUrl = `/write-review/${reviewToken}`;
+					await db
+						.insert(productMessages)
+						.values({
+							conversationId: offerData.conversationId,
+							senderId: productData.guideId,
+							content: `상품을 이용해주셔서 감사합니다! 리뷰를 작성해주시면 다른 여행자들에게 큰 도움이 됩니다.\n\n[리뷰 작성하기](${reviewUrl})`,
+							messageType: 'text'
 						});
 
 					// Update conversation's last message timestamp
