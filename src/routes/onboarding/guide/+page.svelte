@@ -709,13 +709,13 @@
 
 						<div>
 							<label class="mb-3 block text-sm font-medium text-gray-700">
-								파일 업로드 (JPG, PNG, PDF 지원)
+								파일 업로드 (PDF, JPG, JPEG, PNG, DOCX, PPTX, XLSX 지원)
 							</label>
 							<label class="block">
 								<input
 									type="file"
 									multiple
-									accept=".pdf,.jpg,.jpeg,.png"
+									accept=".pdf,.jpg,.jpeg,.png,.docx,.pptx,.xlsx"
 									onchange={handleFileUpload}
 									class="hidden"
 								/>

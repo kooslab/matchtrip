@@ -201,7 +201,7 @@
 				bind:this={fileInputEl}
 				type="file"
 				multiple
-				accept=".pdf,.pptx,.hwp,.docx"
+				accept=".pdf,.jpg,.jpeg,.png,.docx,.pptx,.xlsx"
 				onchange={handleFileSelect}
 				class="hidden"
 			/>
@@ -209,7 +209,7 @@
 				<div class="text-center">
 					<Paperclip class="mx-auto h-12 w-12 text-gray-400" />
 					<p class="mt-2 text-sm text-gray-600">파일을 클릭하여 찾아보세요.</p>
-					<p class="mt-1 text-xs text-gray-500">지원되는 파일 형식: pdf, pptx, hwp, docx</p>
+					<p class="mt-1 text-xs text-gray-500">지원되는 파일 형식: PDF, JPG, JPEG, PNG, DOCX, PPTX, XLSX</p>
 				</div>
 			</div>
 		</label>

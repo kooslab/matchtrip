@@ -357,7 +357,7 @@
 								<input
 									type="file"
 									multiple
-									accept=".pdf,.pptx,.hwp,.docx"
+									accept=".pdf,.jpg,.jpeg,.png,.docx,.pptx,.xlsx"
 									onchange={handleFileUpload}
 									class="hidden"
 								/>

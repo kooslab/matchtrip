@@ -48,7 +48,7 @@
 	}
 
 	// Allowed file types
-	const acceptedFileTypes = '.pdf,.pptx,.hwp,.docx,.doc,.xls,.xlsx';
+	const acceptedFileTypes = '.pdf,.jpg,.jpeg,.png,.docx,.pptx,.xlsx';
 	const maxFileSize = 10 * 1024 * 1024; // 10MB
 </script>
 
@@ -83,7 +83,7 @@
 					/>
 					<p class="mb-1 text-base font-medium text-gray-700">파일을 클릭하여 찾아보세요</p>
 					<p class="text-sm text-gray-500">또는 파일을 여기로 드래그하세요</p>
-					<p class="mt-3 text-xs text-gray-400">지원 형식: PDF, PPTX, HWP, DOCX (최대 10MB)</p>
+					<p class="mt-3 text-xs text-gray-400">지원 형식: PDF, JPG, JPEG, PNG, DOCX, PPTX, XLSX (최대 10MB)</p>
 				</div>
 			</label>
 

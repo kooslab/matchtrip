@@ -63,7 +63,7 @@
 				<input
 					bind:this={fileInputEl}
 					type="file"
-					accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif"
+					accept=".pdf,.jpg,.jpeg,.png,.docx,.pptx,.xlsx"
 					onchange={handleFileSelect}
 					class="hidden"
 				/>

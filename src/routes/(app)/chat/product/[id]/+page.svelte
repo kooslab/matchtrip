@@ -649,7 +649,7 @@ import ArrowBack from '$lib/icons/icon-arrow-back-android-mono.svg';
 				<label class="flex flex-col items-center gap-1 p-2 cursor-pointer">
 					<input
 						type="file"
-						accept="image/*"
+						accept=".jpg,.jpeg,.png"
 						class="hidden"
 						onchange={(e) => {
 							handleImageUpload(e);
@@ -666,7 +666,7 @@ import ArrowBack from '$lib/icons/icon-arrow-back-android-mono.svg';
 				<label class="flex flex-col items-center gap-1 p-2 cursor-pointer">
 					<input
 						type="file"
-						accept="application/pdf"
+						accept=".pdf,.docx,.pptx,.xlsx"
 						class="hidden"
 						onchange={(e) => {
 							handleFileUpload(e);

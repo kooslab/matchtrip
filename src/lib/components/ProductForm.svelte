@@ -554,7 +554,7 @@
 						<span class="text-sm text-gray-600">
 							{uploading ? '업로드 중...' : '파일을 선택하거나 드래그하여 업로드'}
 						</span>
-						<span class="text-xs text-gray-500">최대 5MB, PDF, 이미지 파일</span>
+						<span class="text-xs text-gray-500">최대 5MB, PDF, JPG, JPEG, PNG, DOCX, PPTX, XLSX</span>
 					</div>
 				</button>
 				
@@ -562,7 +562,7 @@
 					bind:this={fileInputEl}
 					type="file"
 					multiple
-					accept=".pdf,.jpg,.jpeg,.png,.gif"
+					accept=".pdf,.jpg,.jpeg,.png,.docx,.pptx,.xlsx"
 					onchange={handleFileSelect}
 					class="hidden"
 				/>

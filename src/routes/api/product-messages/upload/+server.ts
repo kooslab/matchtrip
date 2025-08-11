@@ -46,8 +46,14 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				return json({ error: 'Image file too large (max 10MB)' }, { status: 400 });
 			}
 		} else if (messageType === 'file') {
-			if (file.type !== 'application/pdf') {
-				return json({ error: 'Only PDF files are allowed' }, { status: 400 });
+			const allowedFileTypes = [
+				'application/pdf',
+				'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // DOCX
+				'application/vnd.openxmlformats-officedocument.presentationml.presentation', // PPTX
+				'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // XLSX
+			];
+			if (!allowedFileTypes.includes(file.type)) {
+				return json({ error: 'Only PDF, DOCX, PPTX, and XLSX files are allowed' }, { status: 400 });
 			}
 			if (file.size > 5 * 1024 * 1024) { // 5MB limit for PDFs
 				return json({ error: 'PDF file too large (max 5MB)' }, { status: 400 });

@@ -292,7 +292,7 @@
 						<span class="mt-1 text-xs text-gray-500">{uploadedImages.length}/5</span>
 						<input
 							type="file"
-							accept="image/*"
+							accept=".jpg,.jpeg,.png"
 							multiple
 							class="hidden"
 							onchange={handleImageUpload}

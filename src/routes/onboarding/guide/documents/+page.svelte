@@ -287,7 +287,7 @@
 						id="file-input-{category.id}"
 						type="file"
 						multiple
-						accept=".pdf,.pptx,.hwp,.docx,.jpg,.jpeg,.png,.gif"
+						accept=".pdf,.jpg,.jpeg,.png,.docx,.pptx,.xlsx"
 						onchange={(e) => handleFileUpload(category.id, e)}
 						class="hidden-input"
 					/>

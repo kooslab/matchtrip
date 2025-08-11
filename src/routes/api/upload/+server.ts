@@ -51,13 +51,18 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		}
 
 		// Validate file type based on upload type
-		const imageTypes = ['image/jpeg', 'image/png', 'image/webp'];
-		const documentTypes = ['application/pdf'];
+		const imageTypes = ['image/jpeg', 'image/png'];
+		const documentTypes = [
+			'application/pdf',
+			'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // DOCX
+			'application/vnd.openxmlformats-officedocument.presentationml.presentation', // PPTX
+			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // XLSX
+		];
 		const allowedTypes = type === 'destination' ? imageTypes : [...imageTypes, ...documentTypes];
 
 		if (!allowedTypes.includes(file.type)) {
 			const allowedFormats =
-				type === 'destination' ? 'JPEG, PNG, and WebP' : 'JPEG, PNG, WebP, and PDF';
+				type === 'destination' ? 'JPG, JPEG, PNG' : 'PDF, JPG, JPEG, PNG, DOCX, PPTX, XLSX';
 			return json(
 				{ error: `Invalid file type. Only ${allowedFormats} files are allowed.` },
 				{ status: 400 }
