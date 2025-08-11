@@ -11,9 +11,12 @@ import { fileUploads } from '$lib/server/db/schema';
 const R2_ACCOUNT_ID = env.R2_ACCOUNT_ID;
 const R2_ACCESS_KEY_ID = env.R2_ACCESS_KEY_ID;
 const R2_SECRET_ACCESS_KEY = env.R2_SECRET_ACCESS_KEY;
-const R2_BUCKET_NAME = env.R2_BUCKET_NAME;
-const R2_PUBLIC_BUCKET_NAME = env.R2_PUBLIC_BUCKET_NAME;
-const R2_PUBLIC_URL = env.R2_PUBLIC_URL;
+const R2_BUCKET_NAME = env.R2_BUCKET_NAME; // Primary private bucket - ALWAYS use this
+const R2_PUBLIC_BUCKET_NAME = env.R2_PUBLIC_BUCKET_NAME; // Deprecated - DO NOT USE
+const R2_PUBLIC_URL = env.R2_PUBLIC_URL; // Deprecated - DO NOT USE
+
+// IMPORTANT: All uploads MUST go to private bucket for security and consistency
+// Public bucket is deprecated and should not be used
 
 let r2Client: S3Client | null = null;
 
@@ -73,15 +76,19 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		// Upload to R2 if configured, otherwise use mock
 		if (r2Client) {
 			try {
-				// Use public bucket for destination and content images, private bucket for profile images
-				const isPublic = type === 'destination' || type === 'content';
-				// If marked as public but no public bucket, still use private bucket but generate public URL
-				const bucketName =
-					isPublic && R2_PUBLIC_BUCKET_NAME ? R2_PUBLIC_BUCKET_NAME : R2_BUCKET_NAME;
-				const uploadedToPublicBucket = bucketName === R2_PUBLIC_BUCKET_NAME;
+				// RULE: ALWAYS use private bucket for ALL uploads
+				// - Security: All files require authentication via presigned URLs
+				// - Consistency: Single source of truth for all files
+				// - Control: Can track access and manage permissions
+				const bucketName = R2_BUCKET_NAME;
 
 				if (!bucketName) {
-					throw new Error('Bucket name not configured');
+					throw new Error('Private bucket (R2_BUCKET_NAME) not configured');
+				}
+				
+				// NEVER use public bucket - it's deprecated
+				if (R2_PUBLIC_BUCKET_NAME) {
+					console.warn('WARNING: R2_PUBLIC_BUCKET_NAME is configured but will NOT be used. All uploads go to private bucket.');
 				}
 
 				const uploadCommand = new PutObjectCommand({
@@ -94,15 +101,9 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 				await r2Client.send(uploadCommand);
 
-				// Return the appropriate URL based on bucket type
-				let publicUrl: string;
-				if (uploadedToPublicBucket && R2_PUBLIC_URL) {
-					// For public bucket, use the configured public URL
-					publicUrl = `${R2_PUBLIC_URL}/${filename}`;
-				} else {
-					// For private bucket, use our API endpoint
-					publicUrl = `/api/images/${filename}`;
-				}
+				// ALWAYS return the private API endpoint URL
+				// This ensures all images go through authentication/presigned URL generation
+				const publicUrl = `/api/images/${filename}`;
 
 				// Track file upload in database if user is authenticated
 				if (locals.user?.id) {
@@ -121,7 +122,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 					success: true,
 					url: publicUrl,
 					filename: filename,
-					isPublic
+					isPrivate: true // Always private now
 				});
 			} catch (uploadError) {
 				console.error('R2 upload error:', uploadError);

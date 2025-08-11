@@ -153,10 +153,12 @@ The app uses better-auth with Google OAuth. Authentication state is managed thro
 
 Uses AWS S3/R2 for file uploads with presigned URLs:
 
-- Public bucket for profile images
-- Private bucket for documents and certifications
-- Image optimization and migration utilities
-- **IMPORTANT**: All images and files must be uploaded to the private bucket unless explicitly specified otherwise
+- **IMPORTANT POLICY**: ALL files MUST be uploaded to the PRIVATE bucket (R2_BUCKET_NAME)
+- **DO NOT USE PUBLIC BUCKET** - It's deprecated and should never be used
+- All files served through `/api/images/` endpoint with authentication
+- Presigned URLs generated on-demand with 1-hour expiration
+- Files organized in folders: content/, product_attachment/, guide-profile/, etc.
+- See STORAGE_POLICY.md for complete storage rules and exceptions (currently: NONE)
 
 ## Environment Variables
 

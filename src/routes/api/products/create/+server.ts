@@ -42,11 +42,28 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
 			const { generateProductTitle } = await import('$lib/utils/product-title');
 			const title = productData.title || await generateProductTitle(tx);
 			
-			// Create product with generated title
+			// Get the first image URL if fileIds exist
+			let imageUrl = null;
+			if (productData.fileIds && productData.fileIds.length > 0) {
+				const { fileUploads } = await import('$lib/server/db/schema');
+				const { eq } = await import('drizzle-orm');
+				const firstFile = await tx
+					.select({ url: fileUploads.url, fileType: fileUploads.fileType })
+					.from(fileUploads)
+					.where(eq(fileUploads.id, productData.fileIds[0]))
+					.limit(1);
+				
+				// Only set imageUrl if it's an image file
+				if (firstFile.length > 0 && firstFile[0].fileType.startsWith('image/')) {
+					imageUrl = firstFile[0].url;
+				}
+			}
+			
+			// Create product with generated title and imageUrl
 			const [product] = await tx
 				.insert(products)
 				.values({
-					guideId: locals.user.id,
+					guideId: locals.user!.id,
 					destinationId: productData.destinationId,
 					title,
 					description: productData.description,
@@ -55,6 +72,7 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
 					duration: productData.duration,
 					languages: productData.languages || [],
 					fileIds: productData.fileIds || [],
+					imageUrl,
 					status: 'active'
 				})
 				.returning();

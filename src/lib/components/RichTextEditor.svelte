@@ -35,14 +35,79 @@
 	let hasPlaceholder = $state(true);
 	let lastKnownRange: Range | null = null;
 	
+	// Add delete buttons to existing images in the editor
+	function addDeleteButtonsToImages() {
+		if (!editorRef) return;
+		
+		// Find all images that don't already have a delete button
+		const images = editorRef.querySelectorAll('img');
+		images.forEach((img) => {
+			// Skip if this is an icon image (like the X icon itself)
+			if (img.classList.contains('w-4') || img.classList.contains('h-4')) return;
+			
+			// Check if image already has a container with delete button
+			const container = img.closest('.image-container');
+			if (container && container.querySelector('.image-delete-button')) return;
+			
+			// If image is not in a container, wrap it
+			if (!container) {
+				const newContainer = document.createElement('div');
+				newContainer.className = 'image-container relative inline-block';
+				img.parentNode?.insertBefore(newContainer, img);
+				newContainer.appendChild(img);
+			}
+			
+			// Add delete button to the container
+			const containerToUse = img.closest('.image-container');
+			if (containerToUse && !containerToUse.querySelector('.image-delete-button')) {
+				const deleteButton = document.createElement('button');
+				deleteButton.className = 'image-delete-button';
+				deleteButton.innerHTML = `<img src="${xIconUrl}" alt="삭제" class="w-4 h-4" />`;
+				deleteButton.onclick = handleImageDelete;
+				deleteButton.type = 'button';
+				containerToUse.insertBefore(deleteButton, containerToUse.firstChild);
+			}
+		});
+	}
+	
 	// Initialize editor with existing value
 	$effect(() => {
 		if (editorRef && value && isInitialLoad) {
 			editorRef.innerHTML = value;
 			hasPlaceholder = !value.trim();
 			isInitialLoad = false;
+			
+			// Add delete buttons to any existing images
+			// Use a small delay to ensure DOM is ready
+			setTimeout(() => {
+				addDeleteButtonsToImages();
+			}, 10);
 		}
 	});
+	
+	// Clean HTML by removing editor-only elements (like delete buttons)
+	function cleanHtmlForSaving(html: string): string {
+		// Create a temporary element to manipulate HTML
+		const temp = document.createElement('div');
+		temp.innerHTML = html;
+		
+		// Remove all delete buttons (they're only for editor UI)
+		temp.querySelectorAll('.image-delete-button').forEach(button => {
+			button.remove();
+		});
+		
+		// Remove any loading overlays that might still be present
+		temp.querySelectorAll('.image-loading-overlay').forEach(overlay => {
+			overlay.remove();
+		});
+		
+		// Remove data-loading attributes
+		temp.querySelectorAll('[data-loading]').forEach(element => {
+			element.removeAttribute('data-loading');
+		});
+		
+		return temp.innerHTML;
+	}
 	
 	// Handle content changes with debouncing
 	function handleInput() {
@@ -55,7 +120,9 @@
 			
 			// Set new timer to update parent after 300ms of no typing
 			updateTimer = setTimeout(() => {
-				onchange?.(content);
+				// Clean the HTML before sending to parent
+				const cleanedContent = cleanHtmlForSaving(content);
+				onchange?.(cleanedContent);
 			}, 300);
 		}
 	}
@@ -422,6 +489,12 @@
 		if (editorRef) {
 			editorRef.innerHTML = content;
 			hasPlaceholder = !content.trim();
+			
+			// Add delete buttons to any existing images
+			setTimeout(() => {
+				addDeleteButtonsToImages();
+			}, 10);
+			
 			handleInput();
 		}
 	}
