@@ -12,6 +12,7 @@ const R2_ACCESS_KEY_ID = env.R2_ACCESS_KEY_ID;
 const R2_SECRET_ACCESS_KEY = env.R2_SECRET_ACCESS_KEY;
 const R2_BUCKET_NAME = env.R2_BUCKET_NAME;
 const R2_PUBLIC_BUCKET_NAME = env.R2_PUBLIC_BUCKET_NAME;
+const R2_PUBLIC_URL = env.R2_PUBLIC_URL;
 
 // Allowed origins for CORS
 const ALLOWED_ORIGINS = [
@@ -44,6 +45,7 @@ if (R2_ACCOUNT_ID && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY) {
 export const GET: RequestHandler = async ({ params, request, locals }) => {
 	try {
 		const imagePath = params.path;
+		console.log('[Image API] Requesting image:', imagePath);
 
 		// Check origin
 		const origin = request.headers.get('origin') || request.headers.get('referer');
@@ -54,20 +56,38 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 			throw error(403, 'Forbidden');
 		}
 
+		// Handle destination images - redirect to public bucket
+		if (imagePath?.startsWith('destination/')) {
+			if (R2_PUBLIC_URL) {
+				const publicUrl = `${R2_PUBLIC_URL}/${imagePath}`;
+				console.log('[Image API] Redirecting destination image to public URL:', publicUrl);
+				throw redirect(302, publicUrl);
+			}
+			// Fallback to constructed public URL if R2_PUBLIC_URL not set
+			if (R2_ACCOUNT_ID) {
+				const fallbackUrl = `https://pub-${R2_ACCOUNT_ID}.r2.dev/${imagePath}`;
+				console.log('[Image API] Redirecting destination image to fallback URL:', fallbackUrl);
+				throw redirect(302, fallbackUrl);
+			}
+		}
+
 		// Check if user is authenticated for private images
 		// Profile images (guide and traveler) are accessible to any authenticated user
-		if ((imagePath?.includes('traveler-profile') || imagePath?.includes('guide-profile')) && !locals.user) {
-			throw error(401, 'Unauthorized - Please login to view profile images');
+		// Destination images are public and don't require authentication
+		const requiresAuth = imagePath?.includes('traveler-profile') || 
+			imagePath?.includes('guide-profile') ||
+			imagePath?.includes('product_attachment') ||
+			imagePath?.includes('trip_attachment');
+			
+		if (requiresAuth && !locals.user) {
+			throw error(401, 'Unauthorized - Please login to view this image');
 		}
 
 		// If R2 is configured, generate presigned URL
 		if (r2Client && (R2_BUCKET_NAME || R2_PUBLIC_BUCKET_NAME)) {
-			// Determine which bucket to use based on the image type
-			const isPublicImage =
-				imagePath?.includes('destination/') || 
-				imagePath?.includes('content/');
-			const bucketName =
-				isPublicImage && R2_PUBLIC_BUCKET_NAME ? R2_PUBLIC_BUCKET_NAME : R2_BUCKET_NAME;
+			// Always use private bucket since we migrated everything
+			// The R2_PUBLIC_BUCKET_NAME is deprecated
+			const bucketName = R2_BUCKET_NAME;
 
 			if (!bucketName) {
 				throw error(500, 'No bucket configured');
@@ -102,9 +122,36 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 					});
 				}
 				
-				// For images, generate presigned URL and redirect
-				const presignedUrl = await getSignedUrl(r2Client, command, { expiresIn: 3600 });
-				throw redirect(302, presignedUrl);
+				// For images, stream the content directly to avoid CORS issues
+				const response = await r2Client.send(command);
+				
+				if (!response.Body) {
+					throw error(404, 'Image not found');
+				}
+				
+				const body = response.Body as any;
+				const chunks = [];
+				
+				for await (const chunk of body) {
+					chunks.push(chunk);
+				}
+				
+				const buffer = Buffer.concat(chunks);
+				
+				// Determine content type from file extension
+				const contentType = imagePath?.endsWith('.png') ? 'image/png' :
+					imagePath?.endsWith('.jpg') || imagePath?.endsWith('.jpeg') ? 'image/jpeg' :
+					imagePath?.endsWith('.webp') ? 'image/webp' :
+					imagePath?.endsWith('.svg') ? 'image/svg+xml' :
+					'image/png'; // default
+				
+				return new Response(buffer, {
+					headers: {
+						'Content-Type': contentType,
+						'Cache-Control': 'public, max-age=3600',
+						'Access-Control-Allow-Origin': origin || 'http://localhost:5173'
+					}
+				});
 			} catch (r2Error: any) {
 				// If it's a redirect (which is what we want), re-throw it
 				if (r2Error?.status === 302 || r2Error?.constructor?.name === 'Redirect') {
@@ -125,7 +172,14 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 
 				// Extract error message
 				const errorMessage = r2Error?.message || r2Error?.toString() || 'Unknown error';
-				throw error(500, `Failed to generate presigned URL: ${errorMessage}`);
+				console.error(`[Image API] Failed to fetch image "${imagePath}":`, errorMessage);
+				
+				// If it's a NoSuchKey error, return 404
+				if (errorMessage.includes('NoSuchKey') || errorMessage.includes('Not Found')) {
+					throw error(404, 'Image not found');
+				}
+				
+				throw error(500, `Failed to fetch image: ${errorMessage}`);
 			}
 		}
 

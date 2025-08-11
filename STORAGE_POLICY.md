@@ -49,29 +49,25 @@ const bucketName = R2_BUCKET_NAME; // ✅ CORRECT
 ### File Types and Folders
 All file types use the same private bucket with folder organization:
 
-| Type | Folder | Example Path |
-|------|--------|--------------|
-| Product content | `content/` | `/api/images/content/123.jpg` |
-| Product attachments | `product_attachment/` | `/api/images/product_attachment/file.pdf` |
-| Profile images | `guide-profile/` or `traveler-profile/` | `/api/images/guide-profile/avatar.jpg` |
-| Destinations | `destination/` | `/api/images/destination/paris.jpg` |
-| Documents | `guide-document-*/` | `/api/images/guide-document-identity/id.jpg` |
-| Messages | `product-message/` | `/api/images/product-message/chat.jpg` |
+| Type | Folder | Example Path | Bucket |
+|------|--------|--------------|---------|
+| Product content | `content/` | `/api/images/content/123.jpg` | Private |
+| Product attachments | `product_attachment/` | `/api/images/product_attachment/file.pdf` | Private |
+| Profile images | `guide-profile/` or `traveler-profile/` | `/api/images/guide-profile/avatar.jpg` | Private |
+| Destinations | `destination/` | `https://pub-xxx.r2.dev/destination/paris.jpg` | **Public** ⚠️ |
+| Documents | `guide-document-*/` | `/api/images/guide-document-identity/id.jpg` | Private |
+| Messages | `product-message/` | `/api/images/product-message/chat.jpg` | Private |
 
 ## Environment Variables
 
-### Required (Private Bucket)
+### Required
 ```env
 R2_ACCOUNT_ID=your_account_id
 R2_ACCESS_KEY_ID=your_access_key
 R2_SECRET_ACCESS_KEY=your_secret
-R2_BUCKET_NAME=your_private_bucket  # ✅ REQUIRED
-```
-
-### Deprecated (Do Not Use)
-```env
-R2_PUBLIC_BUCKET_NAME=xxx  # ❌ DEPRECATED - DO NOT USE
-R2_PUBLIC_URL=xxx          # ❌ DEPRECATED - DO NOT USE
+R2_BUCKET_NAME=your_private_bucket        # ✅ REQUIRED (most files)
+R2_PUBLIC_BUCKET_NAME=your_public_bucket  # ✅ REQUIRED (destination images)
+R2_PUBLIC_URL=https://pub-xxx.r2.dev      # ✅ REQUIRED (destination images)
 ```
 
 ## Exception Process
@@ -84,7 +80,18 @@ If you believe you need to use a public bucket for a specific use case:
 4. **Update this document** - Add the exception with justification
 
 ### Currently Approved Exceptions
-**NONE** - All files must use private bucket
+
+#### 1. Destination Images 🗺️
+- **Files**: `destination/*.{jpg,jpeg,png,webp}`
+- **Bucket**: Public bucket (`R2_PUBLIC_BUCKET_NAME`)
+- **Justification**: 
+  - Destination images are public marketing content
+  - No authentication required - improves performance and reliability
+  - Better for SEO and social media sharing
+  - Reduces API server load
+- **URL Format**: Direct R2 public URLs (e.g., `https://pub-xxx.r2.dev/destination/image.jpg`)
+- **Authentication**: None required
+- **Approved**: January 2025
 
 ## Migration Status
 

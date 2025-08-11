@@ -123,9 +123,26 @@
 		return colorMap[status] || 'bg-gray-100 text-gray-800';
 	}
 
-	function goToReview(tripId: string, event: Event) {
+	async function goToReview(tripId: string, event: Event) {
 		event.stopPropagation();
-		goto(`/write-review/${tripId}`);
+		
+		// First, check if a review token exists for this trip
+		try {
+			const response = await fetch(`/api/trips/${tripId}/review-token`);
+			if (response.ok) {
+				const data = await response.json();
+				if (data.reviewToken) {
+					goto(`/write-review/${data.reviewToken}`);
+				} else {
+					alert('리뷰를 작성하려면 먼저 가이드가 리뷰 요청을 보내야 합니다.');
+				}
+			} else {
+				alert('리뷰 정보를 불러올 수 없습니다.');
+			}
+		} catch (error) {
+			console.error('Error fetching review token:', error);
+			alert('리뷰 페이지로 이동할 수 없습니다.');
+		}
 	}
 </script>
 
@@ -315,6 +332,16 @@
 						>
 							<Star class="h-4 w-4" fill="white" />
 							리뷰 작성
+						</button>
+					{:else if order.type === 'product' && order.payment.status === 'completed'}
+						<!-- Product reviews are not yet implemented -->
+						<button
+							disabled
+							class="w-full flex items-center justify-center gap-1 rounded-lg bg-gray-300 px-4 py-2.5 text-gray-500 text-sm font-medium cursor-not-allowed mt-3"
+							title="상품 리뷰 기능은 준비 중입니다"
+						>
+							<Star class="h-4 w-4" fill="currentColor" />
+							리뷰 작성 (준비 중)
 						</button>
 					{/if}
 				</div>

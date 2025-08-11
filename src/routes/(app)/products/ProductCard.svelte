@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Star } from 'lucide-svelte';
 	import type { Product } from '$lib/server/db/schema';
+	import { transformImageUrl } from '$lib/utils/imageUrl';
 	
 	interface Props {
 		product: {
@@ -57,7 +58,11 @@
 		
 		// Find the first img tag
 		const firstImg = div.querySelector('img');
-		return firstImg ? firstImg.src : null;
+		if (firstImg && firstImg.src) {
+			// Transform the image URL to use private bucket endpoint
+			return transformImageUrl(firstImg.src);
+		}
+		return null;
 	};
 	
 	// Get thumbnail image - either from imageUrl or first image in description

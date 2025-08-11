@@ -266,10 +266,26 @@
 											src={destination.imageUrl}
 											alt={destination.city}
 											class="h-full w-full object-cover"
+											onerror={(e) => {
+												// Show fallback if image fails to load
+												const target = e.target as HTMLImageElement;
+												target.style.display = 'none';
+												const fallback = target.nextElementSibling as HTMLElement;
+												if (fallback) fallback.style.display = 'flex';
+											}}
 										/>
+										<div class="hidden h-full w-full items-center justify-center bg-gradient-to-br from-blue-400 to-purple-500">
+											<svg class="h-12 w-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+											</svg>
+										</div>
 									{:else}
-										<div class="flex h-full w-full items-center justify-center bg-gray-200">
-											<span class="text-gray-400">No image</span>
+										<div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-400 to-purple-500">
+											<svg class="h-12 w-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+											</svg>
 										</div>
 									{/if}
 									<div

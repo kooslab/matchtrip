@@ -12,11 +12,11 @@ const R2_ACCOUNT_ID = env.R2_ACCOUNT_ID;
 const R2_ACCESS_KEY_ID = env.R2_ACCESS_KEY_ID;
 const R2_SECRET_ACCESS_KEY = env.R2_SECRET_ACCESS_KEY;
 const R2_BUCKET_NAME = env.R2_BUCKET_NAME; // Primary private bucket - ALWAYS use this
-const R2_PUBLIC_BUCKET_NAME = env.R2_PUBLIC_BUCKET_NAME; // Deprecated - DO NOT USE
-const R2_PUBLIC_URL = env.R2_PUBLIC_URL; // Deprecated - DO NOT USE
+const R2_PUBLIC_BUCKET_NAME = env.R2_PUBLIC_BUCKET_NAME; // Required for destination images
+const R2_PUBLIC_URL = env.R2_PUBLIC_URL; // Required for destination images
 
-// IMPORTANT: All uploads MUST go to private bucket for security and consistency
-// Public bucket is deprecated and should not be used
+// IMPORTANT: Use public bucket ONLY for destination images (approved exception)
+// All other uploads use private bucket for security and consistency
 
 let r2Client: S3Client | null = null;
 
@@ -76,19 +76,23 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		// Upload to R2 if configured, otherwise use mock
 		if (r2Client) {
 			try {
-				// RULE: ALWAYS use private bucket for ALL uploads
-				// - Security: All files require authentication via presigned URLs
-				// - Consistency: Single source of truth for all files
-				// - Control: Can track access and manage permissions
-				const bucketName = R2_BUCKET_NAME;
+				// RULE: Use public bucket ONLY for destination images (approved exception)
+				// All other files use private bucket for security
+				let bucketName: string;
+				let usePublicBucket = false;
+				
+				if (type === 'destination' && R2_PUBLIC_BUCKET_NAME) {
+					bucketName = R2_PUBLIC_BUCKET_NAME;
+					usePublicBucket = true;
+					console.log('[Upload] Using public bucket for destination image:', filename);
+				} else {
+					bucketName = R2_BUCKET_NAME!;
+					console.log('[Upload] Using private bucket for:', filename);
+				}
 
 				if (!bucketName) {
-					throw new Error('Private bucket (R2_BUCKET_NAME) not configured');
-				}
-				
-				// NEVER use public bucket - it's deprecated
-				if (R2_PUBLIC_BUCKET_NAME) {
-					console.warn('WARNING: R2_PUBLIC_BUCKET_NAME is configured but will NOT be used. All uploads go to private bucket.');
+					const bucketType = usePublicBucket ? 'public' : 'private';
+					throw new Error(`${bucketType} bucket not configured`);
 				}
 
 				const uploadCommand = new PutObjectCommand({
@@ -103,7 +107,18 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 				// ALWAYS return the private API endpoint URL
 				// This ensures all images go through authentication/presigned URL generation
-				const publicUrl = `/api/images/${filename}`;
+				// Generate URL based on bucket type
+				let publicUrl: string;
+				if (usePublicBucket && R2_PUBLIC_URL) {
+					// Direct public R2 URL for destination images
+					publicUrl = `${R2_PUBLIC_URL}/${filename}`;
+				} else if (usePublicBucket && R2_ACCOUNT_ID) {
+					// Fallback public URL construction
+					publicUrl = `https://pub-${R2_ACCOUNT_ID}.r2.dev/${filename}`;
+				} else {
+					// Private bucket - served through API endpoint
+					publicUrl = `/api/images/${filename}`;
+				}
 
 				// Track file upload in database if user is authenticated
 				if (locals.user?.id) {
@@ -122,7 +137,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 					success: true,
 					url: publicUrl,
 					filename: filename,
-					isPrivate: true // Always private now
+					isPrivate: !usePublicBucket
 				});
 			} catch (uploadError) {
 				console.error('R2 upload error:', uploadError);

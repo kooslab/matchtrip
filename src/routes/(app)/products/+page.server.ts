@@ -2,6 +2,7 @@ import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
 import { products, destinations, countries, users, guideProfiles } from '$lib/server/db/schema';
 import { eq, and, sql, count } from 'drizzle-orm';
+import { transformImageUrl } from '$lib/utils/imageUrl';
 
 export const load: PageServerLoad = async ({ url, locals }) => {
 	const destinationId = url.searchParams.get('destination');
@@ -30,8 +31,14 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 			.having(sql`${count(products.id)} > 0`)
 			.orderBy(sql`${count(products.id)} DESC`);
 		
+		// Transform image URLs for destinations
+		const transformedDestinations = destinationsWithProducts.map(dest => ({
+			...dest,
+			imageUrl: transformImageUrl(dest.imageUrl)
+		}));
+		
 		return {
-			destinations: destinationsWithProducts,
+			destinations: transformedDestinations,
 			products: [],
 			selectedDestination: null,
 			user: locals.user
@@ -65,7 +72,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	}
 	
 	// Get products with guide information
-	const productsList = await db
+	const productsResult = await db
 		.select({
 			id: products.id,
 			title: products.title,
@@ -100,6 +107,20 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		.leftJoin(guideProfiles, eq(products.guideId, guideProfiles.userId))
 		.where(and(...conditions))
 		.orderBy(sql`${products.createdAt} DESC`);
+	
+	// Transform image URLs for products
+	const productsList = productsResult.map(product => ({
+		...product,
+		imageUrl: transformImageUrl(product.imageUrl),
+		guide: product.guide ? {
+			...product.guide,
+			image: transformImageUrl(product.guide.image)
+		} : null,
+		guideProfile: product.guideProfile ? {
+			...product.guideProfile,
+			profileImageUrl: transformImageUrl(product.guideProfile.profileImageUrl)
+		} : null
+	}));
 	
 	return {
 		destinations: [],

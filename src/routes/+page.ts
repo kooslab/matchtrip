@@ -78,6 +78,7 @@ function getRandomDestinations(destinations: any[], count: number) {
 	return shuffled.slice(0, count);
 }
 
+
 // Function to clear the cache when needed (not exported due to SvelteKit restrictions)
 // This can be called internally when needed
 function clearDestinationsCache() {

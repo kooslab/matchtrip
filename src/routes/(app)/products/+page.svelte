@@ -105,10 +105,17 @@
 										src={destination.imageUrl} 
 										alt={destination.city}
 										class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+										onerror={(e) => {
+											e.target.style.display = 'none';
+											e.target.nextElementSibling.style.display = 'flex';
+										}}
 									/>
+									<div class="h-full w-full bg-gray-200 hidden items-center justify-center">
+										<span class="text-gray-400 text-xs">{destination.city}</span>
+									</div>
 								{:else}
 									<div class="h-full w-full bg-gray-200 flex items-center justify-center">
-										<span class="text-gray-400">No image</span>
+										<span class="text-gray-400 text-xs">{destination.city}</span>
 									</div>
 								{/if}
 							</div>

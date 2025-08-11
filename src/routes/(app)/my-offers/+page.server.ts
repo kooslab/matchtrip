@@ -1,6 +1,7 @@
 import { db } from '$lib/server/db';
 import { trips, destinations, users, offers, countries, payments } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
+import { transformImageUrl } from '$lib/utils/imageUrl';
 
 export const load = async ({ locals }) => {
 	// Session and user are guaranteed to exist and be valid due to auth guard in hooks.server.ts
@@ -60,15 +61,24 @@ export const load = async ({ locals }) => {
 		.where(eq(offers.guideId, session.user.id))
 		.orderBy(offers.createdAt);
 
+	// Transform image URLs for destinations
+	const transformedOffers = myOffers.map(offer => ({
+		...offer,
+		destination: offer.destination ? {
+			...offer.destination,
+			imageUrl: transformImageUrl(offer.destination.imageUrl)
+		} : offer.destination
+	}));
+
 	// Group offers by status
 	const groupedOffers = {
-		pending: myOffers.filter((offer) => offer.status === 'pending'),
-		accepted: myOffers.filter((offer) => offer.status === 'accepted'),
-		rejected: myOffers.filter((offer) => offer.status === 'rejected')
+		pending: transformedOffers.filter((offer) => offer.status === 'pending'),
+		accepted: transformedOffers.filter((offer) => offer.status === 'accepted'),
+		rejected: transformedOffers.filter((offer) => offer.status === 'rejected')
 	};
 
 	return {
 		offers: groupedOffers,
-		totalOffers: myOffers.length
+		totalOffers: transformedOffers.length
 	};
 };

@@ -1,6 +1,7 @@
 import { db } from '$lib/server/db';
 import { destinations, countries, continents } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
+import { transformImageUrl } from '$lib/utils/imageUrl';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
@@ -39,7 +40,7 @@ export const load: PageServerLoad = async () => {
 			groupedDestinations[countryName].push({
 				id: dest.id,
 				city: dest.city,
-				imageUrl: dest.imageUrl,
+				imageUrl: transformImageUrl(dest.imageUrl),
 				country: {
 					id: dest.countryId,
 					name: dest.countryName,

@@ -9,6 +9,7 @@ import {
 	continents
 } from '$lib/server/db/schema';
 import { eq, and, ne, inArray, gte, lte } from 'drizzle-orm';
+import { transformImageUrl } from '$lib/utils/imageUrl';
 
 export const load = async ({ locals, url }) => {
 	// Session and user are guaranteed to exist and be valid due to auth guard in hooks.server.ts
@@ -142,8 +143,17 @@ export const load = async ({ locals, url }) => {
 		}
 	}));
 
+	// Transform image URLs in trips data
+	const transformedTrips = availableTrips.map(trip => ({
+		...trip,
+		destination: trip.destination ? {
+			...trip.destination,
+			imageUrl: transformImageUrl(trip.destination.imageUrl)
+		} : trip.destination
+	}));
+
 	return {
-		trips: availableTrips,
+		trips: transformedTrips,
 		destinations: availableDestinations,
 		userRole: user?.role || null,
 		isGuideVerified: (user as any)?.guideProfile?.isVerified || false

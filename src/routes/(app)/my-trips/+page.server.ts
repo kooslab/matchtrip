@@ -1,6 +1,7 @@
 import { db } from '$lib/server/db';
 import { trips, destinations, offers, countries, continents } from '$lib/server/db/schema';
 import { eq, count } from 'drizzle-orm';
+import { transformImageUrl } from '$lib/utils/imageUrl';
 
 export const load = async ({ locals, depends, setHeaders }) => {
 	// Add dependency for cache invalidation
@@ -61,8 +62,17 @@ export const load = async ({ locals, depends, setHeaders }) => {
 
 		console.log('My-trips page - Fetched trips from DB:', userTrips.length);
 
+		// Transform image URLs for destinations
+		const transformedTrips = userTrips.map(trip => ({
+			...trip,
+			destination: trip.destination ? {
+				...trip.destination,
+				imageUrl: transformImageUrl(trip.destination.imageUrl)
+			} : trip.destination
+		}));
+
 		return {
-			trips: userTrips,
+			trips: transformedTrips,
 			session
 		};
 	} catch (error) {

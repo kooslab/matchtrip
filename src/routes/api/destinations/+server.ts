@@ -2,6 +2,7 @@ import { json } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { destinations, countries, continents } from '$lib/server/db/schema';
 import { eq, sql } from 'drizzle-orm';
+import { transformImageUrl } from '$lib/utils/imageUrl';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ url, setHeaders }) => {
@@ -48,7 +49,13 @@ export const GET: RequestHandler = async ({ url, setHeaders }) => {
 				.orderBy(destinations.city)
 				.limit(50);
 
-			return json({ results });
+			// Transform image URLs - destination images go to public bucket
+			const transformedResults = results.map(destination => ({
+				...destination,
+				imageUrl: transformImageUrl(destination.imageUrl, 'destination')
+			}));
+
+			return json({ results: transformedResults });
 		} catch (error) {
 			console.error('Error fetching all destinations:', error);
 			return json({ results: [], error: 'Database error' }, { status: 500 });
@@ -98,7 +105,13 @@ export const GET: RequestHandler = async ({ url, setHeaders }) => {
 			)
 			.limit(10);
 
-		return json({ results });
+		// Transform image URLs - destination images go to public bucket  
+		const transformedResults = results.map(destination => ({
+			...destination,
+			imageUrl: transformImageUrl(destination.imageUrl, 'destination')
+		}));
+
+		return json({ results: transformedResults });
 	} catch (error) {
 		console.error('Error querying destinations:', error);
 		return json({ results: [], error: 'Database error' }, { status: 500 });
