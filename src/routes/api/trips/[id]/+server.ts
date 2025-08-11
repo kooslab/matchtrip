@@ -37,6 +37,18 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 		console.log('Existing trip:', existingTrip);
 
 		// Prepare full update
+		// Handle budget values - multiply by 10000 if they appear to be in 만원 units (< 10000)
+		let budgetMinValue = updates.budgetMin ?? updates.minBudget ?? existingTrip.budgetMin;
+		let budgetMaxValue = updates.budgetMax ?? updates.maxBudget ?? existingTrip.budgetMax;
+		
+		// If budget values are small (likely in 만원), convert to KRW
+		if (budgetMinValue && budgetMinValue < 10000) {
+			budgetMinValue = budgetMinValue * 10000;
+		}
+		if (budgetMaxValue && budgetMaxValue < 10000) {
+			budgetMaxValue = budgetMaxValue * 10000;
+		}
+		
 		const tripUpdate: any = {
 			destinationId: updates.destinationId || existingTrip.destinationId,
 			startDate: updates.startDate ? new Date(updates.startDate) : existingTrip.startDate,
@@ -45,8 +57,8 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 			childrenCount: updates.childrenCount ?? existingTrip.childrenCount,
 			babiesCount: updates.babiesCount ?? existingTrip.babiesCount,
 			travelStyle: updates.travelStyle || existingTrip.travelStyle,
-			budgetMin: updates.budgetMin ?? updates.minBudget ?? existingTrip.budgetMin,
-			budgetMax: updates.budgetMax ?? updates.maxBudget ?? existingTrip.budgetMax,
+			budgetMin: budgetMinValue,
+			budgetMax: budgetMaxValue,
 			activities: updates.activities || existingTrip.activities || [],
 			customRequest: updates.customRequest ?? existingTrip.customRequest,
 			additionalRequest: updates.customRequest ?? existingTrip.additionalRequest,
@@ -117,11 +129,13 @@ export const PATCH: RequestHandler = async ({ params, request, locals }) => {
 		const allowedUpdates: any = {};
 
 		if (updates.minBudget !== undefined) {
-			allowedUpdates.minBudget = updates.minBudget;
+			// Convert to KRW if value appears to be in 만원 units
+			allowedUpdates.budgetMin = updates.minBudget < 10000 ? updates.minBudget * 10000 : updates.minBudget;
 		}
 
 		if (updates.maxBudget !== undefined) {
-			allowedUpdates.maxBudget = updates.maxBudget;
+			// Convert to KRW if value appears to be in 만원 units
+			allowedUpdates.budgetMax = updates.maxBudget < 10000 ? updates.maxBudget * 10000 : updates.maxBudget;
 		}
 
 		if (updates.customRequest !== undefined) {

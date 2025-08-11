@@ -20,6 +20,15 @@ export async function POST({ request, locals }) {
 		}
 
 		// Insert trip with all new fields
+		// Handle budget values - if budgetMin/Max are provided directly (in 만원), multiply by 10000
+		// If budget object is provided, use its min/max values (already in KRW)
+		const budgetMinValue = tripData.budgetMin 
+			? tripData.budgetMin * 10000  // Convert 만원 to KRW
+			: tripData.budget?.min || null;
+		const budgetMaxValue = tripData.budgetMax 
+			? tripData.budgetMax * 10000  // Convert 만원 to KRW
+			: tripData.budget?.max || null;
+
 		const [trip] = await db
 			.insert(trips)
 			.values({
@@ -30,8 +39,8 @@ export async function POST({ request, locals }) {
 				adultsCount: tripData.adultsCount || 1,
 				childrenCount: tripData.childrenCount || 0,
 				babiesCount: tripData.babiesCount || 0,
-				budgetMin: tripData.budget?.min || null,
-				budgetMax: tripData.budget?.max || null,
+				budgetMin: budgetMinValue,
+				budgetMax: budgetMaxValue,
 				travelStyle: tripData.travelStyle?.id || null,
 				activities: tripData.activities || [],
 				additionalRequest: tripData.additionalRequest || null,
