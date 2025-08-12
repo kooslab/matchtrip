@@ -1,8 +1,6 @@
 import type { PageLoad } from './$types';
 
-// Simple in-memory cache for destinations
-const destinationsCache = new Map<string, { data: any; timestamp: number }>();
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+// Note: Caching disabled for random destinations since we want fresh random results each time
 
 export const load: PageLoad = async ({ fetch, url, depends, parent }) => {
 	// Get parent data to merge with destinations
@@ -12,75 +10,50 @@ export const load: PageLoad = async ({ fetch, url, depends, parent }) => {
 	depends('app:destinations');
 
 	const searchQuery = url.searchParams.get('q') || '';
-	const cacheKey = `destinations:${searchQuery}`;
-
-	// Check cache first (only for non-search queries)
-	if (!searchQuery) {
-		const cached = destinationsCache.get(cacheKey);
-		if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-			console.log('[CLIENT] Using cached destinations');
-			const displayDestinations = getRandomDestinations(cached.data.results, 6);
-			return {
-				...parentData,
-				destinations: cached.data.results || [],
-				displayDestinations,
-				searchQuery,
-				fromCache: true
-			};
-		}
-	}
 
 	try {
-		// Fetch destinations from API endpoint
-		const response = await fetch(`/api/destinations?q=${encodeURIComponent(searchQuery)}`);
-
-		if (!response.ok) {
-			throw new Error('Failed to fetch destinations');
-		}
-
-		const data = await response.json();
-
-		// Cache the response (only for non-search queries)
+		// For home page (no search), get 6 random destinations from API
+		let response;
+		let displayDestinations;
+		
 		if (!searchQuery) {
-			destinationsCache.set(cacheKey, {
-				data,
-				timestamp: Date.now()
-			});
+			// Fetch 6 random destinations directly from API
+			response = await fetch('/api/destinations?random=6');
+			
+			if (!response.ok) {
+				throw new Error('Failed to fetch random destinations');
+			}
+			
+			const data = await response.json();
+			// Use the random results directly - no client-side shuffling needed!
+			displayDestinations = data.results || [];
+		} else {
+			// For search queries, fetch filtered results
+			response = await fetch(`/api/destinations?q=${encodeURIComponent(searchQuery)}`);
+			
+			if (!response.ok) {
+				throw new Error('Failed to fetch destinations');
+			}
+			
+			const data = await response.json();
+			// For search results, just show all results (no randomization)
+			displayDestinations = data.results || [];
 		}
-
-		// Get random destinations for display
-		const displayDestinations = getRandomDestinations(data.results, 6);
-
+		
 		return {
 			...parentData,
-			destinations: data.results || [],
+			destinations: displayDestinations, // For simplicity, just use displayDestinations
 			displayDestinations,
-			searchQuery,
-			fromCache: false
+			searchQuery
 		};
 	} catch (error) {
-		console.error('[CLIENT] Error fetching destinations:', error);
+		console.error('Error fetching destinations:', error);
 		// Return empty data on error but preserve parent data
 		return {
 			...parentData,
 			destinations: [],
 			displayDestinations: [],
-			searchQuery,
-			fromCache: false
+			searchQuery
 		};
 	}
 };
-
-// Helper function to get random destinations
-function getRandomDestinations(destinations: any[], count: number) {
-	if (!destinations || destinations.length === 0) return [];
-	const shuffled = [...destinations].sort(() => 0.5 - Math.random());
-	return shuffled.slice(0, count);
-}
-
-
-// Function to clear the cache when needed (not exported due to SvelteKit restrictions)
-// This can be called internally when needed
-function clearDestinationsCache() {
-	destinationsCache.clear();
-}

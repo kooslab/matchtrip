@@ -250,7 +250,7 @@
 						</button>
 					{/if}
 					<div class="grid grid-cols-3 gap-3">
-						{#each data.displayDestinations || [] as destination}
+						{#each data.displayDestinations || [] as destination (destination.id)}
 							<button
 								onclick={() =>
 									goto(
@@ -266,6 +266,7 @@
 											src={destination.imageUrl}
 											alt={destination.city}
 											class="h-full w-full object-cover"
+											loading="lazy"
 											onerror={(e) => {
 												// Show fallback if image fails to load
 												const target = e.target as HTMLImageElement;
