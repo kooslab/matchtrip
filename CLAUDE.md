@@ -279,6 +279,69 @@ Required environment variables (see `.env.example`):
 - Protected routes: Place under `src/routes/(app)/`
 - Auth debugging: Check `/auth-debug` route in development
 
+## Kakao AlimTalk Integration
+
+### CRITICAL: Implementation Rules (Based on Trial & Error)
+
+**Template Management:**
+- Templates are stored in `src/lib/server/kakao/templates.json` with dev/prod environments
+- Each template is pre-registered and approved by Kakao - you CANNOT modify template structure
+- Template codes must match EXACTLY what's registered (e.g., `testcode01`, not `1`)
+
+**API Request Structure:**
+- Service implementation: `src/lib/server/kakao/kakaoAlimTalk.ts`
+- Endpoint: `https://[base_url]/kakao-alim/1/messages`
+- Required headers: `Authorization: App [API_KEY]`, `Content-Type: application/json`
+
+**Template Variables:**
+- Variables use `#{VARIABLE_NAME}` format in templates
+- Variables MUST be replaced in the text before sending - the API does NOT accept a `templateData` field
+- Replacement happens server-side in the service layer
+- Example: `#{NAME}` → `홍길동`, `#{SHOPNAME}` → `매치트립`
+
+**Button Configuration:**
+- Buttons must match EXACTLY what was registered with the template
+- Button structure:
+  ```json
+  {
+    "type": "URL",
+    "name": "나의프로필보기",  // MUST match registered button name
+    "urlMobile": "https://...",
+    "urlPc": "https://..."
+  }
+  ```
+- Button name mismatch will cause `EC_INVALID_TEMPLATE` error
+
+**Common Errors:**
+- `EC_INVALID_TEMPLATE` (7009): Template structure mismatch or button configuration doesn't match registration
+- `EC_INVALID_TEMPLATE_ARGS` (7008): Missing or invalid template parameters
+
+**Request Body Example:**
+```json
+{
+  "messages": [{
+    "sender": "KAKAO_CHANNEL_PROFILE_KEY",
+    "destinations": [{"to": "821012345678"}],
+    "content": {
+      "templateCode": "testcode01",
+      "text": "[매치트립], 안녕하세요. 홍길동님! 매치트립에 회원가입 해주셔서 진심으로 감사드립니다!",
+      "type": "TEMPLATE",
+      "buttons": [{
+        "type": "URL",
+        "name": "나의프로필보기",
+        "urlMobile": "https://dev.matchtrip.net/profile/traveler",
+        "urlPc": "https://dev.matchtrip.net/profile/traveler"
+      }]
+    }
+  }]
+}
+```
+
+**Environment Variables Required:**
+- `INFOBIP_API_KEY`: API authentication key
+- `INFOBIP_BASE_URL`: Base URL for Infobip API
+- `KAKAO_CHANNEL_PROFILE_KEY`: Your Kakao channel identifier
+
 ## Application-Specific Context
 
 This is a travel marketplace platform connecting travelers with local guides:

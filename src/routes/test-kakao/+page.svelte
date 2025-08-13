@@ -1,9 +1,25 @@
 <script lang="ts">
+<<<<<<< HEAD
 	let phoneNumber = '821030637950';
 	let templateCode = 'testcode01';
 	let text =
 		'[#{SHOPNAME}], 안녕하세요. #{NAME}님! #{SHOPNAME}에 회원가입 해주셔서 진심으로 감사드립니다!';
+=======
+	import { onMount } from 'svelte';
+	
+	// Template data
+	let availableTemplates: any[] = [];
+	let selectedTemplate: any = null;
+	let templatesLoading = true;
+	let templatesError: string | null = null;
+	
+	// Form data
+	let phoneNumber = '';
+	let templateCode = '';
+	let text = '';
+>>>>>>> 508023e (Add test kakao alimtalk success)
 	let templateData = '{\n  "SHOPNAME": "매치트립",\n  "NAME": "홍길동"\n}';
+	let includeButton = false;
 	let loading = false;
 	let result: any = null;
 	let error: string | null = null;
@@ -14,6 +30,7 @@
 	let reports: any = null;
 	let loadingReports = false;
 	let reportsError: string | null = null;
+<<<<<<< HEAD
 	let diagnostics: any = null;
 	let loadingDiagnostics = false;
 	
@@ -31,6 +48,64 @@
 			return text;
 		}
 	})();
+=======
+	
+	// Load templates on mount
+	onMount(async () => {
+		try {
+			const response = await fetch('/api/test-kakao-templates');
+			const data = await response.json();
+			
+			if (data.success) {
+				availableTemplates = data.templates;
+				if (availableTemplates.length > 0) {
+					selectedTemplate = availableTemplates[0];
+					templateCode = selectedTemplate.code;
+					text = selectedTemplate.text;
+					includeButton = !!selectedTemplate.button;
+					updateDefaultTemplateData();
+				}
+			} else {
+				templatesError = data.error || 'Failed to load templates';
+			}
+		} catch (err) {
+			templatesError = 'Failed to load templates';
+		} finally {
+			templatesLoading = false;
+		}
+	});
+	
+	// Generate default template data based on selected template
+	function updateDefaultTemplateData() {
+		if (!selectedTemplate) return;
+		
+		const defaultData: Record<string, string> = {};
+		for (const variable of selectedTemplate.variables) {
+			// Set default values based on common variables
+			if (variable === 'SHOPNAME') {
+				defaultData[variable] = '매치트립';
+			} else if (variable === 'NAME' || variable === '가이드' || variable === '고객') {
+				defaultData[variable] = '홍길동';
+			} else if (variable === '여행총결제금액') {
+				defaultData[variable] = '100,000원';
+			} else {
+				defaultData[variable] = `[${variable}]`;
+			}
+		}
+		templateData = JSON.stringify(defaultData, null, 2);
+	}
+	
+	// Update form when template selection changes
+	function onTemplateChange() {
+		const template = availableTemplates.find(t => t.code === templateCode);
+		if (template) {
+			selectedTemplate = template;
+			text = template.text;
+			includeButton = !!template.button;
+			updateDefaultTemplateData();
+		}
+	}
+>>>>>>> 508023e (Add test kakao alimtalk success)
 
 	async function sendTestKakao() {
 		loading = true;
@@ -47,13 +122,35 @@
 				return;
 			}
 
+			// Create buttons array if includeButton is true and template has button
+			const buttons = includeButton && selectedTemplate?.button
+				? [
+						{
+							type: selectedTemplate.button.type,
+							name: selectedTemplate.button.name,
+							urlMobile: selectedTemplate.button.urlMobile,
+							urlPc: selectedTemplate.button.urlPc
+						}
+					]
+				: undefined;
+
 			// Show what we send to our API
 			const apiRequestBody = {
 				to: phoneNumber,
 				templateCode: templateCode,
 				text: text,
-				templateData: parsedTemplateData
+				templateData: parsedTemplateData,
+				...(buttons ? { buttons } : {})
 			};
+
+			// Process template variables for display
+			let processedText = text;
+			if (parsedTemplateData) {
+				for (const [key, value] of Object.entries(parsedTemplateData)) {
+					const placeholder = `#{${key}}`;
+					processedText = processedText.replace(new RegExp(placeholder, 'g'), String(value));
+				}
+			}
 
 			// Show what actually gets sent to Infobip
 			// Note: The text field will contain the substituted text, NOT the template
@@ -78,9 +175,15 @@
 						],
 						content: {
 							templateCode: templateCode,
+<<<<<<< HEAD
 							text: substitutedTextForRequest,
 							type: 'TEMPLATE'
 							// Note: templateData is NOT sent to Infobip
+=======
+							text: processedText,
+							type: 'TEMPLATE',
+							...(buttons ? { buttons } : {})
+>>>>>>> 508023e (Add test kakao alimtalk success)
 						}
 					}
 				]
@@ -263,29 +366,49 @@
 
 			<div>
 				<label for="templateCode" class="mb-1 block text-sm font-medium text-gray-700">
-					Template Code
+					Template
 				</label>
-				<input
-					id="templateCode"
-					type="text"
-					bind:value={templateCode}
-					placeholder="123"
-					class="focus:ring-color-primary w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:outline-none"
-				/>
-				<p class="mt-1 text-xs text-gray-500">The code of your approved Kakao template</p>
+				{#if templatesLoading}
+					<div class="w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-gray-500">
+						Loading templates...
+					</div>
+				{:else if templatesError}
+					<div class="w-full rounded-md border border-red-300 bg-red-50 px-3 py-2 text-red-600">
+						{templatesError}
+					</div>
+				{:else}
+					<select
+						id="templateCode"
+						bind:value={templateCode}
+						onchange={onTemplateChange}
+						class="focus:ring-color-primary w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:outline-none"
+					>
+						{#each availableTemplates as template}
+							<option value={template.code}>
+								{template.code} - {template.name} ({template.description})
+							</option>
+						{/each}
+					</select>
+					{#if selectedTemplate}
+						<p class="mt-1 text-xs text-gray-500">
+							Select from pre-approved Kakao templates. Variables: {selectedTemplate.variables.join(', ')}
+						</p>
+					{/if}
+				{/if}
 			</div>
 
 			<div>
 				<label for="text" class="mb-1 block text-sm font-medium text-gray-700">
-					Text Message
+					Template Text (Read-only)
 				</label>
 				<textarea
 					id="text"
-					bind:value={text}
+					value={text}
 					rows="3"
-					class="focus:ring-color-primary w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:outline-none"
+					readonly
+					class="w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-gray-600"
 				></textarea>
-				<p class="mt-1 text-xs text-gray-500">The actual message text to send</p>
+				<p class="mt-1 text-xs text-gray-500">This is the registered template text. Variables will be replaced with values from Template Data.</p>
 			</div>
 
 			<div>
@@ -306,6 +429,7 @@
 				<p class="text-sm text-gray-800 whitespace-pre-wrap">{substitutedText}</p>
 			</div>
 
+<<<<<<< HEAD
 			<div class="flex gap-2">
 				<button
 					onclick={sendTestKakao}
@@ -324,6 +448,34 @@
 				</button>
 			</div>
 			
+=======
+			{#if selectedTemplate?.button}
+				<div class="flex items-center space-x-2">
+					<input
+						id="includeButton"
+						type="checkbox"
+						bind:checked={includeButton}
+						class="h-4 w-4 text-primary rounded border-gray-300 focus:ring-color-primary"
+					/>
+					<label for="includeButton" class="text-sm font-medium text-gray-700">
+						Include Button ({selectedTemplate.button.name})
+					</label>
+				</div>
+				{#if includeButton}
+					<div class="ml-6 rounded-md border border-blue-200 bg-blue-50 p-3">
+						<p class="text-xs font-medium text-blue-900">Button Details:</p>
+						<p class="text-xs text-blue-700">Type: {selectedTemplate.button.type}</p>
+						<p class="text-xs text-blue-700">Name: {selectedTemplate.button.name}</p>
+						<p class="text-xs text-blue-700">URL: {selectedTemplate.button.urlMobile}</p>
+					</div>
+				{/if}
+			{:else if selectedTemplate}
+				<div class="rounded-md border border-gray-200 bg-gray-50 p-3">
+					<p class="text-xs text-gray-600">This template does not have a button configured.</p>
+				</div>
+			{/if}
+
+>>>>>>> 508023e (Add test kakao alimtalk success)
 			<button
 				onclick={testSimpleTemplate}
 				disabled={loading || !phoneNumber || !templateCode}
@@ -337,8 +489,12 @@
 			<div class="mt-4 rounded-md border border-gray-200 bg-gray-50 p-4">
 				<p class="mb-2 text-sm font-medium text-gray-700">Actual Infobip API Request Body:</p>
 				<pre class="overflow-x-auto rounded bg-gray-100 p-2 text-xs">{JSON.stringify(requestBody, null, 2)}</pre>
+<<<<<<< HEAD
 				<p class="mt-2 text-xs text-gray-600">Note: The sender field will be replaced with the actual KAKAO_CHANNEL_PROFILE_KEY value from environment variables on the server.</p>
 				<p class="mt-1 text-xs text-gray-600 font-semibold">Important: The text field shows the SUBSTITUTED text that will be sent to Infobip. Template variables are replaced BEFORE sending.</p>
+=======
+				<p class="mt-2 text-xs text-gray-600">Note: The sender field will be replaced with the actual KAKAO_CHANNEL_PROFILE_KEY value from environment variables on the server. Template variables (#{NAME}, #{SHOPNAME}) are replaced with actual values before sending.</p>
+>>>>>>> 508023e (Add test kakao alimtalk success)
 			</div>
 		{/if}
 

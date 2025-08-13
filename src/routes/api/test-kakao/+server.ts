@@ -6,7 +6,7 @@ import { env } from '$env/dynamic/private';
 export const POST: RequestHandler = async ({ request }) => {
 	try {
 		const requestBody = await request.json();
-		const { to, templateCode, text, templateData } = requestBody;
+		const { to, templateCode, text, templateData, buttons } = requestBody;
 
 		console.log('=== Test Kakao API Endpoint ===');
 		console.log('Received request body:', JSON.stringify(requestBody, null, 2));
@@ -69,15 +69,22 @@ export const POST: RequestHandler = async ({ request }) => {
 		console.log('Calling kakaoAlimTalk.sendAlimTalk with:', {
 			to,
 			templateCode,
+<<<<<<< HEAD
 			text: text.substring(0, 100) + '...', // Log first 100 chars only
 			templateData
+=======
+			text,
+			templateData,
+			buttons
+>>>>>>> 508023e (Add test kakao alimtalk success)
 		});
 
 		const result = await kakaoAlimTalk.sendAlimTalk({
 			to,
 			templateCode,
 			text,
-			templateData
+			templateData,
+			buttons
 		});
 
 		// Check if the message was delivered successfully

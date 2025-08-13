@@ -1,10 +1,19 @@
 import { env } from '$env/dynamic/private';
 
+export interface KakaoButton {
+	type: 'URL';
+	name: string;
+	urlMobile: string;
+	urlPc: string;
+}
+
 interface KakaoAlimTalkMessage {
 	to: string;
 	templateCode: string;
 	text: string;
+	title?: string;
 	templateData?: Record<string, string>;
+	buttons?: KakaoButton[];
 }
 
 interface InfobipKakaoRequest {
@@ -16,7 +25,9 @@ interface InfobipKakaoRequest {
 		content: {
 			templateCode: string;
 			text: string;
+			title?: string;
 			type: 'TEMPLATE';
+			buttons?: KakaoButton[];
 		};
 	}>;
 }
@@ -58,11 +69,23 @@ export class KakaoAlimTalkService {
 
 		const endpoint = `${this.baseUrl}/kakao-alim/1/messages`;
 
+<<<<<<< HEAD
 		// Substitute template variables in the text
 		const substitutedText = this.substituteTemplateVariables(message.text, message.templateData);
 
 		// Note: Infobip expects the text to be already substituted with actual values
 		// The templateData is NOT sent to Infobip - it's only used locally for substitution
+=======
+		// Replace template variables in text if templateData is provided
+		let processedText = message.text;
+		if (message.templateData) {
+			for (const [key, value] of Object.entries(message.templateData)) {
+				const placeholder = `#{${key}}`;
+				processedText = processedText.replace(new RegExp(placeholder, 'g'), value);
+			}
+		}
+
+>>>>>>> 508023e (Add test kakao alimtalk success)
 		const requestBody: InfobipKakaoRequest = {
 			messages: [
 				{
@@ -74,9 +97,16 @@ export class KakaoAlimTalkService {
 					],
 					content: {
 						templateCode: message.templateCode,
+<<<<<<< HEAD
 						text: substitutedText,
 						type: 'TEMPLATE'
 						// DO NOT include templateData here - Infobip doesn't accept it
+=======
+						text: processedText,
+						...(message.title ? { title: message.title } : {}),
+						type: 'TEMPLATE',
+						...(message.buttons ? { buttons: message.buttons } : {})
+>>>>>>> 508023e (Add test kakao alimtalk success)
 					}
 				}
 			]
@@ -261,6 +291,7 @@ export class KakaoAlimTalkService {
 
 		const requestBody: InfobipKakaoRequest = {
 			messages: messages.map((message) => {
+<<<<<<< HEAD
 				// Substitute template variables for each message
 				const substitutedText = this.substituteTemplateVariables(message.text, message.templateData);
 				
@@ -276,6 +307,31 @@ export class KakaoAlimTalkService {
 						text: substitutedText,
 						type: 'TEMPLATE'
 					}
+=======
+				// Replace template variables in text if templateData is provided
+				let processedText = message.text;
+				if (message.templateData) {
+					for (const [key, value] of Object.entries(message.templateData)) {
+						const placeholder = `#{${key}}`;
+						processedText = processedText.replace(new RegExp(placeholder, 'g'), value);
+					}
+				}
+
+				return {
+					sender: this.channelProfileKey,
+					destinations: [
+						{
+							to: message.to
+						}
+					],
+					content: {
+						templateCode: message.templateCode,
+						text: processedText,
+						...(message.title ? { title: message.title } : {}),
+						type: 'TEMPLATE',
+						...(message.buttons ? { buttons: message.buttons } : {})
+					}
+>>>>>>> 508023e (Add test kakao alimtalk success)
 				};
 			})
 		};

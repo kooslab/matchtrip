@@ -1,0 +1,143 @@
+{
+  "dev": {
+    "testcode01": {
+      "name": "signup01",
+      "description": "회원가입 - 여행자",
+      "text": "[#{SHOPNAME}], 안녕하세요. #{NAME}님! #{SHOPNAME}에 회원가입 해주셔서 진심으로 감사드립니다!",
+      "variables": ["SHOPNAME", "NAME"],
+      "button": {
+        "type": "URL",
+        "name": "나의프로필보기",
+        "urlMobile": "https://dev.matchtrip.net/profile/traveler",
+        "urlPc": "https://dev.matchtrip.net/profile/traveler"
+      }
+    },
+    "testcode02": {
+      "name": "signup02",
+      "description": "회원가입 - 가이드",
+      "text": "[#{SHOPNAME}], 안녕하세요. #{NAME}님! #{SHOPNAME}에 회원가입 해주셔서 진심으로 감사드립니다!",
+      "variables": ["SHOPNAME", "NAME"],
+      "button": {
+        "type": "URL",
+        "name": "나의프로필보기",
+        "urlMobile": "https://dev.matchtrip.net/profile/guide",
+        "urlPc": "https://dev.matchtrip.net/profile/guide"
+      }
+    },
+    "testcode03": {
+      "name": "mytrip01",
+      "description": "여행 의뢰 등록 완료",
+      "text": "[#{SHOPNAME}]에 #{NAME}님의 여행 의뢰가 정상적으로 등록 되었습니다.",
+      "variables": ["SHOPNAME", "NAME"],
+      "button": {
+        "type": "URL",
+        "name": "나의여행보기",
+        "urlMobile": "https://dev.matchtrip.net/my-trips",
+        "urlPc": "https://dev.matchtrip.net/my-trips"
+      }
+    },
+    "testcode04": {
+      "name": "mytrip02",
+      "description": "여행 제안 도착 알림",
+      "text": "[#{SHOPNAME}]에 #{가이드}님의 여행 제안이 도착하였습니다. #{나의여행}을 확인하세요.\n해당 메시지는 고객님께서 요청한 여행 제안이 있을 경우 발송됩니다",
+      "variables": ["SHOPNAME", "가이드", "나의여행"],
+      "button": {
+        "type": "URL",
+        "name": "나의여행보기",
+        "urlMobile": "https://dev.matchtrip.net/my-trips",
+        "urlPc": "https://dev.matchtrip.net/my-trips"
+      }
+    },
+    "testcode05": {
+      "name": "chat01",
+      "description": "가이드 답변 도착 - 고객에게",
+      "text": "[#{SHOPNAME}]에 고객님이 문의하신 메세지에 #{가이드}님의 답변이 도착했습니다. #{메세지확인하기}를 통해 답변해보세요.",
+      "variables": ["SHOPNAME", "가이드", "메세지확인하기"],
+      "button": {
+        "type": "URL",
+        "name": "메세지확인하기",
+        "urlMobile": "https://dev.matchtrip.net/chat",
+        "urlPc": "https://dev.matchtrip.net/chat"
+      }
+    },
+    "testcode06": {
+      "name": "settlement01",
+      "description": "결제 완료",
+      "text": "[#{SHOPNAME}]에 #{고객}님의 여행금액 #{여행총결제금액}이 정상적으로 결제 되었습니다.",
+      "variables": ["SHOPNAME", "고객", "여행총결제금액"],
+      "button": {
+        "type": "URL",
+        "name": "주문내역",
+        "urlMobile": "https://dev.matchtrip.net/settlement",
+        "urlPc": "https://dev.matchtrip.net/settlement"
+      }
+    },
+    "testcode07": {
+      "name": "remind01",
+      "description": "여행 시작 리마인더 - 고객",
+      "text": "[#{SHOPNAME}]에 #{가이드}님과 함께하는 여행이 내일 시작됩니다. #{나의여행}을 확인하세요.",
+      "variables": ["SHOPNAME", "가이드", "나의여행"],
+      "button": {
+        "type": "URL",
+        "name": "나의여행",
+        "urlMobile": "https://dev.matchtrip.net/my-trips",
+        "urlPc": "https://dev.matchtrip.net/my-trips"
+      }
+    },
+    "testcode08": {
+      "name": "cs01",
+      "description": "문의 등록 완료",
+      "text": "[#{SHOPNAME}]에 #{NAME}님의 문의가 정상적으로 등록 되었습니다.",
+      "variables": ["SHOPNAME", "NAME"],
+      "button": null
+    },
+    "testcode09": {
+      "name": "myoffers01",
+      "description": "여행 제안 등록 완료",
+      "text": "[#{SHOPNAME}]에 #{NAME}님의 여행 제안이 정상적으로 등록 되었습니다.",
+      "variables": ["SHOPNAME", "NAME"],
+      "button": {
+        "type": "URL",
+        "name": "나의제안보기",
+        "urlMobile": "https://dev.matchtrip.net/my-offers",
+        "urlPc": "https://dev.matchtrip.net/my-offers"
+      }
+    },
+    "testcode10": {
+      "name": "chat02",
+      "description": "고객 문의 도착 - 가이드에게",
+      "text": "[#{SHOPNAME}]에 가이드님의 여행제안에 #{고객}님의 예약관련 문의가 도착했습니다. #{메세지확인하기}를 통해 답변해보세요.",
+      "variables": ["SHOPNAME", "고객", "메세지확인하기"],
+      "button": {
+        "type": "URL",
+        "name": "메세지확인하기",
+        "urlMobile": "https://dev.matchtrip.net/chat",
+        "urlPc": "https://dev.matchtrip.net/chat"
+      }
+    },
+    "testcode11": {
+      "name": "myoffers02",
+      "description": "제안 채택 알림 - 가이드에게",
+      "text": "[#{SHOPNAME}]에 #{고객}님께서 #{가이드}님의 여행제안을 채택하였습니다. #{나의제안}을 확인하세요.",
+      "variables": ["SHOPNAME", "고객", "가이드", "나의제안"],
+      "button": {
+        "type": "URL",
+        "name": "나의제안보기",
+        "urlMobile": "https://dev.matchtrip.net/my-offers",
+        "urlPc": "https://dev.matchtrip.net/my-offers"
+      }
+    },
+    "testcode12": {
+      "name": "remind02",
+      "description": "여행 시작 리마인더 - 가이드",
+      "text": "[#{SHOPNAME}]에 #{고객}님과 함께하는 여행이 내일 시작됩니다 . #{나의제안}을 확인하세요.",
+      "variables": ["SHOPNAME", "고객", "나의제안"],
+      "button": {
+        "type": "URL",
+        "name": "나의제안보기",
+        "urlMobile": "https://dev.matchtrip.net/my-offers",
+        "urlPc": "https://dev.matchtrip.net/my-offers"
+      }
+    }
+  }
+}
