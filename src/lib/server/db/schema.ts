@@ -352,6 +352,53 @@ export const paymentStatusEnum = pgEnum('payment_status', [
 	'cancelled',
 	'refunded'
 ]);
+// Cancellation reason enums for different user types
+export type CancellationReasonTraveler =
+	| 'schedule_change'
+	| 'booking_mismatch'
+	| 'guide_unresponsive'
+	| 'guide_unavailable'
+	| 'natural_disaster'
+	| 'medical_emergency'
+	| 'other';
+
+export const cancellationReasonTravelerEnum = pgEnum('cancellation_reason_traveler', [
+	'schedule_change',
+	'booking_mismatch',
+	'guide_unresponsive',
+	'guide_unavailable',
+	'natural_disaster',
+	'medical_emergency',
+	'other'
+]);
+
+export type CancellationReasonGuide =
+	| 'traveler_request'
+	| 'traveler_unresponsive'
+	| 'facility_unavailable'
+	| 'guide_unavailable'
+	| 'natural_disaster'
+	| 'medical_emergency'
+	| 'other';
+
+export const cancellationReasonGuideEnum = pgEnum('cancellation_reason_guide', [
+	'traveler_request',
+	'traveler_unresponsive',
+	'facility_unavailable',
+	'guide_unavailable',
+	'natural_disaster',
+	'medical_emergency',
+	'other'
+]);
+
+export type CancellationStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
+
+export const cancellationStatusEnum = pgEnum('cancellation_status', [
+	'pending',
+	'approved',
+	'rejected',
+	'cancelled'
+]);
 export type PaymentStatus = (typeof paymentStatusEnum.enumValues)[number];
 
 // Payments table
@@ -379,6 +426,11 @@ export const payments = pgTable(
 		status: paymentStatusEnum('status').notNull().default('pending'),
 		paymentMethod: text('payment_method'), // card, transfer, etc.
 		failureReason: text('failure_reason'),
+		// Cancellation and refund fields
+		cancelledAt: timestamp('cancelled_at'),
+		refundedAt: timestamp('refunded_at'),
+		refundAmount: integer('refund_amount'), // Amount refunded in KRW
+		cancellationRequestId: uuid('cancellation_request_id'), // Reference to cancellation_requests table
 		paidAt: timestamp('paid_at'),
 		createdAt: timestamp('created_at').defaultNow().notNull(),
 		updatedAt: timestamp('updated_at').defaultNow().notNull()
@@ -396,6 +448,84 @@ export const payments = pgTable(
 		// ALTER TABLE payments ADD CONSTRAINT payment_type_check 
 		// CHECK ((trip_id IS NOT NULL AND offer_id IS NOT NULL AND product_id IS NULL AND product_offer_id IS NULL) 
 		//     OR (product_id IS NOT NULL AND product_offer_id IS NOT NULL AND trip_id IS NULL AND offer_id IS NULL));
+	})
+);
+
+// Payment refunds table for tracking individual refund transactions
+export const paymentRefunds = pgTable(
+	'payment_refunds',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		paymentId: uuid('payment_id')
+			.notNull()
+			.references(() => payments.id, { onDelete: 'restrict' }),
+		refundAmount: integer('refund_amount').notNull(), // Amount in KRW
+		refundType: varchar('refund_type', { length: 20 }).notNull(), // 'full' or 'partial'
+		refundReason: text('refund_reason'),
+		tossTransactionKey: text('toss_transaction_key'), // Toss cancellation transaction key
+		tossResponse: jsonb('toss_response').$type<Record<string, any>>(), // Full Toss API response
+		processedBy: uuid('processed_by')
+			.references(() => users.id, { onDelete: 'set null' }),
+		status: varchar('status', { length: 20 }).notNull().default('completed'), // 'pending', 'completed', 'failed'
+		createdAt: timestamp('created_at').defaultNow().notNull()
+	},
+	(table) => ({
+		paymentIdIdx: index('payment_refunds_payment_id_idx').on(table.paymentId),
+		processedByIdx: index('payment_refunds_processed_by_idx').on(table.processedBy),
+		statusIdx: index('payment_refunds_status_idx').on(table.status),
+		createdAtIdx: index('payment_refunds_created_at_idx').on(table.createdAt)
+	})
+);
+
+// Cancellation requests table
+export const cancellationRequests = pgTable(
+	'cancellation_requests',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		paymentId: uuid('payment_id')
+			.notNull()
+			.references(() => payments.id, { onDelete: 'restrict' }),
+		requesterId: uuid('requester_id')
+			.notNull()
+			.references(() => users.id, { onDelete: 'restrict' }),
+		requesterType: userRoleEnum('requester_type').notNull(), // 'traveler' or 'guide'
+		reasonType: varchar('reason_type', { length: 50 }).notNull(), // Using varchar instead of enum for flexibility
+		reasonDetail: text('reason_detail'),
+		supportingDocuments: jsonb('supporting_documents'), // Array of file URLs
+		calculatedRefundAmount: integer('calculated_refund_amount').notNull(), // Amount in KRW
+		actualRefundAmount: integer('actual_refund_amount'), // Can be overridden by admin
+		status: cancellationStatusEnum('status').notNull().default('pending'),
+		adminNotes: text('admin_notes'),
+		processedBy: uuid('processed_by')
+			.references(() => users.id, { onDelete: 'restrict' }),
+		processedAt: timestamp('processed_at'),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at').defaultNow().notNull()
+	},
+	(table) => ({
+		paymentIdIdx: index('cancellation_requests_payment_id_idx').on(table.paymentId),
+		requesterIdIdx: index('cancellation_requests_requester_id_idx').on(table.requesterId),
+		statusIdx: index('cancellation_requests_status_idx').on(table.status),
+		createdAtIdx: index('cancellation_requests_created_at_idx').on(table.createdAt)
+	})
+);
+
+// Refund policies table for configurable refund percentages
+export const refundPolicies = pgTable(
+	'refund_policies',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		daysBeforeStart: integer('days_before_start').notNull(), // Days before trip start
+		daysBeforeEnd: integer('days_before_end'), // NULL means infinity
+		refundPercentage: integer('refund_percentage').notNull(), // 0-100
+		applicableTo: varchar('applicable_to', { length: 20 }).notNull().default('trip'), // 'trip' or 'product'
+		isActive: boolean('is_active').notNull().default(true),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at').defaultNow().notNull()
+	},
+	(table) => ({
+		applicableToIdx: index('refund_policies_applicable_to_idx').on(table.applicableTo),
+		isActiveIdx: index('refund_policies_is_active_idx').on(table.isActive)
 	})
 );
 

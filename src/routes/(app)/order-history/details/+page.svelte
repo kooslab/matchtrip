@@ -3,9 +3,19 @@
 	import ArrowBackIcon from '$lib/icons/icon-arrow-back-android-mono.svg';
 	import CalendarCheckIcon from '$lib/icons/icon-calendar-check-mono.svg';
 	import UserTwoIcon from '$lib/icons/icon-user-two-mono.svg';
+	import CancellationRequestModal from '$lib/components/cancellation/CancellationRequestModal.svelte';
+	import { canCancelBooking } from '$lib/utils/refundCalculator';
 
 	let { data } = $props();
 	let order = $derived(data.order);
+	
+	let showCancelModal = $state(false);
+	let canCancel = $derived(() => {
+		if (!order) return false;
+		// Allow cancellation for completed payments
+		// For past trips, it will require admin approval
+		return order.payment.status === 'completed';
+	});
 	
 	$effect(() => {
 		console.log('Order data:', order);
@@ -110,6 +120,20 @@
 		};
 		
 		return methodMap[method] || method;
+	}
+	
+	function handleCancelRequest() {
+		if (canCancel()) {
+			showCancelModal = true;
+		}
+	}
+	
+	function handleCancelSuccess(event: CustomEvent) {
+		const { cancellationRequest, refundCalculation } = event.detail;
+		alert(`취소 요청이 완료되었습니다.
+예상 환불 금액: ${refundCalculation.refundAmount.toLocaleString()}원`);
+		// Refresh the page or redirect
+		goto('/order-history');
 	}
 </script>
 
@@ -313,14 +337,26 @@
 							</div>
 						</div>
 						
-						{#if order.payment.status === 'completed'}
+						{#if order.payment.status === 'completed' && canCancel()}
 							<div class="mt-4 pt-4 border-t border-gray-e8">
 								<button
-									onclick={() => alert('결제 취소 요청 기능은 준비 중입니다.')}
-									class="w-full py-2 text-center text-gray-66 text-[13px] hover:text-gray-900 transition-colors"
+									onclick={handleCancelRequest}
+									class="w-full py-2 text-center text-red-500 text-[13px] hover:text-red-600 transition-colors font-medium"
 								>
-									결제 취소하기
+									결제 취소 요청
 								</button>
+							</div>
+						{:else if order.payment.status === 'cancelled'}
+							<div class="mt-4 pt-4 border-t border-gray-e8">
+								<div class="text-center text-gray-500 text-[13px]">
+									취소 완료
+								</div>
+							</div>
+						{:else if order.payment.status === 'refunded'}
+							<div class="mt-4 pt-4 border-t border-gray-e8">
+								<div class="text-center text-gray-500 text-[13px]">
+									환불 완료
+								</div>
 							</div>
 						{/if}
 					</div>
@@ -365,6 +401,20 @@
 		</div>
 	</div>
 </div>
+
+<!-- Cancellation Modal -->
+{#if order}
+	<CancellationRequestModal
+		isOpen={showCancelModal}
+		userRole={data.user?.role || 'traveler'}
+		paymentId={order.payment.id}
+		paymentAmount={order.payment.amount}
+		tripStartDate={order.type === 'trip' ? order.startDate : null}
+		productDate={order.type === 'product' ? order.productDate : null}
+		on:close={() => showCancelModal = false}
+		on:success={handleCancelSuccess}
+	/>
+{/if}
 
 <style>
 	:global(.text-primary) {

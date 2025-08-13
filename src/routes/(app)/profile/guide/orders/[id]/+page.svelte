@@ -3,6 +3,8 @@
 	import { goto } from '$app/navigation';
 	import { ChevronLeft, Calendar, MapPin, Users, Phone } from 'lucide-svelte';
 	import { formatDate } from '$lib/utils/dateFormatter';
+	import CancellationRequestModal from '$lib/components/cancellation/CancellationRequestModal.svelte';
+	import { canCancelBooking } from '$lib/utils/refundCalculator';
 
 	const { data, form } = $props();
 	const order = $derived(data.order);
@@ -14,7 +16,14 @@
 
 	let isSubmitting = $state(false);
 	let showCancelModal = $state(false);
-	let cancelReason = $state('');
+	
+	function handleCancelSuccess(event: CustomEvent) {
+		const { cancellationRequest, refundCalculation } = event.detail;
+		alert(`취소 요청이 완료되었습니다.
+가이드 취소는 전액 환불됩니다.
+환불 금액: ${refundCalculation.refundAmount.toLocaleString()}원`);
+		goto('/profile/guide/orders');
+	}
 
 	function formatPrice(amount: number) {
 		return new Intl.NumberFormat('ko-KR').format(amount);
@@ -181,64 +190,13 @@
 	</div>
 
 	<!-- Cancel Modal -->
-	{#if showCancelModal}
-		<div class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black px-4">
-			<div class="w-full max-w-sm rounded-2xl bg-white p-6">
-				<h2 class="mb-6 text-center text-xl font-bold">취소 요청</h2>
-
-				<div class="mb-6">
-					<label class="mb-2 block text-sm text-gray-600">취소 사유</label>
-					<input
-						type="text"
-						bind:value={cancelReason}
-						placeholder="취소 사유를 입력해 주세요"
-						class="w-full rounded-lg border border-gray-200 px-4 py-3 focus:border-blue-500 focus:outline-none"
-					/>
-				</div>
-
-				<div class="flex gap-3">
-					<button
-						type="button"
-						onclick={() => {
-							showCancelModal = false;
-							cancelReason = '';
-						}}
-						class="flex-1 rounded-lg border border-gray-300 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-50"
-					>
-						닫기
-					</button>
-					<form
-						method="POST"
-						action="?/cancelPayment"
-						class="flex-1"
-						use:enhance={() => {
-							if (!cancelReason.trim()) {
-								alert('취소 사유를 입력해 주세요.');
-								return { cancel: true };
-							}
-							isSubmitting = true;
-							return async ({ result }) => {
-								isSubmitting = false;
-								if (result.type === 'success') {
-									await goto('/profile/guide/orders');
-								} else if (result.type === 'failure') {
-									alert(result.data?.error || '취소 요청 중 오류가 발생했습니다.');
-								}
-								showCancelModal = false;
-							};
-						}}
-					>
-						<input type="hidden" name="cancelReason" value={cancelReason} />
-						<button
-							type="submit"
-							disabled={isSubmitting}
-							class="w-full rounded-lg bg-blue-600 py-3 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
-						>
-							{isSubmitting ? '처리중...' : '요청하기'}
-						</button>
-					</form>
-				</div>
-			</div>
-		</div>
-	{/if}
+	<CancellationRequestModal
+		isOpen={showCancelModal}
+		userRole="guide"
+		paymentId={payment?.id}
+		paymentAmount={payment?.amount || offer.price}
+		tripStartDate={trip.startDate}
+		on:close={() => showCancelModal = false}
+		on:success={handleCancelSuccess}
+	/>
 </div>
