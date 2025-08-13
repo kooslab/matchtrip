@@ -1,10 +1,4 @@
 <script lang="ts">
-<<<<<<< HEAD
-	let phoneNumber = '821030637950';
-	let templateCode = 'testcode01';
-	let text =
-		'[#{SHOPNAME}], 안녕하세요. #{NAME}님! #{SHOPNAME}에 회원가입 해주셔서 진심으로 감사드립니다!';
-=======
 	import { onMount } from 'svelte';
 	
 	// Template data
@@ -17,7 +11,6 @@
 	let phoneNumber = '';
 	let templateCode = '';
 	let text = '';
->>>>>>> 508023e (Add test kakao alimtalk success)
 	let templateData = '{\n  "SHOPNAME": "매치트립",\n  "NAME": "홍길동"\n}';
 	let includeButton = false;
 	let loading = false;
@@ -30,25 +23,6 @@
 	let reports: any = null;
 	let loadingReports = false;
 	let reportsError: string | null = null;
-<<<<<<< HEAD
-	let diagnostics: any = null;
-	let loadingDiagnostics = false;
-	
-	// Computed preview of substituted text
-	$: substitutedText = (() => {
-		try {
-			if (!templateData) return text;
-			const data = JSON.parse(templateData);
-			let result = text;
-			for (const [key, value] of Object.entries(data)) {
-				result = result.replace(new RegExp(`#\\{${key}\\}`, 'g'), String(value));
-			}
-			return result;
-		} catch {
-			return text;
-		}
-	})();
-=======
 	
 	// Load templates on mount
 	onMount(async () => {
@@ -105,7 +79,6 @@
 			updateDefaultTemplateData();
 		}
 	}
->>>>>>> 508023e (Add test kakao alimtalk success)
 
 	async function sendTestKakao() {
 		loading = true;
@@ -153,17 +126,6 @@
 			}
 
 			// Show what actually gets sent to Infobip
-			// Note: The text field will contain the substituted text, NOT the template
-			let substitutedTextForRequest = text;
-			if (parsedTemplateData) {
-				for (const [key, value] of Object.entries(parsedTemplateData)) {
-					substitutedTextForRequest = substitutedTextForRequest.replace(
-						new RegExp(`#\\{${key}\\}`, 'g'), 
-						String(value)
-					);
-				}
-			}
-			
 			requestBody = {
 				messages: [
 					{
@@ -175,15 +137,9 @@
 						],
 						content: {
 							templateCode: templateCode,
-<<<<<<< HEAD
-							text: substitutedTextForRequest,
-							type: 'TEMPLATE'
-							// Note: templateData is NOT sent to Infobip
-=======
 							text: processedText,
 							type: 'TEMPLATE',
 							...(buttons ? { buttons } : {})
->>>>>>> 508023e (Add test kakao alimtalk success)
 						}
 					}
 				]
@@ -251,56 +207,6 @@
 			logsError = err instanceof Error ? err.message : 'Network error';
 		} finally {
 			loadingLogs = false;
-		}
-	}
-
-	async function runDiagnostics() {
-		loadingDiagnostics = true;
-		diagnostics = null;
-		
-		try {
-			const response = await fetch('/api/test-kakao-diagnostic');
-			diagnostics = await response.json();
-		} catch (err) {
-			diagnostics = { error: err instanceof Error ? err.message : 'Diagnostic failed' };
-		} finally {
-			loadingDiagnostics = false;
-		}
-	}
-	
-	async function testSimpleTemplate() {
-		// Test with a simple template without variables
-		loading = true;
-		error = null;
-		result = null;
-		
-		try {
-			const simpleRequest = {
-				to: phoneNumber,
-				templateCode: templateCode,
-				text: '안녕하세요. 회원가입을 환영합니다!',
-				templateData: {}
-			};
-			
-			const response = await fetch('/api/test-kakao', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(simpleRequest)
-			});
-			
-			const data = await response.json();
-			
-			if (response.ok) {
-				result = data;
-			} else {
-				error = data.error || 'Failed to send simple template';
-			}
-		} catch (err) {
-			error = err instanceof Error ? err.message : 'Network error';
-		} finally {
-			loading = false;
 		}
 	}
 
@@ -423,32 +329,7 @@
 				></textarea>
 				<p class="mt-1 text-xs text-gray-500">Variables for template substitution in JSON format</p>
 			</div>
-			
-			<div class="rounded-md border border-blue-200 bg-blue-50 p-4">
-				<p class="mb-2 text-sm font-medium text-blue-700">Preview (After Variable Substitution):</p>
-				<p class="text-sm text-gray-800 whitespace-pre-wrap">{substitutedText}</p>
-			</div>
 
-<<<<<<< HEAD
-			<div class="flex gap-2">
-				<button
-					onclick={sendTestKakao}
-					disabled={loading || !phoneNumber || !templateCode || !text}
-					class="bg-primary flex-1 rounded-md px-4 py-2 text-white transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-gray-400"
-				>
-					{loading ? 'Sending...' : 'Send Test AlimTalk'}
-				</button>
-				
-				<button
-					onclick={runDiagnostics}
-					disabled={loadingDiagnostics}
-					class="bg-purple-600 rounded-md px-4 py-2 text-white transition-colors hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-				>
-					{loadingDiagnostics ? '...' : '🔍 Diagnostics'}
-				</button>
-			</div>
-			
-=======
 			{#if selectedTemplate?.button}
 				<div class="flex items-center space-x-2">
 					<input
@@ -475,13 +356,12 @@
 				</div>
 			{/if}
 
->>>>>>> 508023e (Add test kakao alimtalk success)
 			<button
-				onclick={testSimpleTemplate}
-				disabled={loading || !phoneNumber || !templateCode}
-				class="w-full rounded-md bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+				onclick={sendTestKakao}
+				disabled={loading || !phoneNumber || !templateCode || !text}
+				class="bg-primary w-full rounded-md px-4 py-2 text-white transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-gray-400"
 			>
-				{loading ? 'Testing...' : 'Test Simple Template (No Variables)'}
+				{loading ? 'Sending...' : 'Send Test AlimTalk'}
 			</button>
 		</div>
 
@@ -489,36 +369,13 @@
 			<div class="mt-4 rounded-md border border-gray-200 bg-gray-50 p-4">
 				<p class="mb-2 text-sm font-medium text-gray-700">Actual Infobip API Request Body:</p>
 				<pre class="overflow-x-auto rounded bg-gray-100 p-2 text-xs">{JSON.stringify(requestBody, null, 2)}</pre>
-<<<<<<< HEAD
-				<p class="mt-2 text-xs text-gray-600">Note: The sender field will be replaced with the actual KAKAO_CHANNEL_PROFILE_KEY value from environment variables on the server.</p>
-				<p class="mt-1 text-xs text-gray-600 font-semibold">Important: The text field shows the SUBSTITUTED text that will be sent to Infobip. Template variables are replaced BEFORE sending.</p>
-=======
 				<p class="mt-2 text-xs text-gray-600">Note: The sender field will be replaced with the actual KAKAO_CHANNEL_PROFILE_KEY value from environment variables on the server. Template variables (#{NAME}, #{SHOPNAME}) are replaced with actual values before sending.</p>
->>>>>>> 508023e (Add test kakao alimtalk success)
 			</div>
 		{/if}
 
 		{#if error}
 			<div class="mt-4 rounded-md border border-red-200 bg-red-50 p-4">
 				<p class="text-sm text-red-700">Error: {error}</p>
-			</div>
-		{/if}
-		
-		{#if diagnostics}
-			<div class="mt-4 rounded-md border border-purple-200 bg-purple-50 p-4">
-				<p class="mb-2 text-sm font-medium text-purple-700">Diagnostics Results:</p>
-				<pre class="overflow-x-auto rounded bg-purple-100 p-2 text-xs">{JSON.stringify(diagnostics, null, 2)}</pre>
-				
-				{#if diagnostics.suggestions}
-					<div class="mt-3 rounded border border-purple-300 bg-white p-3">
-						<p class="mb-2 text-xs font-medium text-purple-700">Troubleshooting Steps:</p>
-						<ul class="space-y-1 text-xs text-gray-700">
-							{#each diagnostics.suggestions as suggestion}
-								<li>• {suggestion}</li>
-							{/each}
-						</ul>
-					</div>
-				{/if}
 			</div>
 		{/if}
 
@@ -674,7 +531,7 @@
 			<li>• Fixed format: Cannot be modified</li>
 		</ul>
 		<p class="mt-3 text-xs text-yellow-700">
-			Example template data for welcome message (Template ID: 1):
+			Example template data for welcome message (Template ID: testcode01):
 		</p>
 		<pre class="mt-1 overflow-x-auto rounded bg-yellow-100 p-2 text-xs">{`{
   "SHOPNAME": "매치트립",

@@ -69,14 +69,9 @@ export const POST: RequestHandler = async ({ request }) => {
 		console.log('Calling kakaoAlimTalk.sendAlimTalk with:', {
 			to,
 			templateCode,
-<<<<<<< HEAD
 			text: text.substring(0, 100) + '...', // Log first 100 chars only
-			templateData
-=======
-			text,
 			templateData,
 			buttons
->>>>>>> 508023e (Add test kakao alimtalk success)
 		});
 
 		const result = await kakaoAlimTalk.sendAlimTalk({

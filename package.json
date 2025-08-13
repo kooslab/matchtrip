@@ -63,7 +63,7 @@
 		"dotenv": "^17.2.1",
 		"drizzle-orm": "^0.40.0",
 		"lucide-svelte": "^0.511.0",
-		"openai": "^5.11.0",
+		"openai": "^5.12.2",
 		"phosphor-svelte": "^3.0.1",
 		"postgres": "^3.4.5",
 		"resend": "^4.5.2"
