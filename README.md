@@ -103,6 +103,67 @@ This boilerplate includes a pre-configured authentication system using better-au
 - Session management
 - Protected routes
 
+## Toss Payments Webhooks
+
+This application includes webhook integration with Toss Payments for real-time payment status updates.
+
+### Webhook Endpoint
+- **URL**: `/api/webhooks/toss`
+- **Method**: POST
+- **Security**: API verification (no signature needed - Toss doesn't provide webhook secrets)
+
+### Webhook URLs
+
+#### Production/Staging
+- **URL**: `https://dev.matchtrip.net/api/webhooks/toss`
+
+#### Local Development with zrok
+For local webhook testing, use zrok to expose your localhost:
+
+```bash
+# Reserve your domain (one-time setup)
+zrok reserve public localhost:5173 --unique-name trip
+
+# Start the tunnel (every time you develop)
+zrok share reserved trip
+```
+
+- **Local URL**: `https://trip.share.zrok.io/api/webhooks/toss`
+
+### Toss Dashboard Configuration
+
+1. Log into [Toss Payments Dashboard](https://dashboard.tosspayments.com)
+2. Navigate to Webhook settings
+3. Add webhook endpoints:
+   - **Production**: `https://dev.matchtrip.net/api/webhooks/toss`
+   - **Local Dev**: `https://trip.share.zrok.io/api/webhooks/toss`
+4. Select events to receive:
+   - `PAYMENT.DONE` - Payment completed
+   - `PAYMENT.CANCELED` - Full refund
+   - `PAYMENT.PARTIAL_CANCELED` - Partial refund
+   - `PAYMENT.FAILED` - Payment failed
+   - `PAYMENT.EXPIRED` - Payment expired
+
+### Testing Webhooks Locally
+
+Use the test endpoint to simulate webhook events:
+
+```bash
+curl -X POST http://localhost:5173/api/webhooks/test \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventType": "PAYMENT.DONE",
+    "paymentKey": "your_payment_key"
+  }'
+```
+
+
+### Database Schema
+
+The webhook system uses these tables (already created):
+- `webhook_events` - Tracks all webhook events for idempotency
+- `payment_refunds` - Records individual refund transactions
+
 ## Deployment
 
 This boilerplate can be deployed to any platform that supports SvelteKit applications:

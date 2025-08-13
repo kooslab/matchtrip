@@ -342,6 +342,67 @@ Required environment variables (see `.env.example`):
 - `INFOBIP_BASE_URL`: Base URL for Infobip API
 - `KAKAO_CHANNEL_PROFILE_KEY`: Your Kakao channel identifier
 
+## Toss Payments Webhooks
+
+### Overview
+The application uses Toss Payments webhooks to receive real-time payment status updates. Unlike many payment providers, Toss does NOT provide webhook secrets or signatures.
+
+### Security Model
+- **No webhook secret**: Toss doesn't provide webhook secrets in their dashboard
+- **API verification**: Each webhook event is verified by calling Toss API to confirm the payment status
+- **Idempotency**: Events are tracked in `webhook_events` table to prevent duplicate processing
+
+### Webhook Endpoint
+- **Location**: `/api/webhooks/toss/+server.ts`
+- **Production URL**: `https://dev.matchtrip.net/api/webhooks/toss`
+- **Local Dev URL**: `https://trip.share.zrok.io/api/webhooks/toss`
+- **Events handled**:
+  - `PAYMENT.DONE` - Payment completion
+  - `PAYMENT.CANCELED` - Full cancellation/refund
+  - `PAYMENT.PARTIAL_CANCELED` - Partial refund
+  - `PAYMENT.FAILED` - Payment failure
+  - `PAYMENT.EXPIRED` - Payment expiration
+
+### Local Development Setup
+
+1. **Start zrok tunnel**:
+```bash
+# One-time reservation
+zrok reserve public localhost:5173 --unique-name trip
+
+# Start tunnel (every dev session)
+zrok share reserved trip
+```
+
+2. **Configure in Toss Dashboard**:
+- Production: `https://dev.matchtrip.net/api/webhooks/toss`
+- Local Dev: `https://trip.share.zrok.io/api/webhooks/toss`
+- Select all payment events
+- No secret to copy (Toss doesn't provide one)
+
+3. **Test webhooks**:
+```bash
+# Use test endpoint
+curl -X POST http://localhost:5173/api/webhooks/test \
+  -H "Content-Type: application/json" \
+  -d '{"eventType":"PAYMENT.DONE","paymentKey":"test_key"}'
+```
+
+### Database Tables
+- **webhook_events**: Tracks all webhook events
+  - `eventId` (unique) - Prevents duplicate processing
+  - `status` - pending/processed/failed
+  - `payload` - Full webhook data
+- **payment_refunds**: Individual refund transactions
+  - Links to payments table
+  - Tracks refund type, amount, reason
+
+### Implementation Notes
+- Webhook processes both customer payments and admin-initiated refunds
+- Uses database transactions for consistency
+- Returns 200 OK even on processing errors (handles retries internally)
+- Verifies payment status with Toss API before processing
+
 ## Application-Specific Context
 
 This is a travel marketplace platform connecting travelers with local guides:

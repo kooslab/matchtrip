@@ -477,6 +477,28 @@ export const paymentRefunds = pgTable(
 	})
 );
 
+// Webhook events table for tracking and preventing duplicate processing
+export const webhookEvents = pgTable(
+	'webhook_events',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		eventId: text('event_id').notNull().unique(), // Unique event ID from Toss
+		eventType: varchar('event_type', { length: 50 }).notNull(), // PAYMENT.DONE, PAYMENT.CANCELED, etc.
+		payload: jsonb('payload').$type<Record<string, any>>().notNull(), // Full webhook payload
+		status: varchar('status', { length: 20 }).notNull().default('pending'), // pending, processed, failed
+		processedAt: timestamp('processed_at'),
+		errorMessage: text('error_message'), // Error details if processing failed
+		retryCount: integer('retry_count').notNull().default(0),
+		createdAt: timestamp('created_at').defaultNow().notNull()
+	},
+	(table) => ({
+		eventIdIdx: index('webhook_events_event_id_idx').on(table.eventId),
+		eventTypeIdx: index('webhook_events_event_type_idx').on(table.eventType),
+		statusIdx: index('webhook_events_status_idx').on(table.status),
+		createdAtIdx: index('webhook_events_created_at_idx').on(table.createdAt)
+	})
+);
+
 // Cancellation requests table
 export const cancellationRequests = pgTable(
 	'cancellation_requests',
