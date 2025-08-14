@@ -63,11 +63,14 @@
 		console.log('canWriteReview check:', {
 			acceptedOffer: !!acceptedOffer,
 			tripHasEnded: tripHasEnded(),
-			reviewRequestedAt: review?.reviewRequestedAt,
 			reviewContent: review?.content,
 			review
 		});
-		return acceptedOffer && tripHasEnded() && review?.reviewRequestedAt && !review?.content;
+		// Allow review writing if:
+		// 1. There's an accepted offer
+		// 2. Trip has ended
+		// 3. Review hasn't been written yet (no content)
+		return acceptedOffer && tripHasEnded() && !review?.content;
 	});
 
 	// State for offer actions
@@ -480,16 +483,38 @@
 			</button>
 		{:else if acceptedOffer && canWriteReview()}
 			<button
-				onclick={() => {
+				onclick={async () => {
 					console.log('Review button clicked', {
 						review,
 						reviewToken: review?.reviewToken
 					});
+					
+					// If review token exists, navigate to review page
 					if (review?.reviewToken) {
 						goto(`/write-review/${review.reviewToken}`);
 					} else {
-						console.error('No review token available');
-						alert('리뷰를 작성하려면 먼저 가이드가 리뷰 요청을 보내야 합니다.');
+						// Generate review token if it doesn't exist
+						try {
+							const response = await fetch(`/api/trips/${trip.id}/review-token/generate`, {
+								method: 'POST'
+							});
+							
+							if (response.ok) {
+								const data = await response.json();
+								if (data.reviewToken) {
+									goto(`/write-review/${data.reviewToken}`);
+								} else {
+									console.error('Failed to generate review token');
+									alert('리뷰 작성 준비 중 오류가 발생했습니다. 다시 시도해주세요.');
+								}
+							} else {
+								console.error('Failed to generate review token');
+								alert('리뷰 작성 준비 중 오류가 발생했습니다. 다시 시도해주세요.');
+							}
+						} catch (error) {
+							console.error('Error generating review token:', error);
+							alert('리뷰 작성 준비 중 오류가 발생했습니다. 다시 시도해주세요.');
+						}
 					}
 				}}
 				class="flex h-12 flex-1 items-center justify-center gap-2.5 rounded-[9px] bg-[#19b989] px-6 py-3.5 text-sm font-semibold text-white"

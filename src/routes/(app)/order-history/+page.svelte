@@ -134,7 +134,21 @@
 				if (data.reviewToken) {
 					goto(`/write-review/${data.reviewToken}`);
 				} else {
-					alert('리뷰를 작성하려면 먼저 가이드가 리뷰 요청을 보내야 합니다.');
+					// Generate review token if it doesn't exist
+					const generateResponse = await fetch(`/api/trips/${tripId}/review-token/generate`, {
+						method: 'POST'
+					});
+					
+					if (generateResponse.ok) {
+						const generateData = await generateResponse.json();
+						if (generateData.reviewToken) {
+							goto(`/write-review/${generateData.reviewToken}`);
+						} else {
+							alert('리뷰 작성 준비 중 오류가 발생했습니다. 다시 시도해주세요.');
+						}
+					} else {
+						alert('리뷰 작성 준비 중 오류가 발생했습니다. 다시 시도해주세요.');
+					}
 				}
 			} else {
 				alert('리뷰 정보를 불러올 수 없습니다.');
@@ -156,7 +170,21 @@
 				if (data.reviewToken) {
 					goto(`/write-review/${data.reviewToken}`);
 				} else {
-					alert('리뷰를 작성하려면 먼저 가이드가 리뷰 요청을 보내야 합니다.');
+					// Generate review token if it doesn't exist
+					const generateResponse = await fetch(`/api/products/${productId}/review-token/generate`, {
+						method: 'POST'
+					});
+					
+					if (generateResponse.ok) {
+						const generateData = await generateResponse.json();
+						if (generateData.reviewToken) {
+							goto(`/write-review/${generateData.reviewToken}`);
+						} else {
+							alert('리뷰 작성 준비 중 오류가 발생했습니다. 다시 시도해주세요.');
+						}
+					} else {
+						alert('리뷰 작성 준비 중 오류가 발생했습니다. 다시 시도해주세요.');
+					}
 				}
 			} else {
 				alert('리뷰 정보를 불러올 수 없습니다.');
