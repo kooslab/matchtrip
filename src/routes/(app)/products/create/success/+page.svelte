@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import airplaneImg from '$lib/images/airplane.png';
 	import infoIcon from '$lib/icons/icon-info-circle-mono.svg';
+	import logoUrl from '$lib/images/Matchtrip.svg';
 	
 	const { data } = $props();
 	
@@ -19,8 +20,8 @@
 <div class="h-screen bg-gray-50 overflow-hidden">
 	<div class="mx-auto max-w-md h-full flex flex-col bg-white">
 		<!-- Header without border - Fixed height -->
-		<div class="text-center py-4 flex-shrink-0">
-			<h1 class="text-lg font-bold">Matchtrip</h1>
+		<div class="flex justify-center py-4 flex-shrink-0">
+			<img src={logoUrl} alt="Matchtrip" class="h-5" />
 		</div>
 		
 		<!-- Main Content - Flexible center -->

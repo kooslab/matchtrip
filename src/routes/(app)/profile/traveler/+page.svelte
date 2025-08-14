@@ -2,7 +2,6 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import BottomNav from '$lib/components/BottomNav.svelte';
 	import { authClient } from '$lib/authClient';
-	import { Bell } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 
 	let { data } = $props();

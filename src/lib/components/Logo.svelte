@@ -1,18 +1,14 @@
 <script lang="ts">
-	import logo from '$lib/images/Matchtrip.png';
-	import logoHQ from '$lib/images/Matchtrip-hq.jpg';
+	import logo from '$lib/images/Matchtrip.svg';
 	
 	interface Props {
-		variant?: 'default' | 'hq';
 		class?: string;
 		height?: string;
 	}
 	
-	const { variant = 'default', class: className = '', height = 'h-4' }: Props = $props();
-	
-	const logoSrc = $derived(variant === 'hq' ? logoHQ : logo);
+	const { class: className = '', height = 'h-5' }: Props = $props();
 </script>
 
 <a href="/" class="inline-flex items-center {className}">
-	<img src={logoSrc} alt="Matchtrip" class="{height} w-auto" />
+	<img src={logo} alt="Matchtrip" class="{height} w-auto" />
 </a>

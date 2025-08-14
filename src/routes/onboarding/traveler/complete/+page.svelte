@@ -3,6 +3,7 @@
 	import { onMount } from 'svelte';
 	import walkImage from '$lib/images/walk.png';
 	import iconInfo from '$lib/icons/icon-info-circle-mono.svg';
+	import logoUrl from '$lib/images/Matchtrip.svg';
 
 	function handleStart() {
 		goto('/my-trips');
@@ -12,8 +13,8 @@
 <div class="min-h-screen bg-white">
 	<div class="max-w-md mx-auto relative min-h-screen flex flex-col">
 		<!-- Header with logo -->
-		<div class="p-4 pt-8">
-			<h1 class="text-center text-2xl font-bold text-gray-900">Matchtrip</h1>
+		<div class="p-4 pt-8 flex justify-center">
+			<img src={logoUrl} alt="Matchtrip" class="h-6" />
 		</div>
 
 		<!-- Main content -->

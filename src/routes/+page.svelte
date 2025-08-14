@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
-	import { ChevronDown, ChevronUp, Bell } from 'lucide-svelte';
+	import { ChevronDown, ChevronUp } from 'lucide-svelte';
 	import BottomNav from '$lib/components/BottomNav.svelte';
 	import GuideBottomNav from '$lib/components/GuideBottomNav.svelte';
 	import AgreementModal from '$lib/components/AgreementModal.svelte';
@@ -72,12 +72,8 @@
 		<div class="mx-auto min-h-screen max-w-[430px] bg-white">
 			<!-- Header -->
 			<header class="sticky top-0 z-50 bg-white shadow-sm">
-				<div class="flex items-center justify-between px-4 py-4">
+				<div class="flex items-center px-4 py-4">
 					<Logo />
-					<button class="relative p-2">
-						<Bell class="h-6 w-6 text-gray-600" />
-						<span class="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
-					</button>
 				</div>
 			</header>
 
