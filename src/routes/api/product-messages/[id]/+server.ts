@@ -105,6 +105,8 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 				guideId: userId,
 				price: metadata.price,
 				duration: metadata.duration,
+				startDate: metadata.startDate ? new Date(metadata.startDate) : null,
+				endDate: metadata.endDate ? new Date(metadata.endDate) : null,
 				status: 'pending'
 			});
 	}

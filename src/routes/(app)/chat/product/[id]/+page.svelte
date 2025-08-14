@@ -154,12 +154,20 @@ import ArrowBack from '$lib/icons/icon-arrow-back-android-mono.svg';
 	}
 	
 	// Handle offer submission
-	async function handleOfferSubmit(offerData: { price: number; duration: number }) {
+	async function handleOfferSubmit(offerData: { price: number; duration: number; startDate: Date; endDate: Date }) {
 		sending = true;
 		showOfferModal = false;
 		
-		// Generate default message
-		const offerMessage = `${offerData.duration}일 일정으로 ${offerData.price.toLocaleString('ko-KR')}원에 가이드 서비스를 제안드립니다.`;
+		// Format dates for display
+		const formatDate = (date: Date) => {
+			return new Intl.DateTimeFormat('ko-KR', {
+				month: 'numeric',
+				day: 'numeric'
+			}).format(date);
+		};
+		
+		// Generate default message with dates
+		const offerMessage = `${formatDate(offerData.startDate)} - ${formatDate(offerData.endDate)} (${offerData.duration}일) 일정으로 ${offerData.price.toLocaleString('ko-KR')}원에 가이드 서비스를 제안드립니다.`;
 		
 		// Optimistic update - add offer message immediately
 		const tempMessage = {
@@ -169,7 +177,9 @@ import ArrowBack from '$lib/icons/icon-arrow-back-android-mono.svg';
 			messageType: 'offer',
 			metadata: {
 				price: offerData.price,
-				duration: offerData.duration
+				duration: offerData.duration,
+				startDate: offerData.startDate.toISOString(),
+				endDate: offerData.endDate.toISOString()
 			},
 			createdAt: new Date().toISOString(),
 			sender: {
@@ -196,7 +206,9 @@ import ArrowBack from '$lib/icons/icon-arrow-back-android-mono.svg';
 					messageType: 'offer',
 					metadata: {
 						price: offerData.price,
-						duration: offerData.duration
+						duration: offerData.duration,
+						startDate: offerData.startDate.toISOString(),
+						endDate: offerData.endDate.toISOString()
 					}
 				})
 			});

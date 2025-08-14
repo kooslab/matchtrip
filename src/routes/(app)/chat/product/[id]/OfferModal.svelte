@@ -1,14 +1,21 @@
 <script lang="ts">
+	import { CalendarDate } from '@internationalized/date';
+	import DateRangePickerModal from '$lib/components/DateRangePickerModal.svelte';
+	
 	interface Props {
 		onClose: () => void;
-		onSubmit: (data: { price: number; duration: number }) => void;
+		onSubmit: (data: { price: number; duration: number; startDate: Date; endDate: Date }) => void;
 		sending?: boolean;
 	}
 	
 	const { onClose, onSubmit, sending = false }: Props = $props();
 	
 	let price = $state('');
-	let duration = $state('');
+	let showDatePicker = $state(false);
+	let selectedDates = $state<{ start?: CalendarDate; end?: CalendarDate }>({});
+	let startDate = $state<Date | null>(null);
+	let endDate = $state<Date | null>(null);
+	let duration = $state(0);
 	
 	// Format price input with commas
 	function formatPriceInput(value: string) {
@@ -25,27 +32,52 @@
 		price = formatted;
 	}
 	
-	// Handle duration input
-	function handleDurationInput(event: Event) {
-		const input = event.target as HTMLInputElement;
-		// Only allow numbers
-		const numericValue = input.value.replace(/[^0-9]/g, '');
-		duration = numericValue;
+	// Calculate duration from dates
+	function calculateDuration(start: Date, end: Date): number {
+		const diffTime = Math.abs(end.getTime() - start.getTime());
+		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+		return diffDays + 1; // Include both start and end dates
+	}
+	
+	// Handle date selection
+	function handleDateApply(dates: { start?: CalendarDate; end?: CalendarDate }) {
+		if (dates.start && dates.end) {
+			selectedDates = dates;
+			startDate = new Date(dates.start.year, dates.start.month - 1, dates.start.day);
+			endDate = new Date(dates.end.year, dates.end.month - 1, dates.end.day);
+			duration = calculateDuration(startDate, endDate);
+		}
+		showDatePicker = false;
+	}
+	
+	// Format date for display
+	function formatDate(date: Date): string {
+		return new Intl.DateTimeFormat('ko-KR', {
+			year: 'numeric',
+			month: '2-digit',
+			day: '2-digit'
+		}).format(date);
 	}
 	
 	// Handle form submission
 	function handleSubmit() {
 		const priceValue = parseInt(price.replace(/,/g, ''));
-		const durationValue = parseInt(duration);
 		
-		if (!priceValue || !durationValue) {
-			alert('가격과 일정을 입력해주세요.');
+		if (!priceValue) {
+			alert('가격을 입력해주세요.');
+			return;
+		}
+		
+		if (!startDate || !endDate) {
+			alert('여행 날짜를 선택해주세요.');
 			return;
 		}
 		
 		onSubmit({
 			price: priceValue,
-			duration: durationValue
+			duration: duration,
+			startDate: startDate,
+			endDate: endDate
 		});
 	}
 </script>
@@ -84,33 +116,44 @@
 			</div>
 		</div>
 		
-		<!-- Duration Input -->
+		<!-- Date Selection -->
 		<div class="mb-4">
 			<label class="block text-sm font-medium text-gray-700 mb-2">
-				여행 일정
+				여행 날짜
 			</label>
-			<div class="relative">
-				<input
-					type="text"
-					value={duration}
-					oninput={handleDurationInput}
-					placeholder="몇일 일정인지 입력해 주세요"
-					class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-					disabled={sending}
-				/>
-				<span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
-					일
-				</span>
-			</div>
+			<button
+				onclick={() => showDatePicker = true}
+				class="w-full px-4 py-3 border rounded-lg text-left hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+				disabled={sending}
+			>
+				{#if startDate && endDate}
+					<span class="text-gray-900">
+						{formatDate(startDate)} - {formatDate(endDate)} ({duration}일)
+					</span>
+				{:else}
+					<span class="text-gray-400">날짜를 선택해주세요</span>
+				{/if}
+			</button>
 		</div>
 		
 		<!-- Submit Button -->
 		<button
 			onclick={handleSubmit}
-			disabled={!price || !duration || sending}
+			disabled={!price || !startDate || !endDate || sending}
 			class="w-full bg-blue-500 text-white py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
 		>
 			{sending ? '전송 중...' : '제안하기'}
 		</button>
 	</div>
 </div>
+
+<!-- Date Range Picker Modal -->
+{#if showDatePicker}
+	<DateRangePickerModal
+		open={showDatePicker}
+		value={selectedDates}
+		onClose={() => showDatePicker = false}
+		onApply={handleDateApply}
+		title="여행 날짜 선택"
+	/>
+{/if}

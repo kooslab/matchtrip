@@ -859,6 +859,8 @@ export const productOffers = pgTable(
 			.references(() => users.id, { onDelete: 'cascade' }),
 		price: integer('price').notNull(), // Price in cents/won
 		duration: integer('duration').notNull(), // Duration in days
+		startDate: timestamp('start_date'), // Trip start date
+		endDate: timestamp('end_date'), // Trip end date
 		status: productOfferStatusEnum('status').notNull().default('pending'),
 		expiresAt: timestamp('expires_at'),
 		acceptedAt: timestamp('accepted_at'),

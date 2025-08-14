@@ -14,13 +14,23 @@
 	const { message, currentUserId, userRole, product, guide, productOfferId, conversationId }: Props = $props();
 	
 	const isOwnMessage = $derived(message.senderId === currentUserId);
-	const offerData = $derived(message.metadata as { price: number; duration: number });
+	const offerData = $derived(message.metadata as { price: number; duration: number; startDate?: string; endDate?: string });
 	
 	let showPaymentModal = $state(false);
 	
 	// Format price with commas
 	function formatPrice(price: number) {
 		return new Intl.NumberFormat('ko-KR').format(price);
+	}
+	
+	// Format date for display
+	function formatDate(dateStr: string | undefined) {
+		if (!dateStr) return null;
+		const date = new Date(dateStr);
+		return new Intl.DateTimeFormat('ko-KR', {
+			month: 'numeric',
+			day: 'numeric'
+		}).format(date);
 	}
 	
 	// Handle accept offer
@@ -32,7 +42,9 @@
 	const productOffer = $derived({
 		id: productOfferId || null,  // Use the actual productOfferId from database, or null if not present
 		price: offerData.price,
-		duration: offerData.duration
+		duration: offerData.duration,
+		startDate: offerData.startDate ? new Date(offerData.startDate) : null,
+		endDate: offerData.endDate ? new Date(offerData.endDate) : null
 	});
 </script>
 
@@ -53,7 +65,11 @@
 			{/if}
 			
 			<div class="mt-3 text-xs text-gray-500">
-				{offerData.duration}일 일정
+				{#if offerData.startDate && offerData.endDate}
+					{formatDate(offerData.startDate)} - {formatDate(offerData.endDate)} ({offerData.duration}일)
+				{:else}
+					{offerData.duration}일 일정
+				{/if}
 			</div>
 		</div>
 	{:else}
@@ -72,7 +88,13 @@
 				</div>
 				<div class="flex justify-between items-center">
 					<span class="text-xs text-gray-500">일정</span>
-					<span class="text-sm font-medium">{offerData.duration}일</span>
+					<span class="text-sm font-medium">
+						{#if offerData.startDate && offerData.endDate}
+							{formatDate(offerData.startDate)} - {formatDate(offerData.endDate)}
+						{:else}
+							{offerData.duration}일
+						{/if}
+					</span>
 				</div>
 			</div>
 			

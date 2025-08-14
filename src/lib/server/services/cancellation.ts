@@ -67,7 +67,8 @@ export class CancellationService {
 		}
 
 		// Calculate refund amount
-		const tripOrProductDate = paymentData.tripStartDate || paymentData.productDate;
+		// Priority: tripStartDate (for trips) > productOfferStartDate (for product offers) > productDate (for direct products)
+		const tripOrProductDate = paymentData.tripStartDate || paymentData.productOfferStartDate || paymentData.productDate;
 		
 		if (!tripOrProductDate) {
 			throw new Error('Cannot determine trip/product date for refund calculation');
@@ -239,11 +240,13 @@ export class CancellationService {
 			.select({
 				payment: payments,
 				tripStartDate: trips.startDate,
-				productDate: products.date
+				productDate: products.date,
+				productOfferStartDate: productOffers.startDate
 			})
 			.from(payments)
 			.leftJoin(trips, eq(payments.tripId, trips.id))
 			.leftJoin(products, eq(payments.productId, products.id))
+			.leftJoin(productOffers, eq(payments.productOfferId, productOffers.id))
 			.where(eq(payments.id, paymentId))
 			.limit(1);
 

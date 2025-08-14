@@ -137,7 +137,7 @@
 					</section>
 
 					<!-- Guide Banner Section -->
-					<section class="mt-3 bg-white p-4">
+					<!-- <section class="mt-3 bg-white p-4">
 						<div
 							class="flex items-center justify-between overflow-hidden rounded-2xl bg-gray-50 p-5"
 						>
@@ -155,7 +155,7 @@
 							<span class="h-1.5 w-1.5 rounded-full bg-gray-300"></span>
 							<span class="h-1.5 w-1.5 rounded-full bg-gray-300"></span>
 						</div>
-					</section>
+					</section> -->
 				{:else if isTraveler}
 					<!-- Traveler Specific Content (Original) -->
 					<!-- Recommendation Section -->

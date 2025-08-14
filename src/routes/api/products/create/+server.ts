@@ -12,6 +12,9 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
 	const productData = await request.json();
 	
 	// Validate required fields
+	if (!productData.title || productData.title.trim() === '') {
+		return json({ error: 'Title is required. Please enter a title.' }, { status: 400 });
+	}
 	if (!productData.destinationId) {
 		return json({ error: 'Destination is required. Please select a destination.' }, { status: 400 });
 	}
@@ -25,9 +28,8 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
 	try {
 		// Use transaction to ensure atomicity
 		const newProduct = await db.transaction(async (tx) => {
-			// Generate unique title if not provided
-			const { generateProductTitle } = await import('$lib/utils/product-title');
-			const title = productData.title || await generateProductTitle(tx);
+			// Use the provided title
+			const title = productData.title.trim();
 			
 			// Get the first image URL if fileIds exist
 			let imageUrl = null;

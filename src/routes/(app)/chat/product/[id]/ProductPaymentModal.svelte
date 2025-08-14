@@ -172,6 +172,8 @@
 				amount: Number(priceValue),  // Explicitly convert to number
 				orderId,
 				type: 'product',
+				startDate: productOffer.startDate ? productOffer.startDate.toISOString() : null,
+				endDate: productOffer.endDate ? productOffer.endDate.toISOString() : null,
 				version: 2  // Add version to track data structure changes
 			};
 			
