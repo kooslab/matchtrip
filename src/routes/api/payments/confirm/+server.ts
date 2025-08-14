@@ -1,8 +1,9 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
-import { offers, trips, payments } from '$lib/server/db/schema';
+import { offers, trips, payments, users } from '$lib/server/db/schema';
 import { eq, and, ne } from 'drizzle-orm';
+import { notificationService } from '$lib/server/services/notificationService';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
 	try {
@@ -150,6 +151,37 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 		console.log('Updated trip status:', updatedTrip[0]?.status);
 		console.log('Updated offer status:', updatedOffer[0]?.status);
+
+		// Send payment completion notification (testcode06)
+		try {
+			// Get user details
+			const userDetails = await db
+				.select({ name: users.name, phone: users.phone })
+				.from(users)
+				.where(eq(users.id, user.id))
+				.limit(1);
+
+			if (userDetails[0]?.phone) {
+				console.log('[PAYMENTS API] Sending payment completion AlimTalk');
+				
+				// Format amount with comma separator
+				const formattedAmount = amount.toLocaleString('ko-KR') + '원';
+				
+				await notificationService.sendNotification({
+					userId: user.id,
+					phoneNumber: userDetails[0].phone,
+					templateCode: 'testcode06',
+					templateData: {
+						SHOPNAME: '매치트립',
+						고객: userDetails[0].name || '고객',
+						여행총결제금액: formattedAmount
+					}
+				});
+				console.log('[PAYMENTS API] AlimTalk notification sent successfully');
+			}
+		} catch (notificationError) {
+			console.error('[PAYMENTS API] Failed to send AlimTalk notification:', notificationError);
+		}
 
 		return json({
 			success: true,

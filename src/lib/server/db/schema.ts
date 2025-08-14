@@ -872,6 +872,38 @@ export const productOffers = pgTable(
 	})
 );
 
+// Kakao AlimTalk notification tracking
+export const kakaoNotificationStatusEnum = pgEnum('kakao_notification_status', [
+	'pending',
+	'sent',
+	'delivered',
+	'failed'
+]);
+
+export const kakaoNotifications = pgTable(
+	'kakao_notifications',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
+		templateCode: text('template_code').notNull(),
+		phoneNumber: text('phone_number').notNull(),
+		status: kakaoNotificationStatusEnum('status').notNull().default('pending'),
+		messageId: text('message_id'), // Infobip message ID for tracking
+		bulkId: text('bulk_id'), // Infobip bulk ID if sent in batch
+		templateData: jsonb('template_data'), // Store the variables used
+		errorMessage: text('error_message'),
+		sentAt: timestamp('sent_at'),
+		deliveredAt: timestamp('delivered_at'),
+		createdAt: timestamp('created_at').defaultNow().notNull()
+	},
+	(table) => ({
+		userIdIdx: index('kakao_notifications_user_id_idx').on(table.userId),
+		templateCodeIdx: index('kakao_notifications_template_code_idx').on(table.templateCode),
+		statusIdx: index('kakao_notifications_status_idx').on(table.status),
+		createdAtIdx: index('kakao_notifications_created_at_idx').on(table.createdAt)
+	})
+);
+
 // Type exports for main tables
 export type User = typeof users.$inferSelect;
 export type Trip = typeof trips.$inferSelect;
@@ -882,4 +914,5 @@ export type Continent = typeof continents.$inferSelect;
 export type Product = typeof products.$inferSelect;
 export type ProductConversation = typeof productConversations.$inferSelect;
 export type ProductMessage = typeof productMessages.$inferSelect;
+export type KakaoNotification = typeof kakaoNotifications.$inferSelect;
 export type ProductOffer = typeof productOffers.$inferSelect;

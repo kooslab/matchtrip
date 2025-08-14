@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
+import { notificationService } from '$lib/server/services/notificationService';
 
 export const POST: RequestHandler = async ({ locals }) => {
 	console.log('[API COMPLETE ONBOARDING] Request received');
@@ -50,6 +51,26 @@ export const POST: RequestHandler = async ({ locals }) => {
 		});
 
 		console.log('[API COMPLETE ONBOARDING] Verified user in DB:', updatedUser);
+
+		// Send welcome AlimTalk notification (testcode01)
+		if (locals.user.phone) {
+			try {
+				console.log('[API COMPLETE ONBOARDING] Sending welcome AlimTalk notification');
+				await notificationService.sendNotification({
+					userId: locals.user.id,
+					phoneNumber: locals.user.phone,
+					templateCode: 'testcode01',
+					templateData: {
+						SHOPNAME: '매치트립',
+						NAME: locals.user.name || '고객'
+					}
+				});
+				console.log('[API COMPLETE ONBOARDING] AlimTalk notification sent successfully');
+			} catch (notificationError) {
+				// Don't fail the onboarding if notification fails
+				console.error('[API COMPLETE ONBOARDING] Failed to send AlimTalk notification:', notificationError);
+			}
+		}
 
 		return json({
 			success: true,

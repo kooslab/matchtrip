@@ -1,8 +1,9 @@
 import { json } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { trips, destinations, offers } from '$lib/server/db/schema';
+import { trips, destinations, offers, users } from '$lib/server/db/schema';
 import { eq, desc, count } from 'drizzle-orm';
 import { auth } from '$lib/auth';
+import { notificationService } from '$lib/server/services/notificationService';
 
 export async function POST({ request, locals }) {
 	try {
@@ -52,6 +53,33 @@ export async function POST({ request, locals }) {
 		if (tripData.file) {
 			// Upload file to S3/R2 and store URL
 			console.log('File upload not yet implemented');
+		}
+
+		// Send trip registration notification (testcode03)
+		try {
+			// Get user details for notification
+			const [user] = await db
+				.select({ name: users.name, phone: users.phone })
+				.from(users)
+				.where(eq(users.id, session.user.id))
+				.limit(1);
+
+			if (user?.phone) {
+				console.log('[TRIPS API] Sending trip registration AlimTalk notification');
+				await notificationService.sendNotification({
+					userId: session.user.id,
+					phoneNumber: user.phone,
+					templateCode: 'testcode03',
+					templateData: {
+						SHOPNAME: '매치트립',
+						NAME: user.name || '고객'
+					}
+				});
+				console.log('[TRIPS API] AlimTalk notification sent successfully');
+			}
+		} catch (notificationError) {
+			// Don't fail the trip creation if notification fails
+			console.error('[TRIPS API] Failed to send AlimTalk notification:', notificationError);
 		}
 
 		return json({ success: true, trip });

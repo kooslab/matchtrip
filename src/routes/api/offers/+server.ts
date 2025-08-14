@@ -4,6 +4,7 @@ import { db } from '$lib/server/db';
 import { offers, users, trips } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { auth } from '$lib/auth';
+import { notificationService } from '$lib/server/services/notificationService';
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
@@ -85,6 +86,54 @@ export const POST: RequestHandler = async ({ request }) => {
 				status: 'pending'
 			})
 			.returning();
+
+		// Send notifications for offer registration and arrival
+		try {
+			// Get guide and traveler details
+			const [guideUser, travelerUser] = await Promise.all([
+				db
+					.select({ name: users.name, phone: users.phone })
+					.from(users)
+					.where(eq(users.id, session.user.id))
+					.limit(1),
+				db
+					.select({ name: users.name, phone: users.phone })
+					.from(users)
+					.where(eq(users.id, tripDetails[0].userId))
+					.limit(1)
+			]);
+
+			// Send offer registration notification to guide (testcode09)
+			if (guideUser[0]?.phone) {
+				console.log('[OFFERS API] Sending offer registration AlimTalk to guide');
+				await notificationService.sendNotification({
+					userId: session.user.id,
+					phoneNumber: guideUser[0].phone,
+					templateCode: 'testcode09',
+					templateData: {
+						SHOPNAME: '매치트립',
+						NAME: guideUser[0].name || '가이드'
+					}
+				});
+			}
+
+			// Send offer arrival notification to traveler (testcode04)
+			if (travelerUser[0]?.phone) {
+				console.log('[OFFERS API] Sending offer arrival AlimTalk to traveler');
+				await notificationService.sendNotification({
+					userId: tripDetails[0].userId,
+					phoneNumber: travelerUser[0].phone,
+					templateCode: 'testcode04',
+					templateData: {
+						SHOPNAME: '매치트립',
+						가이드: guideUser[0]?.name || '가이드',
+						나의여행: '나의여행'
+					}
+				});
+			}
+		} catch (notificationError) {
+			console.error('[OFFERS API] Failed to send AlimTalk notifications:', notificationError);
+		}
 
 		return json({
 			success: true,

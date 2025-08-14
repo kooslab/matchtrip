@@ -1,9 +1,10 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
-import { offers, trips } from '$lib/server/db/schema';
+import { offers, trips, users } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { auth } from '$lib/auth';
+import { notificationService } from '$lib/server/services/notificationService';
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
@@ -33,6 +34,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				id: offers.id,
 				tripId: offers.tripId,
 				travelerId: offers.travelerId,
+				guideId: offers.guideId,
 				status: offers.status
 			})
 			.from(offers)
@@ -68,6 +70,40 @@ export const POST: RequestHandler = async ({ request }) => {
 				.update(offers)
 				.set({ status: 'rejected' })
 				.where(and(eq(offers.tripId, offer[0].tripId), eq(offers.status, 'pending')));
+
+			// Send offer acceptance notification to guide (testcode11)
+			try {
+				// Get guide and traveler details
+				const [guideUser, travelerUser] = await Promise.all([
+					db
+						.select({ name: users.name, phone: users.phone })
+						.from(users)
+						.where(eq(users.id, offer[0].guideId))
+						.limit(1),
+					db
+						.select({ name: users.name, phone: users.phone })
+						.from(users)
+						.where(eq(users.id, session.user.id))
+						.limit(1)
+				]);
+
+				if (guideUser[0]?.phone) {
+					console.log('[OFFERS ACTION] Sending offer acceptance AlimTalk to guide');
+					await notificationService.sendNotification({
+						userId: offer[0].guideId,
+						phoneNumber: guideUser[0].phone,
+						templateCode: 'testcode11',
+						templateData: {
+							SHOPNAME: '매치트립',
+							고객: travelerUser[0]?.name || '고객',
+							가이드: guideUser[0].name || '가이드',
+							나의제안: '나의제안'
+						}
+					});
+				}
+			} catch (notificationError) {
+				console.error('[OFFERS ACTION] Failed to send AlimTalk notification:', notificationError);
+			}
 		}
 
 		return json({

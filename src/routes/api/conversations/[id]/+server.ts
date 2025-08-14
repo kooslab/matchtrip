@@ -12,6 +12,7 @@ import {
 	payments
 } from '$lib/server/db/schema';
 import { eq, and, or, asc, sql } from 'drizzle-orm';
+import { notificationService } from '$lib/server/services/notificationService';
 
 // GET /api/conversations/[id] - Get conversation details with messages
 export const GET: RequestHandler = async ({ params, locals }) => {
@@ -247,11 +248,55 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 				name: users.name,
 				email: users.email,
 				role: users.role,
-				image: users.image
+				image: users.image,
+				phone: users.phone
 			})
 			.from(users)
 			.where(eq(users.id, session.user.id))
 			.limit(1);
+
+		// Send chat notifications
+		try {
+			// Get recipient info
+			const recipientId = isGuide ? conv.travelerId : conv.guideId;
+			const recipient = await db
+				.select({ name: users.name, phone: users.phone })
+				.from(users)
+				.where(eq(users.id, recipientId))
+				.limit(1);
+
+			if (recipient[0]?.phone) {
+				if (isGuide) {
+					// Guide replied to traveler (testcode05)
+					console.log('[CONVERSATIONS API] Sending guide reply AlimTalk to traveler');
+					await notificationService.sendNotification({
+						userId: recipientId,
+						phoneNumber: recipient[0].phone,
+						templateCode: 'testcode05',
+						templateData: {
+							SHOPNAME: '매치트립',
+							가이드: sender[0]?.name || '가이드',
+							메세지확인하기: '메세지확인하기'
+						}
+					});
+				} else {
+					// Traveler sent inquiry to guide (testcode10)
+					console.log('[CONVERSATIONS API] Sending traveler inquiry AlimTalk to guide');
+					await notificationService.sendNotification({
+						userId: recipientId,
+						phoneNumber: recipient[0].phone,
+						templateCode: 'testcode10',
+						templateData: {
+							SHOPNAME: '매치트립',
+							고객: sender[0]?.name || '고객',
+							메세지확인하기: '메세지확인하기'
+						}
+					});
+				}
+			}
+		} catch (notificationError) {
+			console.error('[CONVERSATIONS API] Failed to send AlimTalk notification:', notificationError);
+		}
 
 		return json({
 			message: {

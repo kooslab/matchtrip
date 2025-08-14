@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
-import { reviews, productPayments, productOffers, products } from '$lib/server/db/schema';
+import { reviews, payments, productOffers, products } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 
@@ -18,19 +18,19 @@ export const POST: RequestHandler = async ({ params, locals }) => {
 		// Find the product payment for this user and product
 		const [payment] = await db
 			.select({
-				id: productPayments.id,
-				productOfferId: productPayments.productOfferId,
-				status: productPayments.status,
+				id: payments.id,
+				productOfferId: payments.productOfferId,
+				status: payments.status,
 				endDate: productOffers.endDate,
 				guideId: productOffers.guideId
 			})
-			.from(productPayments)
-			.innerJoin(productOffers, eq(productPayments.productOfferId, productOffers.id))
+			.from(payments)
+			.innerJoin(productOffers, eq(payments.productOfferId, productOffers.id))
 			.where(
 				and(
-					eq(productPayments.productId, productId),
-					eq(productPayments.userId, session.user.id),
-					eq(productPayments.status, 'completed')
+					eq(payments.productId, productId),
+					eq(payments.userId, session.user.id),
+					eq(payments.status, 'completed')
 				)
 			)
 			.limit(1);
