@@ -413,7 +413,8 @@
 	}
 </script>
 
-<div class="fixed inset-0 mx-auto flex max-w-md flex-col bg-white">
+<div class="min-h-screen bg-white">
+	<div class="max-w-md mx-auto relative flex flex-col min-h-screen">
 	{#if !loading}
 		<!-- Header -->
 		<div class="safe-area-top bg-white">
@@ -742,6 +743,7 @@
 			</div>
 		</div>
 	{/if}
+	</div>
 </div>
 
 <style>

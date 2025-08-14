@@ -9,20 +9,7 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
 		return json({ error: 'Unauthorized' }, { status: 401 });
 	}
 	
-	const { fileIds } = await request.json();
-	
-	// Get product data from cookies
-	const productDataCookie = cookies.get('product_create_data');
-	if (!productDataCookie) {
-		return json({ error: 'No product data found. Please start from the beginning.' }, { status: 400 });
-	}
-	
-	const productData = JSON.parse(productDataCookie);
-	
-	// Update with file IDs if provided
-	if (fileIds && fileIds.length > 0) {
-		productData.fileIds = fileIds;
-	}
+	const productData = await request.json();
 	
 	// Validate required fields
 	if (!productData.destinationId) {
@@ -79,9 +66,6 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
 			
 			return product;
 		});
-		
-		// Clear cookie
-		cookies.delete('product_create_data', { path: '/' });
 		
 		return json({ 
 			success: true, 
