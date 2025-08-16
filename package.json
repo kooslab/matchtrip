@@ -21,6 +21,7 @@
 		"migrate:images": "tsx scripts/migrate-image-urls.ts",
 		"migrate:product-images": "tsx scripts/migrate-product-images.ts",
 		"migrate:all-to-private": "tsx scripts/migrate-all-to-private.ts",
+		"sync:templates": "bun ../sync-kakao-templates.ts",
 		"r2:list": "tsx scripts/list-r2-contents.ts",
 		"r2:copy-to-private": "tsx scripts/copy-to-private-bucket.ts",
 		"r2:copy-dry": "tsx scripts/copy-to-private-bucket.ts --dry-run"
