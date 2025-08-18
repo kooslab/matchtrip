@@ -1,4 +1,5 @@
 import templates from './templates.json';
+import { env } from '$env/dynamic/private';
 import type { KakaoButton } from './kakaoAlimTalk';
 
 export interface TemplateData {
@@ -11,14 +12,21 @@ export interface ProcessedTemplate {
 }
 
 /**
- * Get template by code for the current environment
+ * Get template by code
  */
-export function getTemplate(templateCode: string, environment: 'dev' | 'prod' = 'dev') {
-	const envTemplates = templates[environment];
-	if (!envTemplates || !envTemplates[templateCode]) {
-		throw new Error(`Template ${templateCode} not found for environment ${environment}`);
+export function getTemplate(templateCode: string) {
+	if (!templates[templateCode]) {
+		throw new Error(`Template ${templateCode} not found`);
 	}
-	return envTemplates[templateCode];
+	return templates[templateCode];
+}
+
+/**
+ * Get the base URL from environment
+ */
+function getBaseUrl(): string {
+	// Use PUBLIC_APP_URL if available, otherwise default to dev URL
+	return env.PUBLIC_APP_URL || 'https://dev.matchtrip.net';
 }
 
 /**
@@ -38,18 +46,28 @@ export function processTemplateText(text: string, data: TemplateData): string {
  */
 export function prepareTemplate(
 	templateCode: string,
-	data: TemplateData,
-	environment: 'dev' | 'prod' = 'dev'
+	data: TemplateData
 ): ProcessedTemplate {
-	const template = getTemplate(templateCode, environment);
+	const template = getTemplate(templateCode);
+	const baseUrl = getBaseUrl();
 	
 	// Process the text with variable replacement
 	const processedText = processTemplateText(template.text, data);
 	
+	// Process button URLs if button exists
+	let processedButton = template.button;
+	if (processedButton) {
+		processedButton = {
+			...processedButton,
+			urlMobile: processedButton.urlMobile?.replace('{{BASE_URL}}', baseUrl),
+			urlPc: processedButton.urlPc?.replace('{{BASE_URL}}', baseUrl)
+		};
+	}
+	
 	// Return processed template with button if exists
 	return {
 		text: processedText,
-		button: template.button || undefined
+		button: processedButton || undefined
 	};
 }
 
@@ -58,10 +76,9 @@ export function prepareTemplate(
  */
 export function validateTemplateData(
 	templateCode: string,
-	data: TemplateData,
-	environment: 'dev' | 'prod' = 'dev'
+	data: TemplateData
 ): { valid: boolean; missing: string[] } {
-	const template = getTemplate(templateCode, environment);
+	const template = getTemplate(templateCode);
 	const missing: string[] = [];
 	
 	for (const variable of template.variables) {
@@ -77,18 +94,17 @@ export function validateTemplateData(
 }
 
 /**
- * Get all available template codes for an environment
+ * Get all available template codes
  */
-export function getAvailableTemplates(environment: 'dev' | 'prod' = 'dev'): string[] {
-	const envTemplates = templates[environment];
-	return envTemplates ? Object.keys(envTemplates) : [];
+export function getAvailableTemplates(): string[] {
+	return Object.keys(templates);
 }
 
 /**
  * Get template info for display purposes
  */
-export function getTemplateInfo(templateCode: string, environment: 'dev' | 'prod' = 'dev') {
-	const template = getTemplate(templateCode, environment);
+export function getTemplateInfo(templateCode: string) {
+	const template = getTemplate(templateCode);
 	return {
 		code: templateCode,
 		name: template.name,

@@ -13,13 +13,8 @@ export interface NotificationOptions {
 }
 
 export class NotificationService {
-	private environment: 'dev' | 'prod';
-
 	constructor() {
-		// Determine environment based on NODE_ENV or URL
-		this.environment = process.env.NODE_ENV === 'production' ? 'prod' : 'dev';
-		// For now, always use dev as we're in development
-		this.environment = 'dev';
+		// No environment detection needed - templates will use PUBLIC_APP_URL
 	}
 
 	/**
@@ -146,8 +141,7 @@ export class NotificationService {
 			// Validate template data
 			const validation = validateTemplateData(
 				options.templateCode,
-				options.templateData,
-				this.environment
+				options.templateData
 			);
 			
 			if (!validation.valid) {
@@ -177,8 +171,7 @@ export class NotificationService {
 			// Prepare template
 			const template = prepareTemplate(
 				options.templateCode,
-				options.templateData,
-				this.environment
+				options.templateData
 			);
 			
 			// Send notification

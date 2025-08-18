@@ -1,5 +1,4 @@
 {
-  "dev": {
     "testcode01": {
       "name": "signup01",
       "description": "회원가입 - 여행자",
@@ -11,8 +10,8 @@
       "button": {
         "type": "URL",
         "name": "나의프로필보기",
-        "urlMobile": "https://dev.matchtrip.net/profile/traveler",
-        "urlPc": "https://dev.matchtrip.net/profile/traveler"
+        "urlMobile": "{{BASE_URL}}/profile/traveler",
+        "urlPc": "{{BASE_URL}}/profile/traveler"
       }
     },
     "testcode02": {
@@ -26,8 +25,8 @@
       "button": {
         "type": "URL",
         "name": "나의프로필보기",
-        "urlMobile": "https://dev.matchtrip.net/profile/guide",
-        "urlPc": "https://dev.matchtrip.net/profile/guide"
+        "urlMobile": "{{BASE_URL}}/profile/guide",
+        "urlPc": "{{BASE_URL}}/profile/guide"
       }
     },
     "testcode03": {
@@ -41,8 +40,8 @@
       "button": {
         "type": "URL",
         "name": "나의여행보기",
-        "urlMobile": "https://dev.matchtrip.net/my-trips",
-        "urlPc": "https://dev.matchtrip.net/my-trips"
+        "urlMobile": "{{BASE_URL}}/my-trips",
+        "urlPc": "{{BASE_URL}}/my-trips"
       }
     },
     "testcode04": {
@@ -57,8 +56,8 @@
       "button": {
         "type": "URL",
         "name": "나의여행보기",
-        "urlMobile": "https://dev.matchtrip.net/my-trips",
-        "urlPc": "https://dev.matchtrip.net/my-trips"
+        "urlMobile": "{{BASE_URL}}/my-trips",
+        "urlPc": "{{BASE_URL}}/my-trips"
       }
     },
     "testcode05": {
@@ -73,8 +72,8 @@
       "button": {
         "type": "URL",
         "name": "메세지확인하기",
-        "urlMobile": "https://dev.matchtrip.net/chat",
-        "urlPc": "https://dev.matchtrip.net/chat"
+        "urlMobile": "{{BASE_URL}}/chat",
+        "urlPc": "{{BASE_URL}}/chat"
       }
     },
     "testcode06": {
@@ -89,8 +88,8 @@
       "button": {
         "type": "URL",
         "name": "주문내역",
-        "urlMobile": "https://dev.matchtrip.net/settlement",
-        "urlPc": "https://dev.matchtrip.net/settlement"
+        "urlMobile": "{{BASE_URL}}/settlement",
+        "urlPc": "{{BASE_URL}}/settlement"
       }
     },
     "testcode07": {
@@ -105,8 +104,8 @@
       "button": {
         "type": "URL",
         "name": "나의여행",
-        "urlMobile": "https://dev.matchtrip.net/my-trips",
-        "urlPc": "https://dev.matchtrip.net/my-trips"
+        "urlMobile": "{{BASE_URL}}/my-trips",
+        "urlPc": "{{BASE_URL}}/my-trips"
       }
     },
     "testcode08": {
@@ -130,8 +129,8 @@
       "button": {
         "type": "URL",
         "name": "나의제안보기",
-        "urlMobile": "https://dev.matchtrip.net/my-offers",
-        "urlPc": "https://dev.matchtrip.net/my-offers"
+        "urlMobile": "{{BASE_URL}}/my-offers",
+        "urlPc": "{{BASE_URL}}/my-offers"
       }
     },
     "testcode10": {
@@ -146,8 +145,8 @@
       "button": {
         "type": "URL",
         "name": "메세지확인하기",
-        "urlMobile": "https://dev.matchtrip.net/chat",
-        "urlPc": "https://dev.matchtrip.net/chat"
+        "urlMobile": "{{BASE_URL}}/chat",
+        "urlPc": "{{BASE_URL}}/chat"
       }
     },
     "testcode11": {
@@ -163,8 +162,8 @@
       "button": {
         "type": "URL",
         "name": "나의제안보기",
-        "urlMobile": "https://dev.matchtrip.net/my-offers",
-        "urlPc": "https://dev.matchtrip.net/my-offers"
+        "urlMobile": "{{BASE_URL}}/my-offers",
+        "urlPc": "{{BASE_URL}}/my-offers"
       }
     },
     "testcode12": {
@@ -179,8 +178,8 @@
       "button": {
         "type": "URL",
         "name": "나의제안보기",
-        "urlMobile": "https://dev.matchtrip.net/my-offers",
-        "urlPc": "https://dev.matchtrip.net/my-offers"
+        "urlMobile": "{{BASE_URL}}/my-offers",
+        "urlPc": "{{BASE_URL}}/my-offers"
       }
     },
     "testcode20": {
@@ -195,8 +194,8 @@
       "button": {
         "type": "URL",
         "name": "주문내역",
-        "urlMobile": "https://dev.matchtrip.net/settlement",
-        "urlPc": "https://dev.matchtrip.net/settlement"
+        "urlMobile": "{{BASE_URL}}/settlement",
+        "urlPc": "{{BASE_URL}}/settlement"
       }
     },
     "testcode19": {
@@ -211,8 +210,8 @@
       "button": {
         "type": "URL",
         "name": "나의제안보기",
-        "urlMobile": "https://dev.matchtrip.net/my-offers",
-        "urlPc": "https://dev.matchtrip.net/my-offers"
+        "urlMobile": "{{BASE_URL}}/my-offers",
+        "urlPc": "{{BASE_URL}}/my-offers"
       }
     },
     "testcode18": {
@@ -227,8 +226,8 @@
       "button": {
         "type": "URL",
         "name": "나의제안보기",
-        "urlMobile": "https://dev.matchtrip.net/my-offers",
-        "urlPc": "https://dev.matchtrip.net/my-offers"
+        "urlMobile": "{{BASE_URL}}/my-offers",
+        "urlPc": "{{BASE_URL}}/my-offers"
       }
     },
     "testcode17": {
@@ -243,8 +242,8 @@
       "button": {
         "type": "URL",
         "name": "주문내역",
-        "urlMobile": "https://dev.matchtrip.net/settlement",
-        "urlPc": "https://dev.matchtrip.net/settlement"
+        "urlMobile": "{{BASE_URL}}/settlement",
+        "urlPc": "{{BASE_URL}}/settlement"
       }
     },
     "testcode16": {
@@ -259,8 +258,8 @@
       "button": {
         "type": "URL",
         "name": "주문내역",
-        "urlMobile": "https://dev.matchtrip.net/settlement",
-        "urlPc": "https://dev.matchtrip.net/settlement"
+        "urlMobile": "{{BASE_URL}}/settlement",
+        "urlPc": "{{BASE_URL}}/settlement"
       }
     },
     "testcode15": {
@@ -275,8 +274,8 @@
       "button": {
         "type": "URL",
         "name": "나의제안보기",
-        "urlMobile": "https://dev.matchtrip.net/my-offers",
-        "urlPc": "https://dev.matchtrip.net/my-offers"
+        "urlMobile": "{{BASE_URL}}/my-offers",
+        "urlPc": "{{BASE_URL}}/my-offers"
       }
     },
     "testcode14": {
@@ -291,8 +290,8 @@
       "button": {
         "type": "URL",
         "name": "나의제안보기",
-        "urlMobile": "https://dev.matchtrip.net/my-offers",
-        "urlPc": "https://dev.matchtrip.net/my-offers"
+        "urlMobile": "{{BASE_URL}}/my-offers",
+        "urlPc": "{{BASE_URL}}/my-offers"
       }
     },
     "testcode13": {
@@ -307,9 +306,8 @@
       "button": {
         "type": "URL",
         "name": "주문내",
-        "urlMobile": "https://dev.matchtrip.net/settlement",
-        "urlPc": "https://dev.matchtrip.net/settlement"
+        "urlMobile": "{{BASE_URL}}/settlement",
+        "urlPc": "{{BASE_URL}}/settlement"
       }
     }
-  }
 }
