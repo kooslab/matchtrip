@@ -261,7 +261,7 @@
 								<div class="mt-3 flex flex-wrap items-center gap-3 text-sm">
 									<span class="font-medium text-blue-600">
 										{trip.minBudget
-											? `${trip.minBudget}-${trip.maxBudget || trip.minBudget}만원`
+											? `₩${(trip.minBudget * 10000).toLocaleString()} - ₩${((trip.maxBudget || trip.minBudget) * 10000).toLocaleString()}`
 											: '예산 미정'}
 									</span>
 									{#if trip.travelMethod}

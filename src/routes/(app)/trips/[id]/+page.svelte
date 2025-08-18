@@ -155,9 +155,7 @@
 			<div class="mb-5">
 				<p class="mb-1 text-sm text-gray-600">예산</p>
 				<p class="text-2xl font-bold text-gray-900">
-					{trip.budgetMin ? `${(trip.budgetMin / 10000).toLocaleString()}` : '0'} ~ {trip.budgetMax
-						? `${(trip.budgetMax / 10000).toLocaleString()}`
-						: '0'}만원
+					₩{trip.budgetMin?.toLocaleString() || '0'} ~ ₩{trip.budgetMax?.toLocaleString() || '0'}
 				</p>
 			</div>
 

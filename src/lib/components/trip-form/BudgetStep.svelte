@@ -25,8 +25,8 @@
 
 		// Otherwise, try to match based on minBudget/maxBudget
 		if (formData.minBudget || formData.maxBudget) {
-			const min = formData.minBudget ? formData.minBudget * 10000 : 0; // Convert from 만원 to won
-			const max = formData.maxBudget ? formData.maxBudget * 10000 : null;
+			const min = formData.minBudget || 0;
+			const max = formData.maxBudget || null;
 
 			// Find matching budget option
 			return (
@@ -63,9 +63,9 @@
 	function selectBudget(budget: any) {
 		selectedBudget = budget;
 		onUpdate('budget', budget);
-		// Also update minBudget and maxBudget in 만원 units
-		onUpdate('minBudget', budget.min / 10000);
-		onUpdate('maxBudget', budget.max ? budget.max / 10000 : null);
+		// Also update minBudget and maxBudget
+		onUpdate('minBudget', budget.min);
+		onUpdate('maxBudget', budget.max);
 		showModal = false;
 	}
 

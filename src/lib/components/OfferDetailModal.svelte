@@ -75,16 +75,7 @@
 	let itineraryExpanded = $state(true);
 
 	function formatPrice(amount: number): string {
-		if (amount >= 10000) {
-			const manWon = amount / 10000;
-			if (manWon % 1 === 0) {
-				return `${manWon.toLocaleString()}만원`;
-			} else {
-				return `${manWon.toFixed(1)}만원`;
-			}
-		} else {
-			return `${amount.toLocaleString()}원`;
-		}
+		return `₩${amount.toLocaleString()}`;
 	}
 
 	function calculateNightsAndDays(startDate: Date | string, endDate: Date | string) {

@@ -71,8 +71,8 @@
 
 	function formatBudget(min: number | null, max: number | null) {
 		if (!min && !max) return '예산 미정';
-		if (!max) return `${min?.toLocaleString()}만원 이상`;
-		return `${min?.toLocaleString()}-${max?.toLocaleString()}만원`;
+		if (!max) return `₩${min?.toLocaleString()} 이상`;
+		return `₩${min?.toLocaleString()} - ₩${max?.toLocaleString()}`;
 	}
 
 	function formatTravelMethod(method: string | null) {

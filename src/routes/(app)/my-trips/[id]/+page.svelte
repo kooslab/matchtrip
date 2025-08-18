@@ -139,21 +139,7 @@
 
 	function formatBudget(amount: number | null): string {
 		if (!amount) return '';
-
-		// If 10,000 or more, show in 만원
-		if (amount >= 10000) {
-			const manWon = amount / 10000;
-			// If it's a whole number, show without decimals
-			if (manWon % 1 === 0) {
-				return `${manWon.toLocaleString()}만원`;
-			} else {
-				// Show with one decimal place
-				return `${manWon.toFixed(1)}만원`;
-			}
-		} else {
-			// Less than 10,000, show in 원 with comma formatting
-			return `${amount.toLocaleString()}원`;
-		}
+		return `₩${amount.toLocaleString()}`;
 	}
 
 	async function startConversation(offerId: string) {
@@ -274,11 +260,9 @@
 							<div>
 								<p class="text-2xl font-bold text-gray-900">
 									{#if trip.budgetMin || trip.budgetMax}
-										{formatBudget(
-											trip.budgetMin ? trip.budgetMin * 10000 : null
-										)}{#if trip.budgetMin && trip.budgetMax}
+										{formatBudget(trip.budgetMin)}{#if trip.budgetMin && trip.budgetMax}
 											~
-										{/if}{formatBudget(trip.budgetMax ? trip.budgetMax * 10000 : null)}
+										{/if}{formatBudget(trip.budgetMax)}
 									{:else}
 										미정
 									{/if}
