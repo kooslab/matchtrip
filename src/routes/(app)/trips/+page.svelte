@@ -378,6 +378,14 @@
 		showCitySearchModal || showDateRangePicker || showPeopleSelector || showBudgetSelector
 	);
 
+	// Format budget range for display
+	function formatBudgetRange(min: number | null, max: number | null): string {
+		if (!min && !max) return '예산 미정';
+		if (min && !max) return `${(min / 10000).toLocaleString()}만원 이상`;
+		if (!min && max) return `${(max / 10000).toLocaleString()}만원 이하`;
+		return `${(min / 10000).toLocaleString()}~${(max / 10000).toLocaleString()}만원`;
+	}
+
 	// Add/remove class to body when modal state changes
 	$effect(() => {
 		if (isAnyModalOpen) {
@@ -908,7 +916,7 @@
 									<div class="scrollbar-hide flex gap-2 overflow-x-auto">
 										<span
 											class="inline-flex flex-shrink-0 items-center rounded-md bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
-											200~500만원
+											{formatBudgetRange(trip.budgetMin, trip.budgetMax)}
 										</span>
 										<span
 											class="inline-flex flex-shrink-0 items-center rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">
