@@ -10,6 +10,7 @@ import {
 	productOffers
 } from '$lib/server/db/schema';
 import { eq, desc } from 'drizzle-orm';
+import { transformImageUrl } from '$lib/utils/imageUrl';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const conversationId = params.id;
@@ -109,10 +110,13 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.where(eq(productMessages.conversationId, conversationId))
 		.orderBy(productMessages.createdAt);
 
-	// Decrypt sender information in messages
+	// Decrypt sender information in messages and transform image URLs
 	const decryptedMessages = messages.map(msg => ({
 		...msg,
-		sender: msg.sender ? decryptUserFields(msg.sender) : null
+		sender: msg.sender ? {
+			...decryptUserFields(msg.sender),
+			image: transformImageUrl(msg.sender.image)
+		} : null
 	}));
 
 	// Fetch other user's info
@@ -129,8 +133,11 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.where(eq(users.id, otherUserId))
 		.limit(1);
 
-	// Decrypt other user's data
-	const decryptedOtherUser = otherUser[0] ? decryptUserFields(otherUser[0]) : null;
+	// Decrypt other user's data and transform image URL
+	const decryptedOtherUser = otherUser[0] ? {
+		...decryptUserFields(otherUser[0]),
+		image: transformImageUrl(otherUser[0].image)
+	} : null;
 
 	// Update last read timestamp
 	if (userRole === 'traveler') {

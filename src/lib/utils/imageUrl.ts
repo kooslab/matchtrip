@@ -9,6 +9,21 @@ export function transformImageUrl(
 ): string | null {
 	if (!imageUrl) return null;
 
+	// Handle Google OAuth profile image URLs that might be missing protocol
+	if (!imageUrl.startsWith('http')) {
+		// Check if it's a Google OAuth image URL without protocol
+		if (imageUrl.includes('googleusercontent.com')) {
+			return `https://${imageUrl}`;
+		}
+		// Check if it's a Google profile image ID (e.g., ACg8ocI2_O3-x_nW_Ya1EG7DzUGrSop6Q_YPqjjB7-ghNcuo1E-g5QM=s96-c)
+		// These are typically stored without the full URL
+		if (imageUrl.match(/^[A-Za-z0-9_-]+=s\d+-c$/)) {
+			// For Google profile images, we need to use the /a/ path
+			// and properly encode the URL
+			return `https://lh3.googleusercontent.com/a/${encodeURIComponent(imageUrl)}`;
+		}
+	}
+
 	// If it's already a full public URL (destination images), return as is
 	if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
 		return imageUrl;

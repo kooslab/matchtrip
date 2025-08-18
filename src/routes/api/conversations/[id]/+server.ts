@@ -14,6 +14,7 @@ import {
 import { eq, and, or, asc, sql } from 'drizzle-orm';
 import { notificationService } from '$lib/server/services/notificationService';
 import { decryptUserFields } from '$lib/server/encryption';
+import { transformImageUrl } from '$lib/utils/imageUrl';
 
 // GET /api/conversations/[id] - Get conversation details with messages
 export const GET: RequestHandler = async ({ params, locals }) => {
@@ -78,7 +79,10 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 		// Decrypt user data in messages
 		const decryptedMessages = conversationMessages.map(msg => ({
 			...msg,
-			sender: msg.sender ? decryptUserFields(msg.sender) : null
+			sender: msg.sender ? {
+				...decryptUserFields(msg.sender),
+				image: transformImageUrl(msg.sender.image)
+			} : null
 		}));
 
 		// Update last read timestamp

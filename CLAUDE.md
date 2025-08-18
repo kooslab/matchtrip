@@ -426,6 +426,40 @@ curl -X POST http://localhost:5173/api/webhooks/test \
 - Returns 200 OK even on processing errors (handles retries internally)
 - Verifies payment status with Toss API before processing
 
+## OAuth Profile Images
+
+### Google OAuth Profile Images
+
+#### Issue
+Google OAuth profile images are sometimes stored without the protocol prefix (e.g., `ACg8ocI2_O3-x_nW_Ya1EG7DzUGrSop6Q_YPqjjB7-ghNcuo1E-g5QM=s96-c`), which causes 400 Bad Request errors when the browser tries to load them.
+
+#### Solution
+The `transformImageUrl` utility in `src/lib/utils/imageUrl.ts` handles this by:
+
+1. Detecting Google profile image IDs (pattern: `[A-Za-z0-9_-]+=s\d+-c`)
+2. Constructing the proper URL format: `https://lh3.googleusercontent.com/a/[ENCODED_ID]`
+3. URL-encoding the image ID to handle special characters like `=`
+
+### Kakao OAuth Profile Images
+
+#### TODO: Implementation Needed
+Kakao OAuth profile images need special handling similar to Google OAuth images.
+
+**Known Issues:**
+- (To be documented when Kakao login is implemented)
+
+**Solution:**
+- (To be implemented in `transformImageUrl` utility)
+
+**Pattern Detection:**
+- (To be determined based on Kakao's image URL format)
+
+### Implementation Notes
+
+- Always use `transformImageUrl()` when displaying user profile images
+- This utility handles all OAuth provider image URLs (Google, Kakao, etc.)
+- Already integrated in chat pages and API endpoints that return user data
+
 ## Application-Specific Context
 
 This is a travel marketplace platform connecting travelers with local guides:
