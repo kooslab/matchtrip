@@ -149,22 +149,22 @@ export function hashEmail(email: string | null | undefined): string | null {
 export function decryptUserFields<T extends Record<string, any>>(user: T): T {
 	if (!user) return user;
 
-	const decrypted = { ...user };
+	const decrypted = { ...user } as any;
 
 	// Decrypt personal information fields if they exist
-	if ('name' in decrypted) {
+	if ('name' in decrypted && decrypted.name) {
 		decrypted.name = decrypt(decrypted.name as string);
 	}
 
-	if ('email' in decrypted) {
+	if ('email' in decrypted && decrypted.email) {
 		decrypted.email = decrypt(decrypted.email as string);
 	}
 
-	if ('phone' in decrypted) {
+	if ('phone' in decrypted && decrypted.phone) {
 		decrypted.phone = decrypt(decrypted.phone as string);
 	}
 
-	return decrypted;
+	return decrypted as T;
 }
 
 /**

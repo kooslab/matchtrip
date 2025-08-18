@@ -3,6 +3,7 @@ import { db } from '$lib/server/db';
 import { productMessages, productConversations, productOffers, users } from '$lib/server/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
+import { decryptUserFields } from '$lib/server/encryption';
 
 // GET messages for a conversation
 export const GET: RequestHandler = async ({ params, locals }) => {
@@ -52,8 +53,14 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 		.leftJoin(users, eq(productMessages.senderId, users.id))
 		.where(eq(productMessages.conversationId, conversationId))
 		.orderBy(productMessages.createdAt);
+	
+	// Decrypt user data in messages
+	const decryptedMessages = messages.map(msg => ({
+		...msg,
+		sender: msg.sender ? decryptUserFields(msg.sender) : null
+	}));
 
-	return json(messages);
+	return json(decryptedMessages);
 };
 
 // POST new message

@@ -13,6 +13,7 @@ import {
 } from '$lib/server/db/schema';
 import { eq, and, or, asc, sql } from 'drizzle-orm';
 import { notificationService } from '$lib/server/services/notificationService';
+import { decryptUserFields } from '$lib/server/encryption';
 
 // GET /api/conversations/[id] - Get conversation details with messages
 export const GET: RequestHandler = async ({ params, locals }) => {
@@ -73,6 +74,12 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 			.leftJoin(users, eq(messages.senderId, users.id))
 			.where(eq(messages.conversationId, conversationId))
 			.orderBy(asc(messages.createdAt));
+		
+		// Decrypt user data in messages
+		const decryptedMessages = conversationMessages.map(msg => ({
+			...msg,
+			sender: msg.sender ? decryptUserFields(msg.sender) : null
+		}));
 
 		// Update last read timestamp
 		const isGuide = conv.guideId === session.user.id;
@@ -135,10 +142,10 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 			canSendMessage = hasTravelerMessages || hasCompletedPayment;
 		}
 
-		console.log('Returning conversation with', conversationMessages.length, 'messages');
+		console.log('Returning conversation with', decryptedMessages.length, 'messages');
 		return json({
 			conversation: conv,
-			messages: conversationMessages,
+			messages: decryptedMessages,
 			offer: offerDetails[0] || null,
 			canSendMessage
 		});

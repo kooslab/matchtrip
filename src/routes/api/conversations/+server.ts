@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
 import { conversations, messages, offers, users } from '$lib/server/db/schema';
 import { eq, and, or, desc, gt, sql } from 'drizzle-orm';
+import { decryptUserFields } from '$lib/server/encryption';
 
 // GET /api/conversations - Get all conversations for the current user
 export const GET: RequestHandler = async ({ locals }) => {
@@ -87,6 +88,7 @@ export const GET: RequestHandler = async ({ locals }) => {
 
 				return {
 					...conv,
+					otherUser: conv.otherUser ? decryptUserFields(conv.otherUser) : null,
 					unreadCount: unreadResult[0]?.count || 0,
 					lastMessageContent: lastMessage[0]?.content || null,
 					hasUnread: (unreadResult[0]?.count || 0) > 0

@@ -70,8 +70,8 @@
 	<!-- Logged in user layout -->
 	<div class="min-h-screen bg-gray-50">
 		<div class="mx-auto min-h-screen max-w-[430px] bg-white">
-			<!-- Header -->
-			<header class="sticky top-0 z-50 bg-white shadow-sm">
+			<!-- Header - Hidden on desktop since MobileContainer handles it -->
+			<header class="sticky top-0 z-50 bg-white shadow-sm lg:hidden">
 				<div class="flex items-center px-4 py-4">
 					<Logo />
 				</div>

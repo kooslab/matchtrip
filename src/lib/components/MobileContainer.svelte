@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import logoUrl from '$lib/images/Matchtrip.svg';
 
 	let { children } = $props();
 
@@ -37,7 +38,7 @@
 				<!-- Content wrapper with scale transform to fit inside phone -->
 				<div class="absolute inset-0 flex items-center justify-center">
 					<div 
-						class="bg-white overflow-hidden"
+						class="bg-white overflow-hidden relative"
 						style="
 							width: 90%;
 							height: 88%;
@@ -45,8 +46,12 @@
 							transform: translateY(-1%);
 						"
 					>
-						<!-- Status bar -->
-						<div class="sticky top-0 h-11 bg-white z-40 flex items-center justify-end px-6 pt-2">
+						<!-- Status bar - positioned absolutely to always be visible -->
+						<div class="absolute top-0 left-0 right-0 h-11 bg-white z-50 flex items-center justify-between px-6 pt-2" style="border-radius: 38px 38px 0 0;">
+							<!-- Matchtrip logo on the left -->
+							<img src={logoUrl} alt="Matchtrip" class="h-5" />
+							
+							<!-- Status icons on the right -->
 							<div class="flex items-center gap-1.5">
 								<img src="/signal.svg" alt="Signal" class="h-3.5 w-3.5" />
 								<img src="/wifi.svg" alt="WiFi" class="h-3.5 w-3.5" />
@@ -54,8 +59,8 @@
 							</div>
 						</div>
 
-						<!-- App content container -->
-						<div class="h-full w-full overflow-y-auto overflow-x-hidden" style="padding-bottom: 50px;">
+						<!-- App content container - adjusted to account for fixed status bar -->
+						<div class="h-full w-full overflow-y-auto overflow-x-hidden pt-11" style="padding-bottom: 50px;">
 							{@render children()}
 						</div>
 

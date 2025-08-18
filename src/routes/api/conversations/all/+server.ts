@@ -11,6 +11,7 @@ import {
 } from '$lib/server/db/schema';
 import { eq, or, desc, and, gt, ne, sql } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
+import { decryptUserFields } from '$lib/server/encryption';
 
 export const GET: RequestHandler = async ({ locals }) => {
 	const userId = locals.user?.id;
@@ -118,7 +119,7 @@ export const GET: RequestHandler = async ({ locals }) => {
 					lastMessageContent: lastMessage?.content || null,
 					unreadCount,
 					hasUnread: unreadCount > 0,
-					otherUser,
+					otherUser: otherUser ? decryptUserFields(otherUser) : null,
 					title: conv.offerTitle || 'Trip Chat',
 					subtitle: `Offer: ${conv.offerStatus || 'N/A'}`,
 					offer: conv.offerId_
@@ -200,7 +201,7 @@ export const GET: RequestHandler = async ({ locals }) => {
 					lastMessageContent,
 					unreadCount,
 					hasUnread: unreadCount > 0,
-					otherUser,
+					otherUser: otherUser ? decryptUserFields(otherUser) : null,
 					title: conv.productTitle || 'Product Chat',
 					subtitle: 'Product Inquiry',
 					productImage: conv.productImageUrl
