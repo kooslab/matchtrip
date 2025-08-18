@@ -377,30 +377,16 @@
 						</button>
 					{/if}
 				{:else if offer.status === 'pending' || offer.status === 'accepted'}
-					{#if canStartChat}
-						<button
-							onclick={startConversation}
-							class="flex items-center justify-center gap-2 rounded-xl bg-[#1095f4] px-8 py-3.5 text-base font-semibold text-white"
-						>
-							<img src={chatIcon} alt="" class="h-5 w-5 brightness-0 invert" />
-							대화하기
-						</button>
-					{:else}
-						<div class="text-center">
-							<button
-								disabled
-								class="flex cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-gray-400 px-8 py-3.5 text-base font-semibold text-white"
-							>
-								<img src={chatIcon} alt="" class="h-5 w-5 brightness-0 invert" />
-								대화하기
-							</button>
-							<p class="mt-2 text-sm text-gray-600">
-								{hasCompletedPayment
-									? '고객이 먼저 메시지를 보낸 후에 채팅이 가능합니다.'
-									: '고객이 결제를 완료하거나 메시지를 보낸 후에 채팅이 가능합니다.'}
-							</p>
-						</div>
-					{/if}
+					<button
+						onclick={canStartChat ? startConversation : undefined}
+						disabled={!canStartChat}
+						class="flex flex-1 items-center justify-center gap-2 rounded-xl px-12 py-3.5 text-base font-semibold text-white {canStartChat
+							? 'bg-[#1095f4]'
+							: 'cursor-not-allowed bg-gray-400'}"
+					>
+						<img src={chatIcon} alt="" class="h-5 w-5 brightness-0 invert" />
+						대화하기
+					</button>
 				{:else if offer.status === 'completed'}
 					{#if review?.reviewRequestedAt}
 						<button

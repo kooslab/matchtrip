@@ -76,6 +76,12 @@ export const GET: RequestHandler = async ({ params }) => {
 
 		const product = productData[0];
 
+		// Decrypt guide user data if it exists
+		if (product.guide) {
+			const { decryptUserFields } = await import('$lib/server/encryption');
+			product.guide = decryptUserFields(product.guide);
+		}
+
 		// Fetch country information if destination exists
 		let country = null;
 		if (product.destination?.countryId) {

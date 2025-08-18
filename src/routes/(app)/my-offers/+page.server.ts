@@ -2,6 +2,7 @@ import { db } from '$lib/server/db';
 import { trips, destinations, users, offers, countries, payments } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { transformImageUrl } from '$lib/utils/imageUrl';
+import { decryptUserFields } from '$lib/server/encryption';
 
 export const load = async ({ locals }) => {
 	// Session and user are guaranteed to exist and be valid due to auth guard in hooks.server.ts
@@ -61,7 +62,7 @@ export const load = async ({ locals }) => {
 		.where(eq(offers.guideId, session.user.id))
 		.orderBy(offers.createdAt);
 
-	// Transform image URLs for destinations
+	// Transform image URLs for destinations and decrypt traveler data
 	const transformedOffers = myOffers.map((offer) => ({
 		...offer,
 		destination: offer.destination
@@ -69,7 +70,8 @@ export const load = async ({ locals }) => {
 					...offer.destination,
 					imageUrl: transformImageUrl(offer.destination.imageUrl)
 				}
-			: offer.destination
+			: offer.destination,
+		traveler: offer.traveler ? decryptUserFields(offer.traveler) : offer.traveler
 	}));
 
 	// Group offers by status

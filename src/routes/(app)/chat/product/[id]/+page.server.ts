@@ -25,6 +25,9 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		throw redirect(302, '/products');
 	}
 
+	// Import decryption utility
+	const { decryptUserFields } = await import('$lib/server/encryption');
+
 	// Fetch conversation details
 	const conversation = await db
 		.select({
@@ -106,6 +109,12 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.where(eq(productMessages.conversationId, conversationId))
 		.orderBy(productMessages.createdAt);
 
+	// Decrypt sender information in messages
+	const decryptedMessages = messages.map(msg => ({
+		...msg,
+		sender: msg.sender ? decryptUserFields(msg.sender) : null
+	}));
+
 	// Fetch other user's info
 	const otherUserId = userRole === 'traveler' ? conv.guideId : conv.travelerId;
 	const otherUser = await db
@@ -119,6 +128,9 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.from(users)
 		.where(eq(users.id, otherUserId))
 		.limit(1);
+
+	// Decrypt other user's data
+	const decryptedOtherUser = otherUser[0] ? decryptUserFields(otherUser[0]) : null;
 
 	// Update last read timestamp
 	if (userRole === 'traveler') {
@@ -136,8 +148,8 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	return {
 		conversation: conv,
 		product: product[0],
-		messages,
-		otherUser: otherUser[0],
+		messages: decryptedMessages,
+		otherUser: decryptedOtherUser,
 		userRole,
 		currentUserId: userId
 	};

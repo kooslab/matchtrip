@@ -466,7 +466,7 @@
 	});
 </script>
 
-<div class="fixed inset-0 mx-auto flex max-w-md flex-col bg-white">
+<div class="fixed inset-0 mx-auto flex max-w-md flex-col bg-white md:pt-8">
 	<!-- Header -->
 	<div class="safe-area-top bg-white">
 		<div class="flex items-center justify-between px-4 py-4">

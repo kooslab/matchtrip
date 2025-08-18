@@ -13,6 +13,7 @@ import {
 } from '$lib/server/db/schema';
 import { eq, and, sql } from 'drizzle-orm';
 import { redirect } from '@sveltejs/kit';
+import { decryptUserFields } from '$lib/server/encryption';
 
 export const load = async ({ params, locals }) => {
 	// Session and user are guaranteed to exist and be valid due to auth guard in hooks.server.ts
@@ -146,8 +147,14 @@ export const load = async ({ params, locals }) => {
 	// 2. Payment is completed
 	const canStartChat = hasTravelerMessages || hasCompletedPayment;
 
+	// Decrypt traveler data before returning
+	const offer = {
+		...offerDetails[0],
+		traveler: offerDetails[0].traveler ? decryptUserFields(offerDetails[0].traveler) : offerDetails[0].traveler
+	};
+
 	return {
-		offer: offerDetails[0],
+		offer,
 		review: reviewData[0] || null,
 		canStartChat,
 		hasCompletedPayment,

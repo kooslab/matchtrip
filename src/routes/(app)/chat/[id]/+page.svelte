@@ -414,7 +414,7 @@
 </script>
 
 <div class="min-h-screen bg-white">
-	<div class="relative mx-auto flex min-h-screen max-w-md flex-col">
+	<div class="relative mx-auto flex min-h-screen max-w-md flex-col md:pt-8">
 		{#if !loading}
 			<!-- Header -->
 			<div class="safe-area-top bg-white">
