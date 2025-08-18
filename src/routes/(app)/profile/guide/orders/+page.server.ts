@@ -1,6 +1,14 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { offers, trips, payments, users, products, productOffers, reviews } from '$lib/server/db/schema';
+import {
+	offers,
+	trips,
+	payments,
+	users,
+	products,
+	productOffers,
+	reviews
+} from '$lib/server/db/schema';
 import { eq, and, desc, sql, or } from 'drizzle-orm';
 import { redirect } from '@sveltejs/kit';
 
@@ -46,10 +54,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.innerJoin(trips, eq(offers.tripId, trips.id))
 		.leftJoin(payments, eq(payments.offerId, offers.id))
 		.innerJoin(users, eq(trips.userId, users.id))
-		.leftJoin(reviews, and(
-			eq(reviews.offerId, offers.id),
-			eq(reviews.travelerId, users.id)
-		))
+		.leftJoin(reviews, and(eq(reviews.offerId, offers.id), eq(reviews.travelerId, users.id)))
 		.where(and(eq(offers.guideId, user.id), eq(offers.status, 'accepted')))
 		.orderBy(desc(offers.updatedAt));
 
@@ -81,10 +86,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.innerJoin(products, eq(payments.productId, products.id))
 		.leftJoin(productOffers, eq(payments.productOfferId, productOffers.id))
 		.leftJoin(users, eq(payments.userId, users.id))
-		.leftJoin(reviews, and(
-			eq(reviews.productId, products.id),
-			eq(reviews.travelerId, users.id)
-		))
+		.leftJoin(reviews, and(eq(reviews.productId, products.id), eq(reviews.travelerId, users.id)))
 		.where(eq(products.guideId, user.id))
 		.orderBy(desc(payments.createdAt));
 

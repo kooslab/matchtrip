@@ -15,7 +15,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		// Validate required fields
 		if (!to || !templateCode || !text) {
 			return json(
-				{ 
+				{
 					success: false,
 					error: 'Missing required fields: to, templateCode, text',
 					received: { to: !!to, templateCode: !!templateCode, text: !!text }
@@ -28,9 +28,10 @@ export const POST: RequestHandler = async ({ request }) => {
 		const phoneRegex = /^82\d{9,11}$/;
 		if (!phoneRegex.test(to)) {
 			return json(
-				{ 
+				{
 					success: false,
-					error: 'Invalid phone number format. Use international format without + (e.g., 821012345678)',
+					error:
+						'Invalid phone number format. Use international format without + (e.g., 821012345678)',
 					received: to
 				},
 				{ status: 400 }
@@ -41,9 +42,9 @@ export const POST: RequestHandler = async ({ request }) => {
 		if (!env.KAKAO_CHANNEL_PROFILE_KEY) {
 			console.error('KAKAO_CHANNEL_PROFILE_KEY is not set in environment variables');
 			return json(
-				{ 
+				{
 					success: false,
-					error: 'KAKAO_CHANNEL_PROFILE_KEY is not configured in environment variables' 
+					error: 'KAKAO_CHANNEL_PROFILE_KEY is not configured in environment variables'
 				},
 				{ status: 500 }
 			);
@@ -52,9 +53,9 @@ export const POST: RequestHandler = async ({ request }) => {
 		if (!env.INFOBIP_API_KEY || !env.INFOBIP_BASE_URL) {
 			console.error('Infobip credentials are not properly configured');
 			return json(
-				{ 
+				{
 					success: false,
-					error: 'Infobip API credentials are not configured in environment variables' 
+					error: 'Infobip API credentials are not configured in environment variables'
 				},
 				{ status: 500 }
 			);
@@ -87,16 +88,22 @@ export const POST: RequestHandler = async ({ request }) => {
 		if (messageResult) {
 			if (messageResult.status?.groupName === 'UNDELIVERABLE' || messageResult.error) {
 				console.error('Message delivery failed:', messageResult);
-				return json({
-					success: false,
-					error: messageResult.error?.description || messageResult.status?.description || 'Message delivery failed',
-					details: {
-						errorName: messageResult.error?.name,
-						statusName: messageResult.status?.name,
-						messageId: messageResult.messageId
+				return json(
+					{
+						success: false,
+						error:
+							messageResult.error?.description ||
+							messageResult.status?.description ||
+							'Message delivery failed',
+						details: {
+							errorName: messageResult.error?.name,
+							statusName: messageResult.status?.name,
+							messageId: messageResult.messageId
+						},
+						result
 					},
-					result
-				}, { status: 400 });
+					{ status: 400 }
+				);
 			}
 		}
 

@@ -18,14 +18,14 @@
 	const completedTrips = $derived(guideProfile?.completedTrips || 3);
 	const acceptedOffers = $derived(guideProfile?.acceptedOffers || 0);
 	const rating = $derived(guideProfile?.rating || 4.9);
-	
+
 	// Modal state for product detail
 	let selectedProduct = $state<any>(null);
 	let isModalOpen = $state(false);
-	
+
 	// Handle product click
 	const handleProductClick = async (productId: string) => {
-		const product = myProducts.find(p => p.id === productId);
+		const product = myProducts.find((p) => p.id === productId);
 		if (product) {
 			// Fetch full product details
 			try {
@@ -42,13 +42,13 @@
 			}
 		}
 	};
-	
+
 	// Handle modal close
 	const handleModalClose = () => {
 		isModalOpen = false;
 		selectedProduct = null;
 	};
-	
+
 	// Format price with commas
 	const formatPrice = (price: number) => {
 		return new Intl.NumberFormat('ko-KR').format(price);
@@ -261,8 +261,8 @@
 </div>
 
 <!-- Product Detail Modal -->
-<ProductDetailModal 
-	product={selectedProduct} 
-	bind:isOpen={isModalOpen} 
-	onClose={handleModalClose} 
+<ProductDetailModal
+	product={selectedProduct}
+	bind:isOpen={isModalOpen}
+	onClose={handleModalClose}
 />

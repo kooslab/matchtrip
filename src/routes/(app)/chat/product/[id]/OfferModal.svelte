@@ -1,22 +1,22 @@
 <script lang="ts">
 	import { CalendarDate } from '@internationalized/date';
 	import DateRangePickerModal from '$lib/components/DateRangePickerModal.svelte';
-	
+
 	interface Props {
 		onClose: () => void;
 		onSubmit: (data: { price: number; duration: number; startDate: Date; endDate: Date }) => void;
 		sending?: boolean;
 	}
-	
+
 	const { onClose, onSubmit, sending = false }: Props = $props();
-	
+
 	let price = $state('');
 	let showDatePicker = $state(false);
 	let selectedDates = $state<{ start?: CalendarDate; end?: CalendarDate }>({});
 	let startDate = $state<Date | null>(null);
 	let endDate = $state<Date | null>(null);
 	let duration = $state(0);
-	
+
 	// Format price input with commas
 	function formatPriceInput(value: string) {
 		// Remove non-numeric characters
@@ -24,21 +24,21 @@
 		// Add commas
 		return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 	}
-	
+
 	// Handle price input
 	function handlePriceInput(event: Event) {
 		const input = event.target as HTMLInputElement;
 		const formatted = formatPriceInput(input.value);
 		price = formatted;
 	}
-	
+
 	// Calculate duration from dates
 	function calculateDuration(start: Date, end: Date): number {
 		const diffTime = Math.abs(end.getTime() - start.getTime());
 		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 		return diffDays + 1; // Include both start and end dates
 	}
-	
+
 	// Handle date selection
 	function handleDateApply(dates: { start?: CalendarDate; end?: CalendarDate }) {
 		if (dates.start && dates.end) {
@@ -49,7 +49,7 @@
 		}
 		showDatePicker = false;
 	}
-	
+
 	// Format date for display
 	function formatDate(date: Date): string {
 		return new Intl.DateTimeFormat('ko-KR', {
@@ -58,21 +58,21 @@
 			day: '2-digit'
 		}).format(date);
 	}
-	
+
 	// Handle form submission
 	function handleSubmit() {
 		const priceValue = parseInt(price.replace(/,/g, ''));
-		
+
 		if (!priceValue) {
 			alert('가격을 입력해주세요.');
 			return;
 		}
-		
+
 		if (!startDate || !endDate) {
 			alert('여행 날짜를 선택해주세요.');
 			return;
 		}
-		
+
 		onSubmit({
 			price: priceValue,
 			duration: duration,
@@ -83,47 +83,38 @@
 </script>
 
 <!-- Backdrop -->
-<div 
-	class="fixed inset-0 bg-black/50 z-50 flex items-end"
-	onclick={onClose}
->
+<div class="fixed inset-0 z-50 flex items-end bg-black/50" onclick={onClose}>
 	<!-- Modal -->
-	<div 
-		class="w-full max-w-[430px] mx-auto bg-white rounded-t-2xl p-4"
+	<div
+		class="mx-auto w-full max-w-[430px] rounded-t-2xl bg-white p-4"
 		onclick={(e) => e.stopPropagation()}
 	>
-		<div class="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
-		
-		<h2 class="text-lg font-bold mb-4">제안하기</h2>
-		
+		<div class="mx-auto mb-4 h-1 w-12 rounded-full bg-gray-300"></div>
+
+		<h2 class="mb-4 text-lg font-bold">제안하기</h2>
+
 		<!-- Price Input -->
 		<div class="mb-4">
-			<label class="block text-sm font-medium text-gray-700 mb-2">
-				총 금액
-			</label>
+			<label class="mb-2 block text-sm font-medium text-gray-700"> 총 금액 </label>
 			<div class="relative">
 				<input
 					type="text"
 					value={price}
 					oninput={handlePriceInput}
 					placeholder="여행 총 금액을 입력해 주세요"
-					class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+					class="w-full rounded-lg border px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
 					disabled={sending}
 				/>
-				<span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
-					원
-				</span>
+				<span class="absolute top-1/2 right-4 -translate-y-1/2 text-gray-500"> 원 </span>
 			</div>
 		</div>
-		
+
 		<!-- Date Selection -->
 		<div class="mb-4">
-			<label class="block text-sm font-medium text-gray-700 mb-2">
-				여행 날짜
-			</label>
+			<label class="mb-2 block text-sm font-medium text-gray-700"> 여행 날짜 </label>
 			<button
-				onclick={() => showDatePicker = true}
-				class="w-full px-4 py-3 border rounded-lg text-left hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+				onclick={() => (showDatePicker = true)}
+				class="w-full rounded-lg border px-4 py-3 text-left hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none"
 				disabled={sending}
 			>
 				{#if startDate && endDate}
@@ -135,12 +126,12 @@
 				{/if}
 			</button>
 		</div>
-		
+
 		<!-- Submit Button -->
 		<button
 			onclick={handleSubmit}
 			disabled={!price || !startDate || !endDate || sending}
-			class="w-full bg-blue-500 text-white py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+			class="w-full rounded-lg bg-blue-500 py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
 		>
 			{sending ? '전송 중...' : '제안하기'}
 		</button>
@@ -152,7 +143,7 @@
 	<DateRangePickerModal
 		open={showDatePicker}
 		value={selectedDates}
-		onClose={() => showDatePicker = false}
+		onClose={() => (showDatePicker = false)}
 		onApply={handleDateApply}
 		title="여행 날짜 선택"
 	/>

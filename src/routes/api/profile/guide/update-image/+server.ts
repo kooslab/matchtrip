@@ -28,8 +28,9 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 		if (existingProfile) {
 			// Update existing profile
-			await db.update(guideProfiles)
-				.set({ 
+			await db
+				.update(guideProfiles)
+				.set({
 					profileImageUrl,
 					updatedAt: new Date()
 				})

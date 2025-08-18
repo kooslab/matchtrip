@@ -3,7 +3,7 @@ import { redirect } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ parent }) => {
 	const parentData = await parent();
-	
+
 	// Check if previous steps are completed
 	if (!parentData.productData.destinationId) {
 		throw redirect(303, '/products/create');
@@ -15,7 +15,7 @@ export const load: PageServerLoad = async ({ parent }) => {
 		throw redirect(303, '/products/create/description');
 	}
 	// Duration is optional, so we don't check it
-	
+
 	// Return parent data which includes productData
 	return {
 		...parentData

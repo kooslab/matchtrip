@@ -27,12 +27,12 @@
 			$page.url.pathname.startsWith('/chat/product/') ||
 			$page.url.pathname.startsWith('/order-history/details')
 	);
-	
+
 	// Hide top nav for chat pages (both regular and product chat) and product creation pages
 	let hideTopNav = $derived(
 		$page.url.pathname.startsWith('/chat/product/') ||
-		$page.url.pathname.match(/^\/chat\/[^\/]+$/) ||
-		$page.url.pathname.startsWith('/products/create')
+			$page.url.pathname.match(/^\/chat\/[^\/]+$/) ||
+			$page.url.pathname.startsWith('/products/create')
 	);
 </script>
 

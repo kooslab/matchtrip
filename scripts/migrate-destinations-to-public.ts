@@ -49,13 +49,15 @@ async function migrateDestinationsToPublic() {
 			// Extract the filename from /api/images/destination/filename.ext
 			const match = destination.imageUrl.match(/^\/api\/images\/destination\/(.+)$/);
 			if (!match) {
-				console.log(`⚠️  Skipping ${destination.city}: Invalid URL format: ${destination.imageUrl}`);
+				console.log(
+					`⚠️  Skipping ${destination.city}: Invalid URL format: ${destination.imageUrl}`
+				);
 				skipped++;
 				continue;
 			}
 
 			const filename = match[1];
-			
+
 			// Construct public URL
 			let publicUrl: string;
 			if (R2_PUBLIC_URL) {
@@ -88,7 +90,6 @@ async function migrateDestinationsToPublic() {
 			console.log('   2. Check that public R2 bucket contains the destination images');
 			console.log('   3. Monitor for any 404 errors on destination images');
 		}
-
 	} catch (error) {
 		console.error('❌ Migration failed:', error);
 		process.exit(1);

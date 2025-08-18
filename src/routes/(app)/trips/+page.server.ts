@@ -144,12 +144,14 @@ export const load = async ({ locals, url }) => {
 	}));
 
 	// Transform image URLs in trips data
-	const transformedTrips = availableTrips.map(trip => ({
+	const transformedTrips = availableTrips.map((trip) => ({
 		...trip,
-		destination: trip.destination ? {
-			...trip.destination,
-			imageUrl: transformImageUrl(trip.destination.imageUrl)
-		} : trip.destination
+		destination: trip.destination
+			? {
+					...trip.destination,
+					imageUrl: transformImageUrl(trip.destination.imageUrl)
+				}
+			: trip.destination
 	}));
 
 	return {

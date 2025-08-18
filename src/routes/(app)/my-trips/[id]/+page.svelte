@@ -472,7 +472,7 @@
 						review,
 						reviewToken: review?.reviewToken
 					});
-					
+
 					// If review token exists, navigate to review page
 					if (review?.reviewToken) {
 						goto(`/write-review/${review.reviewToken}`);
@@ -482,7 +482,7 @@
 							const response = await fetch(`/api/trips/${trip.id}/review-token/generate`, {
 								method: 'POST'
 							});
-							
+
 							if (response.ok) {
 								const data = await response.json();
 								if (data.reviewToken) {

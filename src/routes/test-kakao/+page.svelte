@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	
+
 	// Template data
 	let availableTemplates: any[] = [];
 	let selectedTemplate: any = null;
 	let templatesLoading = true;
 	let templatesError: string | null = null;
-	
+
 	// Form data
 	let phoneNumber = '';
 	let templateCode = '';
@@ -23,13 +23,13 @@
 	let reports: any = null;
 	let loadingReports = false;
 	let reportsError: string | null = null;
-	
+
 	// Load templates on mount
 	onMount(async () => {
 		try {
 			const response = await fetch('/api/test-kakao-templates');
 			const data = await response.json();
-			
+
 			if (data.success) {
 				availableTemplates = data.templates;
 				if (availableTemplates.length > 0) {
@@ -48,11 +48,11 @@
 			templatesLoading = false;
 		}
 	});
-	
+
 	// Generate default template data based on selected template
 	function updateDefaultTemplateData() {
 		if (!selectedTemplate) return;
-		
+
 		const defaultData: Record<string, string> = {};
 		for (const variable of selectedTemplate.variables) {
 			// Set default values based on common variables
@@ -68,10 +68,10 @@
 		}
 		templateData = JSON.stringify(defaultData, null, 2);
 	}
-	
+
 	// Update form when template selection changes
 	function onTemplateChange() {
-		const template = availableTemplates.find(t => t.code === templateCode);
+		const template = availableTemplates.find((t) => t.code === templateCode);
 		if (template) {
 			selectedTemplate = template;
 			text = template.text;
@@ -96,16 +96,17 @@
 			}
 
 			// Create buttons array if includeButton is true and template has button
-			const buttons = includeButton && selectedTemplate?.button
-				? [
-						{
-							type: selectedTemplate.button.type,
-							name: selectedTemplate.button.name,
-							urlMobile: selectedTemplate.button.urlMobile,
-							urlPc: selectedTemplate.button.urlPc
-						}
-					]
-				: undefined;
+			const buttons =
+				includeButton && selectedTemplate?.button
+					? [
+							{
+								type: selectedTemplate.button.type,
+								name: selectedTemplate.button.name,
+								urlMobile: selectedTemplate.button.urlMobile,
+								urlPc: selectedTemplate.button.urlPc
+							}
+						]
+					: undefined;
 
 			// Show what we send to our API
 			const apiRequestBody = {
@@ -269,7 +270,6 @@
 				</p>
 			</div>
 
-
 			<div>
 				<label for="templateCode" class="mb-1 block text-sm font-medium text-gray-700">
 					Template
@@ -297,7 +297,9 @@
 					</select>
 					{#if selectedTemplate}
 						<p class="mt-1 text-xs text-gray-500">
-							Select from pre-approved Kakao templates. Variables: {selectedTemplate.variables.join(', ')}
+							Select from pre-approved Kakao templates. Variables: {selectedTemplate.variables.join(
+								', '
+							)}
 						</p>
 					{/if}
 				{/if}
@@ -314,7 +316,10 @@
 					readonly
 					class="w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-gray-600"
 				></textarea>
-				<p class="mt-1 text-xs text-gray-500">This is the registered template text. Variables will be replaced with values from Template Data.</p>
+				<p class="mt-1 text-xs text-gray-500">
+					This is the registered template text. Variables will be replaced with values from Template
+					Data.
+				</p>
 			</div>
 
 			<div>
@@ -336,7 +341,7 @@
 						id="includeButton"
 						type="checkbox"
 						bind:checked={includeButton}
-						class="h-4 w-4 text-primary rounded border-gray-300 focus:ring-color-primary"
+						class="text-primary focus:ring-color-primary h-4 w-4 rounded border-gray-300"
 					/>
 					<label for="includeButton" class="text-sm font-medium text-gray-700">
 						Include Button ({selectedTemplate.button.name})
@@ -368,8 +373,16 @@
 		{#if requestBody}
 			<div class="mt-4 rounded-md border border-gray-200 bg-gray-50 p-4">
 				<p class="mb-2 text-sm font-medium text-gray-700">Actual Infobip API Request Body:</p>
-				<pre class="overflow-x-auto rounded bg-gray-100 p-2 text-xs">{JSON.stringify(requestBody, null, 2)}</pre>
-				<p class="mt-2 text-xs text-gray-600">Note: The sender field will be replaced with the actual KAKAO_CHANNEL_PROFILE_KEY value from environment variables on the server. Template variables (#{NAME}, #{SHOPNAME}) are replaced with actual values before sending.</p>
+				<pre class="overflow-x-auto rounded bg-gray-100 p-2 text-xs">{JSON.stringify(
+						requestBody,
+						null,
+						2
+					)}</pre>
+				<p class="mt-2 text-xs text-gray-600">
+					Note: The sender field will be replaced with the actual KAKAO_CHANNEL_PROFILE_KEY value
+					from environment variables on the server. Template variables (#{NAME}, #{SHOPNAME}) are
+					replaced with actual values before sending.
+				</p>
 			</div>
 		{/if}
 
@@ -399,7 +412,7 @@
 					</div>
 				{/if}
 			</div>
-			
+
 			<div class="mt-3 flex gap-2">
 				<button
 					onclick={fetchLogs}
@@ -427,8 +440,12 @@
 		{#if logs}
 			<div class="mt-4 rounded-md border border-blue-200 bg-blue-50 p-4">
 				<p class="mb-2 text-sm font-medium text-blue-700">Message Logs:</p>
-				<pre class="overflow-x-auto rounded bg-blue-100 p-2 text-xs">{JSON.stringify(logs, null, 2)}</pre>
-				
+				<pre class="overflow-x-auto rounded bg-blue-100 p-2 text-xs">{JSON.stringify(
+						logs,
+						null,
+						2
+					)}</pre>
+
 				{#if logs.results && logs.results.length > 0}
 					<div class="mt-3 space-y-2">
 						<p class="text-xs font-medium text-blue-700">Log Details:</p>
@@ -440,7 +457,10 @@
 								{#if log.status?.description}
 									<p><strong>Description:</strong> {log.status.description}</p>
 								{/if}
-								<p><strong>Sent At:</strong> {log.sentAt ? new Date(log.sentAt).toLocaleString() : 'N/A'}</p>
+								<p>
+									<strong>Sent At:</strong>
+									{log.sentAt ? new Date(log.sentAt).toLocaleString() : 'N/A'}
+								</p>
 								{#if log.doneAt}
 									<p><strong>Done At:</strong> {new Date(log.doneAt).toLocaleString()}</p>
 								{/if}
@@ -465,8 +485,12 @@
 		{#if reports}
 			<div class="mt-4 rounded-md border border-indigo-200 bg-indigo-50 p-4">
 				<p class="mb-2 text-sm font-medium text-indigo-700">Delivery Reports:</p>
-				<pre class="overflow-x-auto rounded bg-indigo-100 p-2 text-xs">{JSON.stringify(reports, null, 2)}</pre>
-				
+				<pre class="overflow-x-auto rounded bg-indigo-100 p-2 text-xs">{JSON.stringify(
+						reports,
+						null,
+						2
+					)}</pre>
+
 				{#if reports.results && reports.results.length > 0}
 					<div class="mt-3 space-y-2">
 						<p class="text-xs font-medium text-indigo-700">Report Details:</p>
@@ -475,8 +499,15 @@
 								<p><strong>Bulk ID:</strong> {report.bulkId || 'N/A'}</p>
 								<p><strong>Message ID:</strong> {report.messageId}</p>
 								<p><strong>To:</strong> {report.to}</p>
-								<p><strong>Status:</strong> 
-									<span class="{report.status?.name === 'DELIVERED' ? 'text-green-600' : report.status?.name === 'PENDING' ? 'text-yellow-600' : 'text-red-600'}">
+								<p>
+									<strong>Status:</strong>
+									<span
+										class={report.status?.name === 'DELIVERED'
+											? 'text-green-600'
+											: report.status?.name === 'PENDING'
+												? 'text-yellow-600'
+												: 'text-red-600'}
+									>
 										{report.status?.name || 'Unknown'}
 									</span>
 								</p>
@@ -486,7 +517,10 @@
 								{#if report.status?.groupName}
 									<p><strong>Group:</strong> {report.status.groupName}</p>
 								{/if}
-								<p><strong>Sent At:</strong> {report.sentAt ? new Date(report.sentAt).toLocaleString() : 'N/A'}</p>
+								<p>
+									<strong>Sent At:</strong>
+									{report.sentAt ? new Date(report.sentAt).toLocaleString() : 'N/A'}
+								</p>
 								{#if report.doneAt}
 									<p><strong>Done At:</strong> {new Date(report.doneAt).toLocaleString()}</p>
 								{/if}
@@ -494,7 +528,11 @@
 									<p class="text-red-600"><strong>Error:</strong> {JSON.stringify(report.error)}</p>
 								{/if}
 								{#if report.price}
-									<p><strong>Price:</strong> {report.price.pricePerMessage} {report.price.currency}</p>
+									<p>
+										<strong>Price:</strong>
+										{report.price.pricePerMessage}
+										{report.price.currency}
+									</p>
 								{/if}
 							</div>
 						{/each}
@@ -515,8 +553,8 @@
 		</ul>
 		<p class="mt-3 text-xs text-blue-700">
 			Note: You need to register your KakaoTalk official account with Infobip and get templates
-			approved before sending AlimTalk messages. The KAKAO_CHANNEL_PROFILE_KEY should be set in
-			your environment variables.
+			approved before sending AlimTalk messages. The KAKAO_CHANNEL_PROFILE_KEY should be set in your
+			environment variables.
 		</p>
 	</div>
 

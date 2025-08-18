@@ -1,5 +1,8 @@
 import { REFUND_POLICIES, EXCEPTION_REASONS } from '$lib/constants/cancellation';
-import type { TravelerCancellationReason, GuideCancellationReason } from '$lib/constants/cancellation';
+import type {
+	TravelerCancellationReason,
+	GuideCancellationReason
+} from '$lib/constants/cancellation';
 
 interface RefundCalculationParams {
 	amount: number; // Original payment amount in KRW
@@ -34,10 +37,10 @@ export function calculateRefundAmount(params: RefundCalculationParams): RefundCa
 	// Calculate days before trip (considering timezone differences)
 	const tripStart = new Date(tripStartDate);
 	tripStart.setHours(0, 0, 0, 0);
-	
+
 	const cancellation = new Date(cancellationDate);
 	cancellation.setHours(0, 0, 0, 0);
-	
+
 	const timeDiff = tripStart.getTime() - cancellation.getTime();
 	const daysBeforeTrip = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
 
@@ -70,7 +73,7 @@ export function calculateRefundAmount(params: RefundCalculationParams): RefundCa
 
 	// Check if this is an exception case requiring admin approval
 	const requiresAdminApproval = reasonType ? EXCEPTION_REASONS.includes(reasonType as any) : false;
-	
+
 	// For exception cases, calculate as 100% refund (pending admin approval)
 	if (requiresAdminApproval) {
 		return {
@@ -86,7 +89,7 @@ export function calculateRefundAmount(params: RefundCalculationParams): RefundCa
 
 	// Find applicable refund policy based on days before trip
 	let applicablePolicy = REFUND_POLICIES[REFUND_POLICIES.length - 1]; // Default to last policy
-	
+
 	for (const policy of REFUND_POLICIES) {
 		if (daysBeforeTrip >= policy.daysFrom) {
 			applicablePolicy = policy;
@@ -125,10 +128,10 @@ export function formatCurrency(amount: number): string {
  * Get refund policy description for display
  */
 export function getRefundPolicyDescription(): string[] {
-	return REFUND_POLICIES.map(policy => {
+	return REFUND_POLICIES.map((policy) => {
 		const percentage = policy.percentage;
 		const deduction = 100 - percentage;
-		
+
 		if (percentage === 100) {
 			return `• ${policy.label}: 전액 환불`;
 		} else if (percentage === 50) {
@@ -145,7 +148,7 @@ export function getRefundPolicyDescription(): string[] {
 export function canCancelBooking(tripStartDate: Date): boolean {
 	const now = new Date();
 	const tripStart = new Date(tripStartDate);
-	
+
 	// Can cancel if trip hasn't started yet
 	return tripStart > now;
 }
@@ -156,7 +159,7 @@ export function canCancelBooking(tripStartDate: Date): boolean {
 export function isPastTrip(tripStartDate: Date): boolean {
 	const now = new Date();
 	const tripStart = new Date(tripStartDate);
-	
+
 	// Trip is considered past if start date has passed
 	return tripStart <= now;
 }

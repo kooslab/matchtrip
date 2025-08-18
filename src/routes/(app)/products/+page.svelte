@@ -4,26 +4,26 @@
 	import { onMount } from 'svelte';
 	import ProductCard from './ProductCard.svelte';
 	import ProductDetailModal from '$lib/components/ProductDetailModal.svelte';
-	
+
 	const { data } = $props();
-	
+
 	// Get data from server
 	const destinations = $derived(data.destinations || []);
 	const products = $derived(data.products || []);
 	const selectedDestination = $derived(data.selectedDestination);
 	const user = $derived(data.user);
-	
+
 	// Filter state
 	let filterBy = $state<'all' | 'latest'>('all');
-	
+
 	// Modal state
 	let selectedProduct = $state<any>(null);
 	let isModalOpen = $state(false);
-	
+
 	// Handle product click
 	const handleProductClick = async (productId: string) => {
 		// Find the product in our current list
-		const product = products.find(p => p.id === productId);
+		const product = products.find((p) => p.id === productId);
 		if (product) {
 			selectedProduct = product;
 			isModalOpen = true;
@@ -47,7 +47,7 @@
 			}
 		}
 	};
-	
+
 	// Handle modal close
 	const handleModalClose = () => {
 		isModalOpen = false;
@@ -57,7 +57,7 @@
 		url.searchParams.delete('productId');
 		window.history.pushState({}, '', url.toString());
 	};
-	
+
 	// Check if we should open modal on mount (if URL has product ID in query)
 	onMount(() => {
 		if (typeof window !== 'undefined') {
@@ -73,7 +73,7 @@
 <div class="min-h-screen bg-gray-50">
 	<div class="mx-auto min-h-screen max-w-[430px] bg-white">
 		<!-- Header -->
-		<header class="sticky top-0 z-50 bg-white border-b">
+		<header class="sticky top-0 z-50 border-b bg-white">
 			<div class="flex items-center px-4 py-4">
 				<button onclick={() => goto('/')} class="p-1">
 					<ArrowLeft class="h-6 w-6 text-blue-500" />
@@ -92,37 +92,37 @@
 		<!-- Show destinations if no specific destination selected -->
 		{#if !selectedDestination && destinations.length > 0}
 			<main class="p-4">
-				<h2 class="text-lg font-semibold text-gray-900 mb-4">여행 지역 선택</h2>
+				<h2 class="mb-4 text-lg font-semibold text-gray-900">여행 지역 선택</h2>
 				<div class="grid grid-cols-2 gap-4">
 					{#each destinations as destination}
 						<button
 							onclick={() => goto(`/products?destination=${destination.id}`)}
-							class="text-left group"
+							class="group text-left"
 						>
-							<div class="relative overflow-hidden rounded-lg aspect-[4/3] mb-2">
+							<div class="relative mb-2 aspect-[4/3] overflow-hidden rounded-lg">
 								{#if destination.imageUrl}
-									<img 
-										src={destination.imageUrl} 
+									<img
+										src={destination.imageUrl}
 										alt={destination.city}
-										class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+										class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
 										onerror={(e) => {
 											e.target.style.display = 'none';
 											e.target.nextElementSibling.style.display = 'flex';
 										}}
 									/>
-									<div class="h-full w-full bg-gray-200 hidden items-center justify-center">
-										<span class="text-gray-400 text-xs">{destination.city}</span>
+									<div class="hidden h-full w-full items-center justify-center bg-gray-200">
+										<span class="text-xs text-gray-400">{destination.city}</span>
 									</div>
 								{:else}
-									<div class="h-full w-full bg-gray-200 flex items-center justify-center">
-										<span class="text-gray-400 text-xs">{destination.city}</span>
+									<div class="flex h-full w-full items-center justify-center bg-gray-200">
+										<span class="text-xs text-gray-400">{destination.city}</span>
 									</div>
 								{/if}
 							</div>
 							<div class="px-1">
-								<h3 class="font-semibold text-sm text-gray-900">{destination.city}</h3>
+								<h3 class="text-sm font-semibold text-gray-900">{destination.city}</h3>
 								<p class="text-xs text-gray-600">{destination.country?.name}</p>
-								<p class="text-xs text-blue-600 mt-0.5">{destination.productCount}개 상품</p>
+								<p class="mt-0.5 text-xs text-blue-600">{destination.productCount}개 상품</p>
 							</div>
 						</button>
 					{/each}
@@ -132,14 +132,18 @@
 			<!-- Filters for selected destination -->
 			<div class="flex items-center gap-3 px-4 py-3">
 				<button
-					onclick={() => filterBy = 'all'}
-					class="px-3 py-1.5 text-sm rounded-full transition-colors {filterBy === 'all' ? 'bg-gray-900 text-white' : 'text-gray-600'}"
+					onclick={() => (filterBy = 'all')}
+					class="rounded-full px-3 py-1.5 text-sm transition-colors {filterBy === 'all'
+						? 'bg-gray-900 text-white'
+						: 'text-gray-600'}"
 				>
 					전체 {products.length}
 				</button>
 				<button
-					onclick={() => filterBy = 'latest'}
-					class="px-3 py-1.5 text-sm transition-colors {filterBy === 'latest' ? 'text-gray-900 font-medium' : 'text-gray-600'}"
+					onclick={() => (filterBy = 'latest')}
+					class="px-3 py-1.5 text-sm transition-colors {filterBy === 'latest'
+						? 'font-medium text-gray-900'
+						: 'text-gray-600'}"
 				>
 					최신순 ↓
 				</button>
@@ -148,72 +152,74 @@
 			<!-- Main Content -->
 			<main class="pb-4">
 				{#if products.length === 0}
-				<div class="flex flex-col items-center justify-center py-16 text-center">
-					<div class="mb-4 text-gray-400">
-						<svg class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
-								d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-						</svg>
-					</div>
-					<h2 class="text-lg font-medium text-gray-900 mb-2">
-						{#if selectedDestination}
-							{selectedDestination.city}의 여행 상품이 없습니다
-						{:else}
-							등록된 여행 상품이 없습니다
-						{/if}
-					</h2>
-					<p class="text-sm text-gray-500">
-						곧 새로운 상품이 등록될 예정입니다
-					</p>
-				</div>
-			{:else}
-				<div class="px-4">
-					<div class="grid grid-cols-3 gap-3">
-						{#each products.slice(0, 6) as product, index}
-							<ProductCard {product} onclick={() => handleProductClick(product.id)} />
-						{/each}
-					</div>
-					
-					{#if products.length > 6}
-						<!-- Promotional Banner -->
-						<div class="my-6 rounded-lg bg-blue-50 p-4">
-							<p class="text-xs text-gray-600 mb-1">What is Lorem Ipsum</p>
-							<h3 class="text-sm font-bold text-gray-900">What is Lorem Ipsum</h3>
+					<div class="flex flex-col items-center justify-center py-16 text-center">
+						<div class="mb-4 text-gray-400">
+							<svg class="mx-auto h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="1.5"
+									d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+								/>
+							</svg>
 						</div>
-						
-						<!-- Rest of products -->
+						<h2 class="mb-2 text-lg font-medium text-gray-900">
+							{#if selectedDestination}
+								{selectedDestination.city}의 여행 상품이 없습니다
+							{:else}
+								등록된 여행 상품이 없습니다
+							{/if}
+						</h2>
+						<p class="text-sm text-gray-500">곧 새로운 상품이 등록될 예정입니다</p>
+					</div>
+				{:else}
+					<div class="px-4">
 						<div class="grid grid-cols-3 gap-3">
-							{#each products.slice(6) as product}
+							{#each products.slice(0, 6) as product, index}
 								<ProductCard {product} onclick={() => handleProductClick(product.id)} />
 							{/each}
 						</div>
-					{/if}
-				</div>
-			{/if}
-		</main>
+
+						{#if products.length > 6}
+							<!-- Promotional Banner -->
+							<div class="my-6 rounded-lg bg-blue-50 p-4">
+								<p class="mb-1 text-xs text-gray-600">What is Lorem Ipsum</p>
+								<h3 class="text-sm font-bold text-gray-900">What is Lorem Ipsum</h3>
+							</div>
+
+							<!-- Rest of products -->
+							<div class="grid grid-cols-3 gap-3">
+								{#each products.slice(6) as product}
+									<ProductCard {product} onclick={() => handleProductClick(product.id)} />
+								{/each}
+							</div>
+						{/if}
+					</div>
+				{/if}
+			</main>
 		{:else}
 			<!-- No destinations available -->
 			<div class="flex flex-col items-center justify-center py-16 text-center">
 				<div class="mb-4 text-gray-400">
-					<svg class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
-							d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+					<svg class="mx-auto h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="1.5"
+							d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+						/>
 					</svg>
 				</div>
-				<h2 class="text-lg font-medium text-gray-900 mb-2">
-					등록된 여행 상품이 없습니다
-				</h2>
-				<p class="text-sm text-gray-500">
-					곧 새로운 상품이 등록될 예정입니다
-				</p>
+				<h2 class="mb-2 text-lg font-medium text-gray-900">등록된 여행 상품이 없습니다</h2>
+				<p class="text-sm text-gray-500">곧 새로운 상품이 등록될 예정입니다</p>
 			</div>
 		{/if}
 	</div>
 </div>
 
 <!-- Product Detail Modal -->
-<ProductDetailModal 
-	product={selectedProduct} 
-	bind:isOpen={isModalOpen} 
-	onClose={handleModalClose} 
+<ProductDetailModal
+	product={selectedProduct}
+	bind:isOpen={isModalOpen}
+	onClose={handleModalClose}
 />

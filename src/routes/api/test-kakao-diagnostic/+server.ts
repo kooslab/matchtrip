@@ -14,9 +14,11 @@ export const GET: RequestHandler = async () => {
 		testCases: [
 			{
 				name: 'Template with variables',
-				template: '[#{SHOPNAME}], 안녕하세요. #{NAME}님! #{SHOPNAME}에 회원가입 해주셔서 진심으로 감사드립니다!',
+				template:
+					'[#{SHOPNAME}], 안녕하세요. #{NAME}님! #{SHOPNAME}에 회원가입 해주셔서 진심으로 감사드립니다!',
 				variables: { SHOPNAME: '매치트립', NAME: '홍길동' },
-				expected: '[매치트립], 안녕하세요. 홍길동님! 매치트립에 회원가입 해주셔서 진심으로 감사드립니다!'
+				expected:
+					'[매치트립], 안녕하세요. 홍길동님! 매치트립에 회원가입 해주셔서 진심으로 감사드립니다!'
 			},
 			{
 				name: 'Simple template without variables',
@@ -33,7 +35,7 @@ export const GET: RequestHandler = async () => {
 			'5. Contact Infobip support to verify template status'
 		],
 		commonIssues: {
-			'EC_INVALID_TEMPLATE': {
+			EC_INVALID_TEMPLATE: {
 				description: 'Template error - template not found or not approved',
 				possibleCauses: [
 					'Template code does not exist',
@@ -48,7 +50,7 @@ export const GET: RequestHandler = async () => {
 	};
 
 	// Test template substitution
-	diagnostics.testCases = diagnostics.testCases.map(testCase => {
+	diagnostics.testCases = diagnostics.testCases.map((testCase) => {
 		let result = testCase.template;
 		for (const [key, value] of Object.entries(testCase.variables)) {
 			result = result.replace(new RegExp(`#\\{${key}\\}`, 'g'), value);
@@ -66,7 +68,7 @@ export const GET: RequestHandler = async () => {
 export const POST: RequestHandler = async ({ request }) => {
 	try {
 		const { templateCode } = await request.json();
-		
+
 		if (!env.INFOBIP_API_KEY || !env.INFOBIP_BASE_URL) {
 			return json({ error: 'Infobip credentials not configured' }, { status: 500 });
 		}
@@ -80,7 +82,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		// Attempt to check template status
 		const checkUrl = `${env.INFOBIP_BASE_URL}/kakao-alim/1/templates/${templateCode}`;
-		
+
 		try {
 			const response = await fetch(checkUrl, {
 				method: 'GET',
@@ -116,8 +118,11 @@ export const POST: RequestHandler = async ({ request }) => {
 			});
 		}
 	} catch (error) {
-		return json({ 
-			error: error instanceof Error ? error.message : 'Diagnostic check failed' 
-		}, { status: 500 });
+		return json(
+			{
+				error: error instanceof Error ? error.message : 'Diagnostic check failed'
+			},
+			{ status: 500 }
+		);
 	}
 };

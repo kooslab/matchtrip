@@ -14,7 +14,10 @@ import {
 } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { calculateRefundAmount } from '$lib/utils/refundCalculator';
-import type { TravelerCancellationReason, GuideCancellationReason } from '$lib/constants/cancellation';
+import type {
+	TravelerCancellationReason,
+	GuideCancellationReason
+} from '$lib/constants/cancellation';
 
 interface CreateCancellationRequestParams {
 	paymentId: string;
@@ -41,7 +44,7 @@ export class CancellationService {
 
 		// Get payment details with related trip/product info
 		const paymentData = await this.getPaymentWithDetails(paymentId);
-		
+
 		if (!paymentData) {
 			throw new Error('Payment not found');
 		}
@@ -68,8 +71,9 @@ export class CancellationService {
 
 		// Calculate refund amount
 		// Priority: tripStartDate (for trips) > productOfferStartDate (for product offers) > productDate (for direct products)
-		const tripOrProductDate = paymentData.tripStartDate || paymentData.productOfferStartDate || paymentData.productDate;
-		
+		const tripOrProductDate =
+			paymentData.tripStartDate || paymentData.productOfferStartDate || paymentData.productDate;
+
 		if (!tripOrProductDate) {
 			throw new Error('Cannot determine trip/product date for refund calculation');
 		}
@@ -83,8 +87,9 @@ export class CancellationService {
 
 		// Create cancellation request
 		// For past trips or exception cases, always require admin approval
-		const requiresApproval = refundCalculation.requiresAdminApproval || refundCalculation.daysBeforeTrip < 0;
-		
+		const requiresApproval =
+			refundCalculation.requiresAdminApproval || refundCalculation.daysBeforeTrip < 0;
+
 		const [cancellationRequest] = await db
 			.insert(cancellationRequests)
 			.values({
@@ -179,7 +184,7 @@ export class CancellationService {
 		}
 
 		const paymentData = await this.getPaymentWithDetails(request.paymentId);
-		
+
 		if (!paymentData) {
 			throw new Error('Payment not found');
 		}
@@ -284,7 +289,7 @@ export class CancellationService {
 		}
 
 		const messageContent = `취소 요청\n사유: ${reasonType}\n${reasonDetail ? `상세: ${reasonDetail}` : ''}`;
-		
+
 		// Insert message into appropriate table
 		if (paymentData.payment.offerId) {
 			await db.insert(messages).values({

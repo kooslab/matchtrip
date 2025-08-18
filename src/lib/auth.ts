@@ -82,7 +82,7 @@ export const auth = betterAuth({
 			// Map Google profile data to our user schema
 			mapProfileToUser: (profile) => {
 				console.log('[GOOGLE OAUTH] Mapping profile:', JSON.stringify(profile, null, 2));
-				
+
 				const mappedUser = {
 					name: encrypt(profile.name || profile.email),
 					email: encrypt(profile.email),

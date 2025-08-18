@@ -44,7 +44,7 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 		}
 
 		const cancellationService = new CancellationService();
-		
+
 		// Process approval
 		await cancellationService.processCancellation({
 			requestId,
@@ -56,7 +56,7 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 
 		// Process refund through payment gateway
 		const refundAmount = overrideRefundAmount || cancellationRequest.request.calculatedRefundAmount;
-		
+
 		if (cancellationRequest.payment.paymentKey) {
 			try {
 				const refundService = new RefundService();
@@ -79,11 +79,11 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 		});
 	} catch (error) {
 		console.error('Error approving cancellation:', error);
-		
+
 		if (error instanceof Error) {
 			return json({ success: false, error: error.message }, { status: 400 });
 		}
-		
+
 		return json({ success: false, error: '승인 처리 중 오류가 발생했습니다.' }, { status: 500 });
 	}
 };

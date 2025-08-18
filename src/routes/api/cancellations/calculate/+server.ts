@@ -42,7 +42,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		const eventDate = tripStartDate || productDate;
 
 		if (!eventDate) {
-			return json({ success: false, error: '여행/상품 날짜를 확인할 수 없습니다.' }, { status: 400 });
+			return json(
+				{ success: false, error: '여행/상품 날짜를 확인할 수 없습니다.' },
+				{ status: 400 }
+			);
 		}
 
 		// Calculate refund amount
@@ -91,6 +94,9 @@ export const GET: RequestHandler = async ({ locals }) => {
 		});
 	} catch (error) {
 		console.error('Error getting refund policy:', error);
-		return json({ success: false, error: '정책 정보를 가져오는 중 오류가 발생했습니다.' }, { status: 500 });
+		return json(
+			{ success: false, error: '정책 정보를 가져오는 중 오류가 발생했습니다.' },
+			{ status: 500 }
+		);
 	}
 };

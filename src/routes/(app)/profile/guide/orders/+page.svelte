@@ -6,7 +6,7 @@
 
 	const { data } = $props();
 	const orders = $derived(data.orders || []);
-	
+
 	// Track loading state for each order
 	let loadingStates = $state<Record<string, boolean>>({});
 	// Track review requested state for each order
@@ -50,12 +50,13 @@
 	async function handleReviewRequest(order: any) {
 		const orderId = order.type === 'trip' ? order.id : order.paymentId;
 		loadingStates[orderId] = true;
-		
+
 		try {
-			const endpoint = order.type === 'trip' 
-				? `/api/offers/${order.id}/request-review`
-				: `/api/products/${order.productId}/request-review`;
-			
+			const endpoint =
+				order.type === 'trip'
+					? `/api/offers/${order.id}/request-review`
+					: `/api/products/${order.productId}/request-review`;
+
 			const response = await fetch(endpoint, {
 				method: 'POST',
 				headers: {
@@ -119,7 +120,11 @@
 							<span class="text-sm text-gray-500">
 								{formatDate(order.paymentCreatedAt || order.createdAt)}
 							</span>
-							<span class="text-xs font-medium px-2 py-1 rounded-full {order.type === 'trip' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}">
+							<span
+								class="rounded-full px-2 py-1 text-xs font-medium {order.type === 'trip'
+									? 'bg-blue-100 text-blue-700'
+									: 'bg-purple-100 text-purple-700'}"
+							>
 								{order.type === 'trip' ? '여행' : '상품'}
 							</span>
 						</div>
@@ -197,13 +202,31 @@
 									<button
 										onclick={() => handleReviewRequest(order)}
 										disabled={isLoading}
-										class="w-full rounded-lg py-2 text-sm font-medium text-white transition-colors {isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}"
+										class="w-full rounded-lg py-2 text-sm font-medium text-white transition-colors {isLoading
+											? 'cursor-not-allowed bg-gray-400'
+											: 'bg-blue-600 hover:bg-blue-700'}"
 									>
 										{#if isLoading}
 											<span class="inline-flex items-center">
-												<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-													<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-													<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+												<svg
+													class="mr-2 -ml-1 h-4 w-4 animate-spin text-white"
+													xmlns="http://www.w3.org/2000/svg"
+													fill="none"
+													viewBox="0 0 24 24"
+												>
+													<circle
+														class="opacity-25"
+														cx="12"
+														cy="12"
+														r="10"
+														stroke="currentColor"
+														stroke-width="4"
+													></circle>
+													<path
+														class="opacity-75"
+														fill="currentColor"
+														d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+													></path>
 												</svg>
 												처리 중...
 											</span>
@@ -215,9 +238,7 @@
 							</div>
 						{:else if order.hasReview}
 							<div class="mt-3 border-t border-gray-100 pt-3">
-								<div class="text-center text-sm text-green-600">
-									✓ 리뷰 작성 완료
-								</div>
+								<div class="text-center text-sm text-green-600">✓ 리뷰 작성 완료</div>
 							</div>
 						{/if}
 					</button>

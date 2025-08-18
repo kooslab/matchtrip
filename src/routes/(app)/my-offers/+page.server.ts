@@ -62,12 +62,14 @@ export const load = async ({ locals }) => {
 		.orderBy(offers.createdAt);
 
 	// Transform image URLs for destinations
-	const transformedOffers = myOffers.map(offer => ({
+	const transformedOffers = myOffers.map((offer) => ({
 		...offer,
-		destination: offer.destination ? {
-			...offer.destination,
-			imageUrl: transformImageUrl(offer.destination.imageUrl)
-		} : offer.destination
+		destination: offer.destination
+			? {
+					...offer.destination,
+					imageUrl: transformImageUrl(offer.destination.imageUrl)
+				}
+			: offer.destination
 	}));
 
 	// Group offers by status

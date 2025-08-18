@@ -143,7 +143,7 @@ export class RefundService {
 			const response = await fetch(url, {
 				method: 'POST',
 				headers: {
-					'Authorization': authorization,
+					Authorization: authorization,
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
@@ -181,7 +181,7 @@ export class RefundService {
 			const response = await fetch(url, {
 				method: 'GET',
 				headers: {
-					'Authorization': authorization
+					Authorization: authorization
 				}
 			});
 

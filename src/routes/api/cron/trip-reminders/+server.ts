@@ -22,11 +22,13 @@ export const GET: RequestHandler = async ({ request }) => {
 		const tomorrow = new Date(now);
 		tomorrow.setDate(tomorrow.getDate() + 1);
 		tomorrow.setHours(0, 0, 0, 0);
-		
+
 		const dayAfterTomorrow = new Date(tomorrow);
 		dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1);
 
-		console.log(`[CRON] Looking for trips starting between ${tomorrow.toISOString()} and ${dayAfterTomorrow.toISOString()}`);
+		console.log(
+			`[CRON] Looking for trips starting between ${tomorrow.toISOString()} and ${dayAfterTomorrow.toISOString()}`
+		);
 
 		// Find trips starting tomorrow that are accepted
 		const upcomingTrips = await db
@@ -51,7 +53,7 @@ export const GET: RequestHandler = async ({ request }) => {
 
 		// For each trip, find the accepted offer and send reminders
 		const notifications = [];
-		
+
 		for (const trip of upcomingTrips) {
 			try {
 				// Get the accepted offer for this trip
@@ -63,12 +65,7 @@ export const GET: RequestHandler = async ({ request }) => {
 					})
 					.from(offers)
 					.innerJoin(users, eq(offers.guideId, users.id))
-					.where(
-						and(
-							eq(offers.tripId, trip.tripId),
-							eq(offers.status, 'accepted')
-						)
-					)
+					.where(and(eq(offers.tripId, trip.tripId), eq(offers.status, 'accepted')))
 					.limit(1);
 
 				if (acceptedOffer.length === 0) {
@@ -92,7 +89,7 @@ export const GET: RequestHandler = async ({ request }) => {
 								나의여행: '나의여행'
 							}
 						});
-						
+
 						notifications.push({
 							type: 'traveler',
 							userId: trip.travelerId,
@@ -124,7 +121,7 @@ export const GET: RequestHandler = async ({ request }) => {
 								나의제안: '나의제안'
 							}
 						});
-						
+
 						notifications.push({
 							type: 'guide',
 							userId: guide.guideId,
@@ -146,8 +143,8 @@ export const GET: RequestHandler = async ({ request }) => {
 			}
 		}
 
-		const successCount = notifications.filter(n => n.success).length;
-		const failCount = notifications.filter(n => !n.success).length;
+		const successCount = notifications.filter((n) => n.success).length;
+		const failCount = notifications.filter((n) => !n.success).length;
 
 		console.log(`[CRON] Trip reminder job completed. Sent: ${successCount}, Failed: ${failCount}`);
 

@@ -1,7 +1,14 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
-import { products, reviews, productConversations, productMessages, payments, productOffers } from '$lib/server/db/schema';
+import {
+	products,
+	reviews,
+	productConversations,
+	productMessages,
+	payments,
+	productOffers
+} from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 
@@ -17,11 +24,7 @@ export const POST: RequestHandler = async ({ request, params, locals }) => {
 
 	try {
 		// Get the product details
-		const [product] = await db
-			.select()
-			.from(products)
-			.where(eq(products.id, productId))
-			.limit(1);
+		const [product] = await db.select().from(products).where(eq(products.id, productId)).limit(1);
 
 		if (!product) {
 			return json({ error: 'Product not found' }, { status: 404 });
@@ -36,12 +39,7 @@ export const POST: RequestHandler = async ({ request, params, locals }) => {
 		const completedPayments = await db
 			.select()
 			.from(payments)
-			.where(
-				and(
-					eq(payments.productId, productId),
-					eq(payments.status, 'completed')
-				)
-			);
+			.where(and(eq(payments.productId, productId), eq(payments.status, 'completed')));
 
 		if (completedPayments.length === 0) {
 			return json({ error: 'No completed payments found for this product' }, { status: 404 });
@@ -56,12 +54,7 @@ export const POST: RequestHandler = async ({ request, params, locals }) => {
 			const [existingReview] = await db
 				.select()
 				.from(reviews)
-				.where(
-					and(
-						eq(reviews.productId, productId),
-						eq(reviews.travelerId, payment.userId)
-					)
-				)
+				.where(and(eq(reviews.productId, productId), eq(reviews.travelerId, payment.userId)))
 				.limit(1);
 
 			if (existingReview && existingReview.reviewRequestedAt) {

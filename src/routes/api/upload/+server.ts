@@ -85,7 +85,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				// All other files use private bucket for security
 				let bucketName: string;
 				let usePublicBucket = false;
-				
+
 				if (type === 'destination' && R2_PUBLIC_BUCKET_NAME) {
 					bucketName = R2_PUBLIC_BUCKET_NAME;
 					usePublicBucket = true;

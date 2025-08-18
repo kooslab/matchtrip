@@ -1,5 +1,18 @@
 import { db } from '$lib/server/db';
-import { trips, destinations, users, offers, payments, countries, products, productOffers, conversations, productConversations, reviews, travelerProfiles } from '$lib/server/db/schema';
+import {
+	trips,
+	destinations,
+	users,
+	offers,
+	payments,
+	countries,
+	products,
+	productOffers,
+	conversations,
+	productConversations,
+	reviews,
+	travelerProfiles
+} from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { redirect } from '@sveltejs/kit';
 import { auth } from '$lib/auth';
@@ -42,10 +55,7 @@ export const load = async ({ url, request, locals }) => {
 		const paymentRecord = paymentResults[0];
 
 		// Get user details
-		const userResults = await db
-			.select()
-			.from(users)
-			.where(eq(users.id, session.user.id));
+		const userResults = await db.select().from(users).where(eq(users.id, session.user.id));
 
 		const userRecord = userResults[0];
 
@@ -170,10 +180,7 @@ export const load = async ({ url, request, locals }) => {
 				}
 			} else if (paymentRecord.tripId) {
 				// Direct trip payment without offer
-				const tripResults = await db
-					.select()
-					.from(trips)
-					.where(eq(trips.id, paymentRecord.tripId));
+				const tripResults = await db.select().from(trips).where(eq(trips.id, paymentRecord.tripId));
 
 				if (tripResults.length > 0) {
 					const tripRecord = tripResults[0];
@@ -236,12 +243,7 @@ export const load = async ({ url, request, locals }) => {
 				const reviewResults = await db
 					.select()
 					.from(reviews)
-					.where(
-						and(
-							eq(reviews.tripId, orderData.id),
-							eq(reviews.travelerId, session.user.id)
-						)
-					);
+					.where(and(eq(reviews.tripId, orderData.id), eq(reviews.travelerId, session.user.id)));
 
 				if (reviewResults.length > 0) {
 					orderData.review = {

@@ -58,7 +58,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	// Decrypt user fields before sending to client
 	const decryptedUser = decryptUserFields(user);
-	
+
 	return {
 		user: decryptedUser,
 		userRole: decryptedUser.role,

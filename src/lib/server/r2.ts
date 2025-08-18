@@ -25,10 +25,7 @@ if (R2_ACCOUNT_ID && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY) {
 	});
 }
 
-export async function uploadToR2(
-	file: File,
-	type: string
-): Promise<{ url: string; key: string }> {
+export async function uploadToR2(file: File, type: string): Promise<{ url: string; key: string }> {
 	// Generate unique filename
 	const timestamp = Date.now();
 	const randomString = Math.random().toString(36).substring(2, 15);
@@ -66,9 +63,10 @@ export async function uploadToR2(
 		// Note: File upload tracking should be done by the caller since it requires userId
 
 		// Generate URL for public access
-		const url = uploadedToPublicBucket && R2_PUBLIC_URL
-			? `${R2_PUBLIC_URL}/${filename}`
-			: `/api/images/${filename}`;
+		const url =
+			uploadedToPublicBucket && R2_PUBLIC_URL
+				? `${R2_PUBLIC_URL}/${filename}`
+				: `/api/images/${filename}`;
 
 		return { url, key: filename };
 	} else {

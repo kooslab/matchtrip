@@ -89,10 +89,10 @@
 {#if showModal}
 	<div class="fixed inset-0 z-50 flex items-end justify-center">
 		<!-- Backdrop -->
-		<div 
-			class="absolute inset-0 bg-black/50" 
-			role="button" 
-			tabindex="-1" 
+		<div
+			class="absolute inset-0 bg-black/50"
+			role="button"
+			tabindex="-1"
 			onclick={() => (showModal = false)}
 			onkeydown={(e) => e.key === 'Escape' && (showModal = false)}
 		></div>
@@ -102,7 +102,11 @@
 			<!-- Modal header -->
 			<div class="mb-4 flex items-center justify-between">
 				<h3 class="text-lg font-semibold text-gray-900">여행 스타일 선택</h3>
-				<button onclick={() => (showModal = false)} aria-label="Close modal" class="text-gray-400 hover:text-gray-600">
+				<button
+					onclick={() => (showModal = false)}
+					aria-label="Close modal"
+					class="text-gray-400 hover:text-gray-600"
+				>
 					<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 						<path
 							stroke-linecap="round"

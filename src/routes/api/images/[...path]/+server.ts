@@ -95,11 +95,12 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 		// Check if user is authenticated for private images
 		// Profile images (guide and traveler) are accessible to any authenticated user
 		// Destination images are public and don't require authentication
-		const requiresAuth = finalImagePath?.includes('traveler-profile') || 
+		const requiresAuth =
+			finalImagePath?.includes('traveler-profile') ||
 			finalImagePath?.includes('guide-profile') ||
 			finalImagePath?.includes('product_attachment') ||
 			finalImagePath?.includes('trip_attachment');
-			
+
 		if (requiresAuth && !locals.user) {
 			throw error(401, 'Unauthorized - Please login to view this image');
 		}
@@ -126,13 +127,13 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 					const response = await r2Client.send(command);
 					const body = response.Body as any;
 					const chunks = [];
-					
+
 					for await (const chunk of body) {
 						chunks.push(chunk);
 					}
-					
+
 					const buffer = Buffer.concat(chunks);
-					
+
 					return new Response(buffer, {
 						headers: {
 							'Content-Type': 'application/pdf',
@@ -142,30 +143,34 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 						}
 					});
 				}
-				
+
 				// For images, stream the content directly to avoid CORS issues
 				const response = await r2Client.send(command);
-				
+
 				if (!response.Body) {
 					throw error(404, 'Image not found');
 				}
-				
+
 				const body = response.Body as any;
 				const chunks = [];
-				
+
 				for await (const chunk of body) {
 					chunks.push(chunk);
 				}
-				
+
 				const buffer = Buffer.concat(chunks);
-				
+
 				// Determine content type from file extension
-				const contentType = finalImagePath?.endsWith('.png') ? 'image/png' :
-					finalImagePath?.endsWith('.jpg') || finalImagePath?.endsWith('.jpeg') ? 'image/jpeg' :
-					finalImagePath?.endsWith('.webp') ? 'image/webp' :
-					finalImagePath?.endsWith('.svg') ? 'image/svg+xml' :
-					'image/png'; // default
-				
+				const contentType = finalImagePath?.endsWith('.png')
+					? 'image/png'
+					: finalImagePath?.endsWith('.jpg') || finalImagePath?.endsWith('.jpeg')
+						? 'image/jpeg'
+						: finalImagePath?.endsWith('.webp')
+							? 'image/webp'
+							: finalImagePath?.endsWith('.svg')
+								? 'image/svg+xml'
+								: 'image/png'; // default
+
 				return new Response(buffer, {
 					headers: {
 						'Content-Type': contentType,
@@ -194,7 +199,7 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 				// Extract error message
 				const errorMessage = r2Error?.message || r2Error?.toString() || 'Unknown error';
 				console.error(`[Image API] Failed to fetch image "${finalImagePath}":`, errorMessage);
-				
+
 				// If it's a NoSuchKey error, return a placeholder image
 				if (errorMessage.includes('NoSuchKey') || errorMessage.includes('Not Found')) {
 					console.log('[Image API] Image not found, returning placeholder');
@@ -211,7 +216,7 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 						}
 					});
 				}
-				
+
 				throw error(500, `Failed to fetch image: ${errorMessage}`);
 			}
 		}

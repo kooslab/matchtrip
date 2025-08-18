@@ -57,7 +57,7 @@
 			loading = false;
 		}
 	}
-	
+
 	function navigateToChat(conversation: Conversation) {
 		if (conversation.type === 'product') {
 			goto(`/chat/product/${conversation.id}`);
@@ -112,156 +112,157 @@
 </svelte:head>
 
 <div class="min-h-screen bg-gray-50/50">
-	<div class="max-w-md mx-auto relative">
-	{#if loading}
-		<!-- Loading skeleton -->
-		<div class="space-y-0">
-			{#each [1, 2, 3] as _, index}
-				<div
-					class="border-b border-gray-200/50 px-4 py-4 {index % 2 === 0
-						? 'bg-white'
-						: 'bg-gray-50'}"
-				>
-					<div class="flex items-start gap-3">
-						<!-- Avatar skeleton -->
-						<div class="h-12 w-12 animate-pulse rounded-full bg-gray-200 shrink-0"></div>
-						<div class="flex-1 min-w-0">
-							<!-- Name and time skeleton -->
-							<div class="flex items-center justify-between mb-1.5">
-								<div class="flex items-center gap-2">
-									<div class="h-4 w-20 animate-pulse rounded bg-gray-200"></div>
-									<div class="h-3.5 w-12 animate-pulse rounded-full bg-gray-200"></div>
+	<div class="relative mx-auto max-w-md">
+		{#if loading}
+			<!-- Loading skeleton -->
+			<div class="space-y-0">
+				{#each [1, 2, 3] as _, index}
+					<div
+						class="border-b border-gray-200/50 px-4 py-4 {index % 2 === 0
+							? 'bg-white'
+							: 'bg-gray-50'}"
+					>
+						<div class="flex items-start gap-3">
+							<!-- Avatar skeleton -->
+							<div class="h-12 w-12 shrink-0 animate-pulse rounded-full bg-gray-200"></div>
+							<div class="min-w-0 flex-1">
+								<!-- Name and time skeleton -->
+								<div class="mb-1.5 flex items-center justify-between">
+									<div class="flex items-center gap-2">
+										<div class="h-4 w-20 animate-pulse rounded bg-gray-200"></div>
+										<div class="h-3.5 w-12 animate-pulse rounded-full bg-gray-200"></div>
+									</div>
+									<div class="h-3 w-14 animate-pulse rounded bg-gray-200"></div>
 								</div>
-								<div class="h-3 w-14 animate-pulse rounded bg-gray-200"></div>
-							</div>
-							<!-- Message skeleton -->
-							<div class="space-y-1">
-								<div class="h-4 w-full animate-pulse rounded bg-gray-200"></div>
-								<div class="h-4 w-11/12 animate-pulse rounded bg-gray-200"></div>
+								<!-- Message skeleton -->
+								<div class="space-y-1">
+									<div class="h-4 w-full animate-pulse rounded bg-gray-200"></div>
+									<div class="h-4 w-11/12 animate-pulse rounded bg-gray-200"></div>
+								</div>
 							</div>
 						</div>
 					</div>
-				</div>
-			{/each}
-		</div>
-	{:else if error}
-		<div class="flex items-center justify-center p-8">
-			<div class="text-color-error text-center">
-				{error}
+				{/each}
 			</div>
-		</div>
-	{:else if conversations.length === 0}
-		<div class="flex flex-1 items-center justify-center p-12">
-			<div class="text-center">
-				<div class="mx-auto mb-4 h-16 w-16 text-gray-400">
-					<svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 21l1.98-5.874A8.955 8.955 0 013 12c0-4.418 3.582-8 8-8s8 3.582 8 8z"
-						/>
-					</svg>
+		{:else if error}
+			<div class="flex items-center justify-center p-8">
+				<div class="text-color-error text-center">
+					{error}
 				</div>
-				<h3 class="text-primary text-lg font-semibold">아직 대화가 없습니다</h3>
-				<p class="text-secondary mt-2">가이드 제안을 받거나 보내면 여기에 대화가 표시됩니다.</p>
 			</div>
-		</div>
-	{:else}
-		<!-- Chat list -->
-		<div class="space-y-0">
-			{#each conversations as conversation, index}
-				<div
-					class="border-b border-gray-200/50 transition-colors hover:bg-gray-100/50 {index % 2 === 0
-						? 'bg-white'
-						: 'bg-gray-50'} {conversation.hasUnread || conversation.unreadCount > 0
-						? 'bg-blue-50/30'
-						: ''}"
-				>
-					<button
-						onclick={() => navigateToChat(conversation)}
-						class="w-full px-4 py-4 text-left"
+		{:else if conversations.length === 0}
+			<div class="flex flex-1 items-center justify-center p-12">
+				<div class="text-center">
+					<div class="mx-auto mb-4 h-16 w-16 text-gray-400">
+						<svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 21l1.98-5.874A8.955 8.955 0 013 12c0-4.418 3.582-8 8-8s8 3.582 8 8z"
+							/>
+						</svg>
+					</div>
+					<h3 class="text-primary text-lg font-semibold">아직 대화가 없습니다</h3>
+					<p class="text-secondary mt-2">가이드 제안을 받거나 보내면 여기에 대화가 표시됩니다.</p>
+				</div>
+			</div>
+		{:else}
+			<!-- Chat list -->
+			<div class="space-y-0">
+				{#each conversations as conversation, index}
+					<div
+						class="border-b border-gray-200/50 transition-colors hover:bg-gray-100/50 {index % 2 ===
+						0
+							? 'bg-white'
+							: 'bg-gray-50'} {conversation.hasUnread || conversation.unreadCount > 0
+							? 'bg-blue-50/30'
+							: ''}"
 					>
-						<div class="flex items-start gap-3">
-							<!-- User avatar -->
-							<div class="relative shrink-0">
-								{#if conversation.otherUser.image}
-									<img
-										src={conversation.otherUser.image.startsWith('http') || conversation.otherUser.image.startsWith('/') 
-											? conversation.otherUser.image 
-											: `/api/images/${conversation.otherUser.image}`}
-										alt={conversation.otherUser.name}
-										class="h-14 w-14 rounded-full object-cover"
-									/>
-								{:else}
-									<div class="flex h-14 w-14 items-center justify-center rounded-full bg-gray-200">
-										<span class="text-lg font-medium text-gray-600">
-											{conversation.otherUser.name.charAt(0)}
-										</span>
-									</div>
-								{/if}
-								<!-- Online indicator (currently hidden) -->
-								<div
-									class="bg-color-success absolute right-0 bottom-0 h-3 w-3 rounded-full border-2 border-white opacity-0"
-								></div>
-							</div>
-
-							<!-- Chat content -->
-							<div class="min-w-0 flex-1">
-								<!-- User name and status -->
-								<div class="flex items-center justify-between">
-									<div class="flex items-center gap-1">
-										<h3 class="text-primary text-sm font-semibold">
-											{conversation.otherUser.name}
-										</h3>
-										{#if conversation.type === 'product'}
-											<span class="bg-green-100 text-green-700 px-1.5 py-0.5 text-xs rounded">
-												상품
+						<button onclick={() => navigateToChat(conversation)} class="w-full px-4 py-4 text-left">
+							<div class="flex items-start gap-3">
+								<!-- User avatar -->
+								<div class="relative shrink-0">
+									{#if conversation.otherUser.image}
+										<img
+											src={conversation.otherUser.image.startsWith('http') ||
+											conversation.otherUser.image.startsWith('/')
+												? conversation.otherUser.image
+												: `/api/images/${conversation.otherUser.image}`}
+											alt={conversation.otherUser.name}
+											class="h-14 w-14 rounded-full object-cover"
+										/>
+									{:else}
+										<div
+											class="flex h-14 w-14 items-center justify-center rounded-full bg-gray-200"
+										>
+											<span class="text-lg font-medium text-gray-600">
+												{conversation.otherUser.name.charAt(0)}
 											</span>
-										{:else if conversation.offer?.status === 'pending'}
-											<span
-												class="bg-color-success inline-flex rounded px-2 py-0.5 text-xs font-medium text-white"
-											>
-												{getOfferStatusText(conversation.offer.status)}
-											</span>
-										{/if}
-									</div>
-									<div class="text-gray-500 text-xs font-medium">
-										{formatMessageTime(conversation.lastMessageAt)}
-									</div>
-								</div>
-
-								<!-- Last message -->
-								<div class="mt-1 flex items-end justify-between">
-									<div class="min-w-0 flex-1">
-										<p class="text-gray-500 line-clamp-2 text-sm leading-5">
-											{#if conversation.lastMessageContent}
-												{truncateMessage(conversation.lastMessageContent, 60)}
-											{:else}
-												새로운 대화를 시작해보세요
-											{/if}
-										</p>
-									</div>
-									<!-- Unread badge -->
-									{#if conversation.unreadCount > 0}
-										<div class="ml-2 shrink-0">
-											<div
-												class="bg-color-error flex h-5 w-5 items-center justify-center rounded-full"
-											>
-												<span class="text-xs leading-3 font-semibold text-white">
-													{conversation.unreadCount > 9 ? '9+' : conversation.unreadCount}
-												</span>
-											</div>
 										</div>
 									{/if}
+									<!-- Online indicator (currently hidden) -->
+									<div
+										class="bg-color-success absolute right-0 bottom-0 h-3 w-3 rounded-full border-2 border-white opacity-0"
+									></div>
+								</div>
+
+								<!-- Chat content -->
+								<div class="min-w-0 flex-1">
+									<!-- User name and status -->
+									<div class="flex items-center justify-between">
+										<div class="flex items-center gap-1">
+											<h3 class="text-primary text-sm font-semibold">
+												{conversation.otherUser.name}
+											</h3>
+											{#if conversation.type === 'product'}
+												<span class="rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-700">
+													상품
+												</span>
+											{:else if conversation.offer?.status === 'pending'}
+												<span
+													class="bg-color-success inline-flex rounded px-2 py-0.5 text-xs font-medium text-white"
+												>
+													{getOfferStatusText(conversation.offer.status)}
+												</span>
+											{/if}
+										</div>
+										<div class="text-xs font-medium text-gray-500">
+											{formatMessageTime(conversation.lastMessageAt)}
+										</div>
+									</div>
+
+									<!-- Last message -->
+									<div class="mt-1 flex items-end justify-between">
+										<div class="min-w-0 flex-1">
+											<p class="line-clamp-2 text-sm leading-5 text-gray-500">
+												{#if conversation.lastMessageContent}
+													{truncateMessage(conversation.lastMessageContent, 60)}
+												{:else}
+													새로운 대화를 시작해보세요
+												{/if}
+											</p>
+										</div>
+										<!-- Unread badge -->
+										{#if conversation.unreadCount > 0}
+											<div class="ml-2 shrink-0">
+												<div
+													class="bg-color-error flex h-5 w-5 items-center justify-center rounded-full"
+												>
+													<span class="text-xs leading-3 font-semibold text-white">
+														{conversation.unreadCount > 9 ? '9+' : conversation.unreadCount}
+													</span>
+												</div>
+											</div>
+										{/if}
+									</div>
 								</div>
 							</div>
-						</div>
-					</button>
-				</div>
-			{/each}
-		</div>
-	{/if}
+						</button>
+					</div>
+				{/each}
+			</div>
+		{/if}
 	</div>
 </div>
 

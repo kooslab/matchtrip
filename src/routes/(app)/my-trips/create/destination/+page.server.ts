@@ -21,17 +21,20 @@ export const load: PageServerLoad = async () => {
 			.orderBy(countries.name, destinations.city);
 
 		// Group destinations by country
-		const groupedDestinations: Record<string, Array<{
-			id: number;
-			city: string;
-			imageUrl: string | null;
-			country: {
+		const groupedDestinations: Record<
+			string,
+			Array<{
 				id: number;
-				name: string;
-				code: string;
-			};
-		}>> = {};
-		
+				city: string;
+				imageUrl: string | null;
+				country: {
+					id: number;
+					name: string;
+					code: string;
+				};
+			}>
+		> = {};
+
 		allDestinations.forEach((dest) => {
 			const countryName = dest.countryName;
 			if (!groupedDestinations[countryName]) {

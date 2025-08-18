@@ -17,12 +17,14 @@
 	];
 
 	// Get current step from URL
-	let currentPath = $derived($page.url.pathname.split('/').pop() === 'create' ? '' : $page.url.pathname.split('/').pop());
+	let currentPath = $derived(
+		$page.url.pathname.split('/').pop() === 'create' ? '' : $page.url.pathname.split('/').pop()
+	);
 	let currentStep = $derived(steps.find((s) => s.path === currentPath));
 	let currentStepIndex = $derived(
 		currentPath === 'success' ? steps.length - 1 : currentStep ? currentStep.number - 1 : 0
 	);
-	
+
 	// Hide header on success page
 	let isSuccessPage = $derived(currentPath === 'success');
 
@@ -46,7 +48,7 @@
 	<div class="mx-auto min-h-screen max-w-[430px] bg-white">
 		<!-- Header - Hidden on success page -->
 		{#if !isSuccessPage}
-			<header class="sticky top-0 z-50 bg-white border-b">
+			<header class="sticky top-0 z-50 border-b bg-white">
 				<div class="flex items-center px-4 py-4">
 					<button onclick={handleBack} class="p-1">
 						<ArrowLeft class="h-6 w-6 text-blue-500" />

@@ -3,6 +3,7 @@
 ## 🔒 IMPORTANT RULE: All Files MUST Use Private Bucket
 
 ### Policy Statement
+
 **ALL file uploads MUST be stored in the private R2 bucket (`R2_BUCKET_NAME`)**
 
 There are NO exceptions to this rule unless explicitly documented and approved.
@@ -32,6 +33,7 @@ There are NO exceptions to this rule unless explicitly documented and approved.
 ## Implementation
 
 ### Upload Process
+
 ```javascript
 // src/routes/api/upload/+server.ts
 // ALWAYS uses private bucket (R2_BUCKET_NAME)
@@ -40,6 +42,7 @@ const bucketName = R2_BUCKET_NAME; // ✅ CORRECT
 ```
 
 ### File Access
+
 ```javascript
 // All files served through authenticated endpoint
 // URL format: /api/images/[type]/[filename]
@@ -47,20 +50,22 @@ const bucketName = R2_BUCKET_NAME; // ✅ CORRECT
 ```
 
 ### File Types and Folders
+
 All file types use the same private bucket with folder organization:
 
-| Type | Folder | Example Path | Bucket |
-|------|--------|--------------|---------|
-| Product content | `content/` | `/api/images/content/123.jpg` | Private |
-| Product attachments | `product_attachment/` | `/api/images/product_attachment/file.pdf` | Private |
-| Profile images | `guide-profile/` or `traveler-profile/` | `/api/images/guide-profile/avatar.jpg` | Private |
-| Destinations | `destination/` | `https://pub-xxx.r2.dev/destination/paris.jpg` | **Public** ⚠️ |
-| Documents | `guide-document-*/` | `/api/images/guide-document-identity/id.jpg` | Private |
-| Messages | `product-message/` | `/api/images/product-message/chat.jpg` | Private |
+| Type                | Folder                                  | Example Path                                   | Bucket        |
+| ------------------- | --------------------------------------- | ---------------------------------------------- | ------------- |
+| Product content     | `content/`                              | `/api/images/content/123.jpg`                  | Private       |
+| Product attachments | `product_attachment/`                   | `/api/images/product_attachment/file.pdf`      | Private       |
+| Profile images      | `guide-profile/` or `traveler-profile/` | `/api/images/guide-profile/avatar.jpg`         | Private       |
+| Destinations        | `destination/`                          | `https://pub-xxx.r2.dev/destination/paris.jpg` | **Public** ⚠️ |
+| Documents           | `guide-document-*/`                     | `/api/images/guide-document-identity/id.jpg`   | Private       |
+| Messages            | `product-message/`                      | `/api/images/product-message/chat.jpg`         | Private       |
 
 ## Environment Variables
 
 ### Required
+
 ```env
 R2_ACCOUNT_ID=your_account_id
 R2_ACCESS_KEY_ID=your_access_key
@@ -82,9 +87,10 @@ If you believe you need to use a public bucket for a specific use case:
 ### Currently Approved Exceptions
 
 #### 1. Destination Images 🗺️
+
 - **Files**: `destination/*.{jpg,jpeg,png,webp}`
 - **Bucket**: Public bucket (`R2_PUBLIC_BUCKET_NAME`)
-- **Justification**: 
+- **Justification**:
   - Destination images are public marketing content
   - No authentication required - improves performance and reliability
   - Better for SEO and social media sharing
@@ -96,6 +102,7 @@ If you believe you need to use a public bucket for a specific use case:
 ## Migration Status
 
 ✅ **Completed on**: January 2025
+
 - All existing files migrated to private bucket
 - All database URLs updated to `/api/images/` format
 - Public bucket deprecated (can be deleted)
@@ -103,11 +110,13 @@ If you believe you need to use a public bucket for a specific use case:
 ## Monitoring
 
 ### How to Verify Compliance
+
 1. Check upload logs - Should only show private bucket uploads
 2. Check database - All URLs should start with `/api/images/`
 3. Check R2 dashboard - Public bucket should have no new files
 
 ### Red Flags 🚩
+
 - URLs starting with `https://` in database
 - Direct R2 URLs in responses
 - New files appearing in public bucket

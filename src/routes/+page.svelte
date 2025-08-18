@@ -59,12 +59,11 @@
 	let supportOpen = $state(false);
 	let partnershipOpen = $state(false);
 	let businessInfoOpen = $state(false);
-	
+
 	// Handle navigation to products
 	function handleNavigateToProducts() {
 		goto('/products');
 	}
-
 </script>
 
 {#if user}
@@ -112,7 +111,7 @@
 							<input
 								type="text"
 								placeholder="지금 가이드 활동을 시작해 보세요!"
-								class="w-full rounded-full bg-gray-50 py-3.5 pr-14 pl-5 text-base text-gray-700 placeholder-gray-400 cursor-pointer"
+								class="w-full cursor-pointer rounded-full bg-gray-50 py-3.5 pr-14 pl-5 text-base text-gray-700 placeholder-gray-400"
 								readonly
 								onclick={() => goto('/trips')}
 							/>
@@ -191,7 +190,7 @@
 								<input
 									type="text"
 									placeholder="어디로 가고 싶으신가요?"
-									class="w-full rounded-full bg-gray-50 py-3.5 pr-14 pl-5 text-base text-gray-700 placeholder-gray-400 cursor-pointer"
+									class="w-full cursor-pointer rounded-full bg-gray-50 py-3.5 pr-14 pl-5 text-base text-gray-700 placeholder-gray-400"
 									readonly
 									onclick={() => goto('/my-trips/create/destination')}
 								/>
@@ -238,9 +237,9 @@
 						</h2>
 					{:else}
 						<h3 class="mb-3 text-sm text-gray-500">나에게 맞는 가이드를 찾고 계신가요?</h3>
-						<button 
-							onclick={() => handleNavigateToProducts()} 
-							class="mb-4 flex w-full items-center justify-between text-lg font-bold text-gray-900 hover:text-blue-600 transition-colors"
+						<button
+							onclick={() => handleNavigateToProducts()}
+							class="mb-4 flex w-full items-center justify-between text-lg font-bold text-gray-900 transition-colors hover:text-blue-600"
 						>
 							<span>매치트립 나라별 가이드</span>
 							<ChevronDown class="h-5 w-5 text-blue-500" />
@@ -272,17 +271,51 @@
 												if (fallback) fallback.style.display = 'flex';
 											}}
 										/>
-										<div class="hidden h-full w-full items-center justify-center bg-gradient-to-br from-blue-400 to-purple-500">
-											<svg class="h-12 w-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+										<div
+											class="hidden h-full w-full items-center justify-center bg-gradient-to-br from-blue-400 to-purple-500"
+										>
+											<svg
+												class="h-12 w-12 text-white"
+												fill="none"
+												stroke="currentColor"
+												viewBox="0 0 24 24"
+											>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
+													d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+												/>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
+													d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+												/>
 											</svg>
 										</div>
 									{:else}
-										<div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-400 to-purple-500">
-											<svg class="h-12 w-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+										<div
+											class="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-400 to-purple-500"
+										>
+											<svg
+												class="h-12 w-12 text-white"
+												fill="none"
+												stroke="currentColor"
+												viewBox="0 0 24 24"
+											>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
+													d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+												/>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
+													d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+												/>
 											</svg>
 										</div>
 									{/if}
@@ -417,7 +450,12 @@
 								<div>상호명 : 에이전트티　대표 : 진민수　개인정보책임자 : 진민수</div>
 								<div>사업자 등록번호 : 126-56-00745</div>
 								<div>통신판매업신고번호 : 제2024-화성동탄-1329호</div>
-								<div>관광사업등록번호 : 제20244-00003호　이메일 : <a href="mailto:help@agentt.kr" class="text-gray-500 underline">help@agentt.kr</a></div>
+								<div>
+									관광사업등록번호 : 제20244-00003호　이메일 : <a
+										href="mailto:help@agentt.kr"
+										class="text-gray-500 underline">help@agentt.kr</a
+									>
+								</div>
 								<div>주소 : 경기도 화성시 메타폴리스로 42, 9층 901호 (반송동,디앤씨빌딩)</div>
 							</div>
 						{/if}
@@ -426,14 +464,14 @@
 							매치트립은 통신판매중개자이며, 통신판매의 당사자가 아닙니다.<br />
 							상품, 상품정보, 거래에 관한 의무와 책임은 판매자에게 있습니다.
 						</p>
-						<p class="text-xs text-gray-400 mt-3">
+						<p class="mt-3 text-xs text-gray-400">
 							매치트립이 소유,운영,관리하는 웹사이트내의 상품, 판매자의정보, 사진, 디자인<br />
 							등을 포함한 일체의 컨텐츠의 대한 무단복제, 배포,스크랩 등의 행위는 저작권법<br />
 							등 관련 법령에 의해 엄격하게 금지합니다.<br />
 							매치트립은 서울보증보험의 인허가보증보험에 가입되어 있습니다.<br />
 							인허가 보증보험 : 3천만원
 						</p>
-						<p class="text-xs text-gray-500 mt-4">© 2025 MatchTrip. All rights reserved.</p>
+						<p class="mt-4 text-xs text-gray-500">© 2025 MatchTrip. All rights reserved.</p>
 					</div>
 				</footer>
 			</main>

@@ -186,6 +186,7 @@ Required environment variables (see `.env.example`):
 ## UI Layout Rules
 
 ### CRITICAL: Mobile Viewport Constraints
+
 - **ALWAYS wrap ALL pages in a mobile viewport container**: `<div class="max-w-md mx-auto">`
   - This is MANDATORY for every single page component
   - Apply to the outermost wrapper div of every route
@@ -193,37 +194,40 @@ Required environment variables (see `.env.example`):
   - Example structure:
     ```svelte
     <div class="min-h-screen bg-white">
-      <div class="max-w-md mx-auto relative">
-        <!-- All page content goes here -->
-      </div>
+    	<div class="relative mx-auto max-w-md">
+    		<!-- All page content goes here -->
+    	</div>
     </div>
     ```
 
 ### Fixed Elements and Mobile Viewport
+
 - **Fixed bottom elements MUST also respect mobile viewport**:
   ```svelte
-  <div class="fixed bottom-0 left-0 right-0">
-    <div class="max-w-md mx-auto">
-      <!-- Fixed content here -->
-    </div>
+  <div class="fixed right-0 bottom-0 left-0">
+  	<div class="mx-auto max-w-md">
+  		<!-- Fixed content here -->
+  	</div>
   </div>
   ```
 - **Fixed headers MUST also respect mobile viewport**:
   ```svelte
   <div class="sticky top-0 z-10">
-    <div class="max-w-md mx-auto">
-      <!-- Header content -->
-    </div>
+  	<div class="mx-auto max-w-md">
+  		<!-- Header content -->
+  	</div>
   </div>
   ```
 
 ### Bottom Navigation Spacing
+
 - **Bottom Navigation Spacing**: ALWAYS add `pb-24` (96px bottom padding) to any fixed bottom elements when BottomNav is present
   - Apply to action buttons, floating buttons, or any fixed bottom UI elements
   - This prevents the BottomNav from covering important UI elements
   - Example: `<div class="fixed bottom-0 left-0 right-0 p-4 pb-24">`
 
 ### Mobile-First Design Principles
+
 - Design for mobile viewport (390px - 430px) FIRST
 - Test all UI components within max-w-md container
 - Never use fixed widths larger than mobile viewport
@@ -249,12 +253,12 @@ Required environment variables (see `.env.example`):
 - Usage example:
   ```svelte
   <RichTextEditor
-    value={content}
-    onchange={(newContent) => content = newContent}
-    placeholder="Enter content..."
-    minHeight="300px"
-    showImageButton={true}
-    showHelperText={true}
+  	value={content}
+  	onchange={(newContent) => (content = newContent)}
+  	placeholder="Enter content..."
+  	minHeight="300px"
+  	showImageButton={true}
+  	showHelperText={true}
   />
   ```
 
@@ -284,60 +288,71 @@ Required environment variables (see `.env.example`):
 ### CRITICAL: Implementation Rules (Based on Trial & Error)
 
 **Template Management:**
+
 - Templates are stored in `src/lib/server/kakao/templates.json` with dev/prod environments
 - Each template is pre-registered and approved by Kakao - you CANNOT modify template structure
 - Template codes must match EXACTLY what's registered (e.g., `testcode01`, not `1`)
 
 **API Request Structure:**
+
 - Service implementation: `src/lib/server/kakao/kakaoAlimTalk.ts`
 - Endpoint: `https://[base_url]/kakao-alim/1/messages`
 - Required headers: `Authorization: App [API_KEY]`, `Content-Type: application/json`
 
 **Template Variables:**
+
 - Variables use `#{VARIABLE_NAME}` format in templates
 - Variables MUST be replaced in the text before sending - the API does NOT accept a `templateData` field
 - Replacement happens server-side in the service layer
 - Example: `#{NAME}` → `홍길동`, `#{SHOPNAME}` → `매치트립`
 
 **Button Configuration:**
+
 - Buttons must match EXACTLY what was registered with the template
 - Button structure:
   ```json
   {
-    "type": "URL",
-    "name": "나의프로필보기",  // MUST match registered button name
-    "urlMobile": "https://...",
-    "urlPc": "https://..."
+  	"type": "URL",
+  	"name": "나의프로필보기", // MUST match registered button name
+  	"urlMobile": "https://...",
+  	"urlPc": "https://..."
   }
   ```
 - Button name mismatch will cause `EC_INVALID_TEMPLATE` error
 
 **Common Errors:**
+
 - `EC_INVALID_TEMPLATE` (7009): Template structure mismatch or button configuration doesn't match registration
 - `EC_INVALID_TEMPLATE_ARGS` (7008): Missing or invalid template parameters
 
 **Request Body Example:**
+
 ```json
 {
-  "messages": [{
-    "sender": "KAKAO_CHANNEL_PROFILE_KEY",
-    "destinations": [{"to": "821012345678"}],
-    "content": {
-      "templateCode": "testcode01",
-      "text": "[매치트립], 안녕하세요. 홍길동님! 매치트립에 회원가입 해주셔서 진심으로 감사드립니다!",
-      "type": "TEMPLATE",
-      "buttons": [{
-        "type": "URL",
-        "name": "나의프로필보기",
-        "urlMobile": "https://dev.matchtrip.net/profile/traveler",
-        "urlPc": "https://dev.matchtrip.net/profile/traveler"
-      }]
-    }
-  }]
+	"messages": [
+		{
+			"sender": "KAKAO_CHANNEL_PROFILE_KEY",
+			"destinations": [{ "to": "821012345678" }],
+			"content": {
+				"templateCode": "testcode01",
+				"text": "[매치트립], 안녕하세요. 홍길동님! 매치트립에 회원가입 해주셔서 진심으로 감사드립니다!",
+				"type": "TEMPLATE",
+				"buttons": [
+					{
+						"type": "URL",
+						"name": "나의프로필보기",
+						"urlMobile": "https://dev.matchtrip.net/profile/traveler",
+						"urlPc": "https://dev.matchtrip.net/profile/traveler"
+					}
+				]
+			}
+		}
+	]
 }
 ```
 
 **Environment Variables Required:**
+
 - `INFOBIP_API_KEY`: API authentication key
 - `INFOBIP_BASE_URL`: Base URL for Infobip API
 - `KAKAO_CHANNEL_PROFILE_KEY`: Your Kakao channel identifier
@@ -345,14 +360,17 @@ Required environment variables (see `.env.example`):
 ## Toss Payments Webhooks
 
 ### Overview
+
 The application uses Toss Payments webhooks to receive real-time payment status updates. Unlike many payment providers, Toss does NOT provide webhook secrets or signatures.
 
 ### Security Model
+
 - **No webhook secret**: Toss doesn't provide webhook secrets in their dashboard
 - **API verification**: Each webhook event is verified by calling Toss API to confirm the payment status
 - **Idempotency**: Events are tracked in `webhook_events` table to prevent duplicate processing
 
 ### Webhook Endpoint
+
 - **Location**: `/api/webhooks/toss/+server.ts`
 - **Production URL**: `https://dev.matchtrip.net/api/webhooks/toss`
 - **Local Dev URL**: `https://trip.share.zrok.io/api/webhooks/toss`
@@ -366,6 +384,7 @@ The application uses Toss Payments webhooks to receive real-time payment status 
 ### Local Development Setup
 
 1. **Start zrok tunnel**:
+
 ```bash
 # One-time reservation
 zrok reserve public localhost:5173 --unique-name trip
@@ -375,12 +394,14 @@ zrok share reserved trip
 ```
 
 2. **Configure in Toss Dashboard**:
+
 - Production: `https://dev.matchtrip.net/api/webhooks/toss`
 - Local Dev: `https://trip.share.zrok.io/api/webhooks/toss`
 - Select all payment events
 - No secret to copy (Toss doesn't provide one)
 
 3. **Test webhooks**:
+
 ```bash
 # Use test endpoint
 curl -X POST http://localhost:5173/api/webhooks/test \
@@ -389,6 +410,7 @@ curl -X POST http://localhost:5173/api/webhooks/test \
 ```
 
 ### Database Tables
+
 - **webhook_events**: Tracks all webhook events
   - `eventId` (unique) - Prevents duplicate processing
   - `status` - pending/processed/failed
@@ -398,6 +420,7 @@ curl -X POST http://localhost:5173/api/webhooks/test \
   - Tracks refund type, amount, reason
 
 ### Implementation Notes
+
 - Webhook processes both customer payments and admin-initiated refunds
 - Uses database transactions for consistency
 - Returns 200 OK even on processing errors (handles retries internally)

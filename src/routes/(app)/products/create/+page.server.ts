@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 
 export const load: PageServerLoad = async ({ parent }) => {
 	await parent(); // Ensure layout runs first
-	
+
 	try {
 		// Fetch all destinations with their countries and continents
 		const allDestinations = await db
@@ -26,24 +26,30 @@ export const load: PageServerLoad = async ({ parent }) => {
 			.orderBy(continents.name, countries.name, destinations.city);
 
 		// Group destinations by continent and country
-		const groupedDestinations: Record<string, {
-			name: string;
-			code: string;
-			countries: Record<string, {
+		const groupedDestinations: Record<
+			string,
+			{
 				name: string;
 				code: string;
-				destinations: Array<{
-					id: number;
-					city: string;
-					imageUrl: string | null;
-				}>;
-			}>;
-		}> = {};
-		
+				countries: Record<
+					string,
+					{
+						name: string;
+						code: string;
+						destinations: Array<{
+							id: number;
+							city: string;
+							imageUrl: string | null;
+						}>;
+					}
+				>;
+			}
+		> = {};
+
 		allDestinations.forEach((dest) => {
 			const continentName = dest.continentName;
 			const countryName = dest.countryName;
-			
+
 			// Initialize continent if not exists
 			if (!groupedDestinations[continentName]) {
 				groupedDestinations[continentName] = {
@@ -52,7 +58,7 @@ export const load: PageServerLoad = async ({ parent }) => {
 					countries: {}
 				};
 			}
-			
+
 			// Initialize country if not exists
 			if (!groupedDestinations[continentName].countries[countryName]) {
 				groupedDestinations[continentName].countries[countryName] = {
@@ -61,7 +67,7 @@ export const load: PageServerLoad = async ({ parent }) => {
 					destinations: []
 				};
 			}
-			
+
 			// Add destination
 			groupedDestinations[continentName].countries[countryName].destinations.push({
 				id: dest.id,

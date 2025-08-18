@@ -30,7 +30,7 @@
 		if (!searchQuery.trim()) return data.destinations || {};
 
 		const query = searchQuery.toLowerCase();
-		const filtered: Record<string, typeof data.destinations[string]> = {};
+		const filtered: Record<string, (typeof data.destinations)[string]> = {};
 
 		Object.entries(data.destinations || {}).forEach(([country, dests]) => {
 			const matchingDests = dests.filter(
@@ -129,9 +129,11 @@
 						type="text"
 						bind:value={searchQuery}
 						placeholder="어디로 가고 싶으신가요?"
-						class="w-full rounded-full bg-gray-100 py-3 pl-5 pr-14 text-base placeholder-gray-400 focus:bg-gray-100 focus:outline-none"
+						class="w-full rounded-full bg-gray-100 py-3 pr-14 pl-5 text-base placeholder-gray-400 focus:bg-gray-100 focus:outline-none"
 					/>
-					<div class="absolute right-1.5 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-blue-500">
+					<div
+						class="absolute top-1/2 right-1.5 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-blue-500"
+					>
 						<Search class="h-5 w-5 text-white" />
 					</div>
 				</div>
@@ -145,7 +147,7 @@
 					<!-- Country Header -->
 					<button
 						onclick={() => toggleSection(country)}
-						class="flex w-full items-center justify-between px-4 py-4 text-left border-b border-gray-100"
+						class="flex w-full items-center justify-between border-b border-gray-100 px-4 py-4 text-left"
 					>
 						<h2 class="text-base font-bold text-gray-900">{country}</h2>
 						{#if expandedSections.has(country)}
@@ -161,12 +163,29 @@
 							{#each destinations as destination}
 								<button
 									onclick={() => selectDestination(destination)}
-									class="flex w-full items-center justify-between px-4 py-4 text-left border-b border-gray-100 {selectedDestination?.id === destination.id ? 'bg-blue-50' : 'bg-white hover:bg-gray-50'}"
+									class="flex w-full items-center justify-between border-b border-gray-100 px-4 py-4 text-left {selectedDestination?.id ===
+									destination.id
+										? 'bg-blue-50'
+										: 'bg-white hover:bg-gray-50'}"
 								>
-									<span class="{selectedDestination?.id === destination.id ? 'text-blue-600 font-medium' : 'text-gray-700'} pl-8">{destination.city}</span>
+									<span
+										class="{selectedDestination?.id === destination.id
+											? 'font-medium text-blue-600'
+											: 'text-gray-700'} pl-8">{destination.city}</span
+									>
 									{#if selectedDestination?.id === destination.id}
-										<svg class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+										<svg
+											class="h-5 w-5 text-blue-600"
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke="currentColor"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M5 13l4 4L19 7"
+											/>
 										</svg>
 									{/if}
 								</button>
@@ -185,7 +204,7 @@
 
 		<!-- Bottom Button -->
 		{#if selectedDestination}
-			<div class="fixed bottom-0 left-0 right-0 bg-white shadow-lg">
+			<div class="fixed right-0 bottom-0 left-0 bg-white shadow-lg">
 				<div class="mx-auto max-w-[430px] p-4">
 					<button
 						onclick={navigateToNext}

@@ -32,7 +32,7 @@
 		try {
 			pendingPayment = JSON.parse(pendingPaymentStr);
 			console.log('Pending payment from session:', pendingPayment);
-			
+
 			// Validate required fields for product payments
 			if (pendingPayment.type === 'product') {
 				if (!pendingPayment.productId) {
@@ -42,7 +42,7 @@
 					isProcessing = false;
 					return;
 				}
-				
+
 				// Check if this is old payment data without conversationId
 				if (!pendingPayment.conversationId || pendingPayment.conversationId === 'undefined') {
 					console.warn('Old payment data detected without conversationId');
@@ -60,8 +60,11 @@
 
 		// Verify amount matches (ensure both are numbers for comparison)
 		const urlAmount = parseInt(amount);
-		const sessionAmount = typeof pendingPayment.amount === 'string' ? parseInt(pendingPayment.amount) : pendingPayment.amount;
-		
+		const sessionAmount =
+			typeof pendingPayment.amount === 'string'
+				? parseInt(pendingPayment.amount)
+				: pendingPayment.amount;
+
 		if (urlAmount !== sessionAmount) {
 			console.error('Amount mismatch:', {
 				urlAmount,
@@ -78,10 +81,10 @@
 
 		// Determine which API endpoint to use based on payment type
 		const isProductPayment = pendingPayment.type === 'product';
-		const confirmEndpoint = isProductPayment 
-			? '/api/product-payments/confirm' 
+		const confirmEndpoint = isProductPayment
+			? '/api/product-payments/confirm'
 			: '/api/payments/confirm';
-		
+
 		// Confirm payment with server
 		try {
 			const response = await fetch(confirmEndpoint, {
@@ -90,20 +93,20 @@
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify(
-					isProductPayment 
+					isProductPayment
 						? {
-							paymentKey,
-							orderId,
-							amount: urlAmount,  // Use the already parsed integer
-							productOfferId: pendingPayment.productOfferId,
-							productId: pendingPayment.productId
-						}
+								paymentKey,
+								orderId,
+								amount: urlAmount, // Use the already parsed integer
+								productOfferId: pendingPayment.productOfferId,
+								productId: pendingPayment.productId
+							}
 						: {
-							paymentKey,
-							orderId,
-							amount: urlAmount,  // Use the already parsed integer
-							offerId: pendingPayment.offerId
-						}
+								paymentKey,
+								orderId,
+								amount: urlAmount, // Use the already parsed integer
+								offerId: pendingPayment.offerId
+							}
 				)
 			});
 

@@ -29,7 +29,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	// Decrypt user fields before sending to client
 	const decryptedUser = decryptUserFields(userWithProfile.users);
-	
+
 	return {
 		user: decryptedUser,
 		travelerProfile: userWithProfile.traveler_profiles

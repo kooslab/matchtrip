@@ -6,9 +6,9 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
 	if (!locals.user || locals.user.role !== 'guide') {
 		return json({ error: 'Unauthorized' }, { status: 401 });
 	}
-	
+
 	const { step, data } = await request.json();
-	
+
 	// Get existing product data from cookies
 	const productDataCookie = cookies.get('product_create_data');
 	let productData = {
@@ -20,7 +20,7 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
 		languages: [] as string[],
 		fileIds: [] as string[]
 	};
-	
+
 	if (productDataCookie) {
 		try {
 			productData = JSON.parse(productDataCookie);
@@ -28,7 +28,7 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
 			// Invalid cookie data, use default
 		}
 	}
-	
+
 	// Update specific step data
 	switch (step) {
 		case 'destination':
@@ -51,7 +51,7 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
 			productData.fileIds = data.fileIds;
 			break;
 	}
-	
+
 	// Save updated data to cookies
 	cookies.set('product_create_data', JSON.stringify(productData), {
 		path: '/',
@@ -60,6 +60,6 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
 		sameSite: 'strict',
 		maxAge: 60 * 60 * 24 // 24 hours
 	});
-	
+
 	return json({ success: true });
 };

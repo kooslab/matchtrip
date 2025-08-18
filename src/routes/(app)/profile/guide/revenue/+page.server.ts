@@ -18,15 +18,19 @@ export const load = async ({ locals }) => {
 
 	try {
 		console.log('Fetching payment data for guide:', user.id);
-		
+
 		// First, let's check what products this guide owns
 		const guideProducts = await db
 			.select({ id: products.id, title: products.title })
 			.from(products)
 			.where(eq(products.guideId, user.id));
-		
-		console.log('Guide products:', guideProducts.length, guideProducts.map(p => p.title));
-		
+
+		console.log(
+			'Guide products:',
+			guideProducts.length,
+			guideProducts.map((p) => p.title)
+		);
+
 		// Fetch all payments for products owned by this guide
 		// Start from payments table and join with products to ensure we get all payments
 		const productPayments = await db
@@ -60,9 +64,13 @@ export const load = async ({ locals }) => {
 			.select({ id: offers.id, title: offers.title, status: offers.status })
 			.from(offers)
 			.where(eq(offers.guideId, user.id));
-		
-		console.log('Guide offers:', guideOffers.length, guideOffers.map(o => ({ title: o.title, status: o.status })));
-		
+
+		console.log(
+			'Guide offers:',
+			guideOffers.length,
+			guideOffers.map((o) => ({ title: o.title, status: o.status }))
+		);
+
 		// Fetch all payments for accepted offers by this guide
 		// Start from payments table and join with offers to ensure we get all payments
 		const tripPayments = await db
@@ -103,13 +111,13 @@ export const load = async ({ locals }) => {
 		});
 
 		// Calculate total revenue (only completed payments)
-		const completedPayments = allPayments.filter(p => p.status === 'completed');
+		const completedPayments = allPayments.filter((p) => p.status === 'completed');
 		const totalRevenue = completedPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
-		
+
 		console.log('All payments:', allPayments.length);
 		console.log('Completed payments:', completedPayments.length);
 		console.log('Total revenue:', totalRevenue);
-		
+
 		// Log sample payment for debugging
 		if (allPayments.length > 0) {
 			console.log('Sample payment:', {
@@ -121,26 +129,29 @@ export const load = async ({ locals }) => {
 		}
 
 		// Group payments by month for display
-		const paymentsByMonth = allPayments.reduce((acc, payment) => {
-			const date = new Date(payment.createdAt || 0);
-			const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-			
-			if (!acc[monthKey]) {
-				acc[monthKey] = {
-					year: date.getFullYear(),
-					month: date.getMonth() + 1,
-					payments: [],
-					totalAmount: 0
-				};
-			}
-			
-			acc[monthKey].payments.push(payment);
-			if (payment.status === 'completed') {
-				acc[monthKey].totalAmount += payment.amount || 0;
-			}
-			
-			return acc;
-		}, {} as Record<string, any>);
+		const paymentsByMonth = allPayments.reduce(
+			(acc, payment) => {
+				const date = new Date(payment.createdAt || 0);
+				const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+				if (!acc[monthKey]) {
+					acc[monthKey] = {
+						year: date.getFullYear(),
+						month: date.getMonth() + 1,
+						payments: [],
+						totalAmount: 0
+					};
+				}
+
+				acc[monthKey].payments.push(payment);
+				if (payment.status === 'completed') {
+					acc[monthKey].totalAmount += payment.amount || 0;
+				}
+
+				return acc;
+			},
+			{} as Record<string, any>
+		);
 
 		// Convert to array and sort by month
 		const monthlyPayments = Object.values(paymentsByMonth).sort((a: any, b: any) => {

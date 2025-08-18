@@ -1,7 +1,15 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
-import { cancellationRequests, payments, users, trips, products, offers, productOffers } from '$lib/server/db/schema';
+import {
+	cancellationRequests,
+	payments,
+	users,
+	trips,
+	products,
+	offers,
+	productOffers
+} from '$lib/server/db/schema';
 import { eq, desc, and, or } from 'drizzle-orm';
 
 export const GET: RequestHandler = async ({ url, locals }) => {
@@ -71,7 +79,7 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 			.where(statusCondition);
 
 		// Format the response
-		const formattedRequests = requests.map(r => ({
+		const formattedRequests = requests.map((r) => ({
 			id: r.request.id,
 			status: r.request.status,
 			reasonType: r.request.reasonType,
@@ -96,18 +104,22 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 				orderId: r.payment.orderId,
 				createdAt: r.payment.createdAt
 			},
-			tripOrProduct: r.trip ? {
-				type: 'trip',
-				id: r.trip.id,
-				destination: r.trip.destinationId,
-				startDate: r.trip.startDate,
-				endDate: r.trip.endDate
-			} : r.product ? {
-				type: 'product',
-				id: r.product.id,
-				title: r.product.title,
-				date: r.product.date
-			} : null
+			tripOrProduct: r.trip
+				? {
+						type: 'trip',
+						id: r.trip.id,
+						destination: r.trip.destinationId,
+						startDate: r.trip.startDate,
+						endDate: r.trip.endDate
+					}
+				: r.product
+					? {
+							type: 'product',
+							id: r.product.id,
+							title: r.product.title,
+							date: r.product.date
+						}
+					: null
 		}));
 
 		return json({
@@ -122,6 +134,9 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 		});
 	} catch (error) {
 		console.error('Error fetching cancellation requests:', error);
-		return json({ success: false, error: '취소 요청 목록을 가져오는 중 오류가 발생했습니다.' }, { status: 500 });
+		return json(
+			{ success: false, error: '취소 요청 목록을 가져오는 중 오류가 발생했습니다.' },
+			{ status: 500 }
+		);
 	}
 };

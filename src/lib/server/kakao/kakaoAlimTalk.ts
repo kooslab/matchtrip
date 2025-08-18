@@ -49,7 +49,6 @@ export class KakaoAlimTalkService {
 		}
 	}
 
-
 	async sendAlimTalk(message: KakaoAlimTalkMessage) {
 		if (!this.apiKey || !this.baseUrl || !this.channelProfileKey) {
 			throw new Error('Kakao AlimTalk service not configured');
@@ -94,10 +93,17 @@ export class KakaoAlimTalkService {
 		// Debug logging
 		console.log('=== Kakao AlimTalk Request Debug ===');
 		console.log('Endpoint:', endpoint);
-		console.log('Headers:', JSON.stringify({
-			...headers,
-			Authorization: `App ${this.apiKey.substring(0, 10)}...` // Mask API key for security
-		}, null, 2));
+		console.log(
+			'Headers:',
+			JSON.stringify(
+				{
+					...headers,
+					Authorization: `App ${this.apiKey.substring(0, 10)}...` // Mask API key for security
+				},
+				null,
+				2
+			)
+		);
 		console.log('Request Body:', JSON.stringify(requestBody, null, 2));
 		console.log('Channel Profile Key:', this.channelProfileKey);
 		console.log('=====================================');
@@ -157,10 +163,17 @@ export class KakaoAlimTalkService {
 
 		console.log('=== Kakao AlimTalk Get Logs Debug ===');
 		console.log('Endpoint:', endpoint);
-		console.log('Headers:', JSON.stringify({
-			...headers,
-			Authorization: `App ${this.apiKey.substring(0, 10)}...`
-		}, null, 2));
+		console.log(
+			'Headers:',
+			JSON.stringify(
+				{
+					...headers,
+					Authorization: `App ${this.apiKey.substring(0, 10)}...`
+				},
+				null,
+				2
+			)
+		);
 		console.log('=====================================');
 
 		try {
@@ -208,7 +221,8 @@ export class KakaoAlimTalkService {
 		if (params?.limit) queryParams.append('limit', params.limit.toString());
 		if (params?.entityId) queryParams.append('entityId', params.entityId);
 		if (params?.applicationId) queryParams.append('applicationId', params.applicationId);
-		if (params?.campaignReferenceId) queryParams.append('campaignReferenceId', params.campaignReferenceId);
+		if (params?.campaignReferenceId)
+			queryParams.append('campaignReferenceId', params.campaignReferenceId);
 
 		const endpoint = `${this.baseUrl}/kakao-alim/1/reports${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
 
@@ -219,10 +233,17 @@ export class KakaoAlimTalkService {
 
 		console.log('=== Kakao AlimTalk Delivery Reports Debug ===');
 		console.log('Endpoint:', endpoint);
-		console.log('Headers:', JSON.stringify({
-			...headers,
-			Authorization: `App ${this.apiKey.substring(0, 10)}...`
-		}, null, 2));
+		console.log(
+			'Headers:',
+			JSON.stringify(
+				{
+					...headers,
+					Authorization: `App ${this.apiKey.substring(0, 10)}...`
+				},
+				null,
+				2
+			)
+		);
 		console.log('=============================================');
 
 		try {
@@ -297,10 +318,17 @@ export class KakaoAlimTalkService {
 		// Debug logging
 		console.log('=== Kakao AlimTalk Bulk Request Debug ===');
 		console.log('Endpoint:', endpoint);
-		console.log('Headers:', JSON.stringify({
-			...headers,
-			Authorization: `App ${this.apiKey.substring(0, 10)}...` // Mask API key for security
-		}, null, 2));
+		console.log(
+			'Headers:',
+			JSON.stringify(
+				{
+					...headers,
+					Authorization: `App ${this.apiKey.substring(0, 10)}...` // Mask API key for security
+				},
+				null,
+				2
+			)
+		);
 		console.log('Request Body:', JSON.stringify(requestBody, null, 2));
 		console.log('Number of messages:', messages.length);
 		console.log('Channel Profile Key:', this.channelProfileKey);

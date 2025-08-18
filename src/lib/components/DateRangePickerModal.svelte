@@ -13,10 +13,10 @@
 	}
 
 	let { open, value = $bindable(), onClose, onApply, title = '여행 일정' }: Props = $props();
-	
+
 	// Internal state for the date picker
 	let internalValue = $state<{ start?: CalendarDate; end?: CalendarDate }>({});
-	
+
 	// Set default dates when opening
 	$effect(() => {
 		if (open) {
@@ -28,18 +28,10 @@
 				const today = new Date();
 				const tomorrow = new Date(today);
 				tomorrow.setDate(tomorrow.getDate() + 1);
-				
+
 				internalValue = {
-					start: new CalendarDate(
-						today.getFullYear(),
-						today.getMonth() + 1,
-						today.getDate()
-					),
-					end: new CalendarDate(
-						tomorrow.getFullYear(),
-						tomorrow.getMonth() + 1,
-						tomorrow.getDate()
-					)
+					start: new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()),
+					end: new CalendarDate(tomorrow.getFullYear(), tomorrow.getMonth() + 1, tomorrow.getDate())
 				};
 			}
 		}
@@ -48,13 +40,9 @@
 	// Format CalendarDate for display
 	function formatCalendarDate(calendarDate: CalendarDate | undefined) {
 		if (!calendarDate) return '';
-		
-		const jsDate = new Date(
-			calendarDate.year,
-			calendarDate.month - 1,
-			calendarDate.day
-		);
-		
+
+		const jsDate = new Date(calendarDate.year, calendarDate.month - 1, calendarDate.day);
+
 		return new Intl.DateTimeFormat('ko-KR', {
 			year: 'numeric',
 			month: 'long',
@@ -72,10 +60,7 @@
 {#if open}
 	<div class="fixed inset-0 z-50 flex items-end justify-center">
 		<!-- Backdrop -->
-		<button
-			class="absolute inset-0 bg-black/60"
-			onclick={onClose}
-			aria-label="Close modal"
+		<button class="absolute inset-0 bg-black/60" onclick={onClose} aria-label="Close modal"
 		></button>
 
 		<!-- Modal Content -->
@@ -113,7 +98,9 @@
 									<DateRangePicker.GridHead>
 										<DateRangePicker.GridRow class="mb-2 grid grid-cols-7">
 											{#each weekdays as day}
-												<DateRangePicker.HeadCell class="text-center text-xs font-medium text-gray-500">
+												<DateRangePicker.HeadCell
+													class="text-center text-xs font-medium text-gray-500"
+												>
 													{day.slice(0, 1)}
 												</DateRangePicker.HeadCell>
 											{/each}
@@ -131,12 +118,12 @@
 															hover:bg-gray-100
 															data-disabled:text-gray-300 data-disabled:hover:bg-transparent
 															data-outside-month:text-gray-300
-															data-today:font-semibold data-today:text-blue-600
+															data-selection-end:rounded-r-xl data-selection-end:bg-blue-500
+															data-selection-end:text-white data-selection-middle:bg-blue-100
+															data-selection-middle:text-gray-900 data-selection-start:rounded-l-xl data-selection-start:bg-blue-500
+															data-selection-start:text-white data-today:font-semibold data-today:text-blue-600
 															data-unavailable:text-gray-300 data-unavailable:hover:bg-transparent
-															data-selection-start:rounded-l-xl data-selection-start:bg-blue-500 data-selection-start:text-white
-															data-selection-end:rounded-r-xl data-selection-end:bg-blue-500 data-selection-end:text-white
-															data-selection-middle:bg-blue-100 data-selection-middle:text-gray-900
-															data-[selection-start]:z-10 data-[selection-end]:z-10"
+															data-[selection-end]:z-10 data-[selection-start]:z-10"
 														>
 															{date.day}
 														</DateRangePicker.Day>
@@ -158,8 +145,16 @@
 					>
 						{#if internalValue.start && internalValue.end}
 							{(() => {
-								const start = new Date(internalValue.start.year, internalValue.start.month - 1, internalValue.start.day);
-								const end = new Date(internalValue.end.year, internalValue.end.month - 1, internalValue.end.day);
+								const start = new Date(
+									internalValue.start.year,
+									internalValue.start.month - 1,
+									internalValue.start.day
+								);
+								const end = new Date(
+									internalValue.end.year,
+									internalValue.end.month - 1,
+									internalValue.end.day
+								);
 								const formatDate = (date: Date) => {
 									const year = String(date.getFullYear()).slice(2);
 									const month = date.getMonth() + 1;
@@ -197,24 +192,24 @@
 	.animate-slide-up {
 		animation: slide-up 0.3s ease-out;
 	}
-	
+
 	/* Custom date range picker styles */
 	:global([data-selected]:not([data-selection-start]):not([data-selection-end])) {
 		background-color: rgb(219 234 254) !important; /* blue-100 */
 		color: rgb(30 41 59) !important; /* text color */
 		border-radius: 0 !important;
 	}
-	
+
 	:global([data-selection-start]) {
 		border-top-right-radius: 0 !important;
 		border-bottom-right-radius: 0 !important;
 	}
-	
+
 	:global([data-selection-end]) {
 		border-top-left-radius: 0 !important;
 		border-bottom-left-radius: 0 !important;
 	}
-	
+
 	/* For single day selection */
 	:global([data-selection-start][data-selection-end]) {
 		border-radius: 0.75rem !important;

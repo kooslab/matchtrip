@@ -6,7 +6,7 @@ import { transformImageUrl } from '$lib/utils/imageUrl';
 
 export const load: PageServerLoad = async ({ url, locals }) => {
 	const destinationId = url.searchParams.get('destination');
-	
+
 	// If no destination selected, show destinations with products
 	if (!destinationId) {
 		// Get destinations that have active products
@@ -23,20 +23,20 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 			})
 			.from(destinations)
 			.leftJoin(countries, eq(destinations.countryId, countries.id))
-			.innerJoin(products, and(
-				eq(products.destinationId, destinations.id),
-				eq(products.status, 'active')
-			))
+			.innerJoin(
+				products,
+				and(eq(products.destinationId, destinations.id), eq(products.status, 'active'))
+			)
 			.groupBy(destinations.id, countries.id, countries.name)
 			.having(sql`${count(products.id)} > 0`)
 			.orderBy(sql`${count(products.id)} DESC`);
-		
+
 		// Transform image URLs for destinations
-		const transformedDestinations = destinationsWithProducts.map(dest => ({
+		const transformedDestinations = destinationsWithProducts.map((dest) => ({
 			...dest,
 			imageUrl: transformImageUrl(dest.imageUrl)
 		}));
-		
+
 		return {
 			destinations: transformedDestinations,
 			products: [],
@@ -44,7 +44,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 			user: locals.user
 		};
 	}
-	
+
 	// Get destination info if provided
 	let selectedDestination = null;
 	if (destinationId) {
@@ -61,16 +61,16 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 			.leftJoin(countries, eq(destinations.countryId, countries.id))
 			.where(eq(destinations.id, parseInt(destinationId)))
 			.limit(1);
-			
+
 		selectedDestination = destinationResult[0] || null;
 	}
-	
+
 	// Build query for products
 	const conditions = [eq(products.status, 'active')];
 	if (destinationId) {
 		conditions.push(eq(products.destinationId, parseInt(destinationId)));
 	}
-	
+
 	// Get products with guide information
 	const productsResult = await db
 		.select({
@@ -107,21 +107,25 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		.leftJoin(guideProfiles, eq(products.guideId, guideProfiles.userId))
 		.where(and(...conditions))
 		.orderBy(sql`${products.createdAt} DESC`);
-	
+
 	// Transform image URLs for products
-	const productsList = productsResult.map(product => ({
+	const productsList = productsResult.map((product) => ({
 		...product,
 		imageUrl: transformImageUrl(product.imageUrl),
-		guide: product.guide ? {
-			...product.guide,
-			image: transformImageUrl(product.guide.image)
-		} : null,
-		guideProfile: product.guideProfile ? {
-			...product.guideProfile,
-			profileImageUrl: transformImageUrl(product.guideProfile.profileImageUrl)
-		} : null
+		guide: product.guide
+			? {
+					...product.guide,
+					image: transformImageUrl(product.guide.image)
+				}
+			: null,
+		guideProfile: product.guideProfile
+			? {
+					...product.guideProfile,
+					profileImageUrl: transformImageUrl(product.guideProfile.profileImageUrl)
+				}
+			: null
 	}));
-	
+
 	return {
 		destinations: [],
 		products: productsList,

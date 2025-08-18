@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { navigating } from '$app/stores';
-	
+
 	let isNavigating = $state(false);
-	
+
 	// Watch for navigation state changes
 	$effect(() => {
 		if ($navigating) {
@@ -17,8 +17,8 @@
 </script>
 
 {#if isNavigating}
-	<div class="fixed top-0 left-0 right-0 z-[100] h-1 bg-gray-200">
-		<div class="h-full bg-blue-500 animate-progress"></div>
+	<div class="fixed top-0 right-0 left-0 z-[100] h-1 bg-gray-200">
+		<div class="animate-progress h-full bg-blue-500"></div>
 	</div>
 {/if}
 
@@ -34,7 +34,7 @@
 			width: 100%;
 		}
 	}
-	
+
 	.animate-progress {
 		animation: progress 2s ease-in-out infinite;
 	}

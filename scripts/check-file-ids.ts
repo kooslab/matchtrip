@@ -10,16 +10,12 @@ async function checkFileIds() {
 		'73784d6d-6eda-4ac5-9517-c312f83364d2',
 		'96f3d719-c9f3-4371-9d72-2f5f4227ceff'
 	];
-	
+
 	console.log('Checking specific file IDs...\n');
-	
+
 	for (const fileId of fileIdsToCheck) {
-		const file = await db
-			.select()
-			.from(fileUploads)
-			.where(eq(fileUploads.id, fileId))
-			.limit(1);
-		
+		const file = await db.select().from(fileUploads).where(eq(fileUploads.id, fileId)).limit(1);
+
 		if (file.length > 0) {
 			console.log(`✓ Found: ${fileId}`);
 			console.log(`  Name: ${file[0].originalName}`);
@@ -29,7 +25,7 @@ async function checkFileIds() {
 			console.log(`✗ Not found: ${fileId}\n`);
 		}
 	}
-	
+
 	process.exit(0);
 }
 

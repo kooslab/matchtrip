@@ -16,7 +16,11 @@ export function formatPrice(amount: number, currency: string = '₩'): string {
  * @param currency - The currency symbol to use (default: '₩')
  * @returns Formatted budget range string
  */
-export function formatBudget(min: number | null, max: number | null, currency: string = '₩'): string {
+export function formatBudget(
+	min: number | null,
+	max: number | null,
+	currency: string = '₩'
+): string {
 	if (!min && !max) return '예산 미정';
 	if (!max) return `${currency}${min?.toLocaleString()} 이상`;
 	return `${currency}${min?.toLocaleString()} - ${currency}${max?.toLocaleString()}`;

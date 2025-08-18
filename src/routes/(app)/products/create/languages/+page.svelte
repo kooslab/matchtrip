@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	
+
 	const { data } = $props();
-	
+
 	// Get product data from layout
 	const productData = $derived(data.productData);
-	
+
 	// Available languages
 	const availableLanguages = [
 		{ code: 'ko', name: '한국어' },
@@ -29,11 +29,11 @@
 		{ code: 'nl', name: '네덜란드어' },
 		{ code: 'sv', name: '스웨덴어' }
 	];
-	
+
 	// Form state
 	let selectedLanguages = $state(new Set(productData.languages || []));
 	let isSubmitting = $state(false);
-	
+
 	// Toggle language selection
 	function toggleLanguage(code: string) {
 		if (selectedLanguages.has(code)) {
@@ -43,16 +43,16 @@
 		}
 		selectedLanguages = new Set(selectedLanguages); // Trigger reactivity
 	}
-	
+
 	// Validate and submit
 	async function handleSubmit() {
 		if (selectedLanguages.size === 0) {
 			window.alert('최소 하나의 언어를 선택해주세요');
 			return;
 		}
-		
+
 		isSubmitting = true;
-		
+
 		try {
 			// Save to cookies
 			await fetch('/api/products/create/save-step', {
@@ -60,12 +60,12 @@
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					step: 'languages',
-					data: { 
+					data: {
 						languages: Array.from(selectedLanguages)
 					}
 				})
 			});
-			
+
 			// Navigate to next step
 			await goto('/products/create/attachments');
 		} catch (error) {
@@ -82,14 +82,14 @@
 		<h2 class="text-lg text-gray-600">사용 가능한 언어를 선택해주세요</h2>
 		<p class="mt-2 text-sm text-gray-500">사용 가능한 언어를 나열해 주세요</p>
 	</div>
-	
+
 	<!-- Languages List -->
 	<div class="flex-1 overflow-y-auto pb-20">
 		<div class="divide-y divide-gray-100">
 			{#each availableLanguages as language}
 				<button
 					onclick={() => toggleLanguage(language.code)}
-					class="flex w-full items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors"
+					class="flex w-full items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50"
 				>
 					<span class="text-gray-900 {selectedLanguages.has(language.code) ? 'font-medium' : ''}">
 						{language.name}
@@ -97,8 +97,18 @@
 					<div class="flex items-center">
 						{#if selectedLanguages.has(language.code)}
 							<div class="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500">
-								<svg class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+								<svg
+									class="h-4 w-4 text-white"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="3"
+										d="M5 13l4 4L19 7"
+									/>
 								</svg>
 							</div>
 						{:else}
@@ -109,9 +119,9 @@
 			{/each}
 		</div>
 	</div>
-	
+
 	<!-- Submit Button -->
-	<div class="fixed bottom-0 left-0 right-0 bg-white p-4 border-t">
+	<div class="fixed right-0 bottom-0 left-0 border-t bg-white p-4">
 		<div class="mx-auto max-w-[430px]">
 			<div class="mb-2 text-center text-sm text-gray-600">
 				{selectedLanguages.size}개 언어 선택됨
@@ -119,7 +129,7 @@
 			<button
 				onclick={handleSubmit}
 				disabled={selectedLanguages.size === 0 || isSubmitting}
-				class="w-full rounded-lg bg-blue-500 py-4 text-white font-medium disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+				class="w-full rounded-lg bg-blue-500 py-4 font-medium text-white transition-colors disabled:cursor-not-allowed disabled:bg-gray-300"
 			>
 				{isSubmitting ? '저장 중...' : '다음'}
 			</button>

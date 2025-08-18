@@ -17,11 +17,7 @@ export const POST: RequestHandler = async ({ request, params, locals }) => {
 
 	try {
 		// Get the offer details
-		const [offer] = await db
-			.select()
-			.from(offers)
-			.where(eq(offers.id, offerId))
-			.limit(1);
+		const [offer] = await db.select().from(offers).where(eq(offers.id, offerId)).limit(1);
 
 		if (!offer) {
 			return json({ error: 'Offer not found' }, { status: 404 });
@@ -36,12 +32,7 @@ export const POST: RequestHandler = async ({ request, params, locals }) => {
 		const [payment] = await db
 			.select()
 			.from(payments)
-			.where(
-				and(
-					eq(payments.offerId, offerId),
-					eq(payments.status, 'completed')
-				)
-			)
+			.where(and(eq(payments.offerId, offerId), eq(payments.status, 'completed')))
 			.limit(1);
 
 		if (!payment) {
@@ -49,11 +40,7 @@ export const POST: RequestHandler = async ({ request, params, locals }) => {
 		}
 
 		// Get trip details to find the traveler
-		const [trip] = await db
-			.select()
-			.from(trips)
-			.where(eq(trips.id, offer.tripId))
-			.limit(1);
+		const [trip] = await db.select().from(trips).where(eq(trips.id, offer.tripId)).limit(1);
 
 		if (!trip) {
 			return json({ error: 'Trip not found' }, { status: 404 });
@@ -63,12 +50,7 @@ export const POST: RequestHandler = async ({ request, params, locals }) => {
 		const [existingReview] = await db
 			.select()
 			.from(reviews)
-			.where(
-				and(
-					eq(reviews.offerId, offerId),
-					eq(reviews.travelerId, trip.userId)
-				)
-			)
+			.where(and(eq(reviews.offerId, offerId), eq(reviews.travelerId, trip.userId)))
 			.limit(1);
 
 		let reviewToken = existingReview?.reviewToken;

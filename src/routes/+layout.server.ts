@@ -88,7 +88,7 @@ export const load = async ({ request, locals }) => {
 				if (user) {
 					// Decrypt user fields before using them
 					const decryptedUser = decryptUserFields(user);
-					
+
 					userRole = decryptedUser.role;
 					fullUser = decryptedUser;
 

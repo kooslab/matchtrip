@@ -63,12 +63,14 @@ export const load = async ({ locals, depends, setHeaders }) => {
 		console.log('My-trips page - Fetched trips from DB:', userTrips.length);
 
 		// Transform image URLs for destinations
-		const transformedTrips = userTrips.map(trip => ({
+		const transformedTrips = userTrips.map((trip) => ({
 			...trip,
-			destination: trip.destination ? {
-				...trip.destination,
-				imageUrl: transformImageUrl(trip.destination.imageUrl)
-			} : trip.destination
+			destination: trip.destination
+				? {
+						...trip.destination,
+						imageUrl: transformImageUrl(trip.destination.imageUrl)
+					}
+				: trip.destination
 		}));
 
 		return {

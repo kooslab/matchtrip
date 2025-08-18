@@ -17,7 +17,7 @@
 
 		// Filter by type
 		if (filterType !== 'all') {
-			filtered = filtered.filter(p => {
+			filtered = filtered.filter((p) => {
 				if (filterType === 'completed') return p.status === 'completed';
 				if (filterType === 'cancelled') return p.status === 'cancelled' || p.status === 'refunded';
 				return true;
@@ -29,7 +29,7 @@
 			const now = new Date();
 			const months = filterPeriod === '1month' ? 1 : filterPeriod === '3months' ? 3 : 6;
 			const cutoffDate = new Date(now.setMonth(now.getMonth() - months));
-			filtered = filtered.filter(p => new Date(p.createdAt) >= cutoffDate);
+			filtered = filtered.filter((p) => new Date(p.createdAt) >= cutoffDate);
 		}
 
 		return filtered;
@@ -38,26 +38,29 @@
 	// Recalculate monthly payments based on filters
 	const filteredMonthlyPayments = $derived(() => {
 		const filtered = filteredPayments();
-		const grouped = filtered.reduce((acc, payment) => {
-			const date = new Date(payment.createdAt || 0);
-			const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-			
-			if (!acc[monthKey]) {
-				acc[monthKey] = {
-					year: date.getFullYear(),
-					month: date.getMonth() + 1,
-					payments: [],
-					totalAmount: 0
-				};
-			}
-			
-			acc[monthKey].payments.push(payment);
-			if (payment.status === 'completed') {
-				acc[monthKey].totalAmount += payment.amount || 0;
-			}
-			
-			return acc;
-		}, {} as Record<string, any>);
+		const grouped = filtered.reduce(
+			(acc, payment) => {
+				const date = new Date(payment.createdAt || 0);
+				const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+				if (!acc[monthKey]) {
+					acc[monthKey] = {
+						year: date.getFullYear(),
+						month: date.getMonth() + 1,
+						payments: [],
+						totalAmount: 0
+					};
+				}
+
+				acc[monthKey].payments.push(payment);
+				if (payment.status === 'completed') {
+					acc[monthKey].totalAmount += payment.amount || 0;
+				}
+
+				return acc;
+			},
+			{} as Record<string, any>
+		);
 
 		return Object.values(grouped).sort((a: any, b: any) => {
 			if (a.year !== b.year) return b.year - a.year;
@@ -69,7 +72,7 @@
 	const filteredTotalRevenue = $derived(() => {
 		const filtered = filteredPayments();
 		return filtered
-			.filter(p => p.status === 'completed')
+			.filter((p) => p.status === 'completed')
 			.reduce((sum, p) => sum + (p.amount || 0), 0);
 	});
 
@@ -124,30 +127,33 @@
 </script>
 
 <div class="min-h-screen bg-gray-50 pb-24">
-	<div class="max-w-md mx-auto">
+	<div class="mx-auto max-w-md">
 		<!-- Header -->
-		<header class="sticky top-0 z-10 bg-white border-b border-gray-200">
-			<div class="flex items-center h-14 px-4">
+		<header class="sticky top-0 z-10 border-b border-gray-200 bg-white">
+			<div class="flex h-14 items-center px-4">
 				<button onclick={() => window.history.back()} class="-ml-2 p-2">
 					<ChevronLeft class="h-5 w-5" />
 				</button>
 				<h1 class="ml-2 text-lg font-semibold">매출/정산 내역</h1>
 			</div>
-			
+
 			<!-- Tabs -->
 			<div class="flex border-b border-gray-200">
 				<button
-					onclick={() => activeTab = 'sales'}
-					class="flex-1 py-3 text-center font-medium transition-colors relative {activeTab === 'sales' ? 'text-gray-900' : 'text-gray-500'}"
+					onclick={() => (activeTab = 'sales')}
+					class="relative flex-1 py-3 text-center font-medium transition-colors {activeTab ===
+					'sales'
+						? 'text-gray-900'
+						: 'text-gray-500'}"
 				>
 					매출 내역
 					{#if activeTab === 'sales'}
-						<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900"></div>
+						<div class="absolute right-0 bottom-0 left-0 h-0.5 bg-gray-900"></div>
 					{/if}
 				</button>
 				<button
 					onclick={handleSettlementTab}
-					class="flex-1 py-3 text-center font-medium text-gray-500 transition-colors relative"
+					class="relative flex-1 py-3 text-center font-medium text-gray-500 transition-colors"
 				>
 					정산 내역
 				</button>
@@ -156,11 +162,11 @@
 
 		{#if activeTab === 'sales'}
 			<!-- Filters -->
-			<div class="bg-white px-4 py-3 border-b border-gray-200">
+			<div class="border-b border-gray-200 bg-white px-4 py-3">
 				<div class="flex gap-2 overflow-x-auto">
 					<select
 						bind:value={filterType}
-						class="px-3 py-1.5 text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+						class="rounded-full border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
 					>
 						<option value="all">종류: 전체</option>
 						<option value="completed">결제 완료</option>
@@ -168,7 +174,7 @@
 					</select>
 					<select
 						bind:value={filterPeriod}
-						class="px-3 py-1.5 text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+						class="rounded-full border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
 					>
 						<option value="all">기간: 전체</option>
 						<option value="1month">1개월</option>
@@ -179,13 +185,13 @@
 			</div>
 
 			<!-- Revenue Summary -->
-			<div class="bg-white px-4 py-4 border-b border-gray-200">
+			<div class="border-b border-gray-200 bg-white px-4 py-4">
 				<div class="text-center">
-					<div class="text-sm text-gray-500 mb-1">매출 내역</div>
-					<div class="text-xs text-gray-400 mb-2">
+					<div class="mb-1 text-sm text-gray-500">매출 내역</div>
+					<div class="mb-2 text-xs text-gray-400">
 						기간별로 집계된 매출 내역을 확인할 수 있습니다.
 					</div>
-					<div class="flex justify-between items-center pt-3 border-t border-gray-100">
+					<div class="flex items-center justify-between border-t border-gray-100 pt-3">
 						<span class="text-sm text-gray-600">예상 수익금</span>
 						<span class="text-xl font-bold">{formatPrice(filteredTotalRevenue())}원</span>
 					</div>
@@ -193,9 +199,9 @@
 			</div>
 
 			<!-- Monthly Payments -->
-			<div class="p-4 space-y-6">
+			<div class="space-y-6 p-4">
 				{#if filteredMonthlyPayments().length === 0}
-					<div class="bg-white rounded-lg p-8 text-center">
+					<div class="rounded-lg bg-white p-8 text-center">
 						<p class="text-gray-500">매출 내역이 없습니다.</p>
 					</div>
 				{:else}
@@ -209,12 +215,12 @@
 							</div>
 
 							<!-- Payment Items -->
-							<div class="bg-white rounded-lg overflow-hidden">
+							<div class="overflow-hidden rounded-lg bg-white">
 								{#each monthData.payments as payment, index}
 									<div class="p-4 {index > 0 ? 'border-t border-gray-100' : ''}">
-										<div class="flex justify-between items-start mb-2">
+										<div class="mb-2 flex items-start justify-between">
 											<div>
-												<div class="text-xs text-gray-500 mb-1">
+												<div class="mb-1 text-xs text-gray-500">
 													{formatDate(payment.createdAt)}
 												</div>
 												<div class="text-lg font-semibold">
@@ -225,16 +231,22 @@
 												{getPaymentStatusText(payment.status)}
 											</div>
 										</div>
-										<div class="text-xs text-gray-400 space-y-0.5">
-											<div>#{payment.orderId || 'N/A'} · {payment.type === 'product' ? '상품' : '여행'} 구매 : {payment.productTitle || payment.offerTitle || 'N/A'}</div>
-											<div>{formatDate(payment.createdAt)} {formatTime(payment.createdAt)} 결제</div>
+										<div class="space-y-0.5 text-xs text-gray-400">
+											<div>
+												#{payment.orderId || 'N/A'} · {payment.type === 'product' ? '상품' : '여행'}
+												구매 : {payment.productTitle || payment.offerTitle || 'N/A'}
+											</div>
+											<div>
+												{formatDate(payment.createdAt)}
+												{formatTime(payment.createdAt)} 결제
+											</div>
 										</div>
 									</div>
 								{/each}
-								
+
 								<!-- Month Total -->
-								<div class="px-4 py-3 bg-gray-50 border-t border-gray-200">
-									<div class="flex justify-between items-center">
+								<div class="border-t border-gray-200 bg-gray-50 px-4 py-3">
+									<div class="flex items-center justify-between">
 										<span class="text-sm font-medium text-gray-600">월 합계</span>
 										<span class="text-base font-bold">{formatPrice(monthData.totalAmount)}원</span>
 									</div>

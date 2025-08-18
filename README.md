@@ -108,6 +108,7 @@ This boilerplate includes a pre-configured authentication system using better-au
 This application includes webhook integration with Toss Payments for real-time payment status updates.
 
 ### Webhook Endpoint
+
 - **URL**: `/api/webhooks/toss`
 - **Method**: POST
 - **Security**: API verification (no signature needed - Toss doesn't provide webhook secrets)
@@ -115,9 +116,11 @@ This application includes webhook integration with Toss Payments for real-time p
 ### Webhook URLs
 
 #### Production/Staging
+
 - **URL**: `https://dev.matchtrip.net/api/webhooks/toss`
 
 #### Local Development with zrok
+
 For local webhook testing, use zrok to expose your localhost:
 
 ```bash
@@ -157,10 +160,10 @@ curl -X POST http://localhost:5173/api/webhooks/test \
   }'
 ```
 
-
 ### Database Schema
 
 The webhook system uses these tables (already created):
+
 - `webhook_events` - Tracks all webhook events for idempotency
 - `payment_refunds` - Records individual refund transactions
 

@@ -32,11 +32,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 		}
 
 		// Get product details
-		const [product] = await db
-			.select()
-			.from(products)
-			.where(eq(products.id, productId))
-			.limit(1);
+		const [product] = await db.select().from(products).where(eq(products.id, productId)).limit(1);
 
 		if (!product) {
 			return json({ error: 'Product not found' }, { status: 404 });
@@ -46,12 +42,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 		const [review] = await db
 			.select()
 			.from(reviews)
-			.where(
-				and(
-					eq(reviews.productId, productId),
-					eq(reviews.travelerId, session.user.id)
-				)
-			)
+			.where(and(eq(reviews.productId, productId), eq(reviews.travelerId, session.user.id)))
 			.limit(1);
 
 		if (!review) {
@@ -60,14 +51,14 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 
 		// Check if review is already submitted
 		if (review.content && review.rating > 0) {
-			return json({ 
-				reviewToken: review.reviewToken, 
+			return json({
+				reviewToken: review.reviewToken,
 				isSubmitted: true,
-				message: 'Review already submitted' 
+				message: 'Review already submitted'
 			});
 		}
 
-		return json({ 
+		return json({
 			reviewToken: review.reviewToken,
 			isSubmitted: false
 		});

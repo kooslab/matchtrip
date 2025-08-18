@@ -409,15 +409,13 @@ export const payments = pgTable(
 	{
 		id: uuid('id').primaryKey().defaultRandom(),
 		// Trip payment fields (nullable for product payments)
-		tripId: uuid('trip_id')
-			.references(() => trips.id, { onDelete: 'restrict' }),
-		offerId: uuid('offer_id')
-			.references(() => offers.id, { onDelete: 'restrict' }),
+		tripId: uuid('trip_id').references(() => trips.id, { onDelete: 'restrict' }),
+		offerId: uuid('offer_id').references(() => offers.id, { onDelete: 'restrict' }),
 		// Product payment fields (nullable for trip payments)
-		productId: uuid('product_id')
-			.references(() => products.id, { onDelete: 'restrict' }),
-		productOfferId: uuid('product_offer_id')
-			.references(() => productOffers.id, { onDelete: 'restrict' }),
+		productId: uuid('product_id').references(() => products.id, { onDelete: 'restrict' }),
+		productOfferId: uuid('product_offer_id').references(() => productOffers.id, {
+			onDelete: 'restrict'
+		}),
 		userId: uuid('user_id')
 			.notNull()
 			.references(() => users.id, { onDelete: 'restrict' }),
@@ -447,8 +445,8 @@ export const payments = pgTable(
 		statusIdx: index('payments_status_idx').on(table.status),
 		paymentKeyIdx: index('payments_payment_key_idx').on(table.paymentKey)
 		// Note: Check constraint should be added manually to database if needed:
-		// ALTER TABLE payments ADD CONSTRAINT payment_type_check 
-		// CHECK ((trip_id IS NOT NULL AND offer_id IS NOT NULL AND product_id IS NULL AND product_offer_id IS NULL) 
+		// ALTER TABLE payments ADD CONSTRAINT payment_type_check
+		// CHECK ((trip_id IS NOT NULL AND offer_id IS NOT NULL AND product_id IS NULL AND product_offer_id IS NULL)
 		//     OR (product_id IS NOT NULL AND product_offer_id IS NOT NULL AND trip_id IS NULL AND offer_id IS NULL));
 	})
 );
@@ -466,8 +464,7 @@ export const paymentRefunds = pgTable(
 		refundReason: text('refund_reason'),
 		tossTransactionKey: text('toss_transaction_key'), // Toss cancellation transaction key
 		tossResponse: jsonb('toss_response').$type<Record<string, any>>(), // Full Toss API response
-		processedBy: uuid('processed_by')
-			.references(() => users.id, { onDelete: 'set null' }),
+		processedBy: uuid('processed_by').references(() => users.id, { onDelete: 'set null' }),
 		status: varchar('status', { length: 20 }).notNull().default('completed'), // 'pending', 'completed', 'failed'
 		createdAt: timestamp('created_at').defaultNow().notNull()
 	},
@@ -520,8 +517,7 @@ export const cancellationRequests = pgTable(
 		actualRefundAmount: integer('actual_refund_amount'), // Can be overridden by admin
 		status: cancellationStatusEnum('status').notNull().default('pending'),
 		adminNotes: text('admin_notes'),
-		processedBy: uuid('processed_by')
-			.references(() => users.id, { onDelete: 'restrict' }),
+		processedBy: uuid('processed_by').references(() => users.id, { onDelete: 'restrict' }),
 		processedAt: timestamp('processed_at'),
 		createdAt: timestamp('created_at').defaultNow().notNull(),
 		updatedAt: timestamp('updated_at').defaultNow().notNull()
@@ -648,15 +644,13 @@ export const reviews = pgTable(
 	{
 		id: uuid('id').primaryKey().defaultRandom(),
 		// Trip-related fields (nullable for product reviews)
-		tripId: uuid('trip_id')
-			.references(() => trips.id, { onDelete: 'cascade' }),
-		offerId: uuid('offer_id')
-			.references(() => offers.id, { onDelete: 'cascade' }),
+		tripId: uuid('trip_id').references(() => trips.id, { onDelete: 'cascade' }),
+		offerId: uuid('offer_id').references(() => offers.id, { onDelete: 'cascade' }),
 		// Product-related fields (nullable for trip reviews)
-		productId: uuid('product_id')
-			.references(() => products.id, { onDelete: 'cascade' }),
-		productOfferId: uuid('product_offer_id')
-			.references(() => productOffers.id, { onDelete: 'cascade' }),
+		productId: uuid('product_id').references(() => products.id, { onDelete: 'cascade' }),
+		productOfferId: uuid('product_offer_id').references(() => productOffers.id, {
+			onDelete: 'cascade'
+		}),
 		// Common fields
 		guideId: uuid('guide_id')
 			.notNull()
@@ -683,7 +677,10 @@ export const reviews = pgTable(
 		reviewTokenIdx: index('reviews_review_token_idx').on(table.reviewToken),
 		// Ensure one review per trip or product
 		uniqueTripReview: index('reviews_trip_traveler_unique').on(table.tripId, table.travelerId),
-		uniqueProductReview: index('reviews_product_traveler_unique').on(table.productId, table.travelerId)
+		uniqueProductReview: index('reviews_product_traveler_unique').on(
+			table.productId,
+			table.travelerId
+		)
 	})
 );
 

@@ -1,5 +1,14 @@
 import { db } from '$lib/server/db';
-import { trips, destinations, users, offers, payments, countries, products, productOffers } from '$lib/server/db/schema';
+import {
+	trips,
+	destinations,
+	users,
+	offers,
+	payments,
+	countries,
+	products,
+	productOffers
+} from '$lib/server/db/schema';
 import { eq, and, or, isNotNull } from 'drizzle-orm';
 import { redirect } from '@sveltejs/kit';
 import { auth } from '$lib/auth';

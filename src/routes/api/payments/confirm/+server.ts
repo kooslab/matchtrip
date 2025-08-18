@@ -163,10 +163,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 			if (userDetails[0]?.phone) {
 				console.log('[PAYMENTS API] Sending payment completion AlimTalk');
-				
+
 				// Format amount with comma separator
 				const formattedAmount = amount.toLocaleString('ko-KR') + '원';
-				
+
 				await notificationService.sendNotification({
 					userId: user.id,
 					phoneNumber: userDetails[0].phone,

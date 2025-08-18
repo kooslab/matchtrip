@@ -92,10 +92,7 @@
 							</p>
 						</div>
 					{:else if type === 'privacy'}
-						<iframe
-							src="/terms/privacy"
-							class="h-[60vh] w-full border-0"
-							title="개인정보처리방침"
+						<iframe src="/terms/privacy" class="h-[60vh] w-full border-0" title="개인정보처리방침"
 						></iframe>
 					{:else if type === 'marketing'}
 						<div class="space-y-4 text-sm text-gray-700">

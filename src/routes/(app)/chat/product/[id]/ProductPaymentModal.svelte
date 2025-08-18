@@ -10,7 +10,14 @@
 		conversationId?: string;
 	}
 
-	let { isOpen = $bindable(), onClose, productOffer, product, guide, conversationId }: Props = $props();
+	let {
+		isOpen = $bindable(),
+		onClose,
+		productOffer,
+		product,
+		guide,
+		conversationId
+	}: Props = $props();
 
 	let paymentWidget: any = $state(null);
 	let isLoading = $state(false);
@@ -20,7 +27,11 @@
 	let isProcessingPayment = $state(false);
 
 	// Ensure price is always a number for consistent handling
-	const priceValue = $derived(typeof productOffer.price === 'string' ? parseInt(productOffer.price) : Number(productOffer.price));
+	const priceValue = $derived(
+		typeof productOffer.price === 'string'
+			? parseInt(productOffer.price)
+			: Number(productOffer.price)
+	);
 
 	// Format price with commas
 	function formatPrice(price: number) {
@@ -151,32 +162,36 @@
 					console.log('Extracted conversationId from URL:', finalConversationId);
 				}
 			}
-			
+
 			// Validate conversation ID
-			if (!finalConversationId || finalConversationId === 'undefined' || finalConversationId === 'null') {
+			if (
+				!finalConversationId ||
+				finalConversationId === 'undefined' ||
+				finalConversationId === 'null'
+			) {
 				console.error('Critical: Cannot proceed with payment - conversationId is missing');
 				error = '결제를 진행할 수 없습니다. 페이지를 새로고침 후 다시 시도해주세요.';
 				isProcessingPayment = false;
 				return;
 			}
-			
+
 			const orderId = generateOrderId();
 			const orderName = `${product.title} - ${guide.name || '가이드'} 서비스`;
-			
+
 			// Store order info in session storage for later verification
 			// Ensure amount is stored as a number
 			const paymentData = {
 				productOfferId: productOffer.id,
 				productId: product.id,
 				conversationId: finalConversationId,
-				amount: Number(priceValue),  // Explicitly convert to number
+				amount: Number(priceValue), // Explicitly convert to number
 				orderId,
 				type: 'product',
 				startDate: productOffer.startDate ? productOffer.startDate.toISOString() : null,
 				endDate: productOffer.endDate ? productOffer.endDate.toISOString() : null,
-				version: 2  // Add version to track data structure changes
+				version: 2 // Add version to track data structure changes
 			};
-			
+
 			console.log('Storing payment data:', {
 				...paymentData,
 				amountType: typeof paymentData.amount,
@@ -291,9 +306,7 @@
 							</div>
 							<div class="mt-3 flex justify-between border-t border-gray-200 pt-3">
 								<span class="font-semibold text-gray-900">총 금액</span>
-								<span class="text-lg font-bold text-[#1095f4]"
-									>{formatPrice(priceValue)}원</span
-								>
+								<span class="text-lg font-bold text-[#1095f4]">{formatPrice(priceValue)}원</span>
 							</div>
 						</div>
 					</div>

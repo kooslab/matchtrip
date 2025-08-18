@@ -4,10 +4,18 @@ import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
-		const { messageId, bulkId, limit, entityId, applicationId, campaignReferenceId } = await request.json();
+		const { messageId, bulkId, limit, entityId, applicationId, campaignReferenceId } =
+			await request.json();
 
 		console.log('=== Test Kakao Delivery Reports API Endpoint ===');
-		console.log('Received params:', { messageId, bulkId, limit, entityId, applicationId, campaignReferenceId });
+		console.log('Received params:', {
+			messageId,
+			bulkId,
+			limit,
+			entityId,
+			applicationId,
+			campaignReferenceId
+		});
 		console.log('================================================');
 
 		const result = await kakaoAlimTalk.getDeliveryReports({

@@ -6,10 +6,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!locals.user || locals.user.role !== 'guide') {
 		throw redirect(303, '/');
 	}
-	
+
 	// Get product ID from query params
 	const productId = url.searchParams.get('id');
-	
+
 	return {
 		user: locals.user,
 		productId

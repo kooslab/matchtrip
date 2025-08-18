@@ -20,11 +20,11 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 	}
 
 	const body: TestWebhookRequest = await request.json();
-	
+
 	// Create a test webhook payload
 	const eventId = `test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 	const timestamp = new Date().toISOString();
-	
+
 	let payload: any = {
 		eventType: body.eventType,
 		eventId,
@@ -48,40 +48,44 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		case 'PAYMENT.DONE':
 			payload.data.status = 'DONE';
 			break;
-			
+
 		case 'PAYMENT.CANCELED':
 			payload.data.status = 'CANCELED';
-			payload.data.cancels = [{
-				transactionKey: `test_txn_${Date.now()}`,
-				cancelReason: body.cancelReason || 'Test cancellation',
-				canceledAt: timestamp,
-				cancelAmount: body.cancelAmount || 100000,
-				taxFreeAmount: 0,
-				taxExemptionAmount: 0,
-				refundableAmount: 0,
-				easyPayDiscountAmount: 0,
-				cancelStatus: 'DONE',
-				cancelRequestId: `test_cancel_${Date.now()}`
-			}];
+			payload.data.cancels = [
+				{
+					transactionKey: `test_txn_${Date.now()}`,
+					cancelReason: body.cancelReason || 'Test cancellation',
+					canceledAt: timestamp,
+					cancelAmount: body.cancelAmount || 100000,
+					taxFreeAmount: 0,
+					taxExemptionAmount: 0,
+					refundableAmount: 0,
+					easyPayDiscountAmount: 0,
+					cancelStatus: 'DONE',
+					cancelRequestId: `test_cancel_${Date.now()}`
+				}
+			];
 			break;
-			
+
 		case 'PAYMENT.PARTIAL_CANCELED':
 			payload.data.status = 'PARTIAL_CANCELED';
-			payload.data.cancels = [{
-				transactionKey: `test_txn_${Date.now()}`,
-				cancelReason: body.cancelReason || 'Test partial cancellation',
-				canceledAt: timestamp,
-				cancelAmount: body.cancelAmount || 50000,
-				taxFreeAmount: 0,
-				taxExemptionAmount: 0,
-				refundableAmount: 50000,
-				easyPayDiscountAmount: 0,
-				cancelStatus: 'DONE',
-				cancelRequestId: `test_cancel_${Date.now()}`
-			}];
+			payload.data.cancels = [
+				{
+					transactionKey: `test_txn_${Date.now()}`,
+					cancelReason: body.cancelReason || 'Test partial cancellation',
+					canceledAt: timestamp,
+					cancelAmount: body.cancelAmount || 50000,
+					taxFreeAmount: 0,
+					taxExemptionAmount: 0,
+					refundableAmount: 50000,
+					easyPayDiscountAmount: 0,
+					cancelStatus: 'DONE',
+					cancelRequestId: `test_cancel_${Date.now()}`
+				}
+			];
 			payload.data.balanceAmount = 50000;
 			break;
-			
+
 		case 'PAYMENT.FAILED':
 			payload.data.status = 'ABORTED';
 			payload.data.failure = {
@@ -89,11 +93,11 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 				message: 'Test payment failure'
 			};
 			break;
-			
+
 		case 'PAYMENT.EXPIRED':
 			payload.data.status = 'EXPIRED';
 			break;
-			
+
 		default:
 			return json({ error: 'Invalid event type' }, { status: 400 });
 	}
@@ -109,7 +113,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 	});
 
 	const result = await webhookResponse.json();
-	
+
 	return json({
 		success: webhookResponse.ok,
 		testEventId: eventId,
@@ -126,7 +130,8 @@ export const GET: RequestHandler = async () => {
 		description: 'Test webhook endpoint for local development',
 		usage: 'Send a POST request with the following body structure',
 		body: {
-			eventType: 'PAYMENT.DONE | PAYMENT.CANCELED | PAYMENT.PARTIAL_CANCELED | PAYMENT.FAILED | PAYMENT.EXPIRED',
+			eventType:
+				'PAYMENT.DONE | PAYMENT.CANCELED | PAYMENT.PARTIAL_CANCELED | PAYMENT.FAILED | PAYMENT.EXPIRED',
 			paymentKey: 'payment_key_from_toss',
 			orderId: 'optional_order_id',
 			cancelAmount: 'optional_amount_for_cancellation',
@@ -160,6 +165,6 @@ export const GET: RequestHandler = async () => {
 		],
 		note: 'This endpoint is only available in development environment'
 	};
-	
+
 	return json(instructions);
 };

@@ -1,7 +1,14 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
-import { products, productOffers, payments, productMessages, productConversations, reviews } from '$lib/server/db/schema';
+import {
+	products,
+	productOffers,
+	payments,
+	productMessages,
+	productConversations,
+	reviews
+} from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { env } from '$env/dynamic/private';
 import { nanoid } from 'nanoid';
@@ -14,7 +21,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		}
 
 		const { paymentKey, orderId, amount, productOfferId, productId } = await request.json();
-		
+
 		// Ensure amount is a number for consistent comparison
 		const paymentAmount = typeof amount === 'string' ? parseInt(amount) : amount;
 
@@ -52,14 +59,14 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				.from(productOffers)
 				.where(eq(productOffers.id, productOfferId))
 				.limit(1);
-			
+
 			if (!offer) {
 				// If productOfferId was provided but not found, it's an error
 				return json({ success: false, error: '제안을 찾을 수 없습니다.' }, { status: 404 });
 			}
-			
+
 			offerData = offer;
-			
+
 			// Verify amount matches the offer price (ensure both are numbers)
 			const offerPrice = typeof offer.price === 'string' ? parseInt(offer.price) : offer.price;
 			console.log('Price comparison (offer):', {
@@ -68,21 +75,22 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				offerPriceType: typeof offer.price,
 				match: paymentAmount === offerPrice
 			});
-			
+
 			if (paymentAmount !== offerPrice) {
 				console.error('Price mismatch with offer:', { paymentAmount, offerPrice });
 				return json({ success: false, error: '결제 금액이 일치하지 않습니다.' }, { status: 400 });
 			}
 		} else {
 			// If no specific offer, verify amount matches product price (ensure both are numbers)
-			const productPrice = typeof productData.price === 'string' ? parseInt(productData.price) : productData.price;
+			const productPrice =
+				typeof productData.price === 'string' ? parseInt(productData.price) : productData.price;
 			console.log('Price comparison (product):', {
 				paymentAmount,
 				productPrice,
 				productPriceType: typeof productData.price,
 				match: paymentAmount === productPrice
 			});
-			
+
 			if (paymentAmount !== productPrice) {
 				console.error('Price mismatch with product:', { paymentAmount, productPrice });
 				return json({ success: false, error: '결제 금액이 일치하지 않습니다.' }, { status: 400 });
@@ -105,7 +113,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			body: JSON.stringify({
 				paymentKey,
 				orderId,
-				amount: paymentAmount  // Use the normalized amount
+				amount: paymentAmount // Use the normalized amount
 			})
 		});
 
@@ -129,9 +137,9 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				.insert(payments)
 				.values({
 					productId,
-					productOfferId: offerData ? productOfferId : null,  // Only set if offer exists
+					productOfferId: offerData ? productOfferId : null, // Only set if offer exists
 					userId: user.id,
-					amount: paymentAmount,  // Use the normalized amount
+					amount: paymentAmount, // Use the normalized amount
 					currency: 'KRW',
 					paymentKey,
 					orderId,
@@ -173,25 +181,21 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				// Send a system message to the conversation
 				if (offerData.conversationId) {
 					// Add payment completion message
-					await db
-						.insert(productMessages)
-						.values({
-							conversationId: offerData.conversationId,
-							senderId: user.id,
-							content: '결제가 완료되었습니다. 가이드가 곧 연락드릴 예정입니다.',
-							messageType: 'system'
-						});
-					
+					await db.insert(productMessages).values({
+						conversationId: offerData.conversationId,
+						senderId: user.id,
+						content: '결제가 완료되었습니다. 가이드가 곧 연락드릴 예정입니다.',
+						messageType: 'system'
+					});
+
 					// Add review request message
 					const reviewUrl = `/write-review/${reviewToken}`;
-					await db
-						.insert(productMessages)
-						.values({
-							conversationId: offerData.conversationId,
-							senderId: productData.guideId,
-							content: `상품을 이용해주셔서 감사합니다! 리뷰를 작성해주시면 다른 여행자들에게 큰 도움이 됩니다.\n\n[리뷰 작성하기](${reviewUrl})`,
-							messageType: 'text'
-						});
+					await db.insert(productMessages).values({
+						conversationId: offerData.conversationId,
+						senderId: productData.guideId,
+						content: `상품을 이용해주셔서 감사합니다! 리뷰를 작성해주시면 다른 여행자들에게 큰 도움이 됩니다.\n\n[리뷰 작성하기](${reviewUrl})`,
+						messageType: 'text'
+					});
 
 					// Update conversation's last message timestamp
 					await db
@@ -210,24 +214,19 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				orderId,
 				message: '결제가 성공적으로 완료되었습니다.'
 			});
-
 		} catch (dbError) {
 			console.error('Database update failed:', dbError);
-			
+
 			// TODO: Should implement payment cancellation with Toss here
 			// For now, just log the error
-			
+
 			return json(
 				{ success: false, error: '결제 정보 저장에 실패했습니다. 고객센터에 문의해주세요.' },
 				{ status: 500 }
 			);
 		}
-
 	} catch (error) {
 		console.error('Payment confirmation error:', error);
-		return json(
-			{ success: false, error: '결제 처리 중 오류가 발생했습니다.' },
-			{ status: 500 }
-		);
+		return json({ success: false, error: '결제 처리 중 오류가 발생했습니다.' }, { status: 500 });
 	}
 };

@@ -16,7 +16,7 @@
 
 	let isSubmitting = $state(false);
 	let showCancelModal = $state(false);
-	
+
 	function handleCancelSuccess(event: CustomEvent) {
 		const { cancellationRequest, refundCalculation } = event.detail;
 		alert(`취소 요청이 완료되었습니다.
@@ -196,7 +196,7 @@
 		paymentId={payment?.id}
 		paymentAmount={payment?.amount || offer.price}
 		tripStartDate={trip.startDate}
-		on:close={() => showCancelModal = false}
+		on:close={() => (showCancelModal = false)}
 		on:success={handleCancelSuccess}
 	/>
 </div>

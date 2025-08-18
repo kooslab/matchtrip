@@ -23,7 +23,7 @@
 
 	// Check if mobile device
 	let isMobile = $state(false);
-	
+
 	// Rich text editor reference
 	let editorRef: RichTextEditor;
 
@@ -262,7 +262,7 @@
 			<!-- Itinerary Section -->
 			<div class="mb-6">
 				<label class="mb-2 block text-sm font-medium text-gray-700"> 여행일정 </label>
-				
+
 				<RichTextEditor
 					bind:this={editorRef}
 					value={itinerary}
@@ -303,7 +303,7 @@
 
 <style>
 	/* Ensure no zoom on iOS for inputs */
-	:global(input[type="text"], input[type="number"], textarea) {
+	:global(input[type='text'], input[type='number'], textarea) {
 		font-size: 16px !important;
 		-webkit-appearance: none;
 	}

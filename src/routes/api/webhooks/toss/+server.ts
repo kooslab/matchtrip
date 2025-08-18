@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 import { env } from '$env/dynamic/private';
 
 // Webhook event types from Toss Payments
-type WebhookEventType = 
+type WebhookEventType =
 	| 'PAYMENT.DONE'
 	| 'PAYMENT.CANCELED'
 	| 'PAYMENT.PARTIAL_CANCELED'
@@ -50,11 +50,11 @@ interface TossWebhookPayload {
 
 export const POST: RequestHandler = async ({ request }) => {
 	console.log('[Webhook] Received Toss webhook request');
-	
+
 	try {
 		// Parse webhook payload
 		const payload: TossWebhookPayload = await request.json();
-		
+
 		console.log('[Webhook] Event received:', {
 			eventType: payload.eventType,
 			eventId: payload.eventId,
@@ -97,7 +97,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		// Process the event based on type
 		try {
 			await processWebhookEvent(payload);
-			
+
 			// Mark as processed
 			await db
 				.update(webhookEvents)
@@ -109,10 +109,9 @@ export const POST: RequestHandler = async ({ request }) => {
 
 			console.log('[Webhook] Event processed successfully:', payload.eventId);
 			return json({ success: true });
-			
 		} catch (processError) {
 			console.error('[Webhook] Error processing event:', processError);
-			
+
 			// Mark as failed
 			await db
 				.update(webhookEvents)
@@ -127,14 +126,13 @@ export const POST: RequestHandler = async ({ request }) => {
 			// We'll handle retries on our side
 			return json({ success: false, error: 'Processing failed' });
 		}
-
 	} catch (err) {
 		console.error('[Webhook] Fatal error:', err);
-		
+
 		if (err instanceof Error && 'status' in err) {
 			throw err;
 		}
-		
+
 		throw error(500, 'Internal server error');
 	}
 };
@@ -142,7 +140,7 @@ export const POST: RequestHandler = async ({ request }) => {
 // Process webhook events based on type
 async function processWebhookEvent(payload: TossWebhookPayload) {
 	const { eventType, data } = payload;
-	
+
 	console.log(`[Webhook] Processing ${eventType} for payment ${data.paymentKey}`);
 
 	// Find the payment record
@@ -162,23 +160,23 @@ async function processWebhookEvent(payload: TossWebhookPayload) {
 		case 'PAYMENT.DONE':
 			await handlePaymentDone(payment, data);
 			break;
-			
+
 		case 'PAYMENT.CANCELED':
 			await handlePaymentCanceled(payment, data);
 			break;
-			
+
 		case 'PAYMENT.PARTIAL_CANCELED':
 			await handlePaymentPartialCanceled(payment, data);
 			break;
-			
+
 		case 'PAYMENT.FAILED':
 			await handlePaymentFailed(payment, data);
 			break;
-			
+
 		case 'PAYMENT.EXPIRED':
 			await handlePaymentExpired(payment, data);
 			break;
-			
+
 		default:
 			console.warn('[Webhook] Unhandled event type:', eventType);
 	}
@@ -187,7 +185,7 @@ async function processWebhookEvent(payload: TossWebhookPayload) {
 // Handle payment completion
 async function handlePaymentDone(payment: any, data: any) {
 	console.log('[Webhook] Processing PAYMENT.DONE');
-	
+
 	// Update payment status if not already completed
 	if (payment.status !== 'completed') {
 		await db.transaction(async (tx) => {
@@ -222,7 +220,7 @@ async function handlePaymentDone(payment: any, data: any) {
 					.where(eq(offers.id, payment.offerId));
 			}
 		});
-		
+
 		console.log('[Webhook] Payment marked as completed');
 	}
 }
@@ -230,7 +228,7 @@ async function handlePaymentDone(payment: any, data: any) {
 // Handle full payment cancellation
 async function handlePaymentCanceled(payment: any, data: any) {
 	console.log('[Webhook] Processing PAYMENT.CANCELED');
-	
+
 	const cancelInfo = data.cancels?.[0];
 	if (!cancelInfo) {
 		console.error('[Webhook] No cancel information in payload');
@@ -281,14 +279,14 @@ async function handlePaymentCanceled(payment: any, data: any) {
 				.where(eq(offers.id, payment.offerId));
 		}
 	});
-	
+
 	console.log('[Webhook] Payment cancellation processed');
 }
 
 // Handle partial payment cancellation
 async function handlePaymentPartialCanceled(payment: any, data: any) {
 	console.log('[Webhook] Processing PAYMENT.PARTIAL_CANCELED');
-	
+
 	// Get the latest cancel information
 	const latestCancel = data.cancels?.slice(-1)[0];
 	if (!latestCancel) {
@@ -330,14 +328,14 @@ async function handlePaymentPartialCanceled(payment: any, data: any) {
 			});
 		}
 	});
-	
+
 	console.log('[Webhook] Partial refund processed');
 }
 
 // Handle payment failure
 async function handlePaymentFailed(payment: any, data: any) {
 	console.log('[Webhook] Processing PAYMENT.FAILED');
-	
+
 	await db
 		.update(payments)
 		.set({
@@ -346,14 +344,14 @@ async function handlePaymentFailed(payment: any, data: any) {
 			updatedAt: new Date()
 		})
 		.where(eq(payments.id, payment.id));
-	
+
 	console.log('[Webhook] Payment marked as failed');
 }
 
 // Handle payment expiration
 async function handlePaymentExpired(payment: any, data: any) {
 	console.log('[Webhook] Processing PAYMENT.EXPIRED');
-	
+
 	await db
 		.update(payments)
 		.set({
@@ -362,13 +360,16 @@ async function handlePaymentExpired(payment: any, data: any) {
 			updatedAt: new Date()
 		})
 		.where(eq(payments.id, payment.id));
-	
+
 	console.log('[Webhook] Payment marked as expired');
 }
 
 // Verify payment status with Toss API
 // This is the recommended security approach instead of webhook signatures
-async function verifyPaymentWithTossAPI(paymentKey: string, expectedStatus: string): Promise<boolean> {
+async function verifyPaymentWithTossAPI(
+	paymentKey: string,
+	expectedStatus: string
+): Promise<boolean> {
 	try {
 		const tossSecretKey = env.TOSS_SECRET_KEY;
 		if (!tossSecretKey) {
@@ -377,15 +378,12 @@ async function verifyPaymentWithTossAPI(paymentKey: string, expectedStatus: stri
 		}
 
 		const authHeader = Buffer.from(`${tossSecretKey}:`).toString('base64');
-		const response = await fetch(
-			`https://api.tosspayments.com/v1/payments/${paymentKey}`,
-			{
-				method: 'GET',
-				headers: {
-					Authorization: `Basic ${authHeader}`
-				}
+		const response = await fetch(`https://api.tosspayments.com/v1/payments/${paymentKey}`, {
+			method: 'GET',
+			headers: {
+				Authorization: `Basic ${authHeader}`
 			}
-		);
+		});
 
 		if (!response.ok) {
 			console.error('[Webhook] Failed to verify payment with Toss API');
@@ -393,7 +391,7 @@ async function verifyPaymentWithTossAPI(paymentKey: string, expectedStatus: stri
 		}
 
 		const paymentData = await response.json();
-		
+
 		// Map webhook status to API status
 		let apiStatus = paymentData.status;
 		if (expectedStatus === 'CANCELED' && paymentData.cancels?.length > 0) {

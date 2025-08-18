@@ -40,7 +40,7 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 		// Handle budget values - use values directly (already in KRW)
 		const budgetMinValue = updates.budgetMin ?? updates.minBudget ?? existingTrip.budgetMin;
 		const budgetMaxValue = updates.budgetMax ?? updates.maxBudget ?? existingTrip.budgetMax;
-		
+
 		const tripUpdate: any = {
 			destinationId: updates.destinationId || existingTrip.destinationId,
 			startDate: updates.startDate ? new Date(updates.startDate) : existingTrip.startDate,

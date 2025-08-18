@@ -1,31 +1,31 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import RichTextEditor from '$lib/components/RichTextEditor.svelte';
-	
+
 	const { data } = $props();
-	
+
 	// Get product data from layout
 	const productData = $derived(data.productData);
-	
+
 	// Form state
 	let description = $state(productData.description || '');
 	let isSubmitting = $state(false);
 	let editorRef: RichTextEditor;
-	
+
 	// Handle content change
 	function handleDescriptionChange(content: string) {
 		description = content;
 	}
-	
+
 	// Validate and submit
 	async function handleSubmit() {
 		if (!description.trim()) {
 			window.alert('상품 설명을 입력해주세요');
 			return;
 		}
-		
+
 		isSubmitting = true;
-		
+
 		try {
 			// Save to cookies
 			await fetch('/api/products/create/save-step', {
@@ -36,7 +36,7 @@
 					data: { description }
 				})
 			});
-			
+
 			// Navigate to next step
 			await goto('/products/create/duration');
 		} catch (error) {
@@ -51,11 +51,9 @@
 	<!-- Title -->
 	<div class="mb-6">
 		<h2 class="text-lg text-gray-600">상품 내용을 편하게 작성해 주세요</h2>
-		<p class="mt-2 text-sm text-gray-500">
-			여행 일정과 구체적으로 무엇을 작성해주세요.
-		</p>
+		<p class="mt-2 text-sm text-gray-500">여행 일정과 구체적으로 무엇을 작성해주세요.</p>
 	</div>
-	
+
 	<!-- Description Editor -->
 	<div class="mb-20">
 		<RichTextEditor
@@ -82,14 +80,14 @@
 			]}
 		/>
 	</div>
-	
+
 	<!-- Submit Button -->
-	<div class="fixed bottom-0 left-0 right-0 bg-white p-4 border-t">
+	<div class="fixed right-0 bottom-0 left-0 border-t bg-white p-4">
 		<div class="mx-auto max-w-[430px]">
 			<button
 				onclick={handleSubmit}
 				disabled={!description.trim() || isSubmitting}
-				class="w-full rounded-lg bg-blue-500 py-4 text-white font-medium disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+				class="w-full rounded-lg bg-blue-500 py-4 font-medium text-white transition-colors disabled:cursor-not-allowed disabled:bg-gray-300"
 			>
 				{isSubmitting ? '저장 중...' : '다음'}
 			</button>

@@ -66,7 +66,9 @@ async function migrateUsers(): Promise<MigrationStats> {
 				break;
 			}
 
-			console.log(`\n📦 Processing batch ${Math.floor(offset / batchSize) + 1} (${userBatch.length} users)...`);
+			console.log(
+				`\n📦 Processing batch ${Math.floor(offset / batchSize) + 1} (${userBatch.length} users)...`
+			);
 
 			for (const user of userBatch) {
 				stats.total++;
@@ -104,10 +106,7 @@ async function migrateUsers(): Promise<MigrationStats> {
 
 					// Update user if needed
 					if (needsUpdate) {
-						await db
-							.update(users)
-							.set(updates)
-							.where(eq(users.id, user.id));
+						await db.update(users).set(updates).where(eq(users.id, user.id));
 
 						console.log(`✅ User ${user.id}: Encrypted successfully`);
 						stats.encrypted++;
@@ -126,7 +125,7 @@ async function migrateUsers(): Promise<MigrationStats> {
 			}
 
 			offset += batchSize;
-			
+
 			// Progress update
 			console.log(`\n📊 Progress: ${stats.total} users processed`);
 			console.log(`   - Encrypted: ${stats.encrypted}`);
@@ -180,7 +179,9 @@ async function verifyMigration(): Promise<void> {
 	}
 
 	if (allEncrypted && allHaveHashes) {
-		console.log('✅ Sample verification passed: All checked users have encrypted data and email hashes');
+		console.log(
+			'✅ Sample verification passed: All checked users have encrypted data and email hashes'
+		);
 	} else {
 		console.log('⚠️  Sample verification found issues - please review above warnings');
 	}
@@ -198,7 +199,7 @@ async function main() {
 		console.log('⚠️  WARNING: Running in PRODUCTION mode');
 		console.log('This will modify production data. Are you sure you want to continue?');
 		console.log('Press Ctrl+C to abort, or wait 10 seconds to continue...');
-		await new Promise(resolve => setTimeout(resolve, 10000));
+		await new Promise((resolve) => setTimeout(resolve, 10000));
 	}
 
 	try {

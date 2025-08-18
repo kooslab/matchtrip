@@ -30,10 +30,7 @@ export const REFUND_POLICIES = [
 ] as const;
 
 // Exception reasons that qualify for 100% refund (requires admin approval)
-export const EXCEPTION_REASONS = [
-	'natural_disaster',
-	'medical_emergency'
-] as const;
+export const EXCEPTION_REASONS = ['natural_disaster', 'medical_emergency'] as const;
 
 // Cancellation status labels
 export const CANCELLATION_STATUS_LABELS = {

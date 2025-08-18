@@ -55,14 +55,14 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 
 		// Check if review is already submitted
 		if (review.content && review.rating > 0) {
-			return json({ 
-				reviewToken: review.reviewToken, 
+			return json({
+				reviewToken: review.reviewToken,
 				isSubmitted: true,
-				message: 'Review already submitted' 
+				message: 'Review already submitted'
 			});
 		}
 
-		return json({ 
+		return json({
 			reviewToken: review.reviewToken,
 			isSubmitted: false
 		});

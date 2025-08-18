@@ -25,7 +25,7 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 		}
 
 		const cancellationService = new CancellationService();
-		
+
 		// Process rejection
 		await cancellationService.processCancellation({
 			requestId,
@@ -40,11 +40,11 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 		});
 	} catch (error) {
 		console.error('Error rejecting cancellation:', error);
-		
+
 		if (error instanceof Error) {
 			return json({ success: false, error: error.message }, { status: 400 });
 		}
-		
+
 		return json({ success: false, error: '거절 처리 중 오류가 발생했습니다.' }, { status: 500 });
 	}
 };

@@ -1,6 +1,15 @@
 import { json } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { products, users, guideProfiles, destinations, countries, fileUploads, productConversations, payments } from '$lib/server/db/schema';
+import {
+	products,
+	users,
+	guideProfiles,
+	destinations,
+	countries,
+	fileUploads,
+	productConversations,
+	payments
+} from '$lib/server/db/schema';
 import { eq, inArray, and } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
 
@@ -9,7 +18,7 @@ const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
 
 export const GET: RequestHandler = async ({ params }) => {
 	const productId = params.id;
-	
+
 	if (!productId || !uuidRegex.test(productId)) {
 		return json({ error: 'Invalid product ID' }, { status: 400 });
 	}
@@ -75,7 +84,7 @@ export const GET: RequestHandler = async ({ params }) => {
 				.from(countries)
 				.where(eq(countries.id, product.destination.countryId))
 				.limit(1);
-			
+
 			if (countryData.length > 0) {
 				country = countryData[0];
 			}
@@ -85,8 +94,10 @@ export const GET: RequestHandler = async ({ params }) => {
 		let attachments: any[] = [];
 		if (product.fileIds && product.fileIds.length > 0) {
 			// Filter out any null or invalid UUIDs
-			const validFileIds = product.fileIds.filter(id => id && id !== 'NULL' && uuidRegex.test(id));
-			
+			const validFileIds = product.fileIds.filter(
+				(id) => id && id !== 'NULL' && uuidRegex.test(id)
+			);
+
 			if (validFileIds.length > 0) {
 				attachments = await db
 					.select({
@@ -104,10 +115,12 @@ export const GET: RequestHandler = async ({ params }) => {
 
 		return json({
 			...product,
-			destination: product.destination ? {
-				...product.destination,
-				country
-			} : null,
+			destination: product.destination
+				? {
+						...product.destination,
+						country
+					}
+				: null,
 			attachments
 		});
 	} catch (error) {
@@ -119,11 +132,11 @@ export const GET: RequestHandler = async ({ params }) => {
 export const PUT: RequestHandler = async ({ params, request, locals }) => {
 	const productId = params.id;
 	const userId = locals.user?.id;
-	
+
 	if (!userId) {
 		return json({ error: 'Unauthorized' }, { status: 401 });
 	}
-	
+
 	if (!productId || !uuidRegex.test(productId)) {
 		return json({ error: 'Invalid product ID' }, { status: 400 });
 	}
@@ -146,7 +159,8 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 
 		// Check restrictions before allowing update
 		const [conversations, completedPayments] = await Promise.all([
-			db.select({ id: productConversations.id })
+			db
+				.select({ id: productConversations.id })
 				.from(productConversations)
 				.where(
 					and(
@@ -154,24 +168,24 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 						eq(productConversations.status, 'active')
 					)
 				),
-			db.select({ id: payments.id })
+			db
+				.select({ id: payments.id })
 				.from(payments)
-				.where(
-					and(
-						eq(payments.productId, productId),
-						eq(payments.status, 'completed')
-					)
-				)
+				.where(and(eq(payments.productId, productId), eq(payments.status, 'completed')))
 		]);
 
 		const isRestricted = conversations.length > 0 || completedPayments.length > 0;
 		if (isRestricted) {
-			return json({ 
-				error: 'Product cannot be modified',
-				reason: completedPayments.length > 0 
-					? 'Product has completed payments'
-					: 'Product has active conversations'
-			}, { status: 409 });
+			return json(
+				{
+					error: 'Product cannot be modified',
+					reason:
+						completedPayments.length > 0
+							? 'Product has completed payments'
+							: 'Product has active conversations'
+				},
+				{ status: 409 }
+			);
 		}
 
 		// Parse and validate request body
@@ -180,7 +194,10 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 
 		// Validate required fields
 		if (!title || !description || !price || !destinationId) {
-			return json({ error: 'Missing required fields: title, description, price, destinationId' }, { status: 400 });
+			return json(
+				{ error: 'Missing required fields: title, description, price, destinationId' },
+				{ status: 400 }
+			);
 		}
 
 		// Validate price is positive integer
@@ -226,7 +243,6 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 			success: true,
 			product: updatedProduct[0]
 		});
-
 	} catch (error) {
 		console.error('Error updating product:', error);
 		return json({ error: 'Failed to update product' }, { status: 500 });
@@ -236,11 +252,11 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 export const DELETE: RequestHandler = async ({ params, locals }) => {
 	const productId = params.id;
 	const userId = locals.user?.id;
-	
+
 	if (!userId) {
 		return json({ error: 'Unauthorized' }, { status: 401 });
 	}
-	
+
 	if (!productId || !uuidRegex.test(productId)) {
 		return json({ error: 'Invalid product ID' }, { status: 400 });
 	}
@@ -263,29 +279,31 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 
 		// Check restrictions before allowing deletion
 		const [conversations, completedPayments] = await Promise.all([
-			db.select({ id: productConversations.id })
+			db
+				.select({ id: productConversations.id })
 				.from(productConversations)
 				.where(eq(productConversations.productId, productId)),
-			db.select({ id: payments.id })
-				.from(payments)
-				.where(eq(payments.productId, productId))
+			db.select({ id: payments.id }).from(payments).where(eq(payments.productId, productId))
 		]);
 
 		const isRestricted = conversations.length > 0 || completedPayments.length > 0;
 		if (isRestricted) {
-			return json({ 
-				error: 'Product cannot be deleted',
-				reason: completedPayments.length > 0 
-					? 'Product has payment history'
-					: 'Product has conversation history'
-			}, { status: 409 });
+			return json(
+				{
+					error: 'Product cannot be deleted',
+					reason:
+						completedPayments.length > 0
+							? 'Product has payment history'
+							: 'Product has conversation history'
+				},
+				{ status: 409 }
+			);
 		}
 
 		// Delete the product
 		await db.delete(products).where(eq(products.id, productId));
 
 		return json({ success: true, message: 'Product deleted successfully' });
-
 	} catch (error) {
 		console.error('Error deleting product:', error);
 		return json({ error: 'Failed to delete product' }, { status: 500 });

@@ -21,7 +21,9 @@ async function testKakaoTemplate() {
 	console.log('Request Data:');
 	console.log(JSON.stringify(testData, null, 2));
 	console.log('\nExpected substituted text:');
-	console.log('[매치트립], 안녕하세요. 홍길동님! 매치트립에 회원가입 해주셔서 진심으로 감사드립니다!');
+	console.log(
+		'[매치트립], 안녕하세요. 홍길동님! 매치트립에 회원가입 해주셔서 진심으로 감사드립니다!'
+	);
 	console.log('\n---\n');
 
 	try {
@@ -34,20 +36,20 @@ async function testKakaoTemplate() {
 		});
 
 		const result = await response.json();
-		
+
 		console.log('Response Status:', response.status);
 		console.log('Response Body:');
 		console.log(JSON.stringify(result, null, 2));
 
 		if (result.success) {
 			console.log('\n✅ Template test successful!');
-			
+
 			// Check the actual message status
 			if (result.result?.results?.[0]) {
 				const messageResult = result.result.results[0];
 				console.log('\nMessage Status:', messageResult.status?.name);
 				console.log('Message ID:', messageResult.messageId);
-				
+
 				if (messageResult.error) {
 					console.log('\n❌ Message delivery error:');
 					console.log('Error Name:', messageResult.error.name);

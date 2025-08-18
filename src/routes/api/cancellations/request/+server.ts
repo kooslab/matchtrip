@@ -21,7 +21,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		}
 
 		const cancellationService = new CancellationService();
-		
+
 		// Create cancellation request
 		const result = await cancellationService.createCancellationRequest({
 			paymentId,
@@ -35,10 +35,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		try {
 			// Get payment and related user details for notifications
 			const paymentDetails = await getPaymentDetailsWithUsers(paymentId);
-			
+
 			if (paymentDetails) {
 				const { payment, customerName, customerPhone, guideName, guidePhone } = paymentDetails;
-				
+
 				if (user.role === 'traveler') {
 					// Customer requested cancellation
 					// Send testcode13 to customer (confirmation)
@@ -55,7 +55,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 							}
 						});
 					}
-					
+
 					// Send testcode14 to guide (notification)
 					if (guidePhone) {
 						console.log('[CANCELLATION] Sending cancellation request notification to guide');
@@ -85,7 +85,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 							}
 						});
 					}
-					
+
 					// Send testcode16 to customer (notification)
 					if (customerPhone) {
 						console.log('[CANCELLATION] Sending cancellation request notification to customer');
@@ -110,10 +110,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		if (result.cancellationRequest.status === 'approved' && user.role === 'guide') {
 			try {
 				const refundService = new RefundService();
-				
+
 				// Get payment details for refund processing
 				const { payment } = await getPaymentDetails(paymentId);
-				
+
 				if (payment && payment.paymentKey) {
 					await refundService.processRefund({
 						paymentKey: payment.paymentKey,
@@ -135,11 +135,11 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		});
 	} catch (error) {
 		console.error('Error creating cancellation request:', error);
-		
+
 		if (error instanceof Error) {
 			return json({ success: false, error: error.message }, { status: 400 });
 		}
-		
+
 		return json({ success: false, error: '취소 요청 중 오류가 발생했습니다.' }, { status: 500 });
 	}
 };
@@ -149,22 +149,20 @@ async function getPaymentDetails(paymentId: string) {
 	const { db } = await import('$lib/server/db');
 	const { payments } = await import('$lib/server/db/schema');
 	const { eq } = await import('drizzle-orm');
-	
-	const [payment] = await db
-		.select()
-		.from(payments)
-		.where(eq(payments.id, paymentId))
-		.limit(1);
-	
+
+	const [payment] = await db.select().from(payments).where(eq(payments.id, paymentId)).limit(1);
+
 	return { payment };
 }
 
 // Helper function to get payment details with user information for notifications
 async function getPaymentDetailsWithUsers(paymentId: string) {
 	const { db } = await import('$lib/server/db');
-	const { payments, offers, trips, users, travelerProfiles, guideProfiles } = await import('$lib/server/db/schema');
+	const { payments, offers, trips, users, travelerProfiles, guideProfiles } = await import(
+		'$lib/server/db/schema'
+	);
 	const { eq } = await import('drizzle-orm');
-	
+
 	// Get payment with offer details
 	const [paymentData] = await db
 		.select({
@@ -175,9 +173,9 @@ async function getPaymentDetailsWithUsers(paymentId: string) {
 		.from(payments)
 		.where(eq(payments.id, paymentId))
 		.limit(1);
-	
+
 	if (!paymentData) return null;
-	
+
 	// Get customer (traveler) details
 	const [customer] = await db
 		.select({
@@ -187,11 +185,11 @@ async function getPaymentDetailsWithUsers(paymentId: string) {
 		.from(users)
 		.where(eq(users.id, paymentData.userId))
 		.limit(1);
-	
+
 	// Get guide details if there's an offer
 	let guideName = null;
 	let guidePhone = null;
-	
+
 	if (paymentData.offerId) {
 		const [offerData] = await db
 			.select({
@@ -200,7 +198,7 @@ async function getPaymentDetailsWithUsers(paymentId: string) {
 			.from(offers)
 			.where(eq(offers.id, paymentData.offerId))
 			.limit(1);
-		
+
 		if (offerData) {
 			const [guide] = await db
 				.select({
@@ -210,14 +208,14 @@ async function getPaymentDetailsWithUsers(paymentId: string) {
 				.from(users)
 				.where(eq(users.id, offerData.guideId))
 				.limit(1);
-			
+
 			if (guide) {
 				guideName = guide.name;
 				guidePhone = guide.phone;
 			}
 		}
 	}
-	
+
 	return {
 		payment: paymentData.payment,
 		customerName: customer?.name,

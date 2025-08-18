@@ -1,23 +1,30 @@
 import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { productConversations, productMessages, products, users, destinations, productOffers } from '$lib/server/db/schema';
+import {
+	productConversations,
+	productMessages,
+	products,
+	users,
+	destinations,
+	productOffers
+} from '$lib/server/db/schema';
 import { eq, desc } from 'drizzle-orm';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const conversationId = params.id;
 	const userId = locals.user?.id;
-	
+
 	if (!userId) {
 		throw redirect(302, '/login');
 	}
-	
+
 	// Handle invalid conversation ID (e.g., 'undefined' from old payment sessions)
 	if (!conversationId || conversationId === 'undefined' || conversationId === 'null') {
 		console.warn('Invalid conversation ID attempted:', conversationId);
 		throw redirect(302, '/products');
 	}
-	
+
 	// Fetch conversation details
 	const conversation = await db
 		.select({
@@ -32,21 +39,21 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.from(productConversations)
 		.where(eq(productConversations.id, conversationId))
 		.limit(1);
-	
+
 	if (!conversation.length) {
 		throw error(404, 'Conversation not found');
 	}
-	
+
 	const conv = conversation[0];
-	
+
 	// Check if user is part of this conversation
 	if (conv.travelerId !== userId && conv.guideId !== userId) {
 		throw error(403, 'Access denied');
 	}
-	
+
 	// Determine user role in this conversation
 	const userRole = conv.travelerId === userId ? 'traveler' : 'guide';
-	
+
 	// Fetch product details
 	const product = await db
 		.select({
@@ -67,11 +74,11 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.leftJoin(destinations, eq(products.destinationId, destinations.id))
 		.where(eq(products.id, conv.productId))
 		.limit(1);
-	
+
 	if (!product.length) {
 		throw error(404, 'Product not found');
 	}
-	
+
 	// Fetch messages with product offer data
 	const messages = await db
 		.select({
@@ -98,7 +105,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.leftJoin(productOffers, eq(productMessages.id, productOffers.messageId))
 		.where(eq(productMessages.conversationId, conversationId))
 		.orderBy(productMessages.createdAt);
-	
+
 	// Fetch other user's info
 	const otherUserId = userRole === 'traveler' ? conv.guideId : conv.travelerId;
 	const otherUser = await db
@@ -112,7 +119,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.from(users)
 		.where(eq(users.id, otherUserId))
 		.limit(1);
-	
+
 	// Update last read timestamp
 	if (userRole === 'traveler') {
 		await db
@@ -125,7 +132,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			.set({ guideLastReadAt: new Date() })
 			.where(eq(productConversations.id, conversationId));
 	}
-	
+
 	return {
 		conversation: conv,
 		product: product[0],

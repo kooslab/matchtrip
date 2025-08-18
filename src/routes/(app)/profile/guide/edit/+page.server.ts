@@ -48,9 +48,7 @@ export const actions: Actions = {
 		try {
 			// Update user name
 			if (name && name !== user.name) {
-				await db.update(users)
-					.set({ name })
-					.where(eq(users.id, user.id));
+				await db.update(users).set({ name }).where(eq(users.id, user.id));
 			}
 
 			// Check if guide profile exists
@@ -62,17 +60,15 @@ export const actions: Actions = {
 
 			const profileData = {
 				bio: bio || '',
-				languages: languages ? languages.split(',').map(l => l.trim()) : [],
-				specialties: specialties ? specialties.split(',').map(s => s.trim()) : [],
+				languages: languages ? languages.split(',').map((l) => l.trim()) : [],
+				specialties: specialties ? specialties.split(',').map((s) => s.trim()) : [],
 				experience: experience || '',
 				updatedAt: new Date()
 			};
 
 			if (existingProfile) {
 				// Update existing profile
-				await db.update(guideProfiles)
-					.set(profileData)
-					.where(eq(guideProfiles.userId, user.id));
+				await db.update(guideProfiles).set(profileData).where(eq(guideProfiles.userId, user.id));
 			} else {
 				// Create new profile
 				await db.insert(guideProfiles).values({

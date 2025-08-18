@@ -44,16 +44,13 @@ export function processTemplateText(text: string, data: TemplateData): string {
 /**
  * Prepare a complete template for sending
  */
-export function prepareTemplate(
-	templateCode: string,
-	data: TemplateData
-): ProcessedTemplate {
+export function prepareTemplate(templateCode: string, data: TemplateData): ProcessedTemplate {
 	const template = getTemplate(templateCode);
 	const baseUrl = getBaseUrl();
-	
+
 	// Process the text with variable replacement
 	const processedText = processTemplateText(template.text, data);
-	
+
 	// Process button URLs if button exists
 	let processedButton = template.button;
 	if (processedButton) {
@@ -63,7 +60,7 @@ export function prepareTemplate(
 			urlPc: processedButton.urlPc?.replace('{{BASE_URL}}', baseUrl)
 		};
 	}
-	
+
 	// Return processed template with button if exists
 	return {
 		text: processedText,
@@ -80,13 +77,13 @@ export function validateTemplateData(
 ): { valid: boolean; missing: string[] } {
 	const template = getTemplate(templateCode);
 	const missing: string[] = [];
-	
+
 	for (const variable of template.variables) {
 		if (!data[variable]) {
 			missing.push(variable);
 		}
 	}
-	
+
 	return {
 		valid: missing.length === 0,
 		missing

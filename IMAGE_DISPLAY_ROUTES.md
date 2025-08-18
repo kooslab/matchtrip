@@ -1,11 +1,13 @@
 # Image Display Routes After Private Bucket Migration
 
 ## Overview
+
 After migrating all images to the private bucket, all image URLs will use the `/api/images/[path]` endpoint, which generates presigned URLs for secure access.
 
 ## How Images Are Displayed
 
 All images now follow this flow:
+
 1. **Image URL in Database**: `/api/images/type/filename.jpg`
 2. **Browser Request**: `<img src="/api/images/type/filename.jpg">`
 3. **API Endpoint**: Generates presigned URL and redirects (302)
@@ -14,48 +16,56 @@ All images now follow this flow:
 ## Routes That Display Images
 
 ### 1. **Product Images**
+
 - **Route**: `/products`, `/products/[id]`
 - **Field**: `products.imageUrl`
 - **Display**: Product cards, product detail pages
 - **Status**: ✅ Works with `/api/images/` endpoint
 
 ### 2. **Product Content Images** (in descriptions)
+
 - **Route**: `/products/[id]`, `/products/create/description`
 - **Field**: Images embedded in `products.description` HTML
 - **Display**: Rich text content with inline images
 - **Status**: ✅ RichTextEditor uploads to private bucket
 
 ### 3. **Destination Images**
+
 - **Route**: `/destinations`, `/trips/create/destination`
 - **Field**: `destinations.imageUrl`
 - **Display**: Destination cards, trip creation
 - **Status**: ✅ Will work after migration
 
 ### 4. **User Profile Images**
+
 - **Route**: `/profile`, `/guide/[id]`, `/traveler/[id]`
 - **Field**: `users.image`
 - **Display**: Profile pages, user avatars
 - **Status**: ✅ Works with `/api/images/` endpoint
 
 ### 5. **Guide Profile Images**
+
 - **Route**: `/profile/guide`, `/guide/[id]`
 - **Field**: `guideProfiles.profileImage`
 - **Display**: Guide profile pages
 - **Status**: ✅ Works with `/api/images/` endpoint
 
 ### 6. **Traveler Profile Images**
+
 - **Route**: `/profile/traveler`, `/traveler/[id]`
 - **Field**: `travelerProfiles.profileImage`
 - **Display**: Traveler profile pages
 - **Status**: ✅ Works with `/api/images/` endpoint
 
 ### 7. **Chat/Message Images**
+
 - **Route**: `/chat/[id]`, `/chat/product/[id]`
 - **Field**: Images in messages
 - **Display**: Chat conversation
 - **Status**: ✅ Uploaded as 'product-message' type
 
 ### 8. **Guide Documents** (PDFs/Images)
+
 - **Route**: `/onboarding/guide/documents`
 - **Field**: Various document uploads
 - **Display**: Document verification
@@ -64,6 +74,7 @@ All images now follow this flow:
 ## Admin App Requirements
 
 The admin app (`admin-matchtrip`) must:
+
 1. Have the same `/api/images/[...path]/+server.ts` endpoint
 2. Have R2 credentials configured in `.env`
 3. Handle both `imageUrl` and `fileIds` for backward compatibility

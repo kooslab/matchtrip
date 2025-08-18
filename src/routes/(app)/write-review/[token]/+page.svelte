@@ -148,7 +148,10 @@
 	<!-- Header -->
 	<div class="sticky top-0 z-10 border-b border-gray-200 bg-white">
 		<div class="flex h-[52px] items-center px-4">
-			<button onclick={() => goto(data.reviewType === 'trip' ? '/my-trips' : '/order-history')} class="-ml-1 p-1">
+			<button
+				onclick={() => goto(data.reviewType === 'trip' ? '/my-trips' : '/order-history')}
+				class="-ml-1 p-1"
+			>
 				<img src={arrowBackIcon} alt="뒤로가기" class="h-6 w-6" />
 			</button>
 			<h1 class="flex-1 text-center text-[17px] font-semibold text-gray-900">리뷰 작성하기</h1>
@@ -163,10 +166,10 @@
 			<div class="flex items-center gap-4">
 				{#if data.guideProfile?.profileImageUrl}
 					<img
-						src={data.guideProfile.profileImageUrl.startsWith('http') 
+						src={data.guideProfile.profileImageUrl.startsWith('http')
 							? data.guideProfile.profileImageUrl
-							: data.guideProfile.profileImageUrl.startsWith('/api/images/') 
-								? data.guideProfile.profileImageUrl 
+							: data.guideProfile.profileImageUrl.startsWith('/api/images/')
+								? data.guideProfile.profileImageUrl
 								: `/api/images/${data.guideProfile.profileImageUrl}`}
 						alt={data.guide.name}
 						class="h-16 w-16 rounded-full object-cover"
@@ -182,7 +185,8 @@
 					<h2 class="text-lg font-semibold text-gray-900">{data.guide.name}</h2>
 					{#if data.reviewType === 'trip'}
 						<p class="text-sm text-gray-600">
-							{data.destination?.city || '알 수 없는 도시'}, {data.country?.name || '알 수 없는 국가'}
+							{data.destination?.city || '알 수 없는 도시'}, {data.country?.name ||
+								'알 수 없는 국가'}
 						</p>
 						<p class="mt-1 text-xs text-gray-500">
 							{formatDateRange(data.trip.startDate, data.trip.endDate)}
@@ -249,9 +253,9 @@
 			<div class="relative">
 				<textarea
 					bind:value={reviewText}
-					placeholder={data.reviewType === 'trip' 
-						? "가이드와 함께한 여행은 어떠셨나요? 좋았던 점, 아쉬웠던 점을 자유롭게 작성해주세요."
-						: "상품은 어떠셨나요? 좋았던 점, 아쉬웠던 점을 자유롭게 작성해주세요."}
+					placeholder={data.reviewType === 'trip'
+						? '가이드와 함께한 여행은 어떠셨나요? 좋았던 점, 아쉬웠던 점을 자유롭게 작성해주세요.'
+						: '상품은 어떠셨나요? 좋았던 점, 아쉬웠던 점을 자유롭게 작성해주세요.'}
 					class="min-h-[200px] w-full resize-none rounded-lg border border-gray-300 p-4 focus:border-transparent focus:ring-2 focus:ring-[#1095f4] focus:outline-none"
 				></textarea>
 				<div
@@ -335,7 +339,8 @@
 				<button
 					onclick={submitReview}
 					disabled={!(rating > 0 && reviewText.length >= minCharacters) || isSubmitting}
-					class="w-full rounded-xl py-3.5 font-semibold text-white transition-colors {rating > 0 && reviewText.length >= minCharacters &&
+					class="w-full rounded-xl py-3.5 font-semibold text-white transition-colors {rating > 0 &&
+					reviewText.length >= minCharacters &&
 					!isSubmitting
 						? 'bg-[#1095f4] hover:bg-blue-600'
 						: 'bg-gray-300'}"

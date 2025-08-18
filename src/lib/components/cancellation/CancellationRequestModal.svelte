@@ -20,9 +20,9 @@
 	}
 
 	let { isOpen, userRole, paymentId, paymentAmount, tripStartDate, productDate }: Props = $props();
-	
+
 	const dispatch = createEventDispatcher();
-	
+
 	let reasonType = $state('');
 	let reasonDetail = $state('');
 	let supportingDocuments = $state<string[]>([]);
@@ -30,18 +30,19 @@
 	let isSubmitting = $state(false);
 	let calculatedRefund = $state<any>(null);
 	let showRefundCalculator = $state(false);
-	
-	const reasons = userRole === 'traveler' ? TRAVELER_CANCELLATION_REASONS : GUIDE_CANCELLATION_REASONS;
+
+	const reasons =
+		userRole === 'traveler' ? TRAVELER_CANCELLATION_REASONS : GUIDE_CANCELLATION_REASONS;
 	const eventDate = tripStartDate || productDate;
 	const isPast = eventDate ? isPastTrip(eventDate) : false;
-	
+
 	// Check if selected reason requires supporting documents
 	$effect(() => {
 		if (reasonType && EXCEPTION_REASONS.includes(reasonType as any)) {
 			// Show document upload for exception cases
 		}
 	});
-	
+
 	// Calculate refund when reason changes
 	$effect(async () => {
 		if (reasonType && paymentId) {
@@ -56,7 +57,7 @@
 						reasonType
 					})
 				});
-				
+
 				if (response.ok) {
 					const data = await response.json();
 					calculatedRefund = data.calculation;
@@ -67,20 +68,20 @@
 			}
 		}
 	});
-	
+
 	async function handleSubmit() {
 		if (!reasonType || !agreeToTerms) {
 			alert('취소 사유를 선택하고 약관에 동의해주세요.');
 			return;
 		}
-		
+
 		if (EXCEPTION_REASONS.includes(reasonType as any) && supportingDocuments.length === 0) {
 			alert('예외 상황의 경우 증빙 서류를 첨부해주세요.');
 			return;
 		}
-		
+
 		isSubmitting = true;
-		
+
 		try {
 			const response = await fetch('/api/cancellations/request', {
 				method: 'POST',
@@ -94,12 +95,12 @@
 					supportingDocuments
 				})
 			});
-			
+
 			if (!response.ok) {
 				const error = await response.json();
 				throw new Error(error.error || '취소 요청 실패');
 			}
-			
+
 			const result = await response.json();
 			dispatch('success', result);
 			handleClose();
@@ -110,7 +111,7 @@
 			isSubmitting = false;
 		}
 	}
-	
+
 	function handleClose() {
 		if (!isSubmitting) {
 			dispatch('close');
@@ -123,7 +124,7 @@
 			showRefundCalculator = false;
 		}
 	}
-	
+
 	function handleFileUpload(event: Event) {
 		// TODO: Implement file upload to S3 and add URL to supportingDocuments
 		const input = event.target as HTMLInputElement;
@@ -138,13 +139,15 @@
 	<div class="fixed inset-0 z-50 overflow-y-auto">
 		<div class="flex min-h-screen items-center justify-center p-4">
 			<!-- Backdrop -->
-			<div 
-				class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+			<div
+				class="bg-opacity-50 fixed inset-0 bg-black transition-opacity"
 				onclick={handleClose}
 			></div>
-			
+
 			<!-- Modal -->
-			<div class="relative w-full max-w-md transform overflow-hidden rounded-lg bg-white shadow-xl transition-all">
+			<div
+				class="relative w-full max-w-md transform overflow-hidden rounded-lg bg-white shadow-xl transition-all"
+			>
 				<!-- Header -->
 				<div class="flex items-center justify-between border-b p-4">
 					<h3 class="text-lg font-semibold">취소 요청</h3>
@@ -157,13 +160,13 @@
 						<X class="h-5 w-5" />
 					</button>
 				</div>
-				
+
 				<!-- Body -->
-				<div class="p-4 space-y-4">
+				<div class="space-y-4 p-4">
 					{#if isPast}
-						<div class="rounded-lg bg-orange-50 border border-orange-200 p-3">
+						<div class="rounded-lg border border-orange-200 bg-orange-50 p-3">
 							<div class="flex items-start gap-2">
-								<AlertTriangle class="h-5 w-5 text-orange-600 mt-0.5" />
+								<AlertTriangle class="mt-0.5 h-5 w-5 text-orange-600" />
 								<div class="text-sm text-orange-800">
 									<p class="font-semibold">여행 종료 후 취소 요청</p>
 									<p class="mt-1">여행이 이미 종료된 건은 관리자 검토 후 환불이 결정됩니다.</p>
@@ -172,9 +175,9 @@
 							</div>
 						</div>
 					{:else if userRole === 'guide'}
-						<div class="rounded-lg bg-yellow-50 border border-yellow-200 p-3">
+						<div class="rounded-lg border border-yellow-200 bg-yellow-50 p-3">
 							<div class="flex items-start gap-2">
-								<AlertCircle class="h-5 w-5 text-yellow-600 mt-0.5" />
+								<AlertCircle class="mt-0.5 h-5 w-5 text-yellow-600" />
 								<div class="text-sm text-yellow-800">
 									<p class="font-semibold">가이드 취소 안내</p>
 									<p class="mt-1">가이드가 취소하는 경우 여행자에게 전액 환불됩니다.</p>
@@ -183,44 +186,46 @@
 							</div>
 						</div>
 					{/if}
-					
+
 					<!-- Cancellation Reason -->
 					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-2">
+						<label class="mb-2 block text-sm font-medium text-gray-700">
 							취소 사유 <span class="text-red-500">*</span>
 						</label>
 						<select
 							bind:value={reasonType}
-							class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none"
+							class="focus:border-primary w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none"
 							disabled={isSubmitting}
 						>
 							<option value="">선택해주세요</option>
 							{#each Object.entries(reasons) as [value, label]}
-								<option value={value}>{label}</option>
+								<option {value}>{label}</option>
 							{/each}
 						</select>
 					</div>
-					
+
 					<!-- Exception Case Notice -->
 					{#if reasonType && EXCEPTION_REASONS.includes(reasonType as any)}
-						<div class="rounded-lg bg-blue-50 border border-blue-200 p-3">
+						<div class="rounded-lg border border-blue-200 bg-blue-50 p-3">
 							<p class="text-sm text-blue-800">
-								예외 상황으로 인한 취소는 증빙 서류 제출 후 관리자 승인이 필요합니다.
-								승인 시 전액 환불됩니다.
+								예외 상황으로 인한 취소는 증빙 서류 제출 후 관리자 승인이 필요합니다. 승인 시 전액
+								환불됩니다.
 							</p>
 						</div>
-						
+
 						<!-- File Upload -->
 						<div>
-							<label class="block text-sm font-medium text-gray-700 mb-2">
+							<label class="mb-2 block text-sm font-medium text-gray-700">
 								증빙 서류 <span class="text-red-500">*</span>
 							</label>
-							<div class="flex items-center justify-center w-full">
-								<label class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+							<div class="flex w-full items-center justify-center">
+								<label
+									class="flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100"
+								>
 									<div class="flex flex-col items-center justify-center pt-5 pb-6">
-										<Upload class="w-8 h-8 mb-2 text-gray-400" />
+										<Upload class="mb-2 h-8 w-8 text-gray-400" />
 										<p class="text-sm text-gray-500">클릭하여 파일 업로드</p>
-										<p class="text-xs text-gray-400 mt-1">PDF, JPG, PNG (최대 10MB)</p>
+										<p class="mt-1 text-xs text-gray-400">PDF, JPG, PNG (최대 10MB)</p>
 									</div>
 									<input
 										type="file"
@@ -239,21 +244,19 @@
 							{/if}
 						</div>
 					{/if}
-					
+
 					<!-- Reason Detail -->
 					<div>
-						<label class="block text-sm font-medium text-gray-700 mb-2">
-							상세 사유 (선택)
-						</label>
+						<label class="mb-2 block text-sm font-medium text-gray-700"> 상세 사유 (선택) </label>
 						<textarea
 							bind:value={reasonDetail}
 							rows="3"
-							class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none"
+							class="focus:border-primary w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none"
 							placeholder="추가로 전달하실 내용이 있다면 입력해주세요."
 							disabled={isSubmitting}
 						></textarea>
 					</div>
-					
+
 					<!-- Refund Calculator -->
 					{#if showRefundCalculator && calculatedRefund}
 						<RefundCalculator
@@ -266,7 +269,7 @@
 							requiresAdminApproval={calculatedRefund.requiresAdminApproval}
 						/>
 					{/if}
-					
+
 					<!-- Terms Agreement -->
 					<div class="border-t pt-4">
 						<label class="flex items-start gap-2">
@@ -285,9 +288,9 @@
 						</label>
 					</div>
 				</div>
-				
+
 				<!-- Footer -->
-				<div class="border-t p-4 flex gap-2">
+				<div class="flex gap-2 border-t p-4">
 					<button
 						type="button"
 						onclick={handleClose}

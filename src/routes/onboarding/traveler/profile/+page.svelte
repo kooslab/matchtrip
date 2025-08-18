@@ -43,10 +43,10 @@
 			goto('/onboarding/traveler');
 			return;
 		}
-		
+
 		// Set initialized after client-side check
 		isInitialized = true;
-		
+
 		// Initialize dateValue if birthDate exists
 		if (formData.birthDate) {
 			const parts = formData.birthDate.split('-');

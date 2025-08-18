@@ -1,24 +1,24 @@
 import { json } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { 
-	conversations, 
-	productConversations, 
-	messages, 
+import {
+	conversations,
+	productConversations,
+	messages,
 	productMessages,
-	offers, 
+	offers,
 	products,
-	users 
+	users
 } from '$lib/server/db/schema';
 import { eq, or, desc, and, gt, ne, sql } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ locals }) => {
 	const userId = locals.user?.id;
-	
+
 	if (!userId) {
 		return json({ error: 'Unauthorized' }, { status: 401 });
 	}
-	
+
 	try {
 		// Fetch trip conversations
 		const tripConversations = await db
@@ -38,13 +38,8 @@ export const GET: RequestHandler = async ({ locals }) => {
 			})
 			.from(conversations)
 			.leftJoin(offers, eq(conversations.offerId, offers.id))
-			.where(
-				or(
-					eq(conversations.travelerId, userId),
-					eq(conversations.guideId, userId)
-				)
-			);
-		
+			.where(or(eq(conversations.travelerId, userId), eq(conversations.guideId, userId)));
+
 		// Fetch product conversations
 		const productConvs = await db
 			.select({
@@ -64,12 +59,9 @@ export const GET: RequestHandler = async ({ locals }) => {
 			.from(productConversations)
 			.leftJoin(products, eq(productConversations.productId, products.id))
 			.where(
-				or(
-					eq(productConversations.travelerId, userId),
-					eq(productConversations.guideId, userId)
-				)
+				or(eq(productConversations.travelerId, userId), eq(productConversations.guideId, userId))
 			);
-		
+
 		// Process trip conversations
 		const processedTripConvs = await Promise.all(
 			tripConversations.map(async (conv) => {
@@ -86,7 +78,7 @@ export const GET: RequestHandler = async ({ locals }) => {
 					.from(users)
 					.where(eq(users.id, otherUserId))
 					.limit(1);
-				
+
 				// Get last message
 				const [lastMessage] = await db
 					.select({
@@ -98,11 +90,11 @@ export const GET: RequestHandler = async ({ locals }) => {
 					.where(eq(messages.conversationId, conv.id))
 					.orderBy(desc(messages.createdAt))
 					.limit(1);
-				
+
 				// Calculate unread count
 				const isUserTraveler = conv.travelerId === userId;
 				const lastReadAt = isUserTraveler ? conv.travelerLastReadAt : conv.guideLastReadAt;
-				
+
 				let unreadCount = 0;
 				if (lastMessage && lastReadAt) {
 					const unreadMessages = await db
@@ -117,7 +109,7 @@ export const GET: RequestHandler = async ({ locals }) => {
 						);
 					unreadCount = unreadMessages.length;
 				}
-				
+
 				return {
 					id: conv.id,
 					type: 'trip' as const,
@@ -129,16 +121,18 @@ export const GET: RequestHandler = async ({ locals }) => {
 					otherUser,
 					title: conv.offerTitle || 'Trip Chat',
 					subtitle: `Offer: ${conv.offerStatus || 'N/A'}`,
-					offer: conv.offerId_ ? {
-						id: conv.offerId_,
-						title: conv.offerTitle,
-						price: conv.offerPrice,
-						status: conv.offerStatus
-					} : null
+					offer: conv.offerId_
+						? {
+								id: conv.offerId_,
+								title: conv.offerTitle,
+								price: conv.offerPrice,
+								status: conv.offerStatus
+							}
+						: null
 				};
 			})
 		);
-		
+
 		// Process product conversations
 		const processedProductConvs = await Promise.all(
 			productConvs.map(async (conv) => {
@@ -155,7 +149,7 @@ export const GET: RequestHandler = async ({ locals }) => {
 					.from(users)
 					.where(eq(users.id, otherUserId))
 					.limit(1);
-				
+
 				// Get last message
 				const [lastMessage] = await db
 					.select({
@@ -168,11 +162,11 @@ export const GET: RequestHandler = async ({ locals }) => {
 					.where(eq(productMessages.conversationId, conv.id))
 					.orderBy(desc(productMessages.createdAt))
 					.limit(1);
-				
+
 				// Calculate unread count
 				const isUserTraveler = conv.travelerId === userId;
 				const lastReadAt = isUserTraveler ? conv.travelerLastReadAt : conv.guideLastReadAt;
-				
+
 				let unreadCount = 0;
 				if (lastMessage && lastReadAt) {
 					const unreadMessages = await db
@@ -187,7 +181,7 @@ export const GET: RequestHandler = async ({ locals }) => {
 						);
 					unreadCount = unreadMessages.length;
 				}
-				
+
 				// Format last message content based on type
 				let lastMessageContent = lastMessage?.content;
 				if (lastMessage?.messageType === 'image') {
@@ -197,7 +191,7 @@ export const GET: RequestHandler = async ({ locals }) => {
 				} else if (lastMessage?.messageType === 'offer') {
 					lastMessageContent = '💰 제안';
 				}
-				
+
 				return {
 					id: conv.id,
 					type: 'product' as const,
@@ -213,17 +207,15 @@ export const GET: RequestHandler = async ({ locals }) => {
 				};
 			})
 		);
-		
+
 		// Combine and sort by last message time
-		const allConversations = [...processedTripConvs, ...processedProductConvs]
-			.sort((a, b) => {
-				const aTime = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
-				const bTime = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
-				return bTime - aTime;
-			});
-		
+		const allConversations = [...processedTripConvs, ...processedProductConvs].sort((a, b) => {
+			const aTime = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
+			const bTime = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
+			return bTime - aTime;
+		});
+
 		return json({ conversations: allConversations });
-		
 	} catch (error) {
 		console.error('Error fetching conversations:', error);
 		return json({ error: 'Failed to fetch conversations' }, { status: 500 });

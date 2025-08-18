@@ -9,11 +9,11 @@ const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
 export const GET: RequestHandler = async ({ params, locals }) => {
 	const productId = params.id;
 	const userId = locals.user?.id;
-	
+
 	if (!userId) {
 		return json({ error: 'Unauthorized' }, { status: 401 });
 	}
-	
+
 	if (!productId || !uuidRegex.test(productId)) {
 		return json({ error: 'Invalid product ID' }, { status: 400 });
 	}
@@ -49,12 +49,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 		const completedPayments = await db
 			.select({ id: payments.id })
 			.from(payments)
-			.where(
-				and(
-					eq(payments.productId, productId),
-					eq(payments.status, 'completed')
-				)
-			);
+			.where(and(eq(payments.productId, productId), eq(payments.status, 'completed')));
 
 		const hasActiveConversations = conversations.length > 0;
 		const hasCompletedPayments = completedPayments.length > 0;
@@ -69,8 +64,8 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 				conversationCount: conversations.length,
 				completedPaymentCount: completedPayments.length
 			},
-			reason: isRestricted 
-				? hasCompletedPayments 
+			reason: isRestricted
+				? hasCompletedPayments
 					? 'Product has completed payments and cannot be modified'
 					: 'Product has active conversations and cannot be modified'
 				: null

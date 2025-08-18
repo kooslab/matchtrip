@@ -414,335 +414,335 @@
 </script>
 
 <div class="min-h-screen bg-white">
-	<div class="max-w-md mx-auto relative flex flex-col min-h-screen">
-	{#if !loading}
-		<!-- Header -->
-		<div class="safe-area-top bg-white">
-			<div class="flex items-center justify-between px-4 py-4">
-				<!-- Back Button -->
-				<button 
-					onclick={() => goto('/chat')} 
-					class="flex items-center justify-center p-0"
-					aria-label="Go back to chat list"
-				>
-					<div class="h-6 w-6" style="color: #1095f4;">
-						{@html ArrowBackIcon.replace('fill="#8B95A1"', 'fill="currentColor"')}
+	<div class="relative mx-auto flex min-h-screen max-w-md flex-col">
+		{#if !loading}
+			<!-- Header -->
+			<div class="safe-area-top bg-white">
+				<div class="flex items-center justify-between px-4 py-4">
+					<!-- Back Button -->
+					<button
+						onclick={() => goto('/chat')}
+						class="flex items-center justify-center p-0"
+						aria-label="Go back to chat list"
+					>
+						<div class="h-6 w-6" style="color: #1095f4;">
+							{@html ArrowBackIcon.replace('fill="#8B95A1"', 'fill="currentColor"')}
+						</div>
+					</button>
+
+					<!-- User Name and Avatar -->
+					<div class="flex flex-1 items-center justify-center">
+						{#if otherPerson}
+							<div class="flex items-center gap-2">
+								{#if otherPerson.image}
+									<img
+										src={otherPerson.image}
+										alt={otherPersonName}
+										class="h-8 w-8 rounded-full object-cover"
+									/>
+								{:else}
+									<div class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200">
+										<span class="text-sm font-medium text-gray-600">
+											{otherPersonName?.charAt(0).toUpperCase()}
+										</span>
+									</div>
+								{/if}
+								<span class="text-lg font-semibold text-gray-900">{otherPersonName || 'User'}</span>
+							</div>
+						{/if}
 					</div>
-				</button>
-				
-				<!-- User Name and Avatar -->
-				<div class="flex flex-1 items-center justify-center">
-					{#if otherPerson}
-						<div class="flex items-center gap-2">
-							{#if otherPerson.image}
-								<img 
-									src={otherPerson.image} 
-									alt={otherPersonName} 
-									class="h-8 w-8 rounded-full object-cover" 
-								/>
-							{:else}
-								<div class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200">
-									<span class="text-sm font-medium text-gray-600">
-										{otherPersonName?.charAt(0).toUpperCase()}
+
+					<!-- More Options Button -->
+					<button class="flex items-center justify-center p-0">
+						<MoreHorizontal class="h-6 w-6 text-gray-400" />
+					</button>
+				</div>
+			</div>
+
+			<!-- Offer Details Bar -->
+			{#if offer}
+				<div class="border-b border-gray-100 bg-white/95 backdrop-blur-sm">
+					<div class="px-4 py-3">
+						<div class="flex items-center justify-between">
+							<div class="flex flex-col gap-1">
+								<span class="text-secondary text-[10px] leading-3 font-medium">나의 제안 금액</span>
+								<div class="flex items-center gap-1">
+									<span class="text-primary text-base font-bold"
+										>{offer.price.toLocaleString('ko-KR')}원</span
+									>
+									<div class="text-primary h-3 w-3 rotate-90">
+										{@html ArrowRightSmallIcon}
+									</div>
+								</div>
+							</div>
+							{#if statusInfo}
+								<div
+									class="rounded border px-2 py-0.5"
+									style="background-color: {statusInfo.bgColor}; border-color: {statusInfo.bgColor};"
+								>
+									<span
+										class="text-[11px] leading-4 font-medium"
+										style="color: {statusInfo.textColor}"
+									>
+										{statusInfo.text}
 									</span>
 								</div>
 							{/if}
-							<span class="text-lg font-semibold text-gray-900">{otherPersonName || 'User'}</span>
 						</div>
-					{/if}
+					</div>
 				</div>
-				
-				<!-- More Options Button -->
-				<button class="flex items-center justify-center p-0">
-					<MoreHorizontal class="h-6 w-6 text-gray-400" />
-				</button>
+			{/if}
+		{:else}
+			<!-- Loading header skeleton -->
+			<div class="safe-area-top border-b border-gray-100 bg-white/95 backdrop-blur-sm">
+				<div class="flex items-center justify-between px-4 py-2.5">
+					<div class="h-5 w-5 animate-pulse rounded bg-gray-200"></div>
+					<div class="flex items-center gap-1">
+						<div class="h-7 w-7 animate-pulse rounded-full bg-gray-200"></div>
+						<div class="h-4 w-20 animate-pulse rounded bg-gray-200"></div>
+					</div>
+					<div class="h-5 w-5 animate-pulse rounded bg-gray-200"></div>
+				</div>
 			</div>
-		</div>
+		{/if}
 
-		<!-- Offer Details Bar -->
-		{#if offer}
-			<div class="border-b border-gray-100 bg-white/95 backdrop-blur-sm">
-				<div class="px-4 py-3">
-					<div class="flex items-center justify-between">
-						<div class="flex flex-col gap-1">
-							<span class="text-secondary text-[10px] leading-3 font-medium">나의 제안 금액</span>
-							<div class="flex items-center gap-1">
-								<span class="text-primary text-base font-bold"
-									>{offer.price.toLocaleString('ko-KR')}원</span
+		{#if loading}
+			<div class="flex flex-1 flex-col">
+				<!-- Messages skeleton -->
+				<div class="flex-1 overflow-y-auto px-4 py-4">
+					{#each Array(5) as _, i}
+						<div class={`mb-3 flex flex-col ${i % 2 === 0 ? 'items-start' : 'items-end'}`}>
+							<div class="mb-1 h-3 w-16 animate-pulse rounded bg-gray-200"></div>
+							<div
+								class={`rounded-xl px-3 py-3 ${i % 2 === 0 ? 'rounded-tl-md bg-[#003e8105]' : 'bg-color-primary rounded-tr-md'}`}
+							>
+								<SkeletonLoader
+									rows={Math.floor(Math.random() * 2) + 1}
+									height="h-4"
+									width="w-[200px]"
+								/>
+							</div>
+							<div class="mt-1 h-3 w-12 animate-pulse rounded bg-gray-200"></div>
+						</div>
+					{/each}
+				</div>
+
+				<!-- Input skeleton -->
+				<div class="border-t border-gray-100 bg-white/95 p-4 backdrop-blur-sm">
+					<div class="flex gap-3">
+						<div class="h-9 flex-1 animate-pulse rounded-[20px] bg-gray-200"></div>
+						<div class="h-9 w-9 animate-pulse rounded-[20px] bg-gray-200"></div>
+					</div>
+				</div>
+			</div>
+		{:else if error}
+			<div class="flex flex-1 items-center justify-center">
+				<div class="text-center">
+					<p class="text-red-600">{error}</p>
+					<button
+						onclick={() => goto('/chat')}
+						class="mt-4 rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+					>
+						목록으로 돌아가기
+					</button>
+				</div>
+			</div>
+		{:else if conversation}
+			<!-- Main content area with flex to ensure input stays at bottom -->
+			<div class="flex flex-1 flex-col overflow-hidden">
+				<!-- Messages -->
+				<div bind:this={messagesContainer} class="flex-1 overflow-y-auto px-4 py-2">
+					{#each messages as message, i}
+						{@const parsedContent = parseMessageContent(message.content)}
+						<div
+							class="mb-3 flex flex-col gap-1 {message.senderId !== currentUserId
+								? 'items-start'
+								: 'items-end'}"
+						>
+							{#if message.senderId !== currentUserId}
+								<span class="px-2 text-xs font-semibold" style="color: #052236;">
+									{message.sender.name}
+								</span>
+							{/if}
+
+							{#if message.messageType === 'cancellation_request'}
+								<div
+									class="max-w-[300px] overflow-hidden rounded-lg border-2 border-blue-500 bg-white"
 								>
-								<div class="text-primary h-3 w-3 rotate-90">
-									{@html ArrowRightSmallIcon}
+									<div class="border-b border-dashed border-blue-300 px-4 py-3">
+										<p class="text-center font-semibold text-gray-900">취소 요청</p>
+									</div>
+									<div class="border-b border-dashed border-blue-300 px-4 py-3">
+										<p class="text-center text-gray-700">
+											{message.metadata?.reason || '가이드가 여행 취소를 요청하였습니다.'}
+										</p>
+									</div>
+									<div class="px-4 py-3">
+										<!-- Debug info -->
+										<p class="mb-2 text-xs text-gray-400">
+											Role: {data?.user?.role || 'none'}, Status: {message.metadata?.status ||
+												'undefined'}
+										</p>
+
+										{#if message.metadata?.status === 'accepted'}
+											<p class="text-center font-medium text-green-600">✓ 취소가 승인되었습니다</p>
+										{:else if message.metadata?.status === 'declined'}
+											<p class="text-center font-medium text-red-600">✗ 취소가 거절되었습니다</p>
+										{:else}
+											<!-- Always show button for travelers regardless of metadata status -->
+											{#if data?.user?.role === 'traveler'}
+												<button
+													type="button"
+													onclick={() => handleCancelRequestClick(message)}
+													class="w-full rounded bg-blue-600 py-2 font-medium text-white transition-colors hover:bg-blue-700"
+												>
+													확인하기
+												</button>
+											{:else}
+												<p class="text-center text-sm text-gray-500">
+													여행자의 응답을 기다리고 있습니다
+												</p>
+											{/if}
+										{/if}
+									</div>
 								</div>
+							{:else if message.messageType === 'cancellation_response'}
+								<div class="max-w-[280px] rounded-lg bg-gray-100 px-4 py-3">
+									<p class="mb-1 text-sm font-semibold">
+										취소 {message.metadata?.response === 'accepted' ? '승인' : '거절'}
+									</p>
+									<p class="text-sm text-gray-600">
+										{message.metadata?.response === 'accepted'
+											? '가이드가 여행 취소를 요청하였습니다.'
+											: '취소 요청이 거절되었습니다.'}
+									</p>
+								</div>
+							{:else}
+								<div
+									class="max-w-[212px] px-3 py-3 {message.senderId !== currentUserId
+										? 'rounded-tl-md rounded-tr-xl rounded-br-xl rounded-bl-xl'
+										: 'rounded-tl-xl rounded-tr-md rounded-br-xl rounded-bl-xl'}"
+									style="background-color: {message.senderId !== currentUserId
+										? '#003e8105'
+										: '#1095f4'};"
+								>
+									{#if parsedContent.hasLinks}
+										<p
+											class="message-content text-[13px] leading-5"
+											style="color: {message.senderId === currentUserId ? '#ffffff' : '#052236'};"
+										>
+											{@html parsedContent.html}
+										</p>
+									{:else}
+										<p
+											class="text-[13px] leading-5"
+											style="color: {message.senderId === currentUserId ? '#ffffff' : '#052236'};"
+										>
+											{message.content}
+										</p>
+									{/if}
+								</div>
+							{/if}
+
+							<div class="flex items-center gap-1 px-2">
+								<span class="text-secondary text-[11px] font-medium">
+									{formatMessageTime(message.createdAt)}
+								</span>
+								{#if message.isEdited}
+									<span class="text-secondary text-[11px]">(수정됨)</span>
+								{/if}
 							</div>
 						</div>
-						{#if statusInfo}
-							<div
-								class="rounded border px-2 py-0.5"
-								style="background-color: {statusInfo.bgColor}; border-color: {statusInfo.bgColor};"
-							>
-								<span
-									class="text-[11px] leading-4 font-medium"
-									style="color: {statusInfo.textColor}"
-								>
-									{statusInfo.text}
-								</span>
-							</div>
-						{/if}
+					{/each}
+				</div>
+
+				<!-- Input -->
+				{#if conversation.status === 'active'}
+					<div
+						class="safe-area-bottom rounded-t-[20px] border-t border-gray-100 bg-[#fefefe]/95 shadow-[0px_-5px_20px_0px_rgba(0,0,0,0.02)] backdrop-blur-sm"
+					>
+						<div class="px-4 py-2">
+							{#if warningMessage}
+								<div class="mb-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2">
+									<p class="text-sm text-red-700">{warningMessage}</p>
+								</div>
+							{/if}
+							{#if !canSendMessage}
+								<div class="py-3 text-center">
+									<p class="text-sm text-gray-600">
+										고객이 먼저 메시지를 보내거나 결제가 완료된 후에 채팅이 가능합니다.
+									</p>
+								</div>
+							{:else}
+								<form onsubmit={sendMessage} class="flex items-end gap-3">
+									<div class="flex-1 py-2">
+										<input
+											id="message-input"
+											type="text"
+											bind:value={newMessage}
+											placeholder="메시지를 입력하세요"
+											disabled={sending}
+											oninput={() => {
+												if (warningMessage) warningMessage = '';
+											}}
+											class="text-primary placeholder:text-primary/60 w-full bg-transparent text-base leading-6 outline-none"
+										/>
+									</div>
+									<button
+										type="submit"
+										disabled={!newMessage.trim() || sending}
+										class="flex h-9 w-9 items-center justify-center rounded-[20px] p-1 transition-opacity disabled:opacity-50"
+										style="background-color: #1095f4; background-image: linear-gradient(157.454deg, rgba(54, 41, 241, 0) 0%, rgba(220, 220, 220, 0.4) 100%)"
+									>
+										<div class="h-7 w-7" style="color: white;">
+											{@html PlayIcon.replace('fill="#8B95A1"', 'fill="currentColor"')}
+										</div>
+									</button>
+								</form>
+							{/if}
+						</div>
+					</div>
+				{:else}
+					<div
+						class="safe-area-bottom rounded-t-[20px] border-t border-gray-100 bg-[#fefefe]/95 p-4 text-center text-sm text-gray-500 backdrop-blur-sm"
+					>
+						이 대화는 종료되었습니다. (상태: {conversation.status})
+					</div>
+				{/if}
+			</div>
+		{/if}
+
+		<!-- Cancellation Confirmation Modal -->
+		{#if showCancelModal && selectedCancelRequest}
+			<div class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black px-4">
+				<div class="w-full max-w-sm rounded-2xl bg-white p-6">
+					<h2 class="mb-6 text-center text-xl font-bold">취소 확인</h2>
+
+					<div class="mb-6 rounded-lg bg-gray-50 p-4">
+						<p class="text-center text-sm text-gray-600">
+							{selectedCancelRequest.metadata?.reason || '취소 사유가 제공되지 않았습니다.'}
+						</p>
+					</div>
+
+					<div class="flex gap-3">
+						<button
+							type="button"
+							onclick={() => handleCancelResponse('declined')}
+							class="flex-1 rounded-lg border border-gray-300 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-50"
+						>
+							담기
+						</button>
+						<button
+							type="button"
+							onclick={() => handleCancelResponse('accepted')}
+							class="flex-1 rounded-lg bg-blue-600 py-3 font-medium text-white transition-colors hover:bg-blue-700"
+						>
+							수락하기
+						</button>
 					</div>
 				</div>
 			</div>
 		{/if}
-	{:else}
-		<!-- Loading header skeleton -->
-		<div class="safe-area-top border-b border-gray-100 bg-white/95 backdrop-blur-sm">
-			<div class="flex items-center justify-between px-4 py-2.5">
-				<div class="h-5 w-5 animate-pulse rounded bg-gray-200"></div>
-				<div class="flex items-center gap-1">
-					<div class="h-7 w-7 animate-pulse rounded-full bg-gray-200"></div>
-					<div class="h-4 w-20 animate-pulse rounded bg-gray-200"></div>
-				</div>
-				<div class="h-5 w-5 animate-pulse rounded bg-gray-200"></div>
-			</div>
-		</div>
-	{/if}
-
-	{#if loading}
-		<div class="flex flex-1 flex-col">
-			<!-- Messages skeleton -->
-			<div class="flex-1 overflow-y-auto px-4 py-4">
-				{#each Array(5) as _, i}
-					<div class={`mb-3 flex flex-col ${i % 2 === 0 ? 'items-start' : 'items-end'}`}>
-						<div class="mb-1 h-3 w-16 animate-pulse rounded bg-gray-200"></div>
-						<div
-							class={`rounded-xl px-3 py-3 ${i % 2 === 0 ? 'rounded-tl-md bg-[#003e8105]' : 'bg-color-primary rounded-tr-md'}`}
-						>
-							<SkeletonLoader
-								rows={Math.floor(Math.random() * 2) + 1}
-								height="h-4"
-								width="w-[200px]"
-							/>
-						</div>
-						<div class="mt-1 h-3 w-12 animate-pulse rounded bg-gray-200"></div>
-					</div>
-				{/each}
-			</div>
-
-			<!-- Input skeleton -->
-			<div class="border-t border-gray-100 bg-white/95 p-4 backdrop-blur-sm">
-				<div class="flex gap-3">
-					<div class="h-9 flex-1 animate-pulse rounded-[20px] bg-gray-200"></div>
-					<div class="h-9 w-9 animate-pulse rounded-[20px] bg-gray-200"></div>
-				</div>
-			</div>
-		</div>
-	{:else if error}
-		<div class="flex flex-1 items-center justify-center">
-			<div class="text-center">
-				<p class="text-red-600">{error}</p>
-				<button
-					onclick={() => goto('/chat')}
-					class="mt-4 rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
-				>
-					목록으로 돌아가기
-				</button>
-			</div>
-		</div>
-	{:else if conversation}
-		<!-- Main content area with flex to ensure input stays at bottom -->
-		<div class="flex flex-1 flex-col overflow-hidden">
-			<!-- Messages -->
-			<div bind:this={messagesContainer} class="flex-1 overflow-y-auto px-4 py-2">
-				{#each messages as message, i}
-					{@const parsedContent = parseMessageContent(message.content)}
-					<div
-						class="mb-3 flex flex-col gap-1 {message.senderId !== currentUserId
-							? 'items-start'
-							: 'items-end'}"
-					>
-						{#if message.senderId !== currentUserId}
-							<span class="px-2 text-xs font-semibold" style="color: #052236;">
-								{message.sender.name}
-							</span>
-						{/if}
-
-						{#if message.messageType === 'cancellation_request'}
-							<div
-								class="max-w-[300px] overflow-hidden rounded-lg border-2 border-blue-500 bg-white"
-							>
-								<div class="border-b border-dashed border-blue-300 px-4 py-3">
-									<p class="text-center font-semibold text-gray-900">취소 요청</p>
-								</div>
-								<div class="border-b border-dashed border-blue-300 px-4 py-3">
-									<p class="text-center text-gray-700">
-										{message.metadata?.reason || '가이드가 여행 취소를 요청하였습니다.'}
-									</p>
-								</div>
-								<div class="px-4 py-3">
-									<!-- Debug info -->
-									<p class="mb-2 text-xs text-gray-400">
-										Role: {data?.user?.role || 'none'}, Status: {message.metadata?.status ||
-											'undefined'}
-									</p>
-
-									{#if message.metadata?.status === 'accepted'}
-										<p class="text-center font-medium text-green-600">✓ 취소가 승인되었습니다</p>
-									{:else if message.metadata?.status === 'declined'}
-										<p class="text-center font-medium text-red-600">✗ 취소가 거절되었습니다</p>
-									{:else}
-										<!-- Always show button for travelers regardless of metadata status -->
-										{#if data?.user?.role === 'traveler'}
-											<button
-												type="button"
-												onclick={() => handleCancelRequestClick(message)}
-												class="w-full rounded bg-blue-600 py-2 font-medium text-white transition-colors hover:bg-blue-700"
-											>
-												확인하기
-											</button>
-										{:else}
-											<p class="text-center text-sm text-gray-500">
-												여행자의 응답을 기다리고 있습니다
-											</p>
-										{/if}
-									{/if}
-								</div>
-							</div>
-						{:else if message.messageType === 'cancellation_response'}
-							<div class="max-w-[280px] rounded-lg bg-gray-100 px-4 py-3">
-								<p class="mb-1 text-sm font-semibold">
-									취소 {message.metadata?.response === 'accepted' ? '승인' : '거절'}
-								</p>
-								<p class="text-sm text-gray-600">
-									{message.metadata?.response === 'accepted'
-										? '가이드가 여행 취소를 요청하였습니다.'
-										: '취소 요청이 거절되었습니다.'}
-								</p>
-							</div>
-						{:else}
-							<div
-								class="max-w-[212px] px-3 py-3 {message.senderId !== currentUserId
-									? 'rounded-tl-md rounded-tr-xl rounded-br-xl rounded-bl-xl'
-									: 'rounded-tl-xl rounded-tr-md rounded-br-xl rounded-bl-xl'}"
-								style="background-color: {message.senderId !== currentUserId
-									? '#003e8105'
-									: '#1095f4'};"
-							>
-								{#if parsedContent.hasLinks}
-									<p
-										class="message-content text-[13px] leading-5"
-										style="color: {message.senderId === currentUserId ? '#ffffff' : '#052236'};"
-									>
-										{@html parsedContent.html}
-									</p>
-								{:else}
-									<p
-										class="text-[13px] leading-5"
-										style="color: {message.senderId === currentUserId ? '#ffffff' : '#052236'};"
-									>
-										{message.content}
-									</p>
-								{/if}
-							</div>
-						{/if}
-
-						<div class="flex items-center gap-1 px-2">
-							<span class="text-secondary text-[11px] font-medium">
-								{formatMessageTime(message.createdAt)}
-							</span>
-							{#if message.isEdited}
-								<span class="text-secondary text-[11px]">(수정됨)</span>
-							{/if}
-						</div>
-					</div>
-				{/each}
-			</div>
-
-			<!-- Input -->
-			{#if conversation.status === 'active'}
-				<div
-					class="safe-area-bottom rounded-t-[20px] border-t border-gray-100 bg-[#fefefe]/95 shadow-[0px_-5px_20px_0px_rgba(0,0,0,0.02)] backdrop-blur-sm"
-				>
-					<div class="px-4 py-2">
-						{#if warningMessage}
-							<div class="mb-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2">
-								<p class="text-sm text-red-700">{warningMessage}</p>
-							</div>
-						{/if}
-						{#if !canSendMessage}
-							<div class="py-3 text-center">
-								<p class="text-sm text-gray-600">
-									고객이 먼저 메시지를 보내거나 결제가 완료된 후에 채팅이 가능합니다.
-								</p>
-							</div>
-						{:else}
-							<form onsubmit={sendMessage} class="flex items-end gap-3">
-								<div class="flex-1 py-2">
-									<input
-										id="message-input"
-										type="text"
-										bind:value={newMessage}
-										placeholder="메시지를 입력하세요"
-										disabled={sending}
-										oninput={() => {
-											if (warningMessage) warningMessage = '';
-										}}
-										class="text-primary placeholder:text-primary/60 w-full bg-transparent text-base leading-6 outline-none"
-									/>
-								</div>
-								<button
-									type="submit"
-									disabled={!newMessage.trim() || sending}
-									class="flex h-9 w-9 items-center justify-center rounded-[20px] p-1 transition-opacity disabled:opacity-50"
-									style="background-color: #1095f4; background-image: linear-gradient(157.454deg, rgba(54, 41, 241, 0) 0%, rgba(220, 220, 220, 0.4) 100%)"
-								>
-									<div class="h-7 w-7" style="color: white;">
-										{@html PlayIcon.replace('fill="#8B95A1"', 'fill="currentColor"')}
-									</div>
-								</button>
-							</form>
-						{/if}
-					</div>
-				</div>
-			{:else}
-				<div
-					class="safe-area-bottom rounded-t-[20px] border-t border-gray-100 bg-[#fefefe]/95 p-4 text-center text-sm text-gray-500 backdrop-blur-sm"
-				>
-					이 대화는 종료되었습니다. (상태: {conversation.status})
-				</div>
-			{/if}
-		</div>
-	{/if}
-
-	<!-- Cancellation Confirmation Modal -->
-	{#if showCancelModal && selectedCancelRequest}
-		<div class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black px-4">
-			<div class="w-full max-w-sm rounded-2xl bg-white p-6">
-				<h2 class="mb-6 text-center text-xl font-bold">취소 확인</h2>
-
-				<div class="mb-6 rounded-lg bg-gray-50 p-4">
-					<p class="text-center text-sm text-gray-600">
-						{selectedCancelRequest.metadata?.reason || '취소 사유가 제공되지 않았습니다.'}
-					</p>
-				</div>
-
-				<div class="flex gap-3">
-					<button
-						type="button"
-						onclick={() => handleCancelResponse('declined')}
-						class="flex-1 rounded-lg border border-gray-300 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-50"
-					>
-						담기
-					</button>
-					<button
-						type="button"
-						onclick={() => handleCancelResponse('accepted')}
-						class="flex-1 rounded-lg bg-blue-600 py-3 font-medium text-white transition-colors hover:bg-blue-700"
-					>
-						수락하기
-					</button>
-				</div>
-			</div>
-		</div>
-	{/if}
 	</div>
 </div>
 

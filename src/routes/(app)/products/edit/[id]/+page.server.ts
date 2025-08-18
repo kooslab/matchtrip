@@ -11,13 +11,13 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	if (!locals.user) {
 		throw redirect(303, '/');
 	}
-	
+
 	if (locals.user.role !== 'guide') {
 		throw redirect(303, '/');
 	}
 
 	const productId = params.id;
-	
+
 	if (!productId || !uuidRegex.test(productId)) {
 		throw redirect(303, '/profile/guide/products');
 	}
@@ -76,24 +76,30 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			.orderBy(continents.name, countries.name, destinations.city);
 
 		// Group destinations by continent and country
-		const groupedDestinations: Record<string, {
-			name: string;
-			code: string;
-			countries: Record<string, {
+		const groupedDestinations: Record<
+			string,
+			{
 				name: string;
 				code: string;
-				destinations: Array<{
-					id: number;
-					city: string;
-					imageUrl: string | null;
-				}>;
-			}>;
-		}> = {};
-		
+				countries: Record<
+					string,
+					{
+						name: string;
+						code: string;
+						destinations: Array<{
+							id: number;
+							city: string;
+							imageUrl: string | null;
+						}>;
+					}
+				>;
+			}
+		> = {};
+
 		allDestinations.forEach((dest) => {
 			const continentName = dest.continentName;
 			const countryName = dest.countryName;
-			
+
 			if (!groupedDestinations[continentName]) {
 				groupedDestinations[continentName] = {
 					name: continentName,
@@ -101,7 +107,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 					countries: {}
 				};
 			}
-			
+
 			if (!groupedDestinations[continentName].countries[countryName]) {
 				groupedDestinations[continentName].countries[countryName] = {
 					name: countryName,
@@ -109,7 +115,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 					destinations: []
 				};
 			}
-			
+
 			groupedDestinations[continentName].countries[countryName].destinations.push({
 				id: dest.id,
 				city: dest.city,

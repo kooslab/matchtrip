@@ -6,11 +6,11 @@ export const load: LayoutServerLoad = async ({ locals, cookies }) => {
 	if (!locals.user) {
 		throw redirect(303, '/');
 	}
-	
+
 	if (locals.user.role !== 'guide') {
 		throw redirect(303, '/');
 	}
-	
+
 	// Get or initialize product data from cookies
 	const productDataCookie = cookies.get('product_create_data');
 	let productData = {
@@ -22,7 +22,7 @@ export const load: LayoutServerLoad = async ({ locals, cookies }) => {
 		languages: [] as string[],
 		fileIds: [] as string[]
 	};
-	
+
 	if (productDataCookie) {
 		try {
 			productData = JSON.parse(productDataCookie);
@@ -30,7 +30,7 @@ export const load: LayoutServerLoad = async ({ locals, cookies }) => {
 			// Invalid cookie data, use default
 		}
 	}
-	
+
 	return {
 		user: locals.user,
 		productData

@@ -13,25 +13,25 @@ import { eq } from 'drizzle-orm';
  */
 export function encryptUserDataForAuth(userData: any) {
 	if (!userData) return userData;
-	
+
 	const encrypted = { ...userData };
-	
+
 	// Encrypt personal fields if they exist
 	if (encrypted.name) {
 		encrypted.name = encrypt(encrypted.name);
 	}
-	
+
 	if (encrypted.email) {
 		// Keep original email for unique constraint
 		encrypted.email = encrypt(encrypted.email);
 		// Add email hash for lookups
 		encrypted.emailHash = hashEmail(userData.email);
 	}
-	
+
 	if (encrypted.phone) {
 		encrypted.phone = encrypt(encrypted.phone);
 	}
-	
+
 	return encrypted;
 }
 
@@ -41,22 +41,22 @@ export function encryptUserDataForAuth(userData: any) {
  */
 export function decryptUserDataFromAuth(userData: any) {
 	if (!userData) return userData;
-	
+
 	const decrypted = { ...userData };
-	
+
 	// Decrypt personal fields if they exist and are encrypted
 	if (decrypted.name) {
 		decrypted.name = decrypt(decrypted.name);
 	}
-	
+
 	if (decrypted.email) {
 		decrypted.email = decrypt(decrypted.email);
 	}
-	
+
 	if (decrypted.phone) {
 		decrypted.phone = decrypt(decrypted.phone);
 	}
-	
+
 	return decrypted;
 }
 
@@ -71,6 +71,6 @@ export function createEncryptedDrizzleAdapter(db: any, schema: any) {
 		provider: 'pg',
 		schema
 	});
-	
+
 	return baseAdapter;
 }

@@ -3,21 +3,21 @@
 	import { enhance } from '$app/forms';
 	import { ChevronLeft, Camera, Plus, X } from 'lucide-svelte';
 	import RichTextEditor from '$lib/components/RichTextEditor.svelte';
-	
+
 	const { data, form } = $props();
-	
+
 	let isSubmitting = $state(false);
 	let profileImageFile = $state<File | null>(null);
 	let profileImagePreview = $state<string | null>(null);
 	let uploadingImage = $state(false);
-	
+
 	// Form fields
 	let name = $state(data.user?.name || '');
 	let bio = $state(data.guideProfile?.bio || '');
 	let languages = $state(data.guideProfile?.languages?.join(', ') || '');
 	let specialties = $state(data.guideProfile?.specialties?.join(', ') || '');
 	let experience = $state(data.guideProfile?.experience || '');
-	
+
 	// Current profile image
 	let currentProfileImage = $derived(() => {
 		if (profileImagePreview) return profileImagePreview;
@@ -28,26 +28,26 @@
 		}
 		return null;
 	});
-	
+
 	function handleImageSelect(event: Event) {
 		const input = event.target as HTMLInputElement;
 		const file = input.files?.[0];
-		
+
 		if (file) {
 			// Validate file type
 			if (!file.type.startsWith('image/')) {
 				alert('이미지 파일만 업로드 가능합니다.');
 				return;
 			}
-			
+
 			// Validate file size (max 5MB)
 			if (file.size > 5 * 1024 * 1024) {
 				alert('파일 크기는 5MB 이하여야 합니다.');
 				return;
 			}
-			
+
 			profileImageFile = file;
-			
+
 			// Create preview
 			const reader = new FileReader();
 			reader.onload = (e) => {
@@ -56,25 +56,25 @@
 			reader.readAsDataURL(file);
 		}
 	}
-	
+
 	async function uploadProfileImage() {
 		if (!profileImageFile) return null;
-		
+
 		uploadingImage = true;
-		
+
 		try {
 			const formData = new FormData();
 			formData.append('file', profileImageFile);
 			formData.append('type', 'guide-profile');
-			
+
 			const response = await fetch('/api/upload', {
 				method: 'POST',
 				body: formData
 			});
-			
+
 			if (response.ok) {
 				const data = await response.json();
-				
+
 				// Update guide profile with new image
 				const updateResponse = await fetch('/api/profile/guide/update-image', {
 					method: 'POST',
@@ -85,12 +85,12 @@
 						profileImageUrl: data.filename
 					})
 				});
-				
+
 				if (updateResponse.ok) {
 					return data.filename;
 				}
 			}
-			
+
 			throw new Error('Failed to upload image');
 		} catch (error) {
 			console.error('Error uploading image:', error);
@@ -100,7 +100,7 @@
 			uploadingImage = false;
 		}
 	}
-	
+
 	// Remove handleSubmit function as we'll handle it directly in enhance
 </script>
 
@@ -114,7 +114,7 @@
 			<h1 class="ml-2 text-lg font-semibold">프로필 수정</h1>
 		</div>
 	</header>
-	
+
 	<!-- Profile Image Section -->
 	<div class="bg-white p-6">
 		<div class="flex flex-col items-center">
@@ -132,8 +132,10 @@
 						</span>
 					</div>
 				{/if}
-				
-				<label class="absolute bottom-0 right-0 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700">
+
+				<label
+					class="absolute right-0 bottom-0 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700"
+				>
 					<Camera class="h-4 w-4" />
 					<input
 						type="file"
@@ -144,7 +146,7 @@
 					/>
 				</label>
 			</div>
-			
+
 			{#if uploadingImage}
 				<p class="mt-2 text-sm text-gray-500">이미지 업로드 중...</p>
 			{:else if profileImageFile}
@@ -152,10 +154,10 @@
 			{/if}
 		</div>
 	</div>
-	
+
 	<!-- Form -->
-	<form 
-		method="POST" 
+	<form
+		method="POST"
 		action="?/updateProfile"
 		onsubmit={(e) => {
 			if (isSubmitting || uploadingImage) {
@@ -168,19 +170,19 @@
 			if (isSubmitting || uploadingImage) {
 				return () => {};
 			}
-			
+
 			isSubmitting = true;
-			
+
 			return async ({ update, result }) => {
 				try {
 					// Handle image upload first
 					if (profileImageFile) {
 						await uploadProfileImage();
 					}
-					
+
 					// Update the form
 					await update();
-					
+
 					// Check result and navigate on success
 					if (result.type === 'success' || form?.success) {
 						// Navigate to profile page on success
@@ -201,29 +203,25 @@
 		<!-- Basic Info -->
 		<div class="bg-white p-4">
 			<h2 class="mb-4 font-semibold text-gray-900">기본 정보</h2>
-			
+
 			<div class="space-y-4">
 				<div>
-					<label for="name" class="block text-sm font-medium text-gray-700">
-						이름
-					</label>
+					<label for="name" class="block text-sm font-medium text-gray-700"> 이름 </label>
 					<input
 						type="text"
 						id="name"
 						name="name"
 						bind:value={name}
 						required
-						class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+						class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 					/>
 				</div>
-				
+
 				<div>
-					<label class="block text-sm font-medium text-gray-700 mb-2">
-						자기소개
-					</label>
+					<label class="mb-2 block text-sm font-medium text-gray-700"> 자기소개 </label>
 					<RichTextEditor
 						value={bio}
-						onchange={(newContent) => bio = newContent}
+						onchange={(newContent) => (bio = newContent)}
 						placeholder="여행자들에게 자신을 소개해주세요. 자신의 경험, 전문 분야, 가이드 스타일 등을 자유롭게 작성해주세요."
 						minHeight="200px"
 						showImageButton={true}
@@ -233,11 +231,11 @@
 				</div>
 			</div>
 		</div>
-		
+
 		<!-- Professional Info -->
 		<div class="bg-white p-4">
 			<h2 class="mb-4 font-semibold text-gray-900">전문 정보</h2>
-			
+
 			<div class="space-y-4">
 				<div>
 					<label for="languages" class="block text-sm font-medium text-gray-700">
@@ -249,11 +247,11 @@
 						name="languages"
 						bind:value={languages}
 						placeholder="한국어, 영어, 일본어 (쉼표로 구분)"
-						class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+						class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 					/>
 					<p class="mt-1 text-xs text-gray-500">쉼표로 구분하여 입력해주세요</p>
 				</div>
-				
+
 				<div>
 					<label for="specialties" class="block text-sm font-medium text-gray-700">
 						전문 분야
@@ -264,11 +262,11 @@
 						name="specialties"
 						bind:value={specialties}
 						placeholder="역사, 문화, 음식, 쇼핑 (쉼표로 구분)"
-						class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+						class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 					/>
 					<p class="mt-1 text-xs text-gray-500">쉼표로 구분하여 입력해주세요</p>
 				</div>
-				
+
 				<div>
 					<label for="experience" class="block text-sm font-medium text-gray-700">
 						가이드 경력
@@ -279,30 +277,49 @@
 						bind:value={experience}
 						rows="3"
 						placeholder="가이드 경력과 경험을 작성해주세요"
-						class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+						class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
 					></textarea>
 				</div>
 			</div>
 		</div>
-		
+
 		{#if form?.error}
 			<div class="mx-4 rounded-lg bg-red-50 p-3">
 				<p class="text-sm text-red-600">{form.error}</p>
 			</div>
 		{/if}
-		
+
 		<!-- Submit Button -->
-		<div class="bg-white p-4 mt-2">
+		<div class="mt-2 bg-white p-4">
 			<button
 				type="submit"
 				disabled={isSubmitting || uploadingImage}
-				class="w-full rounded-lg py-3 font-semibold text-white transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed {!isSubmitting && !uploadingImage ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-300'}"
+				class="w-full rounded-lg py-3 font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:bg-gray-300 {!isSubmitting &&
+				!uploadingImage
+					? 'bg-blue-600 hover:bg-blue-700'
+					: 'bg-gray-300'}"
 			>
 				{#if isSubmitting || uploadingImage}
 					<span class="inline-flex items-center justify-center">
-						<svg class="mr-2 h-4 w-4 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-							<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-							<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+						<svg
+							class="mr-2 h-4 w-4 animate-spin text-white"
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+						>
+							<circle
+								class="opacity-25"
+								cx="12"
+								cy="12"
+								r="10"
+								stroke="currentColor"
+								stroke-width="4"
+							></circle>
+							<path
+								class="opacity-75"
+								fill="currentColor"
+								d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+							></path>
 						</svg>
 						{uploadingImage ? '이미지 업로드 중...' : '저장 중...'}
 					</span>

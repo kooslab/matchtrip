@@ -31,7 +31,7 @@ export const POST: RequestHandler = async ({ params, locals }) => {
 		today.setHours(0, 0, 0, 0);
 		const endDate = new Date(trip.endDate);
 		endDate.setHours(0, 0, 0, 0);
-		
+
 		if (endDate > today) {
 			return json({ error: 'Trip has not ended yet' }, { status: 400 });
 		}
@@ -62,15 +62,18 @@ export const POST: RequestHandler = async ({ params, locals }) => {
 
 		// If review already exists and has content, it's already submitted
 		if (existingReview && existingReview.content) {
-			return json({ 
-				error: 'Review already submitted',
-				reviewToken: existingReview.reviewToken 
-			}, { status: 400 });
+			return json(
+				{
+					error: 'Review already submitted',
+					reviewToken: existingReview.reviewToken
+				},
+				{ status: 400 }
+			);
 		}
 
 		// If review exists but no content (guide requested it), return the token
 		if (existingReview && existingReview.reviewToken) {
-			return json({ 
+			return json({
 				reviewToken: existingReview.reviewToken,
 				message: 'Review token already exists'
 			});
@@ -104,7 +107,7 @@ export const POST: RequestHandler = async ({ params, locals }) => {
 			});
 		}
 
-		return json({ 
+		return json({
 			reviewToken,
 			message: 'Review token generated successfully'
 		});

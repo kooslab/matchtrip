@@ -51,20 +51,20 @@ export const GET: RequestHandler = async ({ url, setHeaders }) => {
 				.innerJoin(continents, eq(countries.continentId, continents.id))
 				.orderBy(sql`RANDOM()`) // PostgreSQL random ordering
 				.limit(count);
-			
+
 			// Transform image URLs
-			const transformedResults = results.map(destination => ({
+			const transformedResults = results.map((destination) => ({
 				...destination,
 				imageUrl: transformImageUrl(destination.imageUrl, 'destination')
 			}));
-			
+
 			return json({ results: transformedResults, random: true });
 		} catch (error) {
 			console.error('Error fetching random destinations:', error);
 			return json({ results: [], error: 'Database error' }, { status: 500 });
 		}
 	}
-	
+
 	// If no query, return all destinations
 	if (!q || q.length === 0) {
 		try {
@@ -91,7 +91,7 @@ export const GET: RequestHandler = async ({ url, setHeaders }) => {
 				.limit(50);
 
 			// Transform image URLs - destination images go to public bucket
-			const transformedResults = results.map(destination => ({
+			const transformedResults = results.map((destination) => ({
 				...destination,
 				imageUrl: transformImageUrl(destination.imageUrl, 'destination')
 			}));
@@ -146,8 +146,8 @@ export const GET: RequestHandler = async ({ url, setHeaders }) => {
 			)
 			.limit(10);
 
-		// Transform image URLs - destination images go to public bucket  
-		const transformedResults = results.map(destination => ({
+		// Transform image URLs - destination images go to public bucket
+		const transformedResults = results.map((destination) => ({
 			...destination,
 			imageUrl: transformImageUrl(destination.imageUrl, 'destination')
 		}));
