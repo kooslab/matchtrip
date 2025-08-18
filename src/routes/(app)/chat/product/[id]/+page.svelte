@@ -40,6 +40,37 @@
 		return new Intl.NumberFormat('ko-KR').format(price);
 	};
 
+	// Parse markdown links in text
+	function parseMarkdownLink(text: string) {
+		// Regex to match markdown links [text](url)
+		const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+		const parts = [];
+		let lastIndex = 0;
+		let match;
+
+		while ((match = linkRegex.exec(text)) !== null) {
+			// Add text before the link
+			if (match.index > lastIndex) {
+				parts.push({ type: 'text', content: text.substring(lastIndex, match.index) });
+			}
+			// Add the link
+			parts.push({ type: 'link', text: match[1], url: match[2] });
+			lastIndex = match.index + match[0].length;
+		}
+
+		// Add remaining text after the last link
+		if (lastIndex < text.length) {
+			parts.push({ type: 'text', content: text.substring(lastIndex) });
+		}
+
+		// If no links found, return original text as single part
+		if (parts.length === 0) {
+			parts.push({ type: 'text', content: text });
+		}
+
+		return parts;
+	}
+
 	// Scroll to bottom of messages
 	async function scrollToBottom(smooth = true) {
 		await tick();
@@ -558,6 +589,9 @@
 						: 'justify-start'} {message.isOptimistic ? 'opacity-70' : ''}"
 				>
 					<div class="max-w-[70%]">
+						{#if message.senderId !== currentUserId && message.sender?.name && message.messageType !== 'system'}
+							<p class="mb-1 px-1 text-xs text-gray-600">{message.sender.name}</p>
+						{/if}
 						{#if message.messageType === 'text'}
 							<div
 								class="{message.senderId === currentUserId
@@ -625,7 +659,15 @@
 							<!-- System Message -->
 							<div class="flex justify-center">
 								<div class="rounded-full bg-gray-100 px-4 py-2 text-xs text-gray-600">
-									{message.content}
+									{#each parseMarkdownLink(message.content) as part}
+										{#if part.type === 'text'}
+											{part.content}
+										{:else if part.type === 'link'}
+											<a href={part.url} class="text-blue-500 underline hover:text-blue-600">
+												{part.text}
+											</a>
+										{/if}
+									{/each}
 								</div>
 							</div>
 						{/if}

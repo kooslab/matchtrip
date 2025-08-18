@@ -7,6 +7,9 @@ import { transformImageUrl } from '$lib/utils/imageUrl';
 export const load: PageServerLoad = async ({ url, locals }) => {
 	const destinationId = url.searchParams.get('destination');
 
+	// Import decryption utility
+	const { decryptUserFields } = await import('$lib/server/encryption');
+
 	// If no destination selected, show destinations with products
 	if (!destinationId) {
 		// Get destinations that have active products
@@ -93,6 +96,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 			guide: {
 				id: users.id,
 				name: users.name,
+				email: users.email,
 				image: users.image
 			},
 			guideProfile: {
@@ -108,13 +112,13 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		.where(and(...conditions))
 		.orderBy(sql`${products.createdAt} DESC`);
 
-	// Transform image URLs for products
+	// Transform image URLs for products and decrypt guide data
 	const productsList = productsResult.map((product) => ({
 		...product,
 		imageUrl: transformImageUrl(product.imageUrl),
 		guide: product.guide
 			? {
-					...product.guide,
+					...decryptUserFields(product.guide),
 					image: transformImageUrl(product.guide.image)
 				}
 			: null,
