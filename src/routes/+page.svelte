@@ -13,6 +13,7 @@
 
 	// Get user data from props
 	const user = $derived(data?.user);
+	const fullUser = $derived(data?.fullUser);
 	const userRole = $derived(data?.userRole);
 	const isGuide = $derived(userRole === 'guide');
 	const isTraveler = $derived(userRole === 'traveler');
@@ -100,7 +101,7 @@
 							<span>Berlin, Germany</span>
 						</div>
 						<h2 class="mt-3 text-xl leading-tight font-bold text-gray-900">
-							안녕하세요 <span class="text-blue-500">{user?.name || '여행자'}님</span>,
+							안녕하세요 <span class="text-blue-500">{fullUser?.name || '가이드'}님</span>,
 						</h2>
 						<h3 class="mt-1 text-xl leading-tight font-bold text-gray-900">
 							새로운 여행이 기다리고 있어요.

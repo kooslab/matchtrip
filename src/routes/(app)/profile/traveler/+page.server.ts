@@ -3,6 +3,7 @@ import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
 import { travelerProfiles, users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
+import { decryptUserFields } from '$lib/server/encryption';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
@@ -26,8 +27,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 		throw redirect(302, '/');
 	}
 
+	// Decrypt user fields before sending to client
+	const decryptedUser = decryptUserFields(userWithProfile.users);
+	
 	return {
-		user: userWithProfile.users,
+		user: decryptedUser,
 		travelerProfile: userWithProfile.traveler_profiles
 	};
 };

@@ -3,6 +3,7 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { genericOAuth } from 'better-auth/plugins';
 import { db } from './server/db';
 import * as schema from './server/db/schema';
+import { encrypt, hashEmail } from './server/encryption';
 import {
 	GOOGLE_CLIENT_ID,
 	GOOGLE_CLIENT_SECRET,
@@ -81,13 +82,15 @@ export const auth = betterAuth({
 			// Map Google profile data to our user schema
 			mapProfileToUser: (profile) => {
 				console.log('[GOOGLE OAUTH] Mapping profile:', JSON.stringify(profile, null, 2));
+				
 				const mappedUser = {
-					name: profile.name || profile.email,
-					email: profile.email,
+					name: encrypt(profile.name || profile.email),
+					email: encrypt(profile.email),
+					emailHash: hashEmail(profile.email),
 					emailVerified: true, // Google accounts are pre-verified
 					image: profile.picture
 				};
-				console.log('[GOOGLE OAUTH] Mapped user data:', JSON.stringify(mappedUser, null, 2));
+				console.log('[GOOGLE OAUTH] Mapped user data with encryption');
 				return mappedUser;
 			}
 		}
@@ -177,8 +180,9 @@ export const auth = betterAuth({
 							// Already normalized by getUserInfo
 							console.log('[KAKAO OAUTH] Using pre-normalized user data');
 							return {
-								email: profile.email,
-								name: profile.name,
+								email: encrypt(profile.email),
+								emailHash: hashEmail(profile.email),
+								name: encrypt(profile.name),
 								image: profile.image,
 								emailVerified: profile.emailVerified
 							};
@@ -191,8 +195,9 @@ export const auth = betterAuth({
 						}
 
 						return {
-							email: kakaoAccount.email,
-							name: kakaoAccount.profile?.nickname || 'Kakao User',
+							email: encrypt(kakaoAccount.email),
+							emailHash: hashEmail(kakaoAccount.email),
+							name: encrypt(kakaoAccount.profile?.nickname || 'Kakao User'),
 							image: kakaoAccount.profile?.profile_image_url,
 							emailVerified: kakaoAccount.is_email_verified || false
 						};

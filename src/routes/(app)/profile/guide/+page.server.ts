@@ -3,6 +3,7 @@ import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
 import { users, guideProfiles, products, destinations } from '$lib/server/db/schema';
 import { eq, desc } from 'drizzle-orm';
+import { decryptUserFields } from '$lib/server/encryption';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	// You must have user info in locals (e.g., from your auth system)
@@ -55,10 +56,13 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.where(eq(products.guideId, userId))
 		.orderBy(desc(products.createdAt));
 
+	// Decrypt user fields before sending to client
+	const decryptedUser = decryptUserFields(user);
+	
 	return {
-		user,
-		userRole: user.role,
-		userName: user.name,
+		user: decryptedUser,
+		userRole: decryptedUser.role,
+		userName: decryptedUser.name,
 		guideProfile,
 		myProducts
 	};

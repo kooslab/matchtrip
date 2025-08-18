@@ -2,6 +2,7 @@ import { auth } from '$lib/auth';
 import { db } from '$lib/server/db';
 import { users, userAgreements } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
+import { decryptUserFields } from '$lib/server/encryption';
 
 // Helper function to filter sensitive headers
 function getFilteredHeaders(headers: Headers): Record<string, string> {
@@ -85,12 +86,15 @@ export const load = async ({ request, locals }) => {
 				console.log('Layout server - Database query result:', user);
 
 				if (user) {
-					userRole = user.role;
-					fullUser = user;
+					// Decrypt user fields before using them
+					const decryptedUser = decryptUserFields(user);
+					
+					userRole = decryptedUser.role;
+					fullUser = decryptedUser;
 
 					// Check if user has agreed to terms
 					const agreement = await db.query.userAgreements.findFirst({
-						where: eq(userAgreements.userId, user.id),
+						where: eq(userAgreements.userId, decryptedUser.id),
 						columns: {
 							termsAgreed: true,
 							privacyAgreed: true
@@ -99,22 +103,22 @@ export const load = async ({ request, locals }) => {
 
 					hasAgreedToTerms = !!(agreement?.termsAgreed && agreement?.privacyAgreed);
 
-					// Cache user data in locals for other server functions to use
+					// Cache decrypted user data in locals for other server functions to use
 					locals.user = {
-						id: user.id,
-						role: user.role,
-						name: user.name,
-						email: user.email,
-						emailVerified: user.emailVerified,
-						guideProfile: user.guideProfile
+						id: decryptedUser.id,
+						role: decryptedUser.role,
+						name: decryptedUser.name,
+						email: decryptedUser.email,
+						emailVerified: decryptedUser.emailVerified,
+						guideProfile: decryptedUser.guideProfile
 					};
 					locals.session = session;
 					locals.hasAgreedToTerms = hasAgreedToTerms;
 					console.log(
 						'Layout server - User cached in locals:',
-						user.email,
+						decryptedUser.email,
 						'Role:',
-						user.role,
+						decryptedUser.role,
 						'Has agreed:',
 						hasAgreedToTerms
 					);

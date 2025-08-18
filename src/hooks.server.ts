@@ -7,6 +7,7 @@ import { users, userAgreements, guideProfiles } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { dev } from '$app/environment';
 import { authErrorLogger } from '$lib/utils/authErrorLogger';
+import { decryptUserFields } from '$lib/server/encryption';
 
 const corsHandler = (async ({ event, resolve }) => {
 	// Handle CORS for API routes
@@ -91,18 +92,20 @@ const authHandler = (async ({ event, resolve }) => {
 				});
 
 				if (user) {
-					event.locals.user = user;
+					// Decrypt user fields before storing in locals
+					const decryptedUser = decryptUserFields(user);
+					event.locals.user = decryptedUser;
 					console.log(
 						'Hooks - User loaded in locals:',
-						user.email,
+						decryptedUser.email,
 						'Role:',
-						user.role,
+						decryptedUser.role,
 						'EmailVerified:',
-						user.emailVerified,
+						decryptedUser.emailVerified,
 						'Guide Verified:',
-						user.guideProfile?.isVerified,
+						decryptedUser.guideProfile?.isVerified,
 						'Onboarding Completed:',
-						user.onboardingCompleted
+						decryptedUser.onboardingCompleted
 					);
 
 					// Check if user has agreed to terms

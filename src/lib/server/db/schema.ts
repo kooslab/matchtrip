@@ -23,6 +23,7 @@ export const users = pgTable(
 		id: uuid('id').primaryKey().defaultRandom(),
 		name: text('name').notNull(),
 		email: text('email').notNull().unique(),
+		emailHash: text('email_hash'), // For efficient email lookups with encrypted data
 		emailVerified: boolean('email_verified').notNull().default(false),
 		image: text('image'),
 		role: userRoleEnum('role'),
@@ -39,6 +40,7 @@ export const users = pgTable(
 		// Add indexes for frequently queried columns
 		roleIdx: index('users_role_idx').on(table.role),
 		emailIdx: index('users_email_idx').on(table.email),
+		emailHashIdx: index('users_email_hash_idx').on(table.emailHash),
 		isDeletedIdx: index('users_is_deleted_idx').on(table.isDeleted)
 	})
 );

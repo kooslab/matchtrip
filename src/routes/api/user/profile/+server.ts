@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
+import { encrypt, decrypt, decryptUserFields } from '$lib/server/encryption';
 
 export const PATCH: RequestHandler = async ({ request, locals }) => {
 	// Check if user is authenticated
@@ -28,7 +29,8 @@ export const PATCH: RequestHandler = async ({ request, locals }) => {
 			if (!name || name.length < 2) {
 				return json({ error: 'Name must be at least 2 characters long' }, { status: 400 });
 			}
-			filteredUpdates.name = name;
+			// Encrypt name before storing
+			filteredUpdates.name = encrypt(name);
 		}
 
 		// Validate phone if provided
@@ -42,15 +44,16 @@ export const PATCH: RequestHandler = async ({ request, locals }) => {
 				if (digitsOnly.length < 7 || digitsOnly.length > 20) {
 					return json({ error: 'Invalid phone number format' }, { status: 400 });
 				}
-				// Store with + and digits only
-				filteredUpdates.phone = '+' + digitsOnly;
+				// Encrypt phone before storing
+				filteredUpdates.phone = encrypt('+' + digitsOnly);
 			} else {
 				// For local numbers (legacy support)
 				const digitsOnly = phone?.replace(/\D/g, '');
 				if (!digitsOnly || digitsOnly.length < 10 || digitsOnly.length > 11) {
 					return json({ error: 'Invalid phone number format' }, { status: 400 });
 				}
-				filteredUpdates.phone = digitsOnly;
+				// Encrypt phone before storing
+				filteredUpdates.phone = encrypt(digitsOnly);
 			}
 		}
 
@@ -120,7 +123,10 @@ export const GET: RequestHandler = async ({ locals }) => {
 			return json({ error: 'User not found' }, { status: 404 });
 		}
 
-		return json({ user });
+		// Decrypt user fields before sending
+		const decryptedUser = decryptUserFields(user);
+
+		return json({ user: decryptedUser });
 	} catch (error) {
 		console.error('Error fetching user profile:', error);
 		return json({ error: 'Failed to fetch profile' }, { status: 500 });

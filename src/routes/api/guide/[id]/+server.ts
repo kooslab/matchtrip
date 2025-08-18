@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
 import { users, guideProfiles } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
+import { decryptUserFields } from '$lib/server/encryption';
 
 export const GET: RequestHandler = async ({ params }) => {
 	try {
@@ -32,14 +33,17 @@ export const GET: RequestHandler = async ({ params }) => {
 			return json({ error: 'Guide not found' }, { status: 404 });
 		}
 
+		// Decrypt user fields before returning
+		const decryptedGuide = decryptUserFields(guide);
+
 		// Return guide data with profile
 		return json({
-			id: guide.id,
-			name: guide.name,
-			email: guide.email,
-			image: guide.image,
-			createdAt: guide.createdAt,
-			profile: guide.guideProfile
+			id: decryptedGuide.id,
+			name: decryptedGuide.name,
+			email: decryptedGuide.email,
+			image: decryptedGuide.image,
+			createdAt: decryptedGuide.createdAt,
+			profile: decryptedGuide.guideProfile
 		});
 	} catch (error) {
 		console.error('Error fetching guide profile:', error);
