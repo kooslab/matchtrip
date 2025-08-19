@@ -38,7 +38,9 @@
 
 			console.log('Response status:', response.status);
 			if (!response.ok) {
-				throw new Error('Failed to save agreements');
+				const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+				console.error('Agreement API error:', errorData);
+				throw new Error(errorData.error || `Failed to save agreements (${response.status})`);
 			}
 
 			// Ensure the response is fully consumed before navigating
@@ -51,7 +53,14 @@
 			console.log('Navigation complete');
 		} catch (error) {
 			console.error('Error saving agreements:', error);
-			alert('Failed to save your preferences. Please try again.');
+			const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+			
+			// Show more detailed error in development
+			if (window.location.hostname === 'localhost') {
+				alert(`Error: ${errorMessage}\n\nCheck the browser console for more details.`);
+			} else {
+				alert('약관 동의 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+			}
 			isSubmitting = false;
 		}
 	}

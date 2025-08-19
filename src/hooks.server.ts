@@ -91,13 +91,31 @@ const authHandler = (async ({ event, resolve }) => {
 					}
 				});
 
-				if (user) {
+				if (!user && session?.user?.id) {
+					// Session exists but user not found in DB - stale session
+					console.warn('[HOOKS] Stale session detected - user not found in database:', session.user.id);
+					// Clear the invalid session data
+					event.locals.session = undefined;
+					event.locals.user = undefined;
+					event.locals.hasAgreedToTerms = false;
+				} else if (user) {
 					// Decrypt user fields before storing in locals
-					const decryptedUser = decryptUserFields(user);
+					let decryptedUser;
+					try {
+						decryptedUser = decryptUserFields(user);
+					} catch (decryptError) {
+						console.error('[HOOKS] Failed to decrypt user fields:', {
+							userId: user.id,
+							error: decryptError instanceof Error ? decryptError.message : String(decryptError)
+						});
+						// Use raw user data if decryption fails (for debugging)
+						decryptedUser = user;
+					}
+					
 					event.locals.user = decryptedUser;
 					console.log(
 						'Hooks - User loaded in locals:',
-						decryptedUser.email,
+						decryptedUser.email ? decryptedUser.email.substring(0, 3) + '***' : 'no-email',
 						'Role:',
 						decryptedUser.role,
 						'EmailVerified:',

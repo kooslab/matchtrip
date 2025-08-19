@@ -26,8 +26,14 @@
 
 	// Check if user needs to agree to terms when user data changes
 	$effect(() => {
-		if (user && !data?.hasAgreedToTerms) {
+		// Only show agreement modal if we have a valid user with an ID
+		if (user && user.id && !data?.hasAgreedToTerms) {
+			console.log('[Main Page] Showing agreement modal for user:', user.id);
 			showAgreementModal = true;
+		} else if (user && !user.id) {
+			console.warn('[Main Page] Invalid user object detected, clearing session');
+			// Invalid user object - might be a stale session
+			showAgreementModal = false;
 		}
 	});
 
@@ -497,24 +503,22 @@
 		</div>
 
 		<!-- Content -->
-		<div class="relative z-10 flex h-full flex-col">
-			<!-- Main content -->
-			<div class="flex flex-1 flex-col items-center justify-end px-8 pb-32 text-center text-white">
+		<div class="relative z-10 flex h-full flex-col justify-center py-8">
+			<!-- Main content - compact on desktop -->
+			<div class="flex flex-col items-center px-8 text-center text-white">
 				<h1
-					class="mb-4 text-5xl font-bold text-white"
+					class="mb-4 text-5xl font-bold text-white lg:mb-3 lg:text-4xl"
 					style="font-family: 'Pretendard', sans-serif;"
 				>
 					Matchtrip
 				</h1>
-				<p class="mb-8 text-lg text-gray-300">Match Your Trip, Make It Yours</p>
-			</div>
-
-			<!-- Bottom section -->
-			<div class="px-6 pb-8">
-				<p class="mb-6 text-center text-white">Sign in with Social Networks</p>
+				<p class="mb-8 text-lg text-gray-300 lg:mb-6 lg:text-base">Match Your Trip, Make It Yours</p>
+			
+				<!-- Sign in text -->
+				<p class="mb-6 text-center text-white lg:mb-4">Sign in with Social Networks</p>
 
 				<!-- Social login buttons -->
-				<div class="mb-8 flex justify-center gap-4">
+				<div class="mb-8 flex justify-center gap-4 lg:mb-4">
 					<button
 						onclick={async () => {
 							if (loadingProvider) return;
@@ -597,11 +601,11 @@
 
 				<!-- Bottom text -->
 				<p class="text-center text-sm text-white/80">@Matchtrip.corp.</p>
-			</div>
-
-			<!-- Bottom bar indicator -->
-			<div class="flex justify-center pb-2">
-				<div class="h-1 w-32 rounded-full bg-white"></div>
+				
+				<!-- Bottom bar indicator - mobile only -->
+				<div class="mt-8 flex justify-center lg:hidden">
+					<div class="h-1 w-32 rounded-full bg-white"></div>
+				</div>
 			</div>
 		</div>
 	</div>

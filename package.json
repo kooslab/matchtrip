@@ -5,6 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
+		"dev:prod": "bun --env-file=.env.prod run vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
 		"start": "bun ./build/index.js",
