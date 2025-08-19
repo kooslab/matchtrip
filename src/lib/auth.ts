@@ -83,14 +83,15 @@ export const auth = betterAuth({
 			mapProfileToUser: (profile) => {
 				console.log('[GOOGLE OAUTH] Mapping profile:', JSON.stringify(profile, null, 2));
 
+				// Temporarily disable encryption for testing
 				const mappedUser = {
-					name: encrypt(profile.name || profile.email),
-					email: encrypt(profile.email),
+					name: profile.name || profile.email,  // No encryption for now
+					email: profile.email,  // No encryption for now
 					emailHash: hashEmail(profile.email),
 					emailVerified: true, // Google accounts are pre-verified
 					image: profile.picture
 				};
-				console.log('[GOOGLE OAUTH] Mapped user data with encryption');
+				console.log('[GOOGLE OAUTH] Mapped user data WITHOUT encryption (temporary)');
 				return mappedUser;
 			}
 		}
@@ -180,9 +181,9 @@ export const auth = betterAuth({
 							// Already normalized by getUserInfo
 							console.log('[KAKAO OAUTH] Using pre-normalized user data');
 							return {
-								email: encrypt(profile.email),
+								email: profile.email,  // No encryption for now
 								emailHash: hashEmail(profile.email),
-								name: encrypt(profile.name),
+								name: profile.name,  // No encryption for now
 								image: profile.image,
 								emailVerified: profile.emailVerified
 							};
@@ -195,9 +196,9 @@ export const auth = betterAuth({
 						}
 
 						return {
-							email: encrypt(kakaoAccount.email),
+							email: kakaoAccount.email,  // No encryption for now
 							emailHash: hashEmail(kakaoAccount.email),
-							name: encrypt(kakaoAccount.profile?.nickname || 'Kakao User'),
+							name: kakaoAccount.profile?.nickname || 'Kakao User',  // No encryption for now
 							image: kakaoAccount.profile?.profile_image_url,
 							emailVerified: kakaoAccount.is_email_verified || false
 						};

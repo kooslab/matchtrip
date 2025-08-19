@@ -178,5 +178,17 @@
 		<Button onclick={handleSubmit} disabled={!allRequiredAgreed || isSubmitting} class="w-full">
 			{isSubmitting ? '처리 중...' : '동의하고 시작하기'}
 		</Button>
+		
+		<!-- Add sign out option for edge cases -->
+		<button
+			onclick={async () => {
+				if (confirm('로그아웃 하시겠습니까?')) {
+					window.location.href = '/api/auth/sign-out';
+				}
+			}}
+			class="mt-3 w-full text-center text-sm text-gray-500 hover:text-gray-700"
+		>
+			문제가 있으신가요? 로그아웃
+		</button>
 	</div>
 </div>
