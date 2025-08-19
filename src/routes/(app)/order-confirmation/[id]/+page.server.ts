@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { payments, offers, trips, users, guideProfiles, destinations } from '$lib/server/db/schema';
 import { eq, and, or } from 'drizzle-orm';
+import { decryptUserFields } from '$lib/server/encryption';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
@@ -46,6 +47,9 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	const { payment, offer, trip, destination, guide, guideProfile } = paymentData[0];
 
+	// Decrypt guide's personal information
+	const decryptedGuide = decryptUserFields(guide);
+
 	return {
 		order: payment,
 		trip: {
@@ -54,8 +58,8 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		},
 		offer,
 		guide: {
-			...guide,
-			phone: guide?.phone || null,
+			...decryptedGuide,
+			phone: decryptedGuide?.phone || null,
 			guideProfile
 		}
 	};
