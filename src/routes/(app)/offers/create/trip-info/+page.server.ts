@@ -3,6 +3,7 @@ import { db } from '$lib/server/db';
 import { trips, users, destinations, countries } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
+import { decryptUserFields } from '$lib/server/encryption';
 
 export const load: PageServerLoad = async ({ url }) => {
 	const tripId = url.searchParams.get('tripId');
@@ -41,13 +42,20 @@ export const load: PageServerLoad = async ({ url }) => {
 		error(404, 'Trip not found');
 	}
 
+	// Decrypt traveler information
+	const decryptedTrip = {
+		...trip[0],
+		travelerName: trip[0].travelerName ? decryptUserFields({ name: trip[0].travelerName }).name : null,
+		travelerEmail: trip[0].travelerEmail ? decryptUserFields({ email: trip[0].travelerEmail }).email : null
+	};
+
 	return {
 		trip: {
-			...trip[0],
+			...decryptedTrip,
 			// Add default values for missing fields
 			budget: null,
 			currency: 'KRW',
-			purpose: trip[0].customRequest || null,
+			purpose: decryptedTrip.customRequest || null,
 			interests: null
 		}
 	};

@@ -12,6 +12,7 @@ import {
 import { eq, and, or, isNotNull } from 'drizzle-orm';
 import { redirect } from '@sveltejs/kit';
 import { auth } from '$lib/auth';
+import { decryptUserFields } from '$lib/server/encryption';
 
 export const load = async ({ request, locals }) => {
 	// Try to get session from locals first, fallback to direct auth call
@@ -131,86 +132,96 @@ export const load = async ({ request, locals }) => {
 	console.log('Found paid products:', paidProducts.length);
 
 	// Transform trip orders
-	const tripOrders = paidTrips.map((trip) => ({
-		type: 'trip' as const,
-		id: trip.tripId,
-		userId: trip.tripUserId,
-		adultsCount: trip.adultsCount,
-		childrenCount: trip.childrenCount,
-		startDate: trip.startDate,
-		endDate: trip.endDate,
-		travelMethod: trip.travelMethod,
-		customRequest: trip.customRequest,
-		status: trip.tripStatus,
-		createdAt: trip.tripCreatedAt,
-		destination: trip.destinationId
-			? {
-					id: trip.destinationId,
-					city: trip.destinationCity,
-					country: trip.destinationCountryName
-				}
-			: null,
-		offer: trip.offerId
-			? {
-					id: trip.offerId,
-					price: trip.offerPrice,
-					itinerary: trip.offerItinerary,
-					status: trip.offerStatus,
-					createdAt: trip.offerCreatedAt
-				}
-			: null,
-		guide: trip.guideId
-			? {
+	const tripOrders = paidTrips.map((trip) => {
+		// Decrypt guide information if present
+		const decryptedGuide = trip.guideId && trip.guideName && trip.guideEmail
+			? decryptUserFields({
 					id: trip.guideId,
 					name: trip.guideName,
 					email: trip.guideEmail
-				}
-			: null,
-		payment: {
-			id: trip.paymentId,
-			amount: trip.paymentAmount,
-			status: trip.paymentStatus,
-			paymentKey: trip.paymentKey,
-			orderId: trip.paymentOrderId,
-			createdAt: trip.paymentCreatedAt,
-			paidAt: trip.paidAt
-		}
-	}));
+				})
+			: null;
+
+		return {
+			type: 'trip' as const,
+			id: trip.tripId,
+			userId: trip.tripUserId,
+			adultsCount: trip.adultsCount,
+			childrenCount: trip.childrenCount,
+			startDate: trip.startDate,
+			endDate: trip.endDate,
+			travelMethod: trip.travelMethod,
+			customRequest: trip.customRequest,
+			status: trip.tripStatus,
+			createdAt: trip.tripCreatedAt,
+			destination: trip.destinationId
+				? {
+						id: trip.destinationId,
+						city: trip.destinationCity,
+						country: trip.destinationCountryName
+					}
+				: null,
+			offer: trip.offerId
+				? {
+						id: trip.offerId,
+						price: trip.offerPrice,
+						itinerary: trip.offerItinerary,
+						status: trip.offerStatus,
+						createdAt: trip.offerCreatedAt
+					}
+				: null,
+			guide: decryptedGuide,
+			payment: {
+				id: trip.paymentId,
+				amount: trip.paymentAmount,
+				status: trip.paymentStatus,
+				paymentKey: trip.paymentKey,
+				orderId: trip.paymentOrderId,
+				createdAt: trip.paymentCreatedAt,
+				paidAt: trip.paidAt
+			}
+		};
+	});
 
 	// Transform product orders
-	const productOrders = paidProducts.map((product) => ({
-		type: 'product' as const,
-		id: product.productId,
-		productTitle: product.productTitle,
-		productDescription: product.productDescription,
-		productPrice: product.productPrice,
-		productDuration: product.productDuration,
-		createdAt: product.productCreatedAt,
-		productOffer: product.productOfferId
-			? {
-					id: product.productOfferId,
-					price: product.productOfferPrice,
-					duration: product.productOfferDuration,
-					status: product.productOfferStatus
-				}
-			: null,
-		guide: product.guideId
-			? {
+	const productOrders = paidProducts.map((product) => {
+		// Decrypt guide information if present
+		const decryptedGuide = product.guideId && product.guideName && product.guideEmail
+			? decryptUserFields({
 					id: product.guideId,
 					name: product.guideName,
 					email: product.guideEmail
-				}
-			: null,
-		payment: {
-			id: product.paymentId,
-			amount: product.paymentAmount,
-			status: product.paymentStatus,
-			paymentKey: product.paymentKey,
-			orderId: product.paymentOrderId,
-			createdAt: product.paymentCreatedAt,
-			paidAt: product.paidAt
-		}
-	}));
+				})
+			: null;
+
+		return {
+			type: 'product' as const,
+			id: product.productId,
+			productTitle: product.productTitle,
+			productDescription: product.productDescription,
+			productPrice: product.productPrice,
+			productDuration: product.productDuration,
+			createdAt: product.productCreatedAt,
+			productOffer: product.productOfferId
+				? {
+						id: product.productOfferId,
+						price: product.productOfferPrice,
+						duration: product.productOfferDuration,
+						status: product.productOfferStatus
+					}
+				: null,
+			guide: decryptedGuide,
+			payment: {
+				id: product.paymentId,
+				amount: product.paymentAmount,
+				status: product.paymentStatus,
+				paymentKey: product.paymentKey,
+				orderId: product.paymentOrderId,
+				createdAt: product.paymentCreatedAt,
+				paidAt: product.paidAt
+			}
+		};
+	});
 
 	// Combine and sort by payment date (most recent first)
 	const allOrders = [...tripOrders, ...productOrders].sort((a, b) => {

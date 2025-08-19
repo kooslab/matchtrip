@@ -5,6 +5,7 @@ import { trips, offers, users } from '$lib/server/db/schema';
 import { eq, and, gte, lt } from 'drizzle-orm';
 import { notificationService } from '$lib/server/services/notificationService';
 import { env } from '$env/dynamic/private';
+import { decryptUserFields } from '$lib/server/encryption';
 
 export const GET: RequestHandler = async ({ request }) => {
 	try {
@@ -56,6 +57,12 @@ export const GET: RequestHandler = async ({ request }) => {
 
 		for (const trip of upcomingTrips) {
 			try {
+				// Decrypt traveler information
+				const decryptedTraveler = decryptUserFields({
+					name: trip.travelerName,
+					phone: trip.travelerPhone
+				});
+
 				// Get the accepted offer for this trip
 				const acceptedOffer = await db
 					.select({
@@ -73,15 +80,20 @@ export const GET: RequestHandler = async ({ request }) => {
 					continue;
 				}
 
-				const guide = acceptedOffer[0];
+				// Decrypt guide information
+				const guide = decryptUserFields({
+					guideId: acceptedOffer[0].guideId,
+					guideName: acceptedOffer[0].guideName,
+					guidePhone: acceptedOffer[0].guidePhone
+				});
 
 				// Send reminder to traveler (testcode07)
-				if (trip.travelerPhone) {
+				if (decryptedTraveler.phone) {
 					try {
-						console.log(`[CRON] Sending reminder to traveler ${trip.travelerName}`);
+						console.log(`[CRON] Sending reminder to traveler ${decryptedTraveler.name}`);
 						const travelerResult = await notificationService.sendNotification({
 							userId: trip.travelerId,
-							phoneNumber: trip.travelerPhone,
+							phoneNumber: decryptedTraveler.phone,
 							templateCode: 'testcode07',
 							templateData: {
 								SHOPNAME: '매치트립',
@@ -117,7 +129,7 @@ export const GET: RequestHandler = async ({ request }) => {
 							templateCode: 'testcode12',
 							templateData: {
 								SHOPNAME: '매치트립',
-								고객: trip.travelerName || '고객',
+								고객: decryptedTraveler.name || '고객',
 								나의제안: '나의제안'
 							}
 						});

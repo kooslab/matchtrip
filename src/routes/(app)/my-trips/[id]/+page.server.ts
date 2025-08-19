@@ -12,6 +12,7 @@ import {
 import { eq, and, sql } from 'drizzle-orm';
 import { redirect } from '@sveltejs/kit';
 import { auth } from '$lib/auth';
+import { decryptUserFields } from '$lib/server/encryption';
 
 export const load = async ({ params, request, locals }) => {
 	// Try to get session from locals first, fallback to direct auth call
@@ -116,6 +117,9 @@ export const load = async ({ params, request, locals }) => {
 		tripOffers.map(async (offer) => {
 			if (!offer.guide?.id) return offer;
 
+			// Decrypt guide information
+			const decryptedGuide = offer.guide ? decryptUserFields(offer.guide) : null;
+
 			// Get average rating
 			const avgRatingResult = await db
 				.select({
@@ -134,6 +138,7 @@ export const load = async ({ params, request, locals }) => {
 
 			return {
 				...offer,
+				guide: decryptedGuide,
 				guideProfile: {
 					...offer.guideProfile,
 					avgRating: Number(avgRatingResult[0]?.avgRating || 0),
