@@ -246,7 +246,7 @@
 			"variables": ["SHOPNAME", "고객", "주문내역"],
 			"button": {
 				"type": "URL",
-				"name": "주문내역",
+				"name": "주문내",
 				"dev": {
 					"urlMobile": "https://dev.matchtrip.net/settlement",
 					"urlPc": "https://dev.matchtrip.net/settlement"
