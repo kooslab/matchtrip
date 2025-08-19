@@ -9,6 +9,7 @@
 			trip: any;
 			offer: any;
 			guide: any;
+			traveler: any;
 		};
 	}
 
@@ -133,19 +134,19 @@
 				</div>
 			</div>
 
-			<!-- Guide Info Section -->
+			<!-- Orderer Info Section -->
 			<div class="mb-8">
 				<h3 class="mb-4 text-base font-semibold text-gray-900">주문자 정보</h3>
 				<div class="rounded-xl bg-gray-50 p-4">
 					<div class="space-y-3">
 						<div class="flex justify-between">
 							<span class="text-sm text-gray-600">주문자</span>
-							<span class="text-sm font-medium text-gray-900">{data.guide.name}</span>
+							<span class="text-sm font-medium text-gray-900">{data.traveler.name}</span>
 						</div>
 						<div class="flex justify-between">
 							<span class="text-sm text-gray-600">휴대폰</span>
 							<span class="text-sm font-medium text-gray-900">
-								{data.guide.phone || '010-3567-1234'}
+								{data.traveler.phone || '정보 없음'}
 							</span>
 						</div>
 						<div class="flex justify-between">

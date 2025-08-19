@@ -11,6 +11,7 @@ import {
 } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { redirect, fail } from '@sveltejs/kit';
+import { decryptUserFields } from '$lib/server/encryption';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const session = locals.session;
@@ -45,8 +46,14 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		throw redirect(302, '/profile/guide/orders');
 	}
 
+	// Decrypt traveler information
+	const decryptedTraveler = decryptUserFields(orderData[0].traveler);
+
 	return {
-		order: orderData[0]
+		order: {
+			...orderData[0],
+			traveler: decryptedTraveler
+		}
 	};
 };
 

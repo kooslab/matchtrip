@@ -16,6 +16,7 @@ import {
 import { eq, and } from 'drizzle-orm';
 import { redirect } from '@sveltejs/kit';
 import { auth } from '$lib/auth';
+import { decryptUserFields } from '$lib/server/encryption';
 
 export const load = async ({ url, request, locals }) => {
 	// Try to get session from locals first, fallback to direct auth call
@@ -65,11 +66,14 @@ export const load = async ({ url, request, locals }) => {
 			.from(travelerProfiles)
 			.where(eq(travelerProfiles.userId, session.user.id));
 
+		// Decrypt user information
+		const decryptedUser = userRecord ? decryptUserFields(userRecord) : null;
+
 		const userData = {
-			id: userRecord?.id || session.user.id,
-			name: userRecord?.name || session.user.name || '알 수 없음',
-			email: userRecord?.email || session.user.email,
-			phone: profileResults[0]?.phone || null
+			id: decryptedUser?.id || session.user.id,
+			name: decryptedUser?.name || session.user.name || '알 수 없음',
+			email: decryptedUser?.email || session.user.email,
+			phone: decryptedUser?.phone || profileResults[0]?.phone || null
 		};
 
 		// Initialize order data
@@ -170,10 +174,11 @@ export const load = async ({ url, request, locals }) => {
 							.where(eq(users.id, offerRecord.guideId));
 
 						if (guideResults.length > 0) {
+							const decryptedGuide = decryptUserFields(guideResults[0]);
 							orderData.guide = {
-								id: guideResults[0].id,
-								name: guideResults[0].name,
-								email: guideResults[0].email
+								id: decryptedGuide.id,
+								name: decryptedGuide.name,
+								email: decryptedGuide.email
 							};
 						}
 					}
@@ -299,10 +304,11 @@ export const load = async ({ url, request, locals }) => {
 						.where(eq(users.id, productRecord.guideId));
 
 					if (guideResults.length > 0) {
+						const decryptedGuide = decryptUserFields(guideResults[0]);
 						orderData.guide = {
-							id: guideResults[0].id,
-							name: guideResults[0].name,
-							email: guideResults[0].email
+							id: decryptedGuide.id,
+							name: decryptedGuide.name,
+							email: decryptedGuide.email
 						};
 					}
 				}

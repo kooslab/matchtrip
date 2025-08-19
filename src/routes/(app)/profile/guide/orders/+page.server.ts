@@ -11,6 +11,7 @@ import {
 } from '$lib/server/db/schema';
 import { eq, and, desc, sql, or } from 'drizzle-orm';
 import { redirect } from '@sveltejs/kit';
+import { decryptUserFields } from '$lib/server/encryption';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const session = locals.session;
@@ -97,7 +98,23 @@ export const load: PageServerLoad = async ({ locals }) => {
 		return dateB - dateA;
 	});
 
+	// Decrypt buyer information for all orders
+	const decryptedOrders = allOrders.map(order => {
+		if (order.buyerName || order.buyerEmail) {
+			const decryptedBuyer = decryptUserFields({
+				name: order.buyerName,
+				email: order.buyerEmail
+			});
+			return {
+				...order,
+				buyerName: decryptedBuyer.name,
+				buyerEmail: decryptedBuyer.email
+			};
+		}
+		return order;
+	});
+
 	return {
-		orders: allOrders
+		orders: decryptedOrders
 	};
 };

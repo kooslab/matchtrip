@@ -22,7 +22,14 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			trip: trips,
 			destination: destinations,
 			guide: users,
-			guideProfile: guideProfiles
+			guideProfile: guideProfiles,
+			traveler: {
+				id: users.id,
+				name: users.name,
+				email: users.email,
+				phone: users.phone,
+				image: users.image
+			}
 		})
 		.from(payments)
 		.innerJoin(offers, eq(payments.offerId, offers.id))
@@ -47,8 +54,22 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	const { payment, offer, trip, destination, guide, guideProfile } = paymentData[0];
 
-	// Decrypt guide's personal information
+	// Get the traveler (buyer) information separately
+	const travelerData = await db
+		.select()
+		.from(users)
+		.where(eq(users.id, payment.userId))
+		.limit(1);
+
+	if (!travelerData || travelerData.length === 0) {
+		throw error(404, 'Traveler not found');
+	}
+
+	const traveler = travelerData[0];
+
+	// Decrypt both guide's and traveler's personal information
 	const decryptedGuide = decryptUserFields(guide);
+	const decryptedTraveler = decryptUserFields(traveler);
 
 	return {
 		order: payment,
@@ -61,6 +82,10 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			...decryptedGuide,
 			phone: decryptedGuide?.phone || null,
 			guideProfile
+		},
+		traveler: {
+			...decryptedTraveler,
+			phone: decryptedTraveler?.phone || null
 		}
 	};
 };
