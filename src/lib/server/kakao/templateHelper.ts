@@ -1,4 +1,4 @@
-import templates from './templates.json';
+import templatesConfig from './templates.json';
 import { env } from '$env/dynamic/private';
 import type { KakaoButton } from './kakaoAlimTalk';
 
@@ -9,24 +9,35 @@ export interface TemplateData {
 export interface ProcessedTemplate {
 	text: string;
 	button?: KakaoButton;
+	templateCode: string;
 }
 
 /**
- * Get template by code
+ * Get current environment
  */
-export function getTemplate(templateCode: string) {
-	if (!templates[templateCode]) {
-		throw new Error(`Template ${templateCode} not found`);
+function getEnvironment(): 'dev' | 'prod' {
+	// Check NODE_ENV or other env variables to determine environment
+	// Default to 'dev' for safety
+	return env.NODE_ENV === 'production' ? 'prod' : 'dev';
+}
+
+/**
+ * Get template by logical name (e.g., 'signup01', 'mytrip01')
+ */
+export function getTemplate(templateName: string) {
+	if (!templatesConfig.templates[templateName]) {
+		throw new Error(`Template ${templateName} not found`);
 	}
-	return templates[templateCode];
+	return templatesConfig.templates[templateName];
 }
 
 /**
- * Get the base URL from environment
+ * Get template code for current environment
  */
-function getBaseUrl(): string {
-	// Use PUBLIC_APP_URL if available, otherwise default to dev URL
-	return env.PUBLIC_APP_URL || 'https://dev.matchtrip.net';
+export function getTemplateCode(templateName: string): string {
+	const template = getTemplate(templateName);
+	const env = getEnvironment();
+	return template[env];
 }
 
 /**
@@ -44,27 +55,33 @@ export function processTemplateText(text: string, data: TemplateData): string {
 /**
  * Prepare a complete template for sending
  */
-export function prepareTemplate(templateCode: string, data: TemplateData): ProcessedTemplate {
-	const template = getTemplate(templateCode);
-	const baseUrl = getBaseUrl();
+export function prepareTemplate(templateName: string, data: TemplateData): ProcessedTemplate {
+	const template = getTemplate(templateName);
+	const env = getEnvironment();
+	const templateCode = template[env];
 
 	// Process the text with variable replacement
 	const processedText = processTemplateText(template.text, data);
 
-	// Process button URLs if button exists
-	let processedButton = template.button;
-	if (processedButton) {
-		processedButton = {
-			...processedButton,
-			urlMobile: processedButton.urlMobile?.replace('{{BASE_URL}}', baseUrl),
-			urlPc: processedButton.urlPc?.replace('{{BASE_URL}}', baseUrl)
-		};
+	// Get environment-specific button URLs
+	let processedButton: KakaoButton | undefined;
+	if (template.button) {
+		const buttonUrls = template.button[env];
+		if (buttonUrls) {
+			processedButton = {
+				type: template.button.type,
+				name: template.button.name,
+				urlMobile: buttonUrls.urlMobile,
+				urlPc: buttonUrls.urlPc
+			};
+		}
 	}
 
 	// Return processed template with button if exists
 	return {
 		text: processedText,
-		button: processedButton || undefined
+		button: processedButton,
+		templateCode
 	};
 }
 
@@ -72,10 +89,10 @@ export function prepareTemplate(templateCode: string, data: TemplateData): Proce
  * Validate that all required variables are provided
  */
 export function validateTemplateData(
-	templateCode: string,
+	templateName: string,
 	data: TemplateData
 ): { valid: boolean; missing: string[] } {
-	const template = getTemplate(templateCode);
+	const template = getTemplate(templateName);
 	const missing: string[] = [];
 
 	for (const variable of template.variables) {
@@ -91,23 +108,37 @@ export function validateTemplateData(
 }
 
 /**
- * Get all available template codes
+ * Get all available template names
  */
 export function getAvailableTemplates(): string[] {
-	return Object.keys(templates);
+	return Object.keys(templatesConfig.templates);
 }
 
 /**
  * Get template info for display purposes
  */
-export function getTemplateInfo(templateCode: string) {
-	const template = getTemplate(templateCode);
+export function getTemplateInfo(templateName: string) {
+	const template = getTemplate(templateName);
+	const env = getEnvironment();
 	return {
-		code: templateCode,
-		name: template.name,
+		name: templateName,
+		code: template[env],
 		description: template.description,
 		variables: template.variables,
 		hasButton: !!template.button,
-		buttonName: template.button?.name
+		buttonName: template.button?.name,
+		environment: env
 	};
+}
+
+/**
+ * Helper to get template by old code (for backward compatibility)
+ */
+export function getTemplateByCode(templateCode: string): string | null {
+	for (const [name, template] of Object.entries(templatesConfig.templates)) {
+		if (template.dev === templateCode || template.prod === templateCode) {
+			return name;
+		}
+	}
+	return null;
 }

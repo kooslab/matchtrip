@@ -1,25 +1,32 @@
 #!/usr/bin/env bun
 
 // Test script for Kakao AlimTalk template substitution
+import { prepareTemplate } from './src/lib/server/kakao/templateHelper';
 
 const baseUrl = 'http://localhost:5173'; // Update this to your local dev server URL
 
 async function testKakaoTemplate() {
 	console.log('=== Testing Kakao AlimTalk Template ===\n');
 
-	// Test data matching your template
+	// Prepare template using logical name
+	const prepared = prepareTemplate('signup01', {
+		SHOPNAME: '매치트립',
+		NAME: '홍길동'
+	});
+
+	// Test data for the API call
 	const testData = {
 		to: '821030637950', // Your test phone number
-		templateCode: 'testcode01',
-		text: '[#{SHOPNAME}], 안녕하세요. #{NAME}님! #{SHOPNAME}에 회원가입 해주셔서 진심으로 감사드립니다!',
-		templateData: {
-			SHOPNAME: '매치트립',
-			NAME: '홍길동'
-		}
+		templateCode: prepared.templateCode, // Will be testcode01 in dev, code01 in prod
+		text: prepared.text,
+		templateData: {} // Not needed as text is already processed
 	};
 
-	console.log('Request Data:');
-	console.log(JSON.stringify(testData, null, 2));
+	console.log('Template Code:', prepared.templateCode);
+	console.log('Processed Text:', prepared.text);
+	if (prepared.button) {
+		console.log('Button:', prepared.button);
+	}
 	console.log('\nExpected substituted text:');
 	console.log(
 		'[매치트립], 안녕하세요. 홍길동님! 매치트립에 회원가입 해주셔서 진심으로 감사드립니다!'

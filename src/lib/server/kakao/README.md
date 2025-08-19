@@ -8,8 +8,8 @@
 import { kakaoAlimTalk } from '$lib/server/kakao/kakaoAlimTalk';
 import { prepareTemplate } from '$lib/server/kakao/templateHelper';
 
-// Prepare template with variables
-const prepared = prepareTemplate('testcode01', {
+// Prepare template with variables using logical name
+const prepared = prepareTemplate('signup01', {
 	SHOPNAME: '매치트립',
 	NAME: '홍길동'
 });
@@ -17,7 +17,7 @@ const prepared = prepareTemplate('testcode01', {
 // Send the message
 const result = await kakaoAlimTalk.sendAlimTalk({
 	to: '821012345678',
-	templateCode: 'testcode01',
+	templateCode: prepared.templateCode, // Will be testcode01 in dev, code01 in prod
 	text: prepared.text,
 	buttons: prepared.button ? [prepared.button] : undefined
 });
@@ -30,19 +30,20 @@ All templates are defined in `templates.json`. Use the helper functions to work 
 ```typescript
 import { getAvailableTemplates, getTemplateInfo } from '$lib/server/kakao/templateHelper';
 
-// Get all available template codes
-const templates = getAvailableTemplates('dev'); // or 'prod'
+// Get all available template names
+const templates = getAvailableTemplates(); // Returns ['signup01', 'signup02', ...]
 
 // Get info about a specific template
-const info = getTemplateInfo('testcode01');
+const info = getTemplateInfo('signup01');
 console.log(info);
 // {
-//   code: 'testcode01',
 //   name: 'signup01',
+//   code: 'testcode01', // or 'code01' in production
 //   description: '회원가입 - 여행자',
 //   variables: ['SHOPNAME', 'NAME'],
 //   hasButton: true,
-//   buttonName: '나의프로필보기'
+//   buttonName: '나의프로필보기',
+//   environment: 'dev' // or 'prod'
 // }
 ```
 
@@ -53,7 +54,7 @@ Before sending, validate that all required variables are provided:
 ```typescript
 import { validateTemplateData } from '$lib/server/kakao/templateHelper';
 
-const validation = validateTemplateData('testcode01', {
+const validation = validateTemplateData('signup01', {
 	SHOPNAME: '매치트립'
 	// Missing NAME variable
 });
@@ -69,23 +70,23 @@ if (!validation.valid) {
 
 ```typescript
 // For travelers
-await sendSignupNotification('testcode01', userName, phoneNumber);
+await sendSignupNotification('signup01', userName, phoneNumber);
 
 // For guides
-await sendSignupNotification('testcode02', userName, phoneNumber);
+await sendSignupNotification('signup02', userName, phoneNumber);
 ```
 
 ### 2. Trip Creation Confirmation
 
 ```typescript
-const prepared = prepareTemplate('testcode03', {
+const prepared = prepareTemplate('mytrip01', {
 	SHOPNAME: '매치트립',
 	NAME: userName
 });
 
 await kakaoAlimTalk.sendAlimTalk({
 	to: phoneNumber,
-	templateCode: 'testcode03',
+	templateCode: prepared.templateCode,
 	text: prepared.text,
 	buttons: prepared.button ? [prepared.button] : undefined
 });
@@ -95,36 +96,44 @@ await kakaoAlimTalk.sendAlimTalk({
 
 ```typescript
 // To customer when guide responds
-const prepared = prepareTemplate('testcode05', {
+const prepared = prepareTemplate('chat01', {
 	SHOPNAME: '매치트립',
 	가이드: guideName,
 	메세지확인하기: '메세지확인하기'
 });
 
 // To guide when customer sends message
-const prepared = prepareTemplate('testcode10', {
+const prepared = prepareTemplate('chat02', {
 	SHOPNAME: '매치트립',
 	고객: customerName,
 	메세지확인하기: '메세지확인하기'
 });
 ```
 
-## Template Codes Reference
+## Template Reference
 
-| Code       | Name         | Description                 | Variables                        |
-| ---------- | ------------ | --------------------------- | -------------------------------- |
-| testcode01 | signup01     | 회원가입 - 여행자           | SHOPNAME, NAME                   |
-| testcode02 | signup02     | 회원가입 - 가이드           | SHOPNAME, NAME                   |
-| testcode03 | mytrip01     | 여행 의뢰 등록 완료         | SHOPNAME, NAME                   |
-| testcode04 | mytrip02     | 여행 제안 도착 알림         | SHOPNAME, 가이드, 나의여행       |
-| testcode05 | chat01       | 가이드 답변 도착            | SHOPNAME, 가이드, 메세지확인하기 |
-| testcode06 | settlement01 | 결제 완료                   | SHOPNAME, 고객, 여행총결제금액   |
-| testcode07 | remind01     | 여행 시작 리마인더 - 고객   | SHOPNAME, 가이드, 나의여행       |
-| testcode08 | cs01         | 문의 등록 완료              | SHOPNAME, NAME                   |
-| testcode09 | myoffers01   | 여행 제안 등록 완료         | SHOPNAME, NAME                   |
-| testcode10 | chat02       | 고객 문의 도착              | SHOPNAME, 고객, 메세지확인하기   |
-| testcode11 | myoffers02   | 제안 채택 알림              | SHOPNAME, 고객, 가이드, 나의제안 |
-| testcode12 | remind02     | 여행 시작 리마인더 - 가이드 | SHOPNAME, 고객, 나의제안         |
+| Logical Name | Dev Code    | Prod Code | Description                 | Variables                        |
+| ------------ | ----------- | --------- | --------------------------- | -------------------------------- |
+| signup01     | testcode01  | code01    | 회원가입 - 여행자           | SHOPNAME, NAME                   |
+| signup02     | testcode02  | code02    | 회원가입 - 가이드           | SHOPNAME, NAME                   |
+| mytrip01     | testcode03  | code03    | 여행 의뢰 등록 완료         | SHOPNAME, NAME                   |
+| mytrip02     | testcode04  | code04    | 여행 제안 도착 알림         | SHOPNAME, 가이드, 나의여행       |
+| chat01       | testcode05  | code05    | 가이드 답변 도착            | SHOPNAME, 가이드, 메세지확인하기 |
+| settlement01 | testcode06  | code06    | 결제 완료                   | SHOPNAME, 고객, 여행총결제금액   |
+| remind01     | testcode07  | code07    | 여행 시작 리마인더 - 고객   | SHOPNAME, 가이드, 나의여행       |
+| cs01         | testcode08  | code08    | 문의 등록 완료              | SHOPNAME, NAME                   |
+| myoffers01   | testcode09  | code09    | 여행 제안 등록 완료         | SHOPNAME, NAME                   |
+| chat02       | testcode10  | code10    | 고객 문의 도착              | SHOPNAME, 고객, 메세지확인하기   |
+| myoffers02   | testcode11  | code11    | 제안 채택 알림              | SHOPNAME, 고객, 가이드, 나의제안 |
+| remind02     | testcode12  | code12    | 여행 시작 리마인더 - 가이드 | SHOPNAME, 고객, 나의제안         |
+| rqcancel01   | testcode13  | code13    | 취소요청 - 고객이 요청      | SHOPNAME, 고객, 주문내역         |
+| rqcancel02   | testcode14  | code14    | 취소요청 - 고객이 요청 (가이드에게) | SHOPNAME, 고객, 나의제안  |
+| rqcancel03   | testcode15  | code15    | 취소요청 - 가이드가 요청    | SHOPNAME, 가이드님, 나의제안     |
+| rqcancel04   | testcode16  | code16    | 취소요청 - 가이드가 요청 (고객에게) | SHOPNAME, 가이드, 주문내역 |
+| cpcancel01   | testcode17  | code17    | 취소완료 - 고객 취소 (고객에게) | SHOPNAME, 고객, 주문내역     |
+| cpcancel02   | testcode18  | code18    | 취소완료 - 고객 취소 (가이드에게) | SHOPNAME, 고객, 나의제안   |
+| cpcancel03   | testcode19  | code19    | 취소완료 - 가이드 취소 (가이드에게) | SHOPNAME, 가이드, 나의제안 |
+| cpcancel04   | testcode20  | code20    | 취소완료 - 가이드 취소 (고객에게) | SHOPNAME, 가이드, 주문내역 |
 
 ## Important Notes
 

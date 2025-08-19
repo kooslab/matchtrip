@@ -1,237 +1,401 @@
 {
-	"testcode01": {
-		"name": "signup01",
-		"description": "회원가입 - 여행자",
-		"text": "[#{SHOPNAME}], 안녕하세요. #{NAME}님! #{SHOPNAME}에 회원가입 해주셔서 진심으로 감사드립니다!",
-		"variables": ["SHOPNAME", "NAME"],
-		"button": {
-			"type": "URL",
-			"name": "나의프로필보기",
-			"urlMobile": "{{BASE_URL}}/profile/traveler",
-			"urlPc": "{{BASE_URL}}/profile/traveler"
-		}
-	},
-	"testcode02": {
-		"name": "signup02",
-		"description": "회원가입 - 가이드",
-		"text": "[#{SHOPNAME}], 안녕하세요. #{NAME}님! #{SHOPNAME}에 회원가입 해주셔서 진심으로 감사드립니다!",
-		"variables": ["SHOPNAME", "NAME"],
-		"button": {
-			"type": "URL",
-			"name": "나의프로필보기",
-			"urlMobile": "{{BASE_URL}}/profile/guide",
-			"urlPc": "{{BASE_URL}}/profile/guide"
-		}
-	},
-	"testcode03": {
-		"name": "mytrip01",
-		"description": "여행 의뢰 등록 완료",
-		"text": "[#{SHOPNAME}]에 #{NAME}님의 여행 의뢰가 정상적으로 등록 되었습니다.",
-		"variables": ["SHOPNAME", "NAME"],
-		"button": {
-			"type": "URL",
-			"name": "나의여행보기",
-			"urlMobile": "{{BASE_URL}}/my-trips",
-			"urlPc": "{{BASE_URL}}/my-trips"
-		}
-	},
-	"testcode04": {
-		"name": "mytrip02",
-		"description": "여행 제안 도착 알림",
-		"text": "[#{SHOPNAME}]에 #{가이드}님의 여행 제안이 도착하였습니다. #{나의여행}을 확인하세요.\n해당 메시지는 고객님께서 요청한 여행 제안이 있을 경우 발송됩니다",
-		"variables": ["SHOPNAME", "가이드", "나의여행"],
-		"button": {
-			"type": "URL",
-			"name": "나의여행보기",
-			"urlMobile": "{{BASE_URL}}/my-trips",
-			"urlPc": "{{BASE_URL}}/my-trips"
-		}
-	},
-	"testcode05": {
-		"name": "chat01",
-		"description": "가이드 답변 도착 - 고객에게",
-		"text": "[#{SHOPNAME}]에 고객님이 문의하신 메세지에 #{가이드}님의 답변이 도착했습니다. #{메세지확인하기}를 통해 답변해보세요.",
-		"variables": ["SHOPNAME", "가이드", "메세지확인하기"],
-		"button": {
-			"type": "URL",
-			"name": "메세지확인하기",
-			"urlMobile": "{{BASE_URL}}/chat",
-			"urlPc": "{{BASE_URL}}/chat"
-		}
-	},
-	"testcode06": {
-		"name": "settlement01",
-		"description": "결제 완료",
-		"text": "[#{SHOPNAME}]에 #{고객}님의 여행금액 #{여행총결제금액}이 정상적으로 결제 되었습니다.",
-		"variables": ["SHOPNAME", "고객", "여행총결제금액"],
-		"button": {
-			"type": "URL",
-			"name": "주문내역",
-			"urlMobile": "{{BASE_URL}}/settlement",
-			"urlPc": "{{BASE_URL}}/settlement"
-		}
-	},
-	"testcode07": {
-		"name": "remind01",
-		"description": "여행 시작 리마인더 - 고객",
-		"text": "[#{SHOPNAME}]에 #{가이드}님과 함께하는 여행이 내일 시작됩니다. #{나의여행}을 확인하세요.",
-		"variables": ["SHOPNAME", "가이드", "나의여행"],
-		"button": {
-			"type": "URL",
-			"name": "나의여행",
-			"urlMobile": "{{BASE_URL}}/my-trips",
-			"urlPc": "{{BASE_URL}}/my-trips"
-		}
-	},
-	"testcode08": {
-		"name": "cs01",
-		"description": "문의 등록 완료",
-		"text": "[#{SHOPNAME}]에 #{NAME}님의 문의가 정상적으로 등록 되었습니다.",
-		"variables": ["SHOPNAME", "NAME"],
-		"button": null
-	},
-	"testcode09": {
-		"name": "myoffers01",
-		"description": "여행 제안 등록 완료",
-		"text": "[#{SHOPNAME}]에 #{NAME}님의 여행 제안이 정상적으로 등록 되었습니다.",
-		"variables": ["SHOPNAME", "NAME"],
-		"button": {
-			"type": "URL",
-			"name": "나의제안보기",
-			"urlMobile": "{{BASE_URL}}/my-offers",
-			"urlPc": "{{BASE_URL}}/my-offers"
-		}
-	},
-	"testcode10": {
-		"name": "chat02",
-		"description": "고객 문의 도착 - 가이드에게",
-		"text": "[#{SHOPNAME}]에 가이드님의 여행제안에 #{고객}님의 예약관련 문의가 도착했습니다. #{메세지확인하기}를 통해 답변해보세요.",
-		"variables": ["SHOPNAME", "고객", "메세지확인하기"],
-		"button": {
-			"type": "URL",
-			"name": "메세지확인하기",
-			"urlMobile": "{{BASE_URL}}/chat",
-			"urlPc": "{{BASE_URL}}/chat"
-		}
-	},
-	"testcode11": {
-		"name": "myoffers02",
-		"description": "제안 채택 알림 - 가이드에게",
-		"text": "[#{SHOPNAME}]에 #{고객}님께서 #{가이드}님의 여행제안을 채택하였습니다. #{나의제안}을 확인하세요.",
-		"variables": ["SHOPNAME", "고객", "가이드", "나의제안"],
-		"button": {
-			"type": "URL",
-			"name": "나의제안보기",
-			"urlMobile": "{{BASE_URL}}/my-offers",
-			"urlPc": "{{BASE_URL}}/my-offers"
-		}
-	},
-	"testcode12": {
-		"name": "remind02",
-		"description": "여행 시작 리마인더 - 가이드",
-		"text": "[#{SHOPNAME}]에 #{고객}님과 함께하는 여행이 내일 시작됩니다 . #{나의제안}을 확인하세요.",
-		"variables": ["SHOPNAME", "고객", "나의제안"],
-		"button": {
-			"type": "URL",
-			"name": "나의제안보기",
-			"urlMobile": "{{BASE_URL}}/my-offers",
-			"urlPc": "{{BASE_URL}}/my-offers"
-		}
-	},
-	"testcode20": {
-		"name": "cpcancel04",
-		"description": "cpcancel04",
-		"text": "[#{SHOPNAME}]에 #{가이드}님이 취소 처리가 완료 되었습니다. #{주문내역}을 확인하세요",
-		"variables": ["SHOPNAME", "가이드", "주문내역"],
-		"button": {
-			"type": "URL",
-			"name": "주문내역",
-			"urlMobile": "{{BASE_URL}}/settlement",
-			"urlPc": "{{BASE_URL}}/settlement"
-		}
-	},
-	"testcode19": {
-		"name": "cpcancel03",
-		"description": "cpcancel03",
-		"text": "[#{SHOPNAME}]에 #{가이드}님의 취소 처리가 완료 되었습니다. #{나의제안}을 확인하세요",
-		"variables": ["SHOPNAME", "가이드", "나의제안"],
-		"button": {
-			"type": "URL",
-			"name": "나의제안보기",
-			"urlMobile": "{{BASE_URL}}/my-offers",
-			"urlPc": "{{BASE_URL}}/my-offers"
-		}
-	},
-	"testcode18": {
-		"name": "cpcancel02",
-		"description": "cpcancel02",
-		"text": "[#{SHOPNAME}]에 #{고객}님이 취소 처리가 완료 되었습니다. #{나의제안}을 확인하세요",
-		"variables": ["SHOPNAME", "고객", "나의제안"],
-		"button": {
-			"type": "URL",
-			"name": "나의제안보기",
-			"urlMobile": "{{BASE_URL}}/my-offers",
-			"urlPc": "{{BASE_URL}}/my-offers"
-		}
-	},
-	"testcode17": {
-		"name": "cpcancel01",
-		"description": "cpcancel01",
-		"text": "[#{SHOPNAME}]에 #{고객}님의 취소 처리가 완료 되었습니다. #{주문내역}을 확인하세요",
-		"variables": ["SHOPNAME", "고객", "주문내역"],
-		"button": {
-			"type": "URL",
-			"name": "주문내역",
-			"urlMobile": "{{BASE_URL}}/settlement",
-			"urlPc": "{{BASE_URL}}/settlement"
-		}
-	},
-	"testcode16": {
-		"name": "rqcancel04",
-		"description": "rqcancel04",
-		"text": "[#{SHOPNAME}]에 #{가이드}님이 취소요청을 하였습니다. #{주문내역}을 확인하세요",
-		"variables": ["SHOPNAME", "가이드", "주문내역"],
-		"button": {
-			"type": "URL",
-			"name": "주문내역",
-			"urlMobile": "{{BASE_URL}}/settlement",
-			"urlPc": "{{BASE_URL}}/settlement"
-		}
-	},
-	"testcode15": {
-		"name": "rqcancel03",
-		"description": "rqcancel03",
-		"text": "[#{SHOPNAME}]에 #{가이드님}님의 취소요청이 정상적으로 접수되었습니다. #{나의제안}을 확인하세요",
-		"variables": ["SHOPNAME", "가이드님", "나의제안"],
-		"button": {
-			"type": "URL",
-			"name": "나의제안보기",
-			"urlMobile": "{{BASE_URL}}/my-offers",
-			"urlPc": "{{BASE_URL}}/my-offers"
-		}
-	},
-	"testcode14": {
-		"name": "rqcancel02",
-		"description": "rqcancel02",
-		"text": "[#{SHOPNAME}]에 #{고객}님이 취소요청을 하였습니다. #{나의제안}을 확인하세요.",
-		"variables": ["SHOPNAME", "고객", "나의제안"],
-		"button": {
-			"type": "URL",
-			"name": "나의제안보기",
-			"urlMobile": "{{BASE_URL}}/my-offers",
-			"urlPc": "{{BASE_URL}}/my-offers"
-		}
-	},
-	"testcode13": {
-		"name": "rqcancel01",
-		"description": "rqcancel01",
-		"text": "[#{SHOPNAME}]에 #{고객}님의 취소요청이 정상적으로 접수되었습니다. #{주문내역}을 확인하세요",
-		"variables": ["SHOPNAME", "고객", "주문내역"],
-		"button": {
-			"type": "URL",
-			"name": "주문내",
-			"urlMobile": "{{BASE_URL}}/settlement",
-			"urlPc": "{{BASE_URL}}/settlement"
+	"templates": {
+		"signup01": {
+			"dev": "testcode01",
+			"prod": "code01",
+			"name": "signup01",
+			"description": "회원가입 - 여행자",
+			"text": "[#{SHOPNAME}], 안녕하세요. #{NAME}님! #{SHOPNAME}에 회원가입 해주셔서 진심으로 감사드립니다!",
+			"variables": ["SHOPNAME", "NAME"],
+			"button": {
+				"type": "URL",
+				"name": "나의프로필보기",
+				"dev": {
+					"urlMobile": "https://dev.matchtrip.net/profile/traveler",
+					"urlPc": "https://dev.matchtrip.net/profile/traveler"
+				},
+				"prod": {
+					"urlMobile": "https://matchtrip.net/profile/traveler",
+					"urlPc": "https://matchtrip.net/profile/traveler"
+				}
+			}
+		},
+		"signup02": {
+			"dev": "testcode02",
+			"prod": "code02",
+			"name": "signup02",
+			"description": "회원가입 - 가이드",
+			"text": "[#{SHOPNAME}], 안녕하세요. #{NAME}님! #{SHOPNAME}에 회원가입 해주셔서 진심으로 감사드립니다!",
+			"variables": ["SHOPNAME", "NAME"],
+			"button": {
+				"type": "URL",
+				"name": "나의프로필보기",
+				"dev": {
+					"urlMobile": "https://dev.matchtrip.net/profile/guide",
+					"urlPc": "https://dev.matchtrip.net/profile/guide"
+				},
+				"prod": {
+					"urlMobile": "https://matchtrip.net/profile/guide",
+					"urlPc": "https://matchtrip.net/profile/guide"
+				}
+			}
+		},
+		"mytrip01": {
+			"dev": "testcode03",
+			"prod": "code03",
+			"name": "mytrip01",
+			"description": "여행 의뢰 등록 완료",
+			"text": "[#{SHOPNAME}]에 #{NAME}님의 여행 의뢰가 정상적으로 등록 되었습니다.",
+			"variables": ["SHOPNAME", "NAME"],
+			"button": {
+				"type": "URL",
+				"name": "나의여행보기",
+				"dev": {
+					"urlMobile": "https://dev.matchtrip.net/my-trips",
+					"urlPc": "https://dev.matchtrip.net/my-trips"
+				},
+				"prod": {
+					"urlMobile": "https://matchtrip.net/my-trips",
+					"urlPc": "https://matchtrip.net/my-trips"
+				}
+			}
+		},
+		"mytrip02": {
+			"dev": "testcode04",
+			"prod": "code04",
+			"name": "mytrip02",
+			"description": "여행 제안 도착 알림",
+			"text": "[#{SHOPNAME}]에 #{가이드}님의 여행 제안이 도착하였습니다. #{나의여행}을 확인하세요.\n해당 메시지는 고객님께서 요청한 여행 제안이 있을 경우 발송됩니다",
+			"variables": ["SHOPNAME", "가이드", "나의여행"],
+			"button": {
+				"type": "URL",
+				"name": "나의여행보기",
+				"dev": {
+					"urlMobile": "https://dev.matchtrip.net/my-trips",
+					"urlPc": "https://dev.matchtrip.net/my-trips"
+				},
+				"prod": {
+					"urlMobile": "https://matchtrip.net/my-trips",
+					"urlPc": "https://matchtrip.net/my-trips"
+				}
+			}
+		},
+		"chat01": {
+			"dev": "testcode05",
+			"prod": "code05",
+			"name": "chat01",
+			"description": "가이드 답변 도착 - 고객에게",
+			"text": "[#{SHOPNAME}]에 고객님이 문의하신 메세지에 #{가이드}님의 답변이 도착했습니다. #{메세지확인하기}를 통해 답변해보세요.",
+			"variables": ["SHOPNAME", "가이드", "메세지확인하기"],
+			"button": {
+				"type": "URL",
+				"name": "메세지확인하기",
+				"dev": {
+					"urlMobile": "https://dev.matchtrip.net/chat",
+					"urlPc": "https://dev.matchtrip.net/chat"
+				},
+				"prod": {
+					"urlMobile": "https://matchtrip.net/chat",
+					"urlPc": "https://matchtrip.net/chat"
+				}
+			}
+		},
+		"settlement01": {
+			"dev": "testcode06",
+			"prod": "code06",
+			"name": "settlement01",
+			"description": "결제 완료",
+			"text": "[#{SHOPNAME}]에 #{고객}님의 여행금액 #{여행총결제금액}이 정상적으로 결제 되었습니다.",
+			"variables": ["SHOPNAME", "고객", "여행총결제금액"],
+			"button": {
+				"type": "URL",
+				"name": "주문내역",
+				"dev": {
+					"urlMobile": "https://dev.matchtrip.net/settlement",
+					"urlPc": "https://dev.matchtrip.net/settlement"
+				},
+				"prod": {
+					"urlMobile": "https://matchtrip.net/settlement",
+					"urlPc": "https://matchtrip.net/settlement"
+				}
+			}
+		},
+		"remind01": {
+			"dev": "testcode07",
+			"prod": "code07",
+			"name": "remind01",
+			"description": "여행 시작 리마인더 - 고객",
+			"text": "[#{SHOPNAME}]에 #{가이드}님과 함께하는 여행이 내일 시작됩니다. #{나의여행}을 확인하세요.",
+			"variables": ["SHOPNAME", "가이드", "나의여행"],
+			"button": {
+				"type": "URL",
+				"name": "나의여행",
+				"dev": {
+					"urlMobile": "https://dev.matchtrip.net/my-trips",
+					"urlPc": "https://dev.matchtrip.net/my-trips"
+				},
+				"prod": {
+					"urlMobile": "https://matchtrip.net/my-trips",
+					"urlPc": "https://matchtrip.net/my-trips"
+				}
+			}
+		},
+		"cs01": {
+			"dev": "testcode08",
+			"prod": "code08",
+			"name": "cs01",
+			"description": "문의 등록 완료",
+			"text": "[#{SHOPNAME}]에 #{NAME}님의 문의가 정상적으로 등록 되었습니다.",
+			"variables": ["SHOPNAME", "NAME"],
+			"button": {
+				"type": "URL",
+				"name": "1:1문의보기",
+				"dev": null,
+				"prod": {
+					"urlMobile": "https://matchtrip.net/contact",
+					"urlPc": "https://matchtrip.net/contact"
+				}
+			}
+		},
+		"myoffers01": {
+			"dev": "testcode09",
+			"prod": "code09",
+			"name": "myoffers01",
+			"description": "여행 제안 등록 완료",
+			"text": "[#{SHOPNAME}]에 #{NAME}님의 여행 제안이 정상적으로 등록 되었습니다.",
+			"variables": ["SHOPNAME", "NAME"],
+			"button": {
+				"type": "URL",
+				"name": "나의제안보기",
+				"dev": {
+					"urlMobile": "https://dev.matchtrip.net/my-offers",
+					"urlPc": "https://dev.matchtrip.net/my-offers"
+				},
+				"prod": {
+					"urlMobile": "https://matchtrip.net/my-offers",
+					"urlPc": "https://matchtrip.net/my-offers"
+				}
+			}
+		},
+		"chat02": {
+			"dev": "testcode10",
+			"prod": "code10",
+			"name": "chat02",
+			"description": "고객 문의 도착 - 가이드에게",
+			"text": "[#{SHOPNAME}]에 가이드님의 여행제안에 #{고객}님의 예약관련 문의가 도착했습니다. #{메세지확인하기}를 통해 답변해보세요.",
+			"variables": ["SHOPNAME", "고객", "메세지확인하기"],
+			"button": {
+				"type": "URL",
+				"name": "메세지확인하기",
+				"dev": {
+					"urlMobile": "https://dev.matchtrip.net/chat",
+					"urlPc": "https://dev.matchtrip.net/chat"
+				},
+				"prod": {
+					"urlMobile": "https://matchtrip.net/chat",
+					"urlPc": "https://matchtrip.net/chat"
+				}
+			}
+		},
+		"myoffers02": {
+			"dev": "testcode11",
+			"prod": "code11",
+			"name": "myoffers02",
+			"description": "제안 채택 알림 - 가이드에게",
+			"text": "[#{SHOPNAME}]에 #{고객}님께서 #{가이드}님의 여행제안을 채택하였습니다. #{나의제안}을 확인하세요.",
+			"variables": ["SHOPNAME", "고객", "가이드", "나의제안"],
+			"button": {
+				"type": "URL",
+				"name": "나의제안보기",
+				"dev": {
+					"urlMobile": "https://dev.matchtrip.net/my-offers",
+					"urlPc": "https://dev.matchtrip.net/my-offers"
+				},
+				"prod": {
+					"urlMobile": "https://matchtrip.net/my-offers",
+					"urlPc": "https://matchtrip.net/my-offers"
+				}
+			}
+		},
+		"remind02": {
+			"dev": "testcode12",
+			"prod": "code12",
+			"name": "remind02",
+			"description": "여행 시작 리마인더 - 가이드",
+			"text": "[#{SHOPNAME}]에 #{고객}님과 함께하는 여행이 내일 시작됩니다 . #{나의제안}을 확인하세요.",
+			"variables": ["SHOPNAME", "고객", "나의제안"],
+			"button": {
+				"type": "URL",
+				"name": "나의제안보기",
+				"dev": {
+					"urlMobile": "https://dev.matchtrip.net/my-offers",
+					"urlPc": "https://dev.matchtrip.net/my-offers"
+				},
+				"prod": {
+					"urlMobile": "https://matchtrip.net/my-offers",
+					"urlPc": "https://matchtrip.net/my-offers"
+				}
+			}
+		},
+		"rqcancel01": {
+			"dev": "testcode13",
+			"prod": "code13",
+			"name": "rqcancel01",
+			"description": "취소요청 - 고객이 요청",
+			"text": "[#{SHOPNAME}]에 #{고객}님의 취소요청이 정상적으로 접수되었습니다. #{주문내역}을 확인하세요",
+			"variables": ["SHOPNAME", "고객", "주문내역"],
+			"button": {
+				"type": "URL",
+				"name": "주문내역",
+				"dev": {
+					"urlMobile": "https://dev.matchtrip.net/settlement",
+					"urlPc": "https://dev.matchtrip.net/settlement"
+				},
+				"prod": {
+					"urlMobile": "https://matchtrip.net/settlement",
+					"urlPc": "https://matchtrip.net/settlement"
+				}
+			}
+		},
+		"rqcancel02": {
+			"dev": "testcode14",
+			"prod": "code14",
+			"name": "rqcancel02",
+			"description": "취소요청 - 고객이 요청 (가이드에게)",
+			"text": "[#{SHOPNAME}]에 #{고객}님이 취소요청을 하였습니다. #{나의제안}을 확인하세요.",
+			"variables": ["SHOPNAME", "고객", "나의제안"],
+			"button": {
+				"type": "URL",
+				"name": "나의제안보기",
+				"dev": {
+					"urlMobile": "https://dev.matchtrip.net/my-offers",
+					"urlPc": "https://dev.matchtrip.net/my-offers"
+				},
+				"prod": {
+					"urlMobile": "https://matchtrip.net/my-offers",
+					"urlPc": "https://matchtrip.net/my-offers"
+				}
+			}
+		},
+		"rqcancel03": {
+			"dev": "testcode15",
+			"prod": "code15",
+			"name": "rqcancel03",
+			"description": "취소요청 - 가이드가 요청",
+			"text": "[#{SHOPNAME}]에 #{가이드님}님의 취소요청이 정상적으로 접수되었습니다. #{나의제안}을 확인하세요",
+			"variables": ["SHOPNAME", "가이드님", "나의제안"],
+			"button": {
+				"type": "URL",
+				"name": "나의제안보기",
+				"dev": {
+					"urlMobile": "https://dev.matchtrip.net/my-offers",
+					"urlPc": "https://dev.matchtrip.net/my-offers"
+				},
+				"prod": {
+					"urlMobile": "https://matchtrip.net/my-offers",
+					"urlPc": "https://matchtrip.net/my-offers"
+				}
+			}
+		},
+		"rqcancel04": {
+			"dev": "testcode16",
+			"prod": "code16",
+			"name": "rqcancel04",
+			"description": "취소요청 - 가이드가 요청 (고객에게)",
+			"text": "[#{SHOPNAME}]에 #{가이드}님이 취소요청을 하였습니다. #{주문내역}을 확인하세요",
+			"variables": ["SHOPNAME", "가이드", "주문내역"],
+			"button": {
+				"type": "URL",
+				"name": "주문내역",
+				"dev": {
+					"urlMobile": "https://dev.matchtrip.net/settlement",
+					"urlPc": "https://dev.matchtrip.net/settlement"
+				},
+				"prod": {
+					"urlMobile": "https://matchtrip.net/settlement",
+					"urlPc": "https://matchtrip.net/settlement"
+				}
+			}
+		},
+		"cpcancel01": {
+			"dev": "testcode17",
+			"prod": "code17",
+			"name": "cpcancel01",
+			"description": "취소완료 - 고객 취소 (고객에게)",
+			"text": "[#{SHOPNAME}]에 #{고객}님의 취소 처리가 완료 되었습니다. #{주문내역}을 확인하세요",
+			"variables": ["SHOPNAME", "고객", "주문내역"],
+			"button": {
+				"type": "URL",
+				"name": "주문내역",
+				"dev": {
+					"urlMobile": "https://dev.matchtrip.net/settlement",
+					"urlPc": "https://dev.matchtrip.net/settlement"
+				},
+				"prod": {
+					"urlMobile": "https://matchtrip.net/settlement",
+					"urlPc": "https://matchtrip.net/settlement"
+				}
+			}
+		},
+		"cpcancel02": {
+			"dev": "testcode18",
+			"prod": "code18",
+			"name": "cpcancel02",
+			"description": "취소완료 - 고객 취소 (가이드에게)",
+			"text": "[#{SHOPNAME}]에 #{고객}님이 취소 처리가 완료 되었습니다. #{나의제안}을 확인하세요",
+			"variables": ["SHOPNAME", "고객", "나의제안"],
+			"button": {
+				"type": "URL",
+				"name": "나의제안보기",
+				"dev": {
+					"urlMobile": "https://dev.matchtrip.net/my-offers",
+					"urlPc": "https://dev.matchtrip.net/my-offers"
+				},
+				"prod": {
+					"urlMobile": "https://matchtrip.net/my-offers",
+					"urlPc": "https://matchtrip.net/my-offers"
+				}
+			}
+		},
+		"cpcancel03": {
+			"dev": "testcode19",
+			"prod": "code19",
+			"name": "cpcancel03",
+			"description": "취소완료 - 가이드 취소 (가이드에게)",
+			"text": "[#{SHOPNAME}]에 #{가이드}님의 취소 처리가 완료 되었습니다. #{나의제안}을 확인하세요",
+			"variables": ["SHOPNAME", "가이드", "나의제안"],
+			"button": {
+				"type": "URL",
+				"name": "나의제안보기",
+				"dev": {
+					"urlMobile": "https://dev.matchtrip.net/my-offers",
+					"urlPc": "https://dev.matchtrip.net/my-offers"
+				},
+				"prod": {
+					"urlMobile": "https://matchtrip.net/my-offers",
+					"urlPc": "https://matchtrip.net/my-offers"
+				}
+			}
+		},
+		"cpcancel04": {
+			"dev": "testcode20",
+			"prod": "code20",
+			"name": "cpcancel04",
+			"description": "취소완료 - 가이드 취소 (고객에게)",
+			"text": "[#{SHOPNAME}]에 #{가이드}님이 취소 처리가 완료 되었습니다. #{주문내역}을 확인하세요",
+			"variables": ["SHOPNAME", "가이드", "주문내역"],
+			"button": {
+				"type": "URL",
+				"name": "주문내역",
+				"dev": {
+					"urlMobile": "https://dev.matchtrip.net/settlement",
+					"urlPc": "https://dev.matchtrip.net/settlement"
+				},
+				"prod": {
+					"urlMobile": "https://matchtrip.net/settlement",
+					"urlPc": "https://matchtrip.net/settlement"
+				}
+			}
 		}
 	}
 }

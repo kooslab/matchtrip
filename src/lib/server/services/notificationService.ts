@@ -170,13 +170,13 @@ export class NotificationService {
 				}
 			}
 
-			// Prepare template
+			// Prepare template - templateCode here is the logical name (e.g., 'signup01')
 			const template = prepareTemplate(options.templateCode, options.templateData);
 
-			// Send notification
+			// Send notification using the environment-specific template code
 			const result = await kakaoAlimTalk.sendAlimTalk({
 				to: formattedPhone,
-				templateCode: options.templateCode,
+				templateCode: template.templateCode, // Use the actual template code from prepareTemplate
 				text: template.text,
 				buttons: template.button ? [template.button] : undefined
 			});
