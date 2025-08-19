@@ -70,7 +70,7 @@
 		</div>
 
 		<!-- Content -->
-		<div class="flex-1 px-6 pt-8 pb-4">
+		<div class="flex-1 px-6 pt-8 pb-24">
 			<h1 class="mb-2 text-2xl font-bold text-gray-900">회원 유형 선택</h1>
 			<p class="mb-6 text-base text-gray-500">회원 유형을 선택해주세요</p>
 
@@ -128,25 +128,27 @@
 		</div>
 
 		<!-- Bottom Button -->
-		<div class="p-6 pb-8">
-			<button
-				onclick={proceedWithRole}
-				disabled={!selectedRole || isLoading}
-				class="w-full rounded-xl py-4 text-base font-medium text-white transition-all {selectedRole
-					? 'bg-blue-500 hover:bg-blue-600'
-					: 'cursor-not-allowed bg-gray-300'}"
-			>
-				{#if isLoading}
-					<div class="flex items-center justify-center gap-2">
-						<div
-							class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
-						></div>
-						<span>처리 중...</span>
-					</div>
-				{:else}
-					선택하기
-				{/if}
-			</button>
+		<div class="fixed right-0 bottom-0 left-0 bg-white">
+			<div class="mx-auto max-w-[430px] p-6 pb-8">
+				<button
+					onclick={proceedWithRole}
+					disabled={!selectedRole || isLoading}
+					class="w-full rounded-xl py-4 text-base font-medium text-white transition-all {selectedRole
+						? 'bg-blue-500 hover:bg-blue-600'
+						: 'cursor-not-allowed bg-gray-300'}"
+				>
+					{#if isLoading}
+						<div class="flex items-center justify-center gap-2">
+							<div
+								class="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"
+							></div>
+							<span>처리 중...</span>
+						</div>
+					{:else}
+						선택하기
+					{/if}
+				</button>
+			</div>
 		</div>
 	</div>
 </div>

@@ -387,12 +387,26 @@
 						placeholder="생년월일을 선택해 주세요"
 						value={formData.birthDate ? formatBirthDate(formData.birthDate) : ''}
 						readonly
-						onclick={() => (dateDialogOpen = true)}
+						onclick={(e) => {
+							e.preventDefault();
+							e.stopPropagation();
+							dateDialogOpen = true;
+						}}
+						onkeydown={(e) => {
+							if (e.key === 'Enter' || e.key === ' ') {
+								e.preventDefault();
+								dateDialogOpen = true;
+							}
+						}}
 					/>
 					<button
 						type="button"
 						class="absolute top-1/2 right-4 flex h-4 w-4 -translate-y-1/2 cursor-pointer items-center justify-center border-none bg-transparent p-0"
-						onclick={() => (dateDialogOpen = true)}
+						onclick={(e) => {
+							e.preventDefault();
+							e.stopPropagation();
+							dateDialogOpen = true;
+						}}
 						aria-label="날짜 선택"
 					>
 						<Calendar size={16} class="text-secondary" />
@@ -436,6 +450,8 @@
 				formData.birthDate = `${date.year}-${String(date.month).padStart(2, '0')}-${String(date.day).padStart(2, '0')}`;
 				// Update the dateValue state as well
 				dateValue = date;
+				// Ensure dialog is closed
+				dateDialogOpen = false;
 			}
 		}}
 	/>
