@@ -1,6 +1,6 @@
 import { auth } from '$lib/auth';
 import { db } from '$lib/server/db';
-import { users, userAgreements } from '$lib/server/db/schema';
+import { users, userAgreements, sessions } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { decryptUserFields } from '$lib/server/encryption';
 import { redirect } from '@sveltejs/kit';
@@ -131,7 +131,15 @@ export const load = async ({ request, locals }) => {
 					// This means they've been deleted - force logout
 					console.log('Layout server - User deleted or not found, forcing logout');
 					
-					// Clear the session by redirecting to logout
+					// Delete the session directly from the database
+					try {
+						await db.delete(sessions).where(eq(sessions.userId, session.user.id));
+						console.log('Layout server - Deleted orphaned session for user:', session.user.id);
+					} catch (deleteError) {
+						console.error('Layout server - Error deleting session:', deleteError);
+					}
+					
+					// Clear cookies and redirect to sign-out
 					throw redirect(302, '/api/auth/sign-out?redirectTo=/');
 				}
 			} catch (error) {
