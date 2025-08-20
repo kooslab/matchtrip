@@ -3,6 +3,7 @@ import { db } from '$lib/server/db';
 import { users, userAgreements } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { decryptUserFields } from '$lib/server/encryption';
+import { redirect } from '@sveltejs/kit';
 
 // Helper function to filter sensitive headers
 function getFilteredHeaders(headers: Headers): Record<string, string> {
@@ -126,9 +127,19 @@ export const load = async ({ request, locals }) => {
 						hasAgreedToTerms
 					);
 				} else {
-					console.log('Layout server - No user found in database for ID:', session.user.id);
+					// User has a session but doesn't exist in database or is deleted
+					// This means they've been deleted - force logout
+					console.log('Layout server - User deleted or not found, forcing logout');
+					
+					// Clear the session by redirecting to logout
+					throw redirect(302, '/api/auth/sign-out?redirectTo=/');
 				}
 			} catch (error) {
+				// If it's a redirect, re-throw it
+				if (error instanceof Error && error.message.includes('redirect')) {
+					throw error;
+				}
+				
 				console.error('Layout server - Failed to fetch user role:', error);
 				console.error(
 					'Layout server - Error details:',
@@ -164,6 +175,11 @@ export const load = async ({ request, locals }) => {
 
 		return returnData;
 	} catch (error) {
+		// If it's a redirect, re-throw it
+		if (error instanceof Error && error.message.includes('redirect')) {
+			throw error;
+		}
+		
 		console.error('[LAYOUT SERVER] Critical error:', error);
 		console.error(
 			'[LAYOUT SERVER] Error stack:',
@@ -179,4 +195,4 @@ export const load = async ({ request, locals }) => {
 			hasAgreedToTerms: false
 		};
 	}
-};
+};;

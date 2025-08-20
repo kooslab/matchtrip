@@ -106,61 +106,67 @@ export const auth = betterAuth({
 					},
 					// Add custom getUserInfo that properly requests email from Kakao
 					getUserInfo: async (data) => {
-						console.log('[KAKAO OAUTH] Custom getUserInfo called');
-						const accessToken = data.accessToken || (data as any).access_token || data;
+					console.log('[KAKAO OAUTH] Custom getUserInfo called');
+					const accessToken = data.accessToken || (data as any).access_token || data;
 
-						try {
-							// Make request to Kakao API with property_keys
-							const propertyKeys = ['kakao_account.email', 'kakao_account.profile'];
-							const response = await fetch('https://kapi.kakao.com/v2/user/me', {
-								method: 'POST',
-								headers: {
-									Authorization: `Bearer ${accessToken}`,
-									'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
-								},
-								body: new URLSearchParams({
-									property_keys: JSON.stringify(propertyKeys)
-								})
-							});
+					try {
+						// Make request to Kakao API with property_keys
+						const propertyKeys = ['kakao_account.email', 'kakao_account.profile'];
+						const response = await fetch('https://kapi.kakao.com/v2/user/me', {
+							method: 'POST',
+							headers: {
+								Authorization: `Bearer ${accessToken}`,
+								'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+							},
+							body: new URLSearchParams({
+								property_keys: JSON.stringify(propertyKeys)
+							})
+						});
 
-							if (!response.ok) {
-								const errorText = await response.text();
-								throw new Error(`Kakao API error: ${response.status} - ${errorText}`);
-							}
-
-							const userData = await response.json();
-							console.log(
-								'[KAKAO OAUTH] Got user data from Kakao:',
-								JSON.stringify(userData, null, 2)
-							);
-
-							// Better-auth expects email at the top level of the returned object
-							// Extract and normalize the data
-							const email = userData.kakao_account?.email;
-							if (!email) {
-								throw new Error('Email not provided by Kakao');
-							}
-
-							const normalizedUser = {
-								id: userData.id?.toString() || '',
-								email: email,
-								name: userData.kakao_account?.profile?.nickname || 'Kakao User',
-								image: userData.kakao_account?.profile?.profile_image_url || null,
-								emailVerified: userData.kakao_account?.is_email_verified || false,
-								createdAt: new Date(),
-								updatedAt: new Date()
-							};
-
-							console.log(
-								'[KAKAO OAUTH] Returning normalized user data:',
-								JSON.stringify(normalizedUser, null, 2)
-							);
-							return normalizedUser;
-						} catch (error) {
-							console.error('[KAKAO OAUTH] Error in getUserInfo:', error);
-							throw error;
+						if (!response.ok) {
+							const errorText = await response.text();
+							throw new Error(`Kakao API error: ${response.status} - ${errorText}`);
 						}
-					},
+
+						const userData = await response.json();
+						console.log(
+							'[KAKAO OAUTH] Got user data from Kakao:',
+							JSON.stringify(userData, null, 2)
+						);
+
+						// Better-auth expects email at the top level of the returned object
+						// Extract and normalize the data
+						const email = userData.kakao_account?.email;
+						if (!email) {
+							throw new Error('Email not provided by Kakao');
+						}
+
+						const name = userData.kakao_account?.profile?.nickname || 'Kakao User';
+						
+						// Encrypt sensitive data
+						const encryptedEmail = encrypt(email);
+						const encryptedName = encrypt(name);
+
+						const normalizedUser = {
+							id: userData.id?.toString() || '',
+							email: encryptedEmail || email, // Fallback to original if encryption fails
+							name: encryptedName || name, // Fallback to original if encryption fails
+							image: userData.kakao_account?.profile?.profile_image_url || null,
+							emailVerified: userData.kakao_account?.is_email_verified || false,
+							createdAt: new Date(),
+							updatedAt: new Date()
+						};
+
+						console.log(
+							'[KAKAO OAUTH] Returning normalized user data with encryption:',
+							JSON.stringify({ ...normalizedUser, email: '[ENCRYPTED]', name: '[ENCRYPTED]' }, null, 2)
+						);
+						return normalizedUser;
+					} catch (error) {
+						console.error('[KAKAO OAUTH] Error in getUserInfo:', error);
+						throw error;
+					}
+				},
 					mapProfileToUser: async (profile) => {
 					console.log(
 						'[KAKAO OAUTH] mapProfileToUser called with:',
