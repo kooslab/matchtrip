@@ -363,8 +363,7 @@ export class NotificationService {
 			.set({
 				status,
 				errorMessage: error,
-				deliveredAt: status === 'delivered' ? new Date() : null,
-				createdAt: new Date()
+				deliveredAt: status === 'delivered' ? new Date() : null
 			})
 			.where(eq(kakaoNotifications.messageId, messageId));
 	}
