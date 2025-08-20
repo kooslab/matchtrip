@@ -53,15 +53,33 @@ export const POST: RequestHandler = async ({ locals }) => {
 
 		console.log('[API COMPLETE ONBOARDING] Verified user in DB:', updatedUser);
 
+		// Fetch fresh user data from database to get the phone number that was just saved
+		const freshUser = await db.query.users.findFirst({
+			where: eq(users.id, locals.user.id),
+			columns: {
+				id: true,
+				name: true,
+				phone: true,
+				email: true
+			}
+		});
+
+		console.log('[API COMPLETE ONBOARDING] Fresh user data from DB:', {
+			id: freshUser?.id,
+			email: freshUser?.email,
+			hasPhone: !!freshUser?.phone,
+			hasName: !!freshUser?.name
+		});
+
 		// Send welcome AlimTalk notification (testcode01)
-		if (locals.user.phone) {
+		if (freshUser?.phone) {
 			try {
 				console.log('[API COMPLETE ONBOARDING] Sending welcome AlimTalk notification');
-				const decryptedPhone = decrypt(locals.user.phone);
-				const decryptedName = locals.user.name ? decrypt(locals.user.name) : null;
+				const decryptedPhone = decrypt(freshUser.phone);
+				const decryptedName = freshUser.name ? decrypt(freshUser.name) : null;
 				
 				await notificationService.sendNotification({
-					userId: locals.user.id,
+					userId: freshUser.id,
 					phoneNumber: decryptedPhone,
 					templateCode: 'testcode01',
 					templateData: {
@@ -77,6 +95,8 @@ export const POST: RequestHandler = async ({ locals }) => {
 					notificationError
 				);
 			}
+		} else {
+			console.log('[API COMPLETE ONBOARDING] No phone number found for user - AlimTalk notification not sent');
 		}
 
 		return json({
