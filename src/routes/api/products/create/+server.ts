@@ -2,6 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
 import { products } from '$lib/server/db/schema';
+import { generateProductDisplayId } from '$lib/server/utils/displayId';
 
 export const POST: RequestHandler = async ({ request, cookies, locals }) => {
 	// Check if user is logged in and is a guide
@@ -55,6 +56,7 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
 			const [product] = await tx
 				.insert(products)
 				.values({
+					displayId: generateProductDisplayId(),
 					guideId: locals.user!.id,
 					destinationId: productData.destinationId,
 					title,

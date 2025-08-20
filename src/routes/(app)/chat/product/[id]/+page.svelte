@@ -559,7 +559,12 @@
 				</div>
 				<div class="flex-1">
 					<h2 class="text-primary text-sm font-semibold">{product.title}</h2>
-					<p class="text-secondary text-xs">{product.destination?.city || '독일'}</p>
+					<p class="text-secondary text-xs">
+						{product.destination?.city || '독일'}
+						{#if product.displayId}
+							· {product.displayId}
+						{/if}
+					</p>
 				</div>
 				<button
 					onclick={() => goto(`/products?productId=${product.id}`)}

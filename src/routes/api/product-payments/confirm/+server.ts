@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
+import { generateProductOrderId } from '$lib/server/utils/displayId';
 import {
 	products,
 	productOffers,
@@ -136,6 +137,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			const [newPayment] = await db
 				.insert(payments)
 				.values({
+					displayId: generateProductOrderId(),
 					productId,
 					productOfferId: offerData ? productOfferId : null, // Only set if offer exists
 					userId: user.id,

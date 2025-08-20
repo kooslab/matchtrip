@@ -207,6 +207,14 @@
 		<!-- Info Grid -->
 		<div class="px-4 pt-6">
 			<dl class="space-y-3">
+				{#if offer.displayId}
+				<div class="flex justify-between">
+					<dt class="text-sm text-gray-600">제안 번호</dt>
+					<dd class="text-sm font-medium text-gray-900">
+						{offer.displayId}
+					</dd>
+				</div>
+				{/if}
 				<div class="flex justify-between">
 					<dt class="text-sm text-gray-600">여행 일정</dt>
 					<dd class="text-sm font-medium text-gray-900">

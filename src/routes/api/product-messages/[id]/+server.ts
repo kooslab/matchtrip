@@ -4,6 +4,7 @@ import { productMessages, productConversations, productOffers, users } from '$li
 import { eq, desc } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
 import { decryptUserFields } from '$lib/server/encryption';
+import { generateProductOfferDisplayId } from '$lib/server/utils/displayId';
 
 // GET messages for a conversation
 export const GET: RequestHandler = async ({ params, locals }) => {
@@ -105,6 +106,7 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 	// If it's an offer message, create an offer record
 	if (messageType === 'offer' && metadata) {
 		await db.insert(productOffers).values({
+			displayId: generateProductOfferDisplayId(),
 			messageId: newMessage.id,
 			conversationId,
 			guideId: userId,

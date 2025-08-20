@@ -5,7 +5,7 @@ import { redirect, type Handle } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { users, userAgreements, guideProfiles } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
-import { dev } from '$app/environment';
+import { dev, building } from '$app/environment';
 import { authErrorLogger } from '$lib/utils/authErrorLogger';
 import { decryptUserFields } from '$lib/server/encryption';
 
@@ -165,7 +165,7 @@ const authHandler = (async ({ event, resolve }) => {
 		event.locals.session = undefined;
 		event.locals.user = undefined;
 		// Don't process route protection if we had an error
-		return svelteKitHandler({ event, resolve, auth });
+		return svelteKitHandler({ event, resolve, auth, building });
 	}
 
 	// Handle redirects BEFORE calling svelteKitHandler to ensure we have fresh user data
@@ -209,7 +209,7 @@ const authHandler = (async ({ event, resolve }) => {
 		'[BEFORE svelteKitHandler] User onboardingCompleted:',
 		event.locals.user?.onboardingCompleted
 	);
-	const response = await svelteKitHandler({ event, resolve, auth });
+	const response = await svelteKitHandler({ event, resolve, auth, building });
 	console.log(
 		'[AFTER svelteKitHandler] User onboardingCompleted:',
 		event.locals.user?.onboardingCompleted

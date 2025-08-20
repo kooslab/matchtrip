@@ -306,6 +306,7 @@ export const offers = pgTable(
 	'offers',
 	{
 		id: uuid('id').primaryKey().defaultRandom(),
+		displayId: varchar('display_id', { length: 20 }).notNull().unique(),
 		tripId: uuid('trip_id')
 			.notNull()
 			.references(() => trips.id, { onDelete: 'cascade' }),
@@ -333,9 +334,10 @@ export const offers = pgTable(
 		guideIdIdx: index('offers_guide_id_idx').on(table.guideId),
 		tripIdIdx: index('offers_trip_id_idx').on(table.tripId),
 		statusIdx: index('offers_status_idx').on(table.status),
-		guideStatusIdx: index('offers_guide_status_idx').on(table.guideId, table.status)
+		guideStatusIdx: index('offers_guide_status_idx').on(table.guideId, table.status),
+		displayIdIdx: index('offers_display_id_idx').on(table.displayId)
 	})
-);
+);;
 
 export const tripStatusHistory = pgTable('trip_status_history', {
 	id: uuid('id').primaryKey().defaultRandom(),
@@ -408,6 +410,7 @@ export const payments = pgTable(
 	'payments',
 	{
 		id: uuid('id').primaryKey().defaultRandom(),
+		displayId: varchar('display_id', { length: 20 }).notNull().unique(),
 		// Trip payment fields (nullable for product payments)
 		tripId: uuid('trip_id').references(() => trips.id, { onDelete: 'restrict' }),
 		offerId: uuid('offer_id').references(() => offers.id, { onDelete: 'restrict' }),
@@ -422,7 +425,7 @@ export const payments = pgTable(
 		amount: integer('amount').notNull(), // Amount in KRW
 		currency: varchar('currency', { length: 3 }).notNull().default('KRW'),
 		paymentKey: text('payment_key').notNull().unique(), // Toss Payments key
-		orderId: text('order_id').notNull().unique(),
+		orderId: text('order_id').notNull().unique(), // Toss order ID (keep for backwards compatibility)
 		status: paymentStatusEnum('status').notNull().default('pending'),
 		paymentMethod: text('payment_method'), // card, transfer, etc.
 		failureReason: text('failure_reason'),
@@ -443,13 +446,14 @@ export const payments = pgTable(
 		productIdIdx: index('payments_product_id_idx').on(table.productId),
 		productOfferIdIdx: index('payments_product_offer_id_idx').on(table.productOfferId),
 		statusIdx: index('payments_status_idx').on(table.status),
-		paymentKeyIdx: index('payments_payment_key_idx').on(table.paymentKey)
+		paymentKeyIdx: index('payments_payment_key_idx').on(table.paymentKey),
+		displayIdIdx: index('payments_display_id_idx').on(table.displayId)
 		// Note: Check constraint should be added manually to database if needed:
 		// ALTER TABLE payments ADD CONSTRAINT payment_type_check
 		// CHECK ((trip_id IS NOT NULL AND offer_id IS NOT NULL AND product_id IS NULL AND product_offer_id IS NULL)
 		//     OR (product_id IS NOT NULL AND product_offer_id IS NOT NULL AND trip_id IS NULL AND offer_id IS NULL));
 	})
-);
+);;
 
 // Payment refunds table for tracking individual refund transactions
 export const paymentRefunds = pgTable(
@@ -746,6 +750,7 @@ export const products = pgTable(
 	'products',
 	{
 		id: uuid('id').primaryKey().defaultRandom(),
+		displayId: varchar('display_id', { length: 20 }).notNull().unique(),
 		guideId: uuid('guide_id')
 			.notNull()
 			.references(() => users.id, { onDelete: 'cascade' }),
@@ -771,9 +776,10 @@ export const products = pgTable(
 		guideIdIdx: index('products_guide_id_idx').on(table.guideId),
 		destinationIdIdx: index('products_destination_id_idx').on(table.destinationId),
 		statusIdx: index('products_status_idx').on(table.status),
-		guideStatusIdx: index('products_guide_status_idx').on(table.guideId, table.status)
+		guideStatusIdx: index('products_guide_status_idx').on(table.guideId, table.status),
+		displayIdIdx: index('products_display_id_idx').on(table.displayId)
 	})
-);
+);;
 
 // Product sequences table for generating unique MT-YYYYMM-XXXXXX format titles
 export const productSequences = pgTable('product_sequences', {
@@ -846,6 +852,7 @@ export const productOffers = pgTable(
 	'product_offers',
 	{
 		id: uuid('id').primaryKey().defaultRandom(),
+		displayId: varchar('display_id', { length: 20 }).notNull().unique(),
 		messageId: uuid('message_id')
 			.notNull()
 			.references(() => productMessages.id, { onDelete: 'cascade' })
@@ -869,9 +876,10 @@ export const productOffers = pgTable(
 	(table) => ({
 		conversationIdIdx: index('product_offers_conversation_id_idx').on(table.conversationId),
 		guideIdIdx: index('product_offers_guide_id_idx').on(table.guideId),
-		statusIdx: index('product_offers_status_idx').on(table.status)
+		statusIdx: index('product_offers_status_idx').on(table.status),
+		displayIdIdx: index('product_offers_display_id_idx').on(table.displayId)
 	})
-);
+);;
 
 // Kakao AlimTalk notification tracking
 export const kakaoNotificationStatusEnum = pgEnum('kakao_notification_status', [

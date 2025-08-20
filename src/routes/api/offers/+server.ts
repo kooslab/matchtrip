@@ -5,6 +5,7 @@ import { offers, users, trips } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { auth } from '$lib/auth';
 import { notificationService } from '$lib/server/services/notificationService';
+import { generateOfferDisplayId } from '$lib/server/utils/displayId';
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
@@ -70,10 +71,11 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		const totalPrice = pricePerPerson * tripDetails[0].adultsCount;
 
-		// Create offer
+		// Create offer with display ID
 		const newOffer = await db
 			.insert(offers)
 			.values({
+				displayId: generateOfferDisplayId(),
 				tripId,
 				guideId: session.user.id,
 				travelerId: tripDetails[0].userId,
@@ -143,4 +145,4 @@ export const POST: RequestHandler = async ({ request }) => {
 		console.error('Error creating offer:', error);
 		return json({ success: false, error: '서버 오류가 발생했습니다.' }, { status: 500 });
 	}
-};
+};;
