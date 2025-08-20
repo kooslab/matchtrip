@@ -151,7 +151,7 @@ export const load = async ({ request, locals }) => {
 		}
 
 		const returnData = {
-			user: session?.user ?? null,
+			user: fullUser ?? null, // Return decrypted user data instead of session user
 			session: session?.session ?? null,
 			userRole,
 			fullUser,
