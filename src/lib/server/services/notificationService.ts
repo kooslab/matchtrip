@@ -77,16 +77,17 @@ export class NotificationService {
 		templateData?: Record<string, string>
 	): Promise<boolean> {
 		const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+		const { and, gte } = await import('drizzle-orm');
 		
 		const recent = await db
 			.select()
-			.from(notifications)
+			.from(kakaoNotifications)
 			.where(
 				and(
-					eq(notifications.phoneNumber, phoneNumber),
-					eq(notifications.templateCode, templateCode),
-					eq(notifications.status, 'sent'),
-					gte(notifications.createdAt, fiveMinutesAgo)
+					eq(kakaoNotifications.phoneNumber, phoneNumber),
+					eq(kakaoNotifications.templateCode, templateCode),
+					eq(kakaoNotifications.status, 'sent'),
+					gte(kakaoNotifications.createdAt, fiveMinutesAgo)
 				)
 			)
 			.limit(1);
@@ -112,7 +113,7 @@ export class NotificationService {
 		bulkId?: string,
 		error?: string
 	) {
-		await db.insert(notifications).values({
+		await db.insert(kakaoNotifications).values({
 			userId,
 			phoneNumber,
 			templateCode,
@@ -120,7 +121,7 @@ export class NotificationService {
 			status,
 			messageId,
 			bulkId,
-			error,
+			errorMessage: error,
 			sentAt: status === 'sent' ? new Date() : null,
 			createdAt: new Date()
 		});
@@ -358,14 +359,14 @@ export class NotificationService {
 	 */
 	async updateNotificationStatus(messageId: string, status: 'delivered' | 'failed', error?: string) {
 		await db
-			.update(notifications)
+			.update(kakaoNotifications)
 			.set({
 				status,
-				error,
+				errorMessage: error,
 				deliveredAt: status === 'delivered' ? new Date() : null,
-				updatedAt: new Date()
+				createdAt: new Date()
 			})
-			.where(eq(notifications.messageId, messageId));
+			.where(eq(kakaoNotifications.messageId, messageId));
 	}
 }
 
