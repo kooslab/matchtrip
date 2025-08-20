@@ -4,7 +4,7 @@ import { svelteKitHandler } from 'better-auth/svelte-kit';
 import { redirect, type Handle } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { users, userAgreements, guideProfiles, sessions } from '$lib/server/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { dev, building } from '$app/environment';
 import { authErrorLogger } from '$lib/utils/authErrorLogger';
 import { decryptUserFields } from '$lib/server/encryption';
@@ -74,12 +74,8 @@ const authHandler = (async ({ event, resolve }) => {
 		if (session?.user?.id) {
 			try {
 				// Fetch user from database with guide profile if they are a guide
-				// IMPORTANT: Check that user is not deleted
 				const user = await db.query.users.findFirst({
-					where: and(
-						eq(users.id, session.user.id),
-						eq(users.isDeleted, false)
-					),
+					where: eq(users.id, session.user.id),
 					columns: {
 						id: true,
 						role: true,
@@ -95,28 +91,7 @@ const authHandler = (async ({ event, resolve }) => {
 					}
 				});
 
-				if (!user && session?.user?.id) {
-					// Session exists but user not found in DB or user is deleted - stale/invalid session
-					console.warn('[HOOKS] Stale/deleted session detected - user not found or deleted in database:', session.user.id);
-					
-					// Clear the invalid session by deleting the session from the database
-					try {
-						await db.delete(sessions).where(eq(sessions.userId, session.user.id));
-						console.log('[HOOKS] Deleted session for deleted/invalid user');
-					} catch (deleteError) {
-						console.error('[HOOKS] Failed to delete session:', deleteError);
-					}
-					
-					// Clear the invalid session data
-					event.locals.session = undefined;
-					event.locals.user = undefined;
-					event.locals.hasAgreedToTerms = false;
-					
-					// If on a protected route, redirect to home
-					if (routeId?.startsWith('/(app)')) {
-						redirect(302, '/');
-					}
-				} else if (user) {
+				if (user) {
 					// Decrypt user fields before storing in locals
 					let decryptedUser;
 					try {
