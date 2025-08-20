@@ -36,16 +36,36 @@
 		<!-- Profile Section -->
 		<div class="border-b border-gray-200 bg-white px-4 py-6">
 			<div class="mb-2 text-sm text-gray-500">Match Your Trip, Make It Yours</div>
-			<div class="flex items-center justify-between">
-				<h2 class="text-lg font-semibold">
-					안녕하세요! {data.user?.nickname || data.user?.name || '홍길동'} 님
-				</h2>
-				<button
-					onclick={() => goto('/profile/traveler/edit')}
-					class="rounded-full bg-gray-200 px-3 py-1 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-300"
-				>
-					프로필 수정
-				</button>
+			<div class="flex items-center gap-4">
+				<!-- Profile Image -->
+				<div class="flex-shrink-0">
+					{#if data.user?.image}
+						<img
+							src={data.user.image}
+							alt="프로필 이미지"
+							class="h-16 w-16 rounded-full object-cover"
+						/>
+					{:else}
+						<div class="flex h-16 w-16 items-center justify-center rounded-full bg-gray-200">
+							<svg class="h-8 w-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+								<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+							</svg>
+						</div>
+					{/if}
+				</div>
+				
+				<!-- User Info and Edit Button -->
+				<div class="flex flex-1 items-center justify-between">
+					<h2 class="text-lg font-semibold">
+						안녕하세요! {data.user?.nickname || data.user?.name || '홍길동'} 님
+					</h2>
+					<button
+						onclick={() => goto('/profile/traveler/edit')}
+						class="rounded-full bg-gray-200 px-3 py-1 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-300"
+					>
+						프로필 수정
+					</button>
+				</div>
 			</div>
 
 			<!-- Stats -->

@@ -130,6 +130,19 @@ const authHandler = (async ({ event, resolve }) => {
 
 					// Check if user has agreed to terms
 					event.locals.hasAgreedToTerms = !!(agreement?.termsAgreed && agreement?.privacyAgreed);
+				} else {
+					// User has a session but doesn't exist in database
+					// Delete the orphaned session
+					console.log('[HOOKS] User not found, deleting orphaned session for user:', session.user.id);
+					try {
+						await db.delete(sessions).where(eq(sessions.userId, session.user.id));
+						console.log('[HOOKS] Successfully deleted orphaned session');
+						// Clear the session from locals
+						event.locals.session = undefined;
+						event.locals.user = undefined;
+					} catch (deleteError) {
+						console.error('[HOOKS] Error deleting orphaned session:', deleteError);
+					}
 				}
 			} catch (error) {
 				authErrorLogger.log(

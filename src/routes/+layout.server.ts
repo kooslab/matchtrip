@@ -143,8 +143,9 @@ export const load = async ({ request, locals }) => {
 					throw redirect(302, '/api/auth/sign-out?redirectTo=/');
 				}
 			} catch (error) {
-				// If it's a redirect, re-throw it
-				if (error instanceof Error && error.message.includes('redirect')) {
+				// Check if it's a SvelteKit redirect
+				if (error && typeof error === 'object' && 'status' in error && 'location' in error) {
+					// This is a redirect, re-throw it
 					throw error;
 				}
 				
