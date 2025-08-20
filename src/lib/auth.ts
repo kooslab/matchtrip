@@ -1,9 +1,9 @@
 import { betterAuth } from 'better-auth';
-import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { genericOAuth } from 'better-auth/plugins';
+import { createHashedEmailAdapter } from './server/authAdapter';
 import { db } from './server/db';
-import * as schema from './server/db/schema';
 import { encrypt } from './server/encryption';
+import { hashEmail } from './server/emailHash';
 import {
 	GOOGLE_CLIENT_ID,
 	GOOGLE_CLIENT_SECRET,
@@ -45,20 +45,10 @@ console.log('[AUTH CONFIG] Initializing better-auth with drizzle adapter');
 console.log('[AUTH CONFIG] Database tables available:', Object.keys(db._.schema || {}));
 
 export const auth = betterAuth({
-	database: drizzleAdapter(db, {
-		provider: 'pg',
-		schema: {
-			users: schema.users,
-			sessions: schema.sessions,
-			accounts: schema.accounts,
-			verifications: schema.verifications
-		}
-	}),
+	database: createHashedEmailAdapter(),
 	secret: BETTER_AUTH_SECRET,
 	advanced: {
 		generateId: false,
-		// Add debugging
-		debugMode: true,
 		// Force secure cookies in production
 		useSecureCookies: process.env.NODE_ENV === 'production',
 		// Cookie configuration for better Safari compatibility
@@ -84,12 +74,12 @@ export const auth = betterAuth({
 				console.log('[GOOGLE OAUTH] Mapping profile:', JSON.stringify(profile, null, 2));
 
 				const mappedUser = {
-					name: encrypt(profile.name || profile.email),
-					email: profile.email,
+					name: encrypt(profile.name || profile.email) || undefined,
+					email: encrypt(profile.email) || profile.email, // Encrypt email
 					emailVerified: true, // Google accounts are pre-verified
 					image: profile.picture
 				};
-				console.log('[GOOGLE OAUTH] Mapped user data with encrypted name');
+				console.log('[GOOGLE OAUTH] Mapped user data with encrypted name and email');
 				return mappedUser;
 			}
 		}
@@ -113,7 +103,7 @@ export const auth = betterAuth({
 					// Add custom getUserInfo that properly requests email from Kakao
 					getUserInfo: async (data) => {
 						console.log('[KAKAO OAUTH] Custom getUserInfo called');
-						const accessToken = data.accessToken || data.access_token || data;
+						const accessToken = data.accessToken || (data as any).access_token || data;
 
 						try {
 							// Make request to Kakao API with property_keys
@@ -148,13 +138,13 @@ export const auth = betterAuth({
 							}
 
 							const normalizedUser = {
-								id: userData.id?.toString(),
+								id: userData.id?.toString() || '',
 								email: email,
 								name: userData.kakao_account?.profile?.nickname || 'Kakao User',
-								image: userData.kakao_account?.profile?.profile_image_url,
+								image: userData.kakao_account?.profile?.profile_image_url || null,
 								emailVerified: userData.kakao_account?.is_email_verified || false,
-								// Pass the full data for mapProfileToUser if needed
-								kakao_account: userData.kakao_account
+								createdAt: new Date(),
+								updatedAt: new Date()
 							};
 
 							console.log(
@@ -179,8 +169,8 @@ export const auth = betterAuth({
 							// Already normalized by getUserInfo
 							console.log('[KAKAO OAUTH] Using pre-normalized user data');
 							return {
-								email: profile.email,
-								name: encrypt(profile.name),
+								email: encrypt(profile.email) || profile.email, // Encrypt email
+								name: encrypt(profile.name) || undefined,
 								image: profile.image,
 								emailVerified: profile.emailVerified
 							};
@@ -193,8 +183,8 @@ export const auth = betterAuth({
 						}
 
 						return {
-							email: kakaoAccount.email,
-							name: encrypt(kakaoAccount.profile?.nickname || 'Kakao User'),
+							email: encrypt(kakaoAccount.email) || kakaoAccount.email, // Encrypt email
+							name: encrypt(kakaoAccount.profile?.nickname || 'Kakao User') || undefined,
 							image: kakaoAccount.profile?.profile_image_url,
 							emailVerified: kakaoAccount.is_email_verified || false
 						};
@@ -205,6 +195,29 @@ export const auth = betterAuth({
 	],
 	rateLimit: {
 		storage: 'memory'
+	},
+	// Add hooks to handle email hashing
+	hooks: {
+		user: {
+			create: {
+				before: async (user) => {
+					console.log('[AUTH HOOK] Before user create - adding email hash');
+					if (user.email) {
+						(user as any).emailHash = hashEmail(user.email);
+					}
+					return user;
+				}
+			},
+			update: {
+				before: async ({ data }) => {
+					console.log('[AUTH HOOK] Before user update - checking email change');
+					if (data.email) {
+						(data as any).emailHash = hashEmail(data.email);
+					}
+					return data;
+				}
+			}
+		}
 	},
 	user: { modelName: 'users' },
 	session: {

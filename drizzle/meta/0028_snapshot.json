@@ -1,5 +1,5 @@
 {
-  "id": "33a8f68c-27b8-4174-b566-c5ebeec818d1",
+  "id": "c563d5df-b8c3-46a0-b1b0-cf00a1580064",
   "prevId": "dafd02bc-1a54-4cf6-9bdc-fb723f8e832d",
   "version": "7",
   "dialect": "postgresql",
@@ -4372,6 +4372,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "email_hash": {
+          "name": "email_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "email_verified": {
           "name": "email_verified",
           "type": "boolean",
@@ -4477,6 +4483,21 @@
           "method": "btree",
           "with": {}
         },
+        "users_email_hash_idx": {
+          "name": "users_email_hash_idx",
+          "columns": [
+            {
+              "expression": "email_hash",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "users_is_deleted_idx": {
           "name": "users_is_deleted_idx",
           "columns": [
@@ -4501,6 +4522,13 @@
           "nullsNotDistinct": false,
           "columns": [
             "email"
+          ]
+        },
+        "users_email_hash_unique": {
+          "name": "users_email_hash_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email_hash"
           ]
         }
       },
