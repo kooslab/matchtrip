@@ -144,8 +144,13 @@ export const auth = betterAuth({
 						const name = userData.kakao_account?.profile?.nickname || 'Kakao User';
 						
 						// Encrypt sensitive data
+						console.log('[KAKAO OAUTH] Encrypting email:', email);
 						const encryptedEmail = encrypt(email);
+						console.log('[KAKAO OAUTH] Encrypted email result:', encryptedEmail);
+						
+						console.log('[KAKAO OAUTH] Encrypting name:', name);
 						const encryptedName = encrypt(name);
+						console.log('[KAKAO OAUTH] Encrypted name result:', encryptedName);
 
 						const normalizedUser = {
 							id: userData.id?.toString() || '',
@@ -180,8 +185,13 @@ export const auth = betterAuth({
 						console.log('[KAKAO OAUTH] Using pre-normalized user data');
 						
 						// Encrypt the data, but ensure we always have a value
+						console.log('[KAKAO OAUTH] mapProfileToUser - Encrypting email:', profile.email);
 						const encryptedEmail = encrypt(profile.email);
+						console.log('[KAKAO OAUTH] mapProfileToUser - Encrypted email result:', encryptedEmail);
+						
+						console.log('[KAKAO OAUTH] mapProfileToUser - Encrypting name:', profile.name);
 						const encryptedName = encrypt(profile.name);
+						console.log('[KAKAO OAUTH] mapProfileToUser - Encrypted name result:', encryptedName);
 						
 						return {
 							email: encryptedEmail || profile.email, // Fallback to original if encryption fails
