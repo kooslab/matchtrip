@@ -27,3 +27,6 @@ usage_tracking*.json
 
 # mcp
 .serena/
+
+# backups
+backups
