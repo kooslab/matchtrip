@@ -61,7 +61,19 @@ export function encryptCore(plainText: string | null | undefined): string | null
 		
 		// CRITICAL: Always use this exact format
 		// Format: encrypted:<iv_base64>:<auth_tag_base64>:<encrypted_data_base64>
-		return `${ENCRYPTED_PREFIX}${iv.toString('base64')}:${authTag.toString('base64')}:${encrypted.toString('base64')}`;
+		const ivBase64 = iv.toString('base64');
+		const authTagBase64 = authTag.toString('base64');
+		const encryptedBase64 = encrypted.toString('base64');
+		const result = `${ENCRYPTED_PREFIX}${ivBase64}:${authTagBase64}:${encryptedBase64}`;
+		
+		console.log('[ENCRYPTION DEBUG] Encrypting:', plainText?.substring(0, 10) + '...');
+		console.log('[ENCRYPTION DEBUG] IV length:', iv.length, 'base64:', ivBase64);
+		console.log('[ENCRYPTION DEBUG] AuthTag length:', authTag.length, 'base64:', authTagBase64);
+		console.log('[ENCRYPTION DEBUG] Encrypted length:', encrypted.length, 'base64:', encryptedBase64);
+		console.log('[ENCRYPTION DEBUG] Final result:', result);
+		console.log('[ENCRYPTION DEBUG] Result parts count:', result.split(':').length);
+		
+		return result;
 	} catch (error) {
 		console.error('Encryption error:', error);
 		throw new Error('Failed to encrypt data');
