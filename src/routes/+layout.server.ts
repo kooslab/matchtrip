@@ -1,7 +1,7 @@
 import { auth } from '$lib/auth';
 import { db } from '$lib/server/db';
 import { users, userAgreements } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { decryptUserFields } from '$lib/server/encryption';
 
 // Helper function to filter sensitive headers
@@ -70,7 +70,10 @@ export const load = async ({ request, locals }) => {
 			try {
 				console.log('Layout server - Querying database for user:', session.user.id);
 				const user = await db.query.users.findFirst({
-					where: eq(users.id, session.user.id),
+					where: and(
+						eq(users.id, session.user.id),
+						eq(users.isDeleted, false)
+					),
 					columns: {
 						id: true,
 						role: true,
