@@ -1,7 +1,8 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { guideProfiles, fileUploads } from '$lib/server/db/schema';
+import { guideProfiles, fileUploads, users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
+import { encrypt } from '$lib/server/encryption';
 import { sendGuideOnboardingEmail } from '$lib/server/email/guideOnboarding';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { env } from '$env/dynamic/private';
@@ -191,6 +192,29 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			hasIdDocument: !!idDocumentUrl,
 			certificationCount: certificationUrls.length
 		});
+
+		// Update user's basic information if provided
+		const userUpdates: any = {};
+		if (name) {
+			const encryptedName = encrypt(name) || name;
+			userUpdates.name = encryptedName;
+		}
+		if (phone) {
+			const encryptedPhone = encrypt(phone) || phone;
+			userUpdates.phone = encryptedPhone;
+		}
+		if (birthDate) {
+			userUpdates.birthDate = birthDate;
+		}
+
+		if (Object.keys(userUpdates).length > 0) {
+			userUpdates.updatedAt = new Date();
+			await db
+				.update(users)
+				.set(userUpdates)
+				.where(eq(users.id, userId));
+			console.log('[API GUIDE PROFILE] Updated user basic information');
+		}
 
 		// Create or update guide profile
 		console.log('[API GUIDE PROFILE] Checking for existing profile');

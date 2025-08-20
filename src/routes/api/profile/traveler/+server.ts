@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
 import { travelerProfiles, users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
+import { encrypt } from '$lib/server/encryption';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
 	if (!locals.user || locals.user.role !== 'traveler') {
@@ -14,10 +15,11 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 		// Update phone number in users table if provided
 		if (data.phone !== undefined) {
+			const encryptedPhone = data.phone ? encrypt(data.phone) || data.phone : null;
 			await db
 				.update(users)
 				.set({
-					phone: data.phone || null,
+					phone: encryptedPhone,
 					updatedAt: new Date()
 				})
 				.where(eq(users.id, locals.user.id));
