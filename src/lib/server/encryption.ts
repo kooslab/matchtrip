@@ -123,24 +123,6 @@ export function isEncrypted(value: string | null | undefined): boolean {
 	return value.startsWith(ENCRYPTED_PREFIX);
 }
 
-/**
- * Hash an email for indexing and lookups
- * Uses SHA-256 for consistent hashing
- * @param email - The email to hash
- * @returns Hashed email string
- */
-export function hashEmail(email: string | null | undefined): string | null {
-	if (!email) return null;
-
-	// Normalize email to lowercase for consistent hashing
-	const normalizedEmail = email.toLowerCase().trim();
-
-	// Create SHA-256 hash
-	const hash = createHash('sha256');
-	hash.update(normalizedEmail);
-
-	return hash.digest('hex');
-}
 
 /**
  * Decrypt user object fields
@@ -181,8 +163,6 @@ export function encryptUserFields<T extends Record<string, any>>(user: Partial<T
 
 	if ('email' in encrypted && encrypted.email) {
 		(encrypted as any).email = encrypt(encrypted.email as string);
-		// Also create email hash for lookups
-		(encrypted as any).email_hash = hashEmail(user.email as string);
 	}
 
 	if ('phone' in encrypted && encrypted.phone) {
@@ -192,18 +172,3 @@ export function encryptUserFields<T extends Record<string, any>>(user: Partial<T
 	return encrypted;
 }
 
-/**
- * Prepare email for lookup
- * During migration, this checks if we should use hash or direct lookup
- */
-export function prepareEmailForLookup(email: string): {
-	useHash: boolean;
-	value: string;
-} {
-	// For now, during migration, we'll try both methods
-	// Once migration is complete, we'll only use hash
-	return {
-		useHash: true,
-		value: hashEmail(email)!
-	};
-}

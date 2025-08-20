@@ -1,15 +1,15 @@
 #!/usr/bin/env bun
 /**
  * Migration script to encrypt existing user data in the database
- * This script will encrypt name, email, and phone fields for all users
- * and generate email hashes for efficient lookups
+ * This script will encrypt name and phone fields for all users
+ * Note: emails are kept as plaintext for authentication
  */
 
 import { config } from 'dotenv';
 import { db } from '../src/lib/server/db';
 import { users } from '../src/lib/server/db/schema';
 import { eq } from 'drizzle-orm';
-import { encrypt, isEncrypted, hashEmail } from '../src/lib/server/encryption';
+import { encrypt, isEncrypted } from '../src/lib/server/encryption';
 
 // Load environment variables
 config();
@@ -43,7 +43,8 @@ async function migrateUsers(): Promise<MigrationStats> {
 	let hasMore = true;
 
 	console.log('🔐 Starting user data encryption migration...');
-	console.log('⚠️  This process will encrypt all user personal data (name, email, phone)');
+	console.log('⚠️  This process will encrypt user names and phone numbers');
+	console.log('📝 Note: Emails will remain plaintext for authentication');
 	console.log('');
 
 	while (hasMore) {
@@ -54,8 +55,7 @@ async function migrateUsers(): Promise<MigrationStats> {
 					id: users.id,
 					name: users.name,
 					email: users.email,
-					phone: users.phone,
-					emailHash: users.emailHash
+					phone: users.phone
 				})
 				.from(users)
 				.limit(batchSize)
@@ -75,7 +75,7 @@ async function migrateUsers(): Promise<MigrationStats> {
 
 				try {
 					// Check if already encrypted
-					if (isEncrypted(user.name) && isEncrypted(user.email)) {
+					if (isEncrypted(user.name) && (!user.phone || isEncrypted(user.phone))) {
 						console.log(`⏭️  User ${user.id}: Already encrypted, skipping`);
 						stats.skipped++;
 						continue;
@@ -91,12 +91,7 @@ async function migrateUsers(): Promise<MigrationStats> {
 						needsUpdate = true;
 					}
 
-					// Encrypt email if not already encrypted
-					if (user.email && !isEncrypted(user.email)) {
-						updates.email = encrypt(user.email);
-						updates.emailHash = hashEmail(user.email);
-						needsUpdate = true;
-					}
+					// Note: We no longer encrypt emails - they remain plaintext for authentication
 
 					// Encrypt phone if exists and not already encrypted
 					if (user.phone && !isEncrypted(user.phone)) {

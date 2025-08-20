@@ -3,7 +3,7 @@
  * This intercepts database operations to encrypt/decrypt personal data
  */
 
-import { encrypt, decrypt, hashEmail, isEncrypted } from './encryption';
+import { encrypt, decrypt, isEncrypted } from './encryption';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { eq } from 'drizzle-orm';
 
@@ -24,8 +24,6 @@ export function encryptUserDataForAuth(userData: any) {
 	if (encrypted.email) {
 		// Keep original email for unique constraint
 		encrypted.email = encrypt(encrypted.email);
-		// Add email hash for lookups
-		encrypted.emailHash = hashEmail(userData.email);
 	}
 
 	if (encrypted.phone) {

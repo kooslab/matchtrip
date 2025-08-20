@@ -3,7 +3,7 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { genericOAuth } from 'better-auth/plugins';
 import { db } from './server/db';
 import * as schema from './server/db/schema';
-import { encrypt, hashEmail } from './server/encryption';
+import { encrypt } from './server/encryption';
 import {
 	GOOGLE_CLIENT_ID,
 	GOOGLE_CLIENT_SECRET,
@@ -83,15 +83,13 @@ export const auth = betterAuth({
 			mapProfileToUser: (profile) => {
 				console.log('[GOOGLE OAUTH] Mapping profile:', JSON.stringify(profile, null, 2));
 
-				// Temporarily disable encryption for testing
 				const mappedUser = {
-					name: profile.name || profile.email,  // No encryption for now
-					email: profile.email,  // No encryption for now
-					emailHash: hashEmail(profile.email),
+					name: encrypt(profile.name || profile.email),
+					email: profile.email,
 					emailVerified: true, // Google accounts are pre-verified
 					image: profile.picture
 				};
-				console.log('[GOOGLE OAUTH] Mapped user data WITHOUT encryption (temporary)');
+				console.log('[GOOGLE OAUTH] Mapped user data with encrypted name');
 				return mappedUser;
 			}
 		}
@@ -181,9 +179,8 @@ export const auth = betterAuth({
 							// Already normalized by getUserInfo
 							console.log('[KAKAO OAUTH] Using pre-normalized user data');
 							return {
-								email: profile.email,  // No encryption for now
-								emailHash: hashEmail(profile.email),
-								name: profile.name,  // No encryption for now
+								email: profile.email,
+								name: encrypt(profile.name),
 								image: profile.image,
 								emailVerified: profile.emailVerified
 							};
@@ -196,9 +193,8 @@ export const auth = betterAuth({
 						}
 
 						return {
-							email: kakaoAccount.email,  // No encryption for now
-							emailHash: hashEmail(kakaoAccount.email),
-							name: kakaoAccount.profile?.nickname || 'Kakao User',  // No encryption for now
+							email: kakaoAccount.email,
+							name: encrypt(kakaoAccount.profile?.nickname || 'Kakao User'),
 							image: kakaoAccount.profile?.profile_image_url,
 							emailVerified: kakaoAccount.is_email_verified || false
 						};
