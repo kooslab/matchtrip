@@ -73,9 +73,13 @@ export const auth = betterAuth({
 			mapProfileToUser: (profile) => {
 				console.log('[GOOGLE OAUTH] Mapping profile:', JSON.stringify(profile, null, 2));
 
+				const nameToEncrypt = profile.name || profile.email;
+				const encryptedName = encrypt(nameToEncrypt);
+				const encryptedEmail = encrypt(profile.email);
+
 				const mappedUser = {
-					name: encrypt(profile.name || profile.email) || undefined,
-					email: encrypt(profile.email) || profile.email, // Encrypt email
+					name: encryptedName || nameToEncrypt || undefined, // Fallback to original if encryption fails
+					email: encryptedEmail || profile.email, // Fallback to original if encryption fails
 					emailVerified: true, // Google accounts are pre-verified
 					image: profile.picture
 				};
@@ -158,37 +162,46 @@ export const auth = betterAuth({
 						}
 					},
 					mapProfileToUser: async (profile) => {
-						console.log(
-							'[KAKAO OAUTH] mapProfileToUser called with:',
-							JSON.stringify(profile, null, 2)
-						);
+					console.log(
+						'[KAKAO OAUTH] mapProfileToUser called with:',
+						JSON.stringify(profile, null, 2)
+					);
 
-						// Since getUserInfo already normalized the data, we can use it directly
-						// Check if this is already normalized data or raw Kakao data
-						if (profile.email && profile.id) {
-							// Already normalized by getUserInfo
-							console.log('[KAKAO OAUTH] Using pre-normalized user data');
-							return {
-								email: encrypt(profile.email) || profile.email, // Encrypt email
-								name: encrypt(profile.name) || undefined,
-								image: profile.image,
-								emailVerified: profile.emailVerified
-							};
-						}
-
-						// Fallback for raw Kakao data (shouldn't happen with our getUserInfo)
-						const kakaoAccount = profile.kakao_account || {};
-						if (!kakaoAccount.email) {
-							throw new Error('Email not provided by Kakao');
-						}
-
+					// Since getUserInfo already normalized the data, we can use it directly
+					// Check if this is already normalized data or raw Kakao data
+					if (profile.email && profile.id) {
+						// Already normalized by getUserInfo
+						console.log('[KAKAO OAUTH] Using pre-normalized user data');
+						
+						// Encrypt the data, but ensure we always have a value
+						const encryptedEmail = encrypt(profile.email);
+						const encryptedName = encrypt(profile.name);
+						
 						return {
-							email: encrypt(kakaoAccount.email) || kakaoAccount.email, // Encrypt email
-							name: encrypt(kakaoAccount.profile?.nickname || 'Kakao User') || undefined,
-							image: kakaoAccount.profile?.profile_image_url,
-							emailVerified: kakaoAccount.is_email_verified || false
+							email: encryptedEmail || profile.email, // Fallback to original if encryption fails
+							name: encryptedName || profile.name || undefined, // Fallback to original if encryption fails
+							image: profile.image,
+							emailVerified: profile.emailVerified
 						};
 					}
+
+					// Fallback for raw Kakao data (shouldn't happen with our getUserInfo)
+					const kakaoAccount = profile.kakao_account || {};
+					if (!kakaoAccount.email) {
+						throw new Error('Email not provided by Kakao');
+					}
+
+					const nameToEncrypt = kakaoAccount.profile?.nickname || 'Kakao User';
+					const encryptedEmail = encrypt(kakaoAccount.email);
+					const encryptedName = encrypt(nameToEncrypt);
+
+					return {
+						email: encryptedEmail || kakaoAccount.email, // Fallback to original if encryption fails
+						name: encryptedName || nameToEncrypt, // Fallback to original if encryption fails
+						image: kakaoAccount.profile?.profile_image_url,
+						emailVerified: kakaoAccount.is_email_verified || false
+					};
+				}
 				}
 			]
 		})
