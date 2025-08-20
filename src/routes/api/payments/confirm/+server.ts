@@ -5,6 +5,7 @@ import { offers, trips, payments, users } from '$lib/server/db/schema';
 import { eq, and, ne } from 'drizzle-orm';
 import { notificationService } from '$lib/server/services/notificationService';
 import { generateOfferOrderId } from '$lib/server/utils/displayId';
+import { decrypt } from '$lib/server/encryption';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
 	try {
@@ -184,14 +185,18 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 				// Format amount with comma separator
 				const formattedAmount = amount.toLocaleString('ko-KR') + '원';
+				
+				// Decrypt personal data
+				const decryptedPhone = decrypt(userDetails[0].phone);
+				const decryptedName = userDetails[0].name ? decrypt(userDetails[0].name) : null;
 
 				await notificationService.sendNotification({
 					userId: user.id,
-					phoneNumber: userDetails[0].phone,
+					phoneNumber: decryptedPhone,
 					templateCode: 'testcode06',
 					templateData: {
 						SHOPNAME: '매치트립',
-						고객: userDetails[0].name || '고객',
+						고객: decryptedName || '고객',
 						여행총결제금액: formattedAmount
 					}
 				});

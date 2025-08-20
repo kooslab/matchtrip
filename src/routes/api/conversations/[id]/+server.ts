@@ -13,7 +13,7 @@ import {
 } from '$lib/server/db/schema';
 import { eq, and, or, asc, sql } from 'drizzle-orm';
 import { notificationService } from '$lib/server/services/notificationService';
-import { decryptUserFields } from '$lib/server/encryption';
+import { decryptUserFields, decrypt } from '$lib/server/encryption';
 import { transformImageUrl } from '$lib/utils/imageUrl';
 
 // GET /api/conversations/[id] - Get conversation details with messages
@@ -277,16 +277,20 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 				.limit(1);
 
 			if (recipient[0]?.phone) {
+				// Decrypt phone and names
+				const decryptedRecipientPhone = decrypt(recipient[0].phone);
+				const decryptedSenderName = sender[0]?.name ? decrypt(sender[0].name) : null;
+				
 				if (isGuide) {
 					// Guide replied to traveler (testcode05)
 					console.log('[CONVERSATIONS API] Sending guide reply AlimTalk to traveler');
 					await notificationService.sendNotification({
 						userId: recipientId,
-						phoneNumber: recipient[0].phone,
+						phoneNumber: decryptedRecipientPhone,
 						templateCode: 'testcode05',
 						templateData: {
 							SHOPNAME: '매치트립',
-							가이드: sender[0]?.name || '가이드',
+							가이드: decryptedSenderName || '가이드',
 							메세지확인하기: '메세지확인하기'
 						}
 					});
@@ -295,11 +299,11 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 					console.log('[CONVERSATIONS API] Sending traveler inquiry AlimTalk to guide');
 					await notificationService.sendNotification({
 						userId: recipientId,
-						phoneNumber: recipient[0].phone,
+						phoneNumber: decryptedRecipientPhone,
 						templateCode: 'testcode10',
 						templateData: {
 							SHOPNAME: '매치트립',
-							고객: sender[0]?.name || '고객',
+							고객: decryptedSenderName || '고객',
 							메세지확인하기: '메세지확인하기'
 						}
 					});

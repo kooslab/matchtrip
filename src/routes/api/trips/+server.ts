@@ -4,6 +4,7 @@ import { trips, destinations, offers, users } from '$lib/server/db/schema';
 import { eq, desc, count } from 'drizzle-orm';
 import { auth } from '$lib/auth';
 import { notificationService } from '$lib/server/services/notificationService';
+import { decrypt } from '$lib/server/encryption';
 
 export async function POST({ request, locals }) {
 	try {
@@ -61,13 +62,16 @@ export async function POST({ request, locals }) {
 
 			if (user?.phone) {
 				console.log('[TRIPS API] Sending trip registration AlimTalk notification');
+				const decryptedPhone = decrypt(user.phone);
+				const decryptedName = user.name ? decrypt(user.name) : null;
+				
 				await notificationService.sendNotification({
 					userId: session.user.id,
-					phoneNumber: user.phone,
+					phoneNumber: decryptedPhone,
 					templateCode: 'testcode03',
 					templateData: {
 						SHOPNAME: '매치트립',
-						NAME: user.name || '고객'
+						NAME: decryptedName || '고객'
 					}
 				});
 				console.log('[TRIPS API] AlimTalk notification sent successfully');

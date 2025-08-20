@@ -5,6 +5,7 @@ import { offers, trips, users } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { auth } from '$lib/auth';
 import { notificationService } from '$lib/server/services/notificationService';
+import { decrypt } from '$lib/server/encryption';
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
@@ -89,14 +90,18 @@ export const POST: RequestHandler = async ({ request }) => {
 
 				if (guideUser[0]?.phone) {
 					console.log('[OFFERS ACTION] Sending offer acceptance AlimTalk to guide');
+					const decryptedGuidePhone = decrypt(guideUser[0].phone);
+					const decryptedGuideName = guideUser[0].name ? decrypt(guideUser[0].name) : null;
+					const decryptedTravelerName = travelerUser[0]?.name ? decrypt(travelerUser[0].name) : null;
+					
 					await notificationService.sendNotification({
 						userId: offer[0].guideId,
-						phoneNumber: guideUser[0].phone,
+						phoneNumber: decryptedGuidePhone,
 						templateCode: 'testcode11',
 						templateData: {
 							SHOPNAME: '매치트립',
-							고객: travelerUser[0]?.name || '고객',
-							가이드: guideUser[0].name || '가이드',
+							고객: decryptedTravelerName || '고객',
+							가이드: decryptedGuideName || '가이드',
 							나의제안: '나의제안'
 						}
 					});

@@ -6,6 +6,7 @@ import { eq, and } from 'drizzle-orm';
 import { auth } from '$lib/auth';
 import { notificationService } from '$lib/server/services/notificationService';
 import { generateOfferDisplayId } from '$lib/server/utils/displayId';
+import { decrypt } from '$lib/server/encryption';
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
@@ -108,13 +109,16 @@ export const POST: RequestHandler = async ({ request }) => {
 			// Send offer registration notification to guide (testcode09)
 			if (guideUser[0]?.phone) {
 				console.log('[OFFERS API] Sending offer registration AlimTalk to guide');
+				const decryptedGuideName = guideUser[0].name ? decrypt(guideUser[0].name) : null;
+				const decryptedGuidePhone = decrypt(guideUser[0].phone);
+				
 				await notificationService.sendNotification({
 					userId: session.user.id,
-					phoneNumber: guideUser[0].phone,
+					phoneNumber: decryptedGuidePhone,
 					templateCode: 'testcode09',
 					templateData: {
 						SHOPNAME: '매치트립',
-						NAME: guideUser[0].name || '가이드'
+						NAME: decryptedGuideName || '가이드'
 					}
 				});
 			}
@@ -122,13 +126,16 @@ export const POST: RequestHandler = async ({ request }) => {
 			// Send offer arrival notification to traveler (testcode04)
 			if (travelerUser[0]?.phone) {
 				console.log('[OFFERS API] Sending offer arrival AlimTalk to traveler');
+				const decryptedTravelerPhone = decrypt(travelerUser[0].phone);
+				const decryptedGuideName = guideUser[0]?.name ? decrypt(guideUser[0].name) : null;
+				
 				await notificationService.sendNotification({
 					userId: tripDetails[0].userId,
-					phoneNumber: travelerUser[0].phone,
+					phoneNumber: decryptedTravelerPhone,
 					templateCode: 'testcode04',
 					templateData: {
 						SHOPNAME: '매치트립',
-						가이드: guideUser[0]?.name || '가이드',
+						가이드: decryptedGuideName || '가이드',
 						나의여행: '나의여행'
 					}
 				});

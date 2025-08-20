@@ -4,6 +4,7 @@ import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { notificationService } from '$lib/server/services/notificationService';
+import { decrypt } from '$lib/server/encryption';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
 	try {
@@ -43,13 +44,16 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		if (userDetails[0].phone) {
 			try {
 				console.log('[SUPPORT API] Sending CS inquiry AlimTalk notification');
+				const decryptedPhone = decrypt(userDetails[0].phone);
+				const decryptedName = userDetails[0].name ? decrypt(userDetails[0].name) : null;
+				
 				await notificationService.sendNotification({
 					userId: session.user.id,
-					phoneNumber: userDetails[0].phone,
+					phoneNumber: decryptedPhone,
 					templateCode: 'testcode08',
 					templateData: {
 						SHOPNAME: '매치트립',
-						NAME: userDetails[0].name || '고객'
+						NAME: decryptedName || '고객'
 					}
 				});
 				console.log('[SUPPORT API] AlimTalk notification sent successfully');

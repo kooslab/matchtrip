@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 import { CancellationService } from '$lib/server/services/cancellation';
 import { RefundService } from '$lib/server/services/refund';
 import { notificationService } from '$lib/server/services/notificationService';
+import { decrypt } from '$lib/server/encryption';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
 	try {
@@ -216,11 +217,17 @@ async function getPaymentDetailsWithUsers(paymentId: string) {
 		}
 	}
 
+	// Decrypt personal data before returning
+	const decryptedCustomerName = customer?.name ? decrypt(customer.name) : null;
+	const decryptedCustomerPhone = customer?.phone ? decrypt(customer.phone) : null;
+	const decryptedGuideName = guideName ? decrypt(guideName) : null;
+	const decryptedGuidePhone = guidePhone ? decrypt(guidePhone) : null;
+
 	return {
 		payment: paymentData.payment,
-		customerName: customer?.name,
-		customerPhone: customer?.phone,
-		guideName,
-		guidePhone
+		customerName: decryptedCustomerName,
+		customerPhone: decryptedCustomerPhone,
+		guideName: decryptedGuideName,
+		guidePhone: decryptedGuidePhone
 	};
 }

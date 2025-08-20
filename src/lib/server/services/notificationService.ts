@@ -19,65 +19,84 @@ export interface NotificationOptions {
 }
 
 export class NotificationService {
+	private db: any;
+
 	constructor() {
-		// No environment detection needed - templates will use PUBLIC_APP_URL
+		this.db = db;
 	}
 
 	/**
-	 * Format phone number to international format without +
-	 * Handles various input formats
+	 * Format phone number for AlimTalk (Korean format)
 	 */
 	private formatPhoneNumber(phone: string): string {
-		// Remove all non-digit characters
+		// Remove all non-numeric characters
 		let cleaned = phone.replace(/\D/g, '');
 
-		// If starts with 82 (Korea country code), use as is
+		// Check if it starts with country code 82 (Korea)
 		if (cleaned.startsWith('82')) {
-			return cleaned;
+			return cleaned; // Already in correct format
 		}
 
-		// If starts with 0, remove it and add 82
+		// Check if it starts with +82
+		if (phone.startsWith('+82')) {
+			return cleaned; // The cleaning already removed the +
+		}
+
+		// Assume it's a local Korean number
+		// Remove leading 0 if present and add 82
 		if (cleaned.startsWith('0')) {
 			cleaned = cleaned.substring(1);
 		}
 
-		// Add Korean country code
 		return '82' + cleaned;
 	}
 
 	/**
-	 * Get user's phone number
+	 * Get user phone number from database
 	 */
 	private async getUserPhone(userId: string): Promise<string | null> {
+		const { decrypt } = await import('$lib/server/encryption');
+		
 		const user = await db
 			.select({ phone: users.phone })
 			.from(users)
 			.where(eq(users.id, userId))
 			.limit(1);
 
-		return user[0]?.phone || null;
+		// Decrypt phone number before returning
+		const encryptedPhone = user[0]?.phone || null;
+		return encryptedPhone ? decrypt(encryptedPhone) : null;
 	}
 
 	/**
-	 * Check if notification was recently sent to prevent duplicates
+	 * Check if notification is duplicate (sent within last 5 minutes)
 	 */
 	private async isDuplicateNotification(
 		phoneNumber: string,
 		templateCode: string,
-		templateData: TemplateData
+		templateData?: Record<string, string>
 	): Promise<boolean> {
-		// Check if same notification was sent in last 5 minutes
 		const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-
-		const existing = await db
-			.select({ id: kakaoNotifications.id, createdAt: kakaoNotifications.createdAt })
-			.from(kakaoNotifications)
-			.where(eq(kakaoNotifications.phoneNumber, phoneNumber))
+		
+		const recent = await db
+			.select()
+			.from(notifications)
+			.where(
+				and(
+					eq(notifications.phoneNumber, phoneNumber),
+					eq(notifications.templateCode, templateCode),
+					eq(notifications.status, 'sent'),
+					gte(notifications.createdAt, fiveMinutesAgo)
+				)
+			)
 			.limit(1);
 
-		// For now, simplified duplicate check
-		// In production, you might want to check templateData too
-		return existing.length > 0 && existing[0].createdAt > fiveMinutesAgo;
+		// If templateData exists, check if it matches
+		if (recent.length > 0 && templateData) {
+			return JSON.stringify(recent[0].templateData) === JSON.stringify(templateData);
+		}
+
+		return recent.length > 0;
 	}
 
 	/**
@@ -87,13 +106,13 @@ export class NotificationService {
 		userId: string | undefined,
 		phoneNumber: string,
 		templateCode: string,
-		templateData: TemplateData,
-		status: 'sent' | 'failed',
+		templateData?: Record<string, string>,
+		status: 'sent' | 'failed' = 'sent',
 		messageId?: string,
 		bulkId?: string,
-		errorMessage?: string
+		error?: string
 	) {
-		await db.insert(kakaoNotifications).values({
+		await db.insert(notifications).values({
 			userId,
 			phoneNumber,
 			templateCode,
@@ -101,8 +120,9 @@ export class NotificationService {
 			status,
 			messageId,
 			bulkId,
-			errorMessage,
-			sentAt: status === 'sent' ? new Date() : null
+			error,
+			sentAt: status === 'sent' ? new Date() : null,
+			createdAt: new Date()
 		});
 	}
 
@@ -115,6 +135,8 @@ export class NotificationService {
 		error?: string;
 	}> {
 		try {
+			const { decrypt } = await import('$lib/server/encryption');
+			
 			// Determine which template to use
 			let templateName: string;
 			
@@ -201,8 +223,26 @@ export class NotificationService {
 				};
 			}
 
+			// Decrypt template data if it contains personal information
+			const decryptedTemplateData = { ...options.templateData };
+			if (decryptedTemplateData) {
+				// List of fields that might contain encrypted personal data
+				const personalDataFields = ['NAME', 'name', '고객', '가이드', '가이드님', 'SHOPNAME'];
+				
+				for (const [key, value] of Object.entries(decryptedTemplateData)) {
+					// Check if this field might contain personal data and needs decryption
+					// Skip SHOPNAME as it's always '매치트립' and not encrypted
+					if (value && typeof value === 'string' && key !== 'SHOPNAME' && value !== '매치트립') {
+						// Check if the value looks encrypted (starts with 'ENC:')
+						if (value.startsWith('ENC:')) {
+							decryptedTemplateData[key] = decrypt(value) || value;
+						}
+					}
+				}
+			}
+
 			// Validate template data
-			const validation = validateTemplateData(templateName, options.templateData);
+			const validation = validateTemplateData(templateName, decryptedTemplateData);
 			
 			if (!validation.valid) {
 				return {
@@ -212,14 +252,14 @@ export class NotificationService {
 			}
 			
 			// Prepare template with environment-specific code
-			const template = prepareTemplate(templateName, options.templateData);
+			const template = prepareTemplate(templateName, decryptedTemplateData);
 
 			// Check for duplicates unless skipped
 			if (!options.skipDuplicateCheck) {
 				const isDuplicate = await this.isDuplicateNotification(
 					formattedPhone,
 					template.templateCode,
-					options.templateData
+					decryptedTemplateData
 				);
 
 				if (isDuplicate) {
@@ -250,7 +290,7 @@ export class NotificationService {
 				options.userId,
 				formattedPhone,
 				template.templateCode,
-				options.templateData,
+				decryptedTemplateData,
 				'sent',
 				messageId,
 				bulkId
@@ -294,39 +334,38 @@ export class NotificationService {
 	/**
 	 * Send bulk notifications
 	 */
-	async sendBulkNotifications(
-		notifications: NotificationOptions[]
-	): Promise<Array<{ success: boolean; messageId?: string; error?: string }>> {
-		// Process notifications sequentially to avoid rate limiting
+	async sendBulkNotifications(notifications: NotificationOptions[]): Promise<{
+		sent: number;
+		failed: number;
+		results: Array<{ success: boolean; messageId?: string; error?: string }>;
+	}> {
 		const results = [];
+		let sent = 0;
+		let failed = 0;
 
 		for (const notification of notifications) {
 			const result = await this.sendNotification(notification);
 			results.push(result);
-
-			// Add small delay between messages to avoid rate limiting
-			await new Promise((resolve) => setTimeout(resolve, 100));
+			if (result.success) sent++;
+			else failed++;
 		}
 
-		return results;
+		return { sent, failed, results };
 	}
 
 	/**
-	 * Update notification status (e.g., from webhook)
+	 * Update notification status
 	 */
-	async updateNotificationStatus(
-		messageId: string,
-		status: 'delivered' | 'failed',
-		errorMessage?: string
-	) {
+	async updateNotificationStatus(messageId: string, status: 'delivered' | 'failed', error?: string) {
 		await db
-			.update(kakaoNotifications)
+			.update(notifications)
 			.set({
 				status,
+				error,
 				deliveredAt: status === 'delivered' ? new Date() : null,
-				errorMessage
+				updatedAt: new Date()
 			})
-			.where(eq(kakaoNotifications.messageId, messageId));
+			.where(eq(notifications.messageId, messageId));
 	}
 }
 

@@ -4,6 +4,7 @@ import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { notificationService } from '$lib/server/services/notificationService';
+import { decrypt } from '$lib/server/encryption';
 
 export const POST: RequestHandler = async ({ locals }) => {
 	console.log('[API COMPLETE ONBOARDING] Request received');
@@ -56,13 +57,16 @@ export const POST: RequestHandler = async ({ locals }) => {
 		if (locals.user.phone) {
 			try {
 				console.log('[API COMPLETE ONBOARDING] Sending welcome AlimTalk notification');
+				const decryptedPhone = decrypt(locals.user.phone);
+				const decryptedName = locals.user.name ? decrypt(locals.user.name) : null;
+				
 				await notificationService.sendNotification({
 					userId: locals.user.id,
-					phoneNumber: locals.user.phone,
+					phoneNumber: decryptedPhone,
 					templateCode: 'testcode01',
 					templateData: {
 						SHOPNAME: '매치트립',
-						NAME: locals.user.name || '고객'
+						NAME: decryptedName || '고객'
 					}
 				});
 				console.log('[API COMPLETE ONBOARDING] AlimTalk notification sent successfully');
