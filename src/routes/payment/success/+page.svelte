@@ -9,6 +9,7 @@
 	let isProcessing = $state(true);
 	let error = $state<string | null>(null);
 	let success = $state(false);
+	let hasConfirmed = false; // Prevent duplicate confirmation requests
 
 	onMount(async () => {
 		// Get payment parameters from URL
@@ -16,6 +17,34 @@
 		paymentKey = urlParams.get('paymentKey') || '';
 		orderId = urlParams.get('orderId') || '';
 		amount = urlParams.get('amount') || '';
+		
+		// Check if we've already processed this payment in this session
+		const processedPayments = sessionStorage.getItem('processedPayments');
+		if (processedPayments) {
+			const processed = JSON.parse(processedPayments);
+			if (processed.includes(paymentKey)) {
+				console.log('Payment already processed, skipping confirmation');
+				success = true;
+				isProcessing = false;
+				// Clear pending payment
+				sessionStorage.removeItem('pendingPayment');
+				// Redirect after a short delay
+				setTimeout(() => {
+					const pendingPaymentStr = sessionStorage.getItem('pendingPayment');
+					if (pendingPaymentStr) {
+						const pendingPayment = JSON.parse(pendingPaymentStr);
+						if (pendingPayment.type === 'product' && pendingPayment.conversationId && pendingPayment.conversationId !== 'undefined') {
+							goto(`/chat/product/${pendingPayment.conversationId}`);
+						} else {
+							goto('/products');
+						}
+					} else {
+						goto(`/order-confirmation/${orderId}`);
+					}
+				}, 2000);
+				return;
+			}
+		}
 
 		console.log('Payment success page loaded with:', { paymentKey, orderId, amount });
 
@@ -79,6 +108,13 @@
 			return;
 		}
 
+		// Prevent duplicate confirmation requests
+		if (hasConfirmed) {
+			console.log('Confirmation already in progress, skipping duplicate request');
+			return;
+		}
+		hasConfirmed = true;
+
 		// Determine which API endpoint to use based on payment type
 		const isProductPayment = pendingPayment.type === 'product';
 		const confirmEndpoint = isProductPayment
@@ -115,6 +151,12 @@
 
 			if (response.ok && result.success) {
 				success = true;
+				// Mark this payment as processed
+				const processedPayments = sessionStorage.getItem('processedPayments');
+				const processed = processedPayments ? JSON.parse(processedPayments) : [];
+				processed.push(paymentKey);
+				sessionStorage.setItem('processedPayments', JSON.stringify(processed));
+				
 				// Clear pending payment
 				sessionStorage.removeItem('pendingPayment');
 
@@ -136,7 +178,36 @@
 				}, 2000);
 			} else {
 				console.error('Payment confirmation failed:', result);
-				error = result.error || '결제 확인 중 오류가 발생했습니다.';
+				// Check if it's a duplicate request error (S008)
+				if (result.error && result.error.includes('[S008]')) {
+					console.log('Duplicate request error detected, treating as success');
+					// This is likely a duplicate request, treat as success
+					success = true;
+					// Mark this payment as processed
+					const processedPayments = sessionStorage.getItem('processedPayments');
+					const processed = processedPayments ? JSON.parse(processedPayments) : [];
+					processed.push(paymentKey);
+					sessionStorage.setItem('processedPayments', JSON.stringify(processed));
+					
+					// Clear pending payment
+					sessionStorage.removeItem('pendingPayment');
+					
+					// Redirect based on payment type
+					setTimeout(() => {
+						if (isProductPayment) {
+							if (pendingPayment.conversationId && pendingPayment.conversationId !== 'undefined') {
+								goto(`/chat/product/${pendingPayment.conversationId}`);
+							} else {
+								console.warn('ConversationId missing in payment data, redirecting to products page');
+								goto('/products');
+							}
+						} else {
+							goto(`/order-confirmation/${orderId}`);
+						}
+					}, 2000);
+				} else {
+					error = result.error || '결제 확인 중 오류가 발생했습니다.';
+				}
 			}
 		} catch (err) {
 			console.error('Payment confirmation error:', err);

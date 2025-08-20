@@ -41,6 +41,23 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			return json({ success: false, error: '필수 정보가 누락되었습니다.' }, { status: 400 });
 		}
 
+		// Check if payment already exists (idempotency check)
+		const [existingPayment] = await db
+			.select()
+			.from(payments)
+			.where(eq(payments.paymentKey, paymentKey))
+			.limit(1);
+
+		if (existingPayment) {
+			console.log('Payment already confirmed, returning success:', existingPayment.id);
+			return json({
+				success: true,
+				paymentId: existingPayment.id,
+				orderId: existingPayment.orderId,
+				message: '결제가 이미 완료되었습니다.'
+			});
+		}
+
 		// Get product details
 		const [productData] = await db
 			.select()
@@ -122,13 +139,48 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 		if (!tossResponse.ok) {
 			console.error('Toss payment confirmation failed:', tossData);
-			return json(
-				{ success: false, error: tossData.message || '결제 확인에 실패했습니다.' },
-				{ status: 400 }
-			);
+			
+			// Check if this is a duplicate request error (S008)
+			if (tossData.code === 'ALREADY_PROCESSED_PAYMENT' || 
+				(tossData.message && tossData.message.includes('[S008]')) ||
+				(tossData.message && tossData.message.includes('기존 요청을 처리중입니다'))) {
+				
+				console.log('Duplicate payment request detected, checking payment status...');
+				
+				// Try to fetch the payment status from Toss to verify it was successful
+				const statusResponse = await fetch(`https://api.tosspayments.com/v1/payments/${paymentKey}`, {
+					method: 'GET',
+					headers: {
+						Authorization: `Basic ${Buffer.from(tossSecretKey + ':').toString('base64')}`
+					}
+				});
+				
+				if (statusResponse.ok) {
+					const paymentStatus = await statusResponse.json();
+					if (paymentStatus.status === 'DONE') {
+						console.log('Payment was already successfully processed, continuing with database update');
+						// Continue with the normal flow to save payment in database
+					} else {
+						return json(
+							{ success: false, error: '[S008] 기존 요청을 처리중입니다.' },
+							{ status: 400 }
+						);
+					}
+				} else {
+					return json(
+						{ success: false, error: tossData.message || '결제 확인에 실패했습니다.' },
+						{ status: 400 }
+					);
+				}
+			} else {
+				return json(
+					{ success: false, error: tossData.message || '결제 확인에 실패했습니다.' },
+					{ status: 400 }
+				);
+			}
+		} else {
+			console.log('Toss payment confirmed successfully:', tossData);
 		}
-
-		console.log('Toss payment confirmed successfully:', tossData);
 
 		// Start a transaction to update database
 		try {

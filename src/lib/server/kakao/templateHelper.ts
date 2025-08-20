@@ -25,10 +25,11 @@ function getEnvironment(): 'dev' | 'prod' {
  * Get template by logical name (e.g., 'signup01', 'mytrip01')
  */
 export function getTemplate(templateName: string) {
-	if (!templatesConfig.templates[templateName]) {
+	const templates = templatesConfig.templates as Record<string, any>;
+	if (!templates[templateName]) {
 		throw new Error(`Template ${templateName} not found`);
 	}
-	return templatesConfig.templates[templateName];
+	return templates[templateName];
 }
 
 /**

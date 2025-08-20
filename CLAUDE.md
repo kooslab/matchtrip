@@ -285,6 +285,19 @@ Required environment variables (see `.env.example`):
 
 ## Kakao AlimTalk Integration
 
+### Template Code Environment Selection
+
+The application automatically selects the correct Kakao AlimTalk template codes based on the environment:
+
+- **Development (default)**: Uses `testcodeXX` templates (e.g., `testcode01`, `testcode02`)
+- **Production**: Uses `codeXX` templates (e.g., `code01`, `code02`)
+
+**Configuration:**
+- Development: No configuration needed (default behavior)
+- Production: Must set `NODE_ENV=production` environment variable
+
+The template selection is handled in `src/lib/server/kakao/templateHelper.ts` which checks `NODE_ENV` to determine the environment. When `NODE_ENV=production`, production template codes are automatically used.
+
 ### CRITICAL: Implementation Rules (Based on Trial & Error)
 
 **Template Management:**
@@ -356,6 +369,7 @@ Required environment variables (see `.env.example`):
 - `INFOBIP_API_KEY`: API authentication key
 - `INFOBIP_BASE_URL`: Base URL for Infobip API
 - `KAKAO_CHANNEL_PROFILE_KEY`: Your Kakao channel identifier
+- `NODE_ENV=production`: **Required in production only** to use production template codes (codeXX instead of testcodeXX)
 
 ## Toss Payments Webhooks
 

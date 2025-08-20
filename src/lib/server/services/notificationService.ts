@@ -4,6 +4,7 @@ import { kakaoAlimTalk } from '$lib/server/kakao/kakaoAlimTalk';
 import {
 	prepareTemplate,
 	validateTemplateData,
+	getTemplateCode,
 	type TemplateData
 } from '$lib/server/kakao/templateHelper';
 import { eq } from 'drizzle-orm';
@@ -11,7 +12,8 @@ import { eq } from 'drizzle-orm';
 export interface NotificationOptions {
 	userId?: string;
 	phoneNumber?: string;
-	templateCode: string;
+	templateCode?: string; // Direct template code (e.g., 'testcode01' or 'code01')
+	templateName?: string; // Template name (e.g., 'signup01')
 	templateData: TemplateData;
 	skipDuplicateCheck?: boolean;
 }
@@ -68,11 +70,9 @@ export class NotificationService {
 		const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
 
 		const existing = await db
-			.select({ id: kakaoNotifications.id })
+			.select({ id: kakaoNotifications.id, createdAt: kakaoNotifications.createdAt })
 			.from(kakaoNotifications)
 			.where(eq(kakaoNotifications.phoneNumber, phoneNumber))
-			.where(eq(kakaoNotifications.templateCode, templateCode))
-			.where(eq(kakaoNotifications.status, 'sent'))
 			.limit(1);
 
 		// For now, simplified duplicate check
@@ -115,6 +115,66 @@ export class NotificationService {
 		error?: string;
 	}> {
 		try {
+			// Determine which template to use
+			let templateName: string;
+			
+			if (options.templateName) {
+				// New way: Use template name (e.g., 'signup01')
+				templateName = options.templateName;
+			} else if (options.templateCode) {
+				// Backward compatibility: Map hard-coded template codes to template names
+				const templateCodeMap: Record<string, string> = {
+					'testcode01': 'signup01',
+					'testcode02': 'signup02',
+					'testcode03': 'mytrip01',
+					'testcode04': 'mytrip02',
+					'testcode05': 'chat01',
+					'testcode06': 'settlement01',
+					'testcode07': 'remind01',
+					'testcode08': 'cs01',
+					'testcode09': 'myoffers01',
+					'testcode10': 'chat02',
+					'testcode11': 'myoffers02',
+					'testcode12': 'remind02',
+					'testcode13': 'rqcancel01',
+					'testcode14': 'rqcancel02',
+					'testcode15': 'rqcancel03',
+					'testcode16': 'rqcancel04',
+					'testcode17': 'cpcancel01',
+					'testcode18': 'cpcancel02',
+					'testcode19': 'cpcancel03',
+					'testcode20': 'cpcancel04',
+					// Production codes
+					'code01': 'signup01',
+					'code02': 'signup02',
+					'code03': 'mytrip01',
+					'code04': 'mytrip02',
+					'code05': 'chat01',
+					'code06': 'settlement01',
+					'code07': 'remind01',
+					'code08': 'cs01',
+					'code09': 'myoffers01',
+					'code10': 'chat02',
+					'code11': 'myoffers02',
+					'code12': 'remind02',
+					'code13': 'rqcancel01',
+					'code14': 'rqcancel02',
+					'code15': 'rqcancel03',
+					'code16': 'rqcancel04',
+					'code17': 'cpcancel01',
+					'code18': 'cpcancel02',
+					'code19': 'cpcancel03',
+					'code20': 'cpcancel04'
+				};
+				
+				templateName = templateCodeMap[options.templateCode] || options.templateCode;
+			} else {
+				return {
+					success: false,
+					error: 'No template code or template name provided'
+				};
+			}
+
 			// Get phone number
 			let phoneNumber: string | null = options.phoneNumber || null;
 
@@ -142,26 +202,29 @@ export class NotificationService {
 			}
 
 			// Validate template data
-			const validation = validateTemplateData(options.templateCode, options.templateData);
-
+			const validation = validateTemplateData(templateName, options.templateData);
+			
 			if (!validation.valid) {
 				return {
 					success: false,
 					error: `Missing template variables: ${validation.missing.join(', ')}`
 				};
 			}
+			
+			// Prepare template with environment-specific code
+			const template = prepareTemplate(templateName, options.templateData);
 
 			// Check for duplicates unless skipped
 			if (!options.skipDuplicateCheck) {
 				const isDuplicate = await this.isDuplicateNotification(
 					formattedPhone,
-					options.templateCode,
+					template.templateCode,
 					options.templateData
 				);
 
 				if (isDuplicate) {
 					console.log(
-						`Skipping duplicate notification: ${options.templateCode} to ${formattedPhone}`
+						`Skipping duplicate notification: ${template.templateCode} to ${formattedPhone}`
 					);
 					return {
 						success: true,
@@ -170,13 +233,10 @@ export class NotificationService {
 				}
 			}
 
-			// Prepare template - templateCode here is the logical name (e.g., 'signup01')
-			const template = prepareTemplate(options.templateCode, options.templateData);
-
 			// Send notification using the environment-specific template code
 			const result = await kakaoAlimTalk.sendAlimTalk({
 				to: formattedPhone,
-				templateCode: template.templateCode, // Use the actual template code from prepareTemplate
+				templateCode: template.templateCode,
 				text: template.text,
 				buttons: template.button ? [template.button] : undefined
 			});
@@ -189,14 +249,14 @@ export class NotificationService {
 			await this.logNotification(
 				options.userId,
 				formattedPhone,
-				options.templateCode,
+				template.templateCode,
 				options.templateData,
 				'sent',
 				messageId,
 				bulkId
 			);
 
-			console.log(`AlimTalk sent: ${options.templateCode} to ${formattedPhone}`);
+			console.log(`AlimTalk sent: ${template.templateCode} (${templateName}) to ${formattedPhone}`);
 
 			return {
 				success: true,
@@ -207,10 +267,15 @@ export class NotificationService {
 
 			// Log failed notification
 			if (options.userId || options.phoneNumber) {
+				// Get the actual template code that would have been used
+				const actualCode = options.templateName 
+					? getTemplateCode(options.templateName) 
+					: options.templateCode || '';
+					
 				await this.logNotification(
 					options.userId,
 					options.phoneNumber ? this.formatPhoneNumber(options.phoneNumber) : '',
-					options.templateCode,
+					actualCode,
 					options.templateData,
 					'failed',
 					undefined,
