@@ -105,6 +105,15 @@
 			paymentEl.innerHTML = '';
 			agreementEl.innerHTML = '';
 
+			// Debug: Log environment variables
+			console.log('Toss Payment Environment:', {
+				clientKey: import.meta.env.VITE_TOSS_CLIENT_KEY,
+				variantKey: import.meta.env.VITE_TOSS_VARIANT_KEY,
+				isDev: import.meta.env.DEV,
+				isProd: import.meta.env.PROD,
+				mode: import.meta.env.MODE
+			});
+
 			// Initialize Toss Payments
 			const tossPayments = await loadTossPayments(import.meta.env.VITE_TOSS_CLIENT_KEY);
 
@@ -119,16 +128,21 @@
 				value: priceValue
 			});
 
+			const variantKey = import.meta.env.VITE_TOSS_VARIANT_KEY;
+			console.log('Using variantKey for payment methods:', variantKey);
+
 			// Render payment methods
 			await widgets.renderPaymentMethods({
 				selector: '#payment-method',
-				variantKey: import.meta.env.VITE_TOSS_VARIANT_KEY
+				variantKey: variantKey
 			});
+
+			console.log('Using variantKey for agreement:', variantKey);
 
 			// Render agreement
 			await widgets.renderAgreement({
 				selector: '#agreement',
-				variantKey: import.meta.env.VITE_TOSS_VARIANT_KEY
+				variantKey: variantKey
 			});
 
 			// Widget is ready to use

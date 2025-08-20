@@ -82,6 +82,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 			description: products.description,
 			price: products.price,
 			currency: products.currency,
+			duration: products.duration,
 			imageUrl: products.imageUrl,
 			rating: products.rating,
 			reviewCount: products.reviewCount,
