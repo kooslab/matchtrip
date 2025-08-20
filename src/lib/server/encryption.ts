@@ -39,9 +39,10 @@ export function decryptUserFields<T extends Record<string, any>>(user: T): T {
 		decrypted.name = decrypt(decrypted.name as string);
 	}
 
-	if ('email' in decrypted && decrypted.email) {
-		decrypted.email = decrypt(decrypted.email as string);
-	}
+	// Email is no longer encrypted due to better-auth truncation issues
+	// if ('email' in decrypted && decrypted.email) {
+	// 	decrypted.email = decrypt(decrypted.email as string);
+	// }
 
 	if ('phone' in decrypted && decrypted.phone) {
 		decrypted.phone = decrypt(decrypted.phone as string);
@@ -62,9 +63,10 @@ export function encryptUserFields<T extends Record<string, any>>(user: Partial<T
 		(encrypted as any).name = encrypt(encrypted.name as string);
 	}
 
-	if ('email' in encrypted && encrypted.email) {
-		(encrypted as any).email = encrypt(encrypted.email as string);
-	}
+	// Email is no longer encrypted due to better-auth truncation issues
+	// if ('email' in encrypted && encrypted.email) {
+	// 	(encrypted as any).email = encrypt(encrypted.email as string);
+	// }
 
 	if ('phone' in encrypted && encrypted.phone) {
 		(encrypted as any).phone = encrypt(encrypted.phone as string);

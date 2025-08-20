@@ -75,15 +75,14 @@ export const auth = betterAuth({
 
 				const nameToEncrypt = profile.name || profile.email;
 				const encryptedName = encrypt(nameToEncrypt);
-				const encryptedEmail = encrypt(profile.email);
 
 				const mappedUser = {
 					name: encryptedName || nameToEncrypt || undefined, // Fallback to original if encryption fails
-					email: encryptedEmail || profile.email, // Fallback to original if encryption fails
+					email: profile.email, // Keep email unencrypted to avoid better-auth truncation issues
 					emailVerified: true, // Google accounts are pre-verified
 					image: profile.picture
 				};
-				console.log('[GOOGLE OAUTH] Mapped user data with encrypted name and email');
+				console.log('[GOOGLE OAUTH] Mapped user data with encrypted name but unencrypted email');
 				return mappedUser;
 			}
 		}
@@ -143,18 +142,14 @@ export const auth = betterAuth({
 
 						const name = userData.kakao_account?.profile?.nickname || 'Kakao User';
 						
-						// Encrypt sensitive data
-						console.log('[KAKAO OAUTH] Encrypting email:', email);
-						const encryptedEmail = encrypt(email);
-						console.log('[KAKAO OAUTH] Encrypted email result:', encryptedEmail);
-						
+						// Encrypt only name (keep email unencrypted to avoid better-auth truncation)
 						console.log('[KAKAO OAUTH] Encrypting name:', name);
 						const encryptedName = encrypt(name);
 						console.log('[KAKAO OAUTH] Encrypted name result:', encryptedName);
 
 						const normalizedUser = {
 							id: userData.id?.toString() || '',
-							email: encryptedEmail || email, // Fallback to original if encryption fails
+							email: email, // Keep email unencrypted to avoid better-auth truncation issues
 							name: encryptedName || name, // Fallback to original if encryption fails
 							image: userData.kakao_account?.profile?.profile_image_url || null,
 							emailVerified: userData.kakao_account?.is_email_verified || false,
@@ -163,8 +158,8 @@ export const auth = betterAuth({
 						};
 
 						console.log(
-							'[KAKAO OAUTH] Returning normalized user data with encryption:',
-							JSON.stringify({ ...normalizedUser, email: '[ENCRYPTED]', name: '[ENCRYPTED]' }, null, 2)
+							'[KAKAO OAUTH] Returning normalized user data:',
+							JSON.stringify({ ...normalizedUser, name: '[ENCRYPTED]' }, null, 2)
 						);
 						return normalizedUser;
 					} catch (error) {
@@ -184,17 +179,13 @@ export const auth = betterAuth({
 						// Already normalized by getUserInfo
 						console.log('[KAKAO OAUTH] Using pre-normalized user data');
 						
-						// Encrypt the data, but ensure we always have a value
-						console.log('[KAKAO OAUTH] mapProfileToUser - Encrypting email:', profile.email);
-						const encryptedEmail = encrypt(profile.email);
-						console.log('[KAKAO OAUTH] mapProfileToUser - Encrypted email result:', encryptedEmail);
-						
+						// Encrypt only name (keep email unencrypted)
 						console.log('[KAKAO OAUTH] mapProfileToUser - Encrypting name:', profile.name);
 						const encryptedName = encrypt(profile.name);
 						console.log('[KAKAO OAUTH] mapProfileToUser - Encrypted name result:', encryptedName);
 						
 						return {
-							email: encryptedEmail || profile.email, // Fallback to original if encryption fails
+							email: profile.email, // Keep email unencrypted to avoid better-auth truncation issues
 							name: encryptedName || profile.name || undefined, // Fallback to original if encryption fails
 							image: profile.image,
 							emailVerified: profile.emailVerified
@@ -208,11 +199,10 @@ export const auth = betterAuth({
 					}
 
 					const nameToEncrypt = kakaoAccount.profile?.nickname || 'Kakao User';
-					const encryptedEmail = encrypt(kakaoAccount.email);
 					const encryptedName = encrypt(nameToEncrypt);
 
 					return {
-						email: encryptedEmail || kakaoAccount.email, // Fallback to original if encryption fails
+						email: kakaoAccount.email, // Keep email unencrypted to avoid better-auth truncation issues
 						name: encryptedName || nameToEncrypt, // Fallback to original if encryption fails
 						image: kakaoAccount.profile?.profile_image_url,
 						emailVerified: kakaoAccount.is_email_verified || false

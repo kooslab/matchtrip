@@ -21,10 +21,10 @@ export function encryptUserDataForAuth(userData: any) {
 		encrypted.name = encrypt(encrypted.name);
 	}
 
-	if (encrypted.email) {
-		// Keep original email for unique constraint
-		encrypted.email = encrypt(encrypted.email);
-	}
+	// Email is no longer encrypted due to better-auth truncation issues
+	// if (encrypted.email) {
+	// 	encrypted.email = encrypt(encrypted.email);
+	// }
 
 	if (encrypted.phone) {
 		encrypted.phone = encrypt(encrypted.phone);
@@ -47,9 +47,10 @@ export function decryptUserDataFromAuth(userData: any) {
 		decrypted.name = decrypt(decrypted.name);
 	}
 
-	if (decrypted.email) {
-		decrypted.email = decrypt(decrypted.email);
-	}
+	// Email is no longer encrypted due to better-auth truncation issues
+	// if (decrypted.email) {
+	// 	decrypted.email = decrypt(decrypted.email);
+	// }
 
 	if (decrypted.phone) {
 		decrypted.phone = decrypt(decrypted.phone);
