@@ -3,6 +3,9 @@ import type {
 	TravelerCancellationReason,
 	GuideCancellationReason
 } from '$lib/constants/cancellation';
+import { db } from '$lib/server/db';
+import { refundPolicies } from '$lib/server/db/schema';
+import { and, eq, gte, lte, or, isNull } from 'drizzle-orm';
 
 interface RefundCalculationParams {
 	amount: number; // Original payment amount in KRW
@@ -10,6 +13,15 @@ interface RefundCalculationParams {
 	cancellationDate?: Date; // Date of cancellation request (defaults to now)
 	requesterType: 'traveler' | 'guide';
 	reasonType?: TravelerCancellationReason | GuideCancellationReason;
+	policyType?: 'trip' | 'product'; // Type of policy to apply
+	customPolicies?: RefundPolicy[]; // Optional custom policies (from database)
+}
+
+interface RefundPolicy {
+	daysBeforeStart: number;
+	daysBeforeEnd: number | null;
+	refundPercentage: number;
+	applicableTo: string;
 }
 
 interface RefundCalculationResult {
@@ -23,6 +35,34 @@ interface RefundCalculationResult {
 }
 
 /**
+ * Fetch active refund policies from database
+ */
+export async function fetchRefundPolicies(policyType: 'trip' | 'product'): Promise<RefundPolicy[]> {
+	try {
+		const policies = await db
+			.select({
+				daysBeforeStart: refundPolicies.daysBeforeStart,
+				daysBeforeEnd: refundPolicies.daysBeforeEnd,
+				refundPercentage: refundPolicies.refundPercentage,
+				applicableTo: refundPolicies.applicableTo
+			})
+			.from(refundPolicies)
+			.where(
+				and(
+					eq(refundPolicies.applicableTo, policyType),
+					eq(refundPolicies.isActive, true)
+				)
+			)
+			.orderBy(refundPolicies.daysBeforeStart);
+
+		return policies;
+	} catch (error) {
+		console.error('Error fetching refund policies:', error);
+		return [];
+	}
+}
+
+/**
  * Calculate refund amount based on cancellation timing and reason
  */
 export function calculateRefundAmount(params: RefundCalculationParams): RefundCalculationResult {
@@ -31,7 +71,9 @@ export function calculateRefundAmount(params: RefundCalculationParams): RefundCa
 		tripStartDate,
 		cancellationDate = new Date(),
 		requesterType,
-		reasonType
+		reasonType,
+		policyType = 'trip',
+		customPolicies
 	} = params;
 
 	// Calculate days before trip (considering timezone differences)
@@ -44,7 +86,20 @@ export function calculateRefundAmount(params: RefundCalculationParams): RefundCa
 	const timeDiff = tripStart.getTime() - cancellation.getTime();
 	const daysBeforeTrip = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
 
-	// Check if trip has already passed
+	// Guide cancellation ALWAYS results in 100% refund (even for past trips)
+	if (requesterType === 'guide') {
+		return {
+			originalAmount: amount,
+			refundAmount: amount,
+			refundPercentage: 100,
+			deductionAmount: 0,
+			daysBeforeTrip,
+			policyApplied: '가이드 취소 - 전액 환불',
+			requiresAdminApproval: false
+		};
+	}
+
+	// Check if trip has already passed (only applies to traveler cancellations)
 	if (isPastTrip(tripStartDate)) {
 		// For past trips, always require admin approval
 		return {
@@ -55,19 +110,6 @@ export function calculateRefundAmount(params: RefundCalculationParams): RefundCa
 			daysBeforeTrip,
 			policyApplied: '여행 종료 - 관리자 검토 필요',
 			requiresAdminApproval: true
-		};
-	}
-
-	// Guide cancellation always results in 100% refund
-	if (requesterType === 'guide') {
-		return {
-			originalAmount: amount,
-			refundAmount: amount,
-			refundPercentage: 100,
-			deductionAmount: 0,
-			daysBeforeTrip,
-			policyApplied: '가이드 취소 - 전액 환불',
-			requiresAdminApproval: false
 		};
 	}
 
@@ -87,7 +129,49 @@ export function calculateRefundAmount(params: RefundCalculationParams): RefundCa
 		};
 	}
 
-	// Find applicable refund policy based on days before trip
+	// Use custom policies if provided, otherwise fall back to hardcoded ones
+	if (customPolicies && customPolicies.length > 0) {
+		// Find applicable policy from database policies
+		let applicablePolicy: RefundPolicy | null = null;
+		let policyLabel = '';
+
+		for (const policy of customPolicies) {
+			const meetsStartCondition = daysBeforeTrip >= policy.daysBeforeStart;
+			const meetsEndCondition = policy.daysBeforeEnd === null || daysBeforeTrip <= policy.daysBeforeEnd;
+
+			if (meetsStartCondition && meetsEndCondition) {
+				applicablePolicy = policy;
+				
+				// Generate label based on policy range
+				if (policy.daysBeforeStart === 0 && policy.daysBeforeEnd === 0) {
+					policyLabel = '여행일 당일';
+				} else if (policy.daysBeforeEnd === null) {
+					policyLabel = `여행시작 ${policy.daysBeforeStart}일 전까지`;
+				} else {
+					policyLabel = `여행시작 ${policy.daysBeforeStart}-${policy.daysBeforeEnd}일 전`;
+				}
+				break;
+			}
+		}
+
+		if (applicablePolicy) {
+			const refundPercentage = applicablePolicy.refundPercentage;
+			const refundAmount = Math.floor((amount * refundPercentage) / 100);
+			const deductionAmount = amount - refundAmount;
+
+			return {
+				originalAmount: amount,
+				refundAmount,
+				refundPercentage,
+				deductionAmount,
+				daysBeforeTrip,
+				policyApplied: policyLabel,
+				requiresAdminApproval: false
+			};
+		}
+	}
+
+	// Fallback to hardcoded policies if no custom policies or no applicable policy found
 	let applicablePolicy = REFUND_POLICIES[REFUND_POLICIES.length - 1]; // Default to last policy
 
 	for (const policy of REFUND_POLICIES) {

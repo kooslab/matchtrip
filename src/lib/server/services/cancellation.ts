@@ -13,7 +13,7 @@ import {
 	type User
 } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { calculateRefundAmount } from '$lib/utils/refundCalculator';
+import { calculateRefundAmount, fetchRefundPolicies } from '$lib/utils/refundCalculator';
 import type {
 	TravelerCancellationReason,
 	GuideCancellationReason
@@ -70,32 +70,39 @@ export class CancellationService {
 		}
 
 		// Calculate refund amount
-		// Priority: tripStartDate (for trips) > productOfferStartDate (for product offers) > productDate (for direct products)
+		// Priority: tripStartDate (for trips) > productOfferStartDate (for product offers)
 		const tripOrProductDate =
-			paymentData.tripStartDate || paymentData.productOfferStartDate || paymentData.productDate;
+			paymentData.tripStartDate || paymentData.productOfferStartDate;
 
 		if (!tripOrProductDate) {
 			throw new Error('Cannot determine trip/product date for refund calculation');
 		}
 
+		// Determine policy type based on what's being cancelled
+		const policyType = paymentData.payment.productId || paymentData.payment.productOfferId ? 'product' : 'trip';
+
+		// Fetch refund policies from database
+		const policies = await fetchRefundPolicies(policyType);
+
 		const refundCalculation = calculateRefundAmount({
 			amount: paymentData.payment.amount,
 			tripStartDate: tripOrProductDate,
 			requesterType: user.role as 'traveler' | 'guide',
-			reasonType
+			reasonType,
+			policyType,
+			customPolicies: policies
 		});
 
 		// Create cancellation request
-		// For past trips or exception cases, always require admin approval
-		const requiresApproval =
-			refundCalculation.requiresAdminApproval || refundCalculation.daysBeforeTrip < 0;
+		// Only require admin approval if the refund calculation says so
+		const requiresApproval = refundCalculation.requiresAdminApproval;
 
 		const [cancellationRequest] = await db
 			.insert(cancellationRequests)
 			.values({
 				paymentId,
 				requesterId: user.id,
-				requesterType: user.role,
+				requesterType: user.role as 'traveler' | 'guide',
 				reasonType,
 				reasonDetail,
 				supportingDocuments,
@@ -113,8 +120,8 @@ export class CancellationService {
 			reasonDetail
 		});
 
-		// If auto-approved (guide cancellation for future trips), process immediately
-		if (user.role === 'guide' && !requiresApproval) {
+		// If auto-approved (guide cancellation always, or traveler with no admin approval needed), process immediately
+		if (!requiresApproval) {
 			await this.processCancellationApproval(cancellationRequest.id);
 		}
 
@@ -206,7 +213,7 @@ export class CancellationService {
 			await db
 				.update(offers)
 				.set({
-					status: 'cancelled',
+					status: 'withdrawn',
 					updatedAt: new Date()
 				})
 				.where(eq(offers.id, paymentData.payment.offerId));
@@ -227,7 +234,7 @@ export class CancellationService {
 			await db
 				.update(productOffers)
 				.set({
-					status: 'cancelled',
+					status: 'rejected',
 					updatedAt: new Date()
 				})
 				.where(eq(productOffers.id, paymentData.payment.productOfferId));
@@ -245,12 +252,10 @@ export class CancellationService {
 			.select({
 				payment: payments,
 				tripStartDate: trips.startDate,
-				productDate: products.date,
 				productOfferStartDate: productOffers.startDate
 			})
 			.from(payments)
 			.leftJoin(trips, eq(payments.tripId, trips.id))
-			.leftJoin(products, eq(payments.productId, products.id))
 			.leftJoin(productOffers, eq(payments.productOfferId, productOffers.id))
 			.where(eq(payments.id, paymentId))
 			.limit(1);
@@ -275,12 +280,21 @@ export class CancellationService {
 				.limit(1);
 			conversationId = conv?.id || null;
 		} else if (paymentData.payment.productOfferId) {
-			const [conv] = await db
+			// For product offers, we need to find the conversation through the product offer
+			const [productOffer] = await db
 				.select()
-				.from(productConversations)
-				.where(eq(productConversations.productOfferId, paymentData.payment.productOfferId))
+				.from(productOffers)
+				.where(eq(productOffers.id, paymentData.payment.productOfferId))
 				.limit(1);
-			conversationId = conv?.id || null;
+			
+			if (productOffer) {
+				const [conv] = await db
+					.select()
+					.from(productConversations)
+					.where(eq(productConversations.id, productOffer.conversationId))
+					.limit(1);
+				conversationId = conv?.id || null;
+			}
 		}
 
 		if (!conversationId) {
