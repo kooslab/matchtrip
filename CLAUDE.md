@@ -45,6 +45,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - use $props() instead of export let, use onclick instead of on:click
 - use tailwindcss all the time
 
+## User Data Encryption
+
+**⚠️ IMPORTANT: User PII Encryption Status ⚠️**
+
+In the users table, the following fields are encrypted:
+- `name` - **ENCRYPTED** (use `encrypt()` when writing, `decrypt()` when reading)
+- `phone` - **ENCRYPTED** (use `encrypt()` when writing, `decrypt()` when reading)  
+- `email` - **NOT ENCRYPTED** (store and read directly, no encryption/decryption needed)
+
+Example when handling user data:
+```typescript
+// When storing user data
+const userData = {
+  name: encrypt(name),      // Encrypt name
+  email: email,            // Email is NOT encrypted
+  phone: encrypt(phone)    // Encrypt phone
+}
+
+// When reading user data
+const decryptedUser = {
+  name: decrypt(user.name),    // Decrypt name
+  email: user.email,           // Email is NOT encrypted
+  phone: decrypt(user.phone)   // Decrypt phone
+}
+```
+
 ## Typography System
 
 ### Font Family
@@ -377,6 +403,8 @@ The template selection is handled in `src/lib/server/kakao/templateHelper.ts` wh
 
 The application uses Toss Payments webhooks to receive real-time payment status updates. Unlike many payment providers, Toss does NOT provide webhook secrets or signatures.
 
+**IMPORTANT**: This is the ONLY webhook endpoint for Toss Payments. Both main app and admin-initiated payments/refunds are processed here to prevent duplicate processing.
+
 ### Security Model
 
 - **No webhook secret**: Toss doesn't provide webhook secrets in their dashboard
@@ -386,12 +414,13 @@ The application uses Toss Payments webhooks to receive real-time payment status 
 ### Webhook Endpoint
 
 - **Location**: `/api/webhooks/toss/+server.ts`
-- **Production URL**: `https://dev.matchtrip.net/api/webhooks/toss`
+- **Production URL**: `https://dev.matchtrip.net/api/webhooks/toss` (register ONLY this URL with Toss)
 - **Local Dev URL**: `https://trip.share.zrok.io/api/webhooks/toss`
+- **Admin App**: Does NOT have its own webhook endpoint - all webhooks come here
 - **Events handled**:
   - `PAYMENT.DONE` - Payment completion
-  - `PAYMENT.CANCELED` - Full cancellation/refund
-  - `PAYMENT.PARTIAL_CANCELED` - Partial refund
+  - `PAYMENT.CANCELED` - Full cancellation/refund (including admin-initiated)
+  - `PAYMENT.PARTIAL_CANCELED` - Partial refund (including admin-initiated)
   - `PAYMENT.FAILED` - Payment failure
   - `PAYMENT.EXPIRED` - Payment expiration
 
@@ -425,20 +454,24 @@ curl -X POST http://localhost:5173/api/webhooks/test \
 
 ### Database Tables
 
-- **webhook_events**: Tracks all webhook events
+- **webhook_events**: Tracks all webhook events (shared with admin app)
   - `eventId` (unique) - Prevents duplicate processing
   - `status` - pending/processed/failed
   - `payload` - Full webhook data
 - **payment_refunds**: Individual refund transactions
   - Links to payments table
   - Tracks refund type, amount, reason
+  - Includes admin-initiated refunds
 
 ### Implementation Notes
 
-- Webhook processes both customer payments and admin-initiated refunds
+- **Single Webhook**: Processes payments/refunds from BOTH main app and admin app
+- **Shared Database**: Both apps use the same database tables
+- **No Duplicate Endpoints**: Admin app does NOT have its own webhook
 - Uses database transactions for consistency
 - Returns 200 OK even on processing errors (handles retries internally)
 - Verifies payment status with Toss API before processing
+- Handles admin-initiated refunds automatically when Toss sends the webhook
 
 ## OAuth Profile Images
 
