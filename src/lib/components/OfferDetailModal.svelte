@@ -133,7 +133,7 @@
 	}
 </script>
 
-{#if isOpen}
+{#if isOpen && offer && trip}
 	<!-- Backdrop -->
 	<div class="bg-opacity-30 fixed inset-0 z-40 bg-black" aria-hidden="true"></div>
 
@@ -220,6 +220,7 @@
 									<p class="text-sm text-gray-500">남은 기간</p>
 									<p class="text-sm text-gray-900">
 										{(() => {
+											if (!trip?.startDate) return '0일';
 											const now = new Date();
 											const start = new Date(trip.startDate);
 											const diffTime = start.getTime() - now.getTime();
@@ -234,10 +235,14 @@
 									<p class="flex-shrink-0 text-sm text-gray-500">여행 일정</p>
 									<div class="flex items-center gap-2">
 										<p class="text-sm text-gray-900">
-											{formatKoreanDate(trip.startDate)} ~ {formatKoreanDate(trip.endDate)}
+											{trip?.startDate && trip?.endDate 
+												? `${formatKoreanDate(trip.startDate)} ~ ${formatKoreanDate(trip.endDate)}`
+												: '날짜 미정'}
 										</p>
 										<p class="text-sm text-blue-600">
-											{calculateNightsAndDays(trip.startDate, trip.endDate)}
+											{trip?.startDate && trip?.endDate 
+												? calculateNightsAndDays(trip.startDate, trip.endDate)
+												: ''}
 										</p>
 									</div>
 								</div>
@@ -246,22 +251,22 @@
 								<div class="flex items-center justify-between">
 									<p class="text-sm text-gray-500">인원</p>
 									<p class="text-sm text-gray-900">
-										성인 {trip.adultsCount}명{trip.childrenCount
-											? ` · 아동 ${trip.childrenCount}명`
-											: ''}
+										{trip?.adultsCount 
+											? `성인 ${trip.adultsCount}명${trip.childrenCount ? ` · 아동 ${trip.childrenCount}명` : ''}`
+											: '인원 미정'}
 									</p>
 								</div>
 
 								<!-- Row 4 -->
 								<div class="flex items-center justify-between">
 									<p class="text-sm text-gray-500">선호 스타일</p>
-									<p class="text-sm text-gray-900">{formatTravelStyle(trip.travelStyle)}</p>
+									<p class="text-sm text-gray-900">{formatTravelStyle(trip?.travelStyle)}</p>
 								</div>
 
 								<!-- Row 5 -->
 								<div class="flex items-center justify-between">
 									<p class="text-sm text-gray-500">관심 활동</p>
-									<p class="text-sm text-gray-900">{formatActivities(trip.activities)}</p>
+									<p class="text-sm text-gray-900">{formatActivities(trip?.activities)}</p>
 								</div>
 							</div>
 						</div>

@@ -159,14 +159,15 @@
 	{:else}
 		<div>
 			{#each reviews as review}
-				<div class="border-b border-gray-100 py-4 first:pt-0 last:border-0">
+				{#if review}
+					<div class="border-b border-gray-100 py-4 first:pt-0 last:border-0">
 					<!-- Reviewer Info -->
 					<div class="mb-4 flex items-start justify-between">
 						<div class="flex items-start gap-3">
-							{#if review.traveler.image}
+							{#if review.traveler?.image}
 								<img
 									src={review.traveler.image}
-									alt={review.traveler.name}
+									alt={review.traveler?.name || '여행자'}
 									class="h-10 w-10 rounded-full object-cover"
 								/>
 							{:else}
@@ -175,16 +176,20 @@
 								</div>
 							{/if}
 							<div>
-								<p class="font-medium text-gray-800">{review.traveler.name}</p>
+								<p class="font-medium text-gray-800">{review.traveler?.name || '익명'}</p>
 								<div class="mt-1 flex items-center gap-4 text-sm text-gray-500">
-									<div class="flex items-center gap-1">
-										<MapPin class="h-3 w-3 flex-shrink-0" />
-										<span>{review.trip.destination.city}</span>
-									</div>
-									<div class="flex items-center gap-1">
-										<Calendar class="h-3 w-3 flex-shrink-0" />
-										<span>{formatDate(review.trip.startDate)}</span>
-									</div>
+									{#if review.trip?.destination?.city}
+										<div class="flex items-center gap-1">
+											<MapPin class="h-3 w-3 flex-shrink-0" />
+											<span>{review.trip.destination.city}</span>
+										</div>
+									{/if}
+									{#if review.trip?.startDate}
+										<div class="flex items-center gap-1">
+											<Calendar class="h-3 w-3 flex-shrink-0" />
+											<span>{formatDate(review.trip.startDate)}</span>
+										</div>
+									{/if}
 								</div>
 							</div>
 						</div>
@@ -207,6 +212,7 @@
 						{formatDate(review.createdAt)}
 					</p>
 				</div>
+				{/if}
 			{/each}
 
 			{#if hasMore}

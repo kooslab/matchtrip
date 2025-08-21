@@ -4,6 +4,7 @@ import { db } from '$lib/server/db';
 import { reviews, trips, offers } from '$lib/server/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { randomBytes } from 'crypto';
+import { decryptUserFields } from '$lib/server/encryption';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
 	try {
@@ -121,6 +122,12 @@ export const GET: RequestHandler = async ({ url }) => {
 			offset
 		});
 
+		// Decrypt traveler names in the reviews
+		const decryptedReviews = guideReviews.map(review => ({
+			...review,
+			traveler: review.traveler ? decryptUserFields(review.traveler) : null
+		}));
+
 		// Calculate average rating
 		const allReviews = await db.query.reviews.findMany({
 			where: eq(reviews.guideId, guideId),
@@ -133,7 +140,7 @@ export const GET: RequestHandler = async ({ url }) => {
 				: 0;
 
 		return json({
-			reviews: guideReviews,
+			reviews: decryptedReviews,
 			totalCount: allReviews.length,
 			averageRating: Math.round(avgRating * 10) / 10
 		});

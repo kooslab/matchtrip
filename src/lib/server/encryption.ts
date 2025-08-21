@@ -36,7 +36,12 @@ export function decryptUserFields<T extends Record<string, any>>(user: T): T {
 
 	// Decrypt personal information fields if they exist
 	if ('name' in decrypted && decrypted.name) {
-		decrypted.name = decrypt(decrypted.name as string);
+		try {
+			decrypted.name = decrypt(decrypted.name as string);
+		} catch (error) {
+			console.error('Failed to decrypt name field:', error);
+			// Keep the original value if decryption fails
+		}
 	}
 
 	// Email is no longer encrypted due to better-auth truncation issues
@@ -45,7 +50,12 @@ export function decryptUserFields<T extends Record<string, any>>(user: T): T {
 	// }
 
 	if ('phone' in decrypted && decrypted.phone) {
-		decrypted.phone = decrypt(decrypted.phone as string);
+		try {
+			decrypted.phone = decrypt(decrypted.phone as string);
+		} catch (error) {
+			console.error('Failed to decrypt phone field:', error);
+			// Keep the original value if decryption fails
+		}
 	}
 
 	return decrypted as T;

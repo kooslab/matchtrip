@@ -10,6 +10,7 @@
 	import Image from '@tiptap/extension-image';
 	import Link from '@tiptap/extension-link';
 	import Placeholder from '@tiptap/extension-placeholder';
+	import pictureIconUrl from '$lib/icons/icon-picture-mono.svg';
 
 	let tripId = $derived($page.url.searchParams.get('tripId'));
 	let element: HTMLDivElement;
@@ -77,7 +78,7 @@
 
 			try {
 				// Insert placeholder while uploading
-				const placeholderSrc = '/src/lib/icons/icon-picture-mono.svg';
+				const placeholderSrc = pictureIconUrl;
 				const selection = editor.state.selection;
 				const from = selection.$from;
 				const placeholderNode = editor.schema.nodes.image.create({
@@ -100,7 +101,11 @@
 					body: formData
 				});
 
-				if (!response.ok) throw new Error('Upload failed');
+				if (!response.ok) {
+					const errorData = await response.json().catch(() => null);
+					const errorMessage = errorData?.error || `Upload failed with status ${response.status}`;
+					throw new Error(errorMessage);
+				}
 
 				const data = await response.json();
 
@@ -119,7 +124,8 @@
 				editor.view.dispatch(transaction);
 			} catch (error) {
 				console.error('Upload error:', error);
-				alert('이미지 업로드에 실패했습니다.');
+				const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
+				alert(`이미지 업로드에 실패했습니다.\n\n${errorMessage}`);
 				// Remove placeholder on error
 				editor.commands.undo();
 			} finally {
@@ -255,7 +261,7 @@
 						{#if isUploading}
 							<div class="h-4 w-4 animate-spin rounded-full border-b-2 border-gray-800"></div>
 						{:else}
-							<img src="/src/lib/icons/icon-picture-mono.svg" alt="사진" class="h-4 w-4" />
+							<img src={pictureIconUrl} alt="사진" class="h-4 w-4" />
 						{/if}
 						<span class="text-sm font-medium">사진</span>
 					</button>

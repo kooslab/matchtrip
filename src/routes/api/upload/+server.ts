@@ -58,11 +58,22 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			'application/vnd.openxmlformats-officedocument.presentationml.presentation', // PPTX
 			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // XLSX
 		];
-		const allowedTypes = type === 'destination' ? imageTypes : [...imageTypes, ...documentTypes];
+		
+		// Determine allowed types and formats based on upload type
+		let allowedTypes: string[];
+		let allowedFormats: string;
+		
+		if (type === 'destination' || type === 'offer-description') {
+			// Only images for destination and offer descriptions
+			allowedTypes = imageTypes;
+			allowedFormats = 'JPG, JPEG, PNG';
+		} else {
+			// Images and documents for other types
+			allowedTypes = [...imageTypes, ...documentTypes];
+			allowedFormats = 'PDF, JPG, JPEG, PNG, DOCX, PPTX, XLSX';
+		}
 
 		if (!allowedTypes.includes(file.type)) {
-			const allowedFormats =
-				type === 'destination' ? 'JPG, JPEG, PNG' : 'PDF, JPG, JPEG, PNG, DOCX, PPTX, XLSX';
 			return json(
 				{ error: `Invalid file type. Only ${allowedFormats} files are allowed.` },
 				{ status: 400 }

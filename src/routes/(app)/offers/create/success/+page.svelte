@@ -8,22 +8,22 @@
 	}
 </script>
 
-<div class="flex min-h-screen flex-col">
+<div class="flex h-screen max-h-screen flex-col overflow-hidden">
 	<!-- Main Content -->
-	<div class="flex flex-1 flex-col items-center justify-center px-4 py-8">
+	<div class="flex flex-1 flex-col items-center justify-center px-4 py-6">
 		<div class="w-full text-center">
 			<!-- Success Icon -->
-			<div class="mb-6 flex justify-center">
-				<img src={airplaneUrl} alt="비행기" class="h-32 w-32" />
+			<div class="mb-4 flex justify-center">
+				<img src={airplaneUrl} alt="비행기" class="h-24 w-24" />
 			</div>
 
 			<!-- Success Message -->
 			<h1 class="mb-2 text-xl font-bold text-gray-900">여행제안이 완료되었습니다.</h1>
 
-			<p class="mb-6 text-sm text-gray-600">Match Your Trip, Make It Yours</p>
+			<p class="mb-4 text-sm text-gray-600">Match Your Trip, Make It Yours</p>
 
 			<!-- Success Details -->
-			<div class="mb-6 rounded-lg bg-gray-50 p-4">
+			<div class="mb-4 rounded-lg bg-gray-50 p-4">
 				<div class="flex items-start gap-3">
 					<div
 						class="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full"
@@ -48,7 +48,7 @@
 	</div>
 
 	<!-- Bottom CTA -->
-	<div class="mt-auto px-4 py-4 pb-4">
+	<div class="px-4 py-4 pb-safe">
 		<button
 			onclick={goToHome}
 			class="w-full rounded-lg py-3.5 text-base font-semibold text-white transition-all hover:opacity-90"

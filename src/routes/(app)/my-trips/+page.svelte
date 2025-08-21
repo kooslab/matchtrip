@@ -286,8 +286,15 @@
 
 								<!-- Action Button -->
 								<div
-									onclick={(e) => e.stopPropagation()}
-									class="mt-4 w-full rounded-lg border border-gray-300 bg-white py-2.5 text-center text-sm font-medium text-gray-700"
+									onclick={() => goToTripDetails(trip.id)}
+									role="button"
+									tabindex="0"
+									onkeypress={(e) => {
+										if (e.key === 'Enter' || e.key === ' ') {
+											goToTripDetails(trip.id);
+										}
+									}}
+									class="mt-4 w-full rounded-lg border border-gray-300 bg-white py-2.5 text-center text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
 								>
 									{#if trip.offerCount === 0}
 										받은 제안 0건
