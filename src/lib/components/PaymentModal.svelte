@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { loadTossPayments, ANONYMOUS } from '@tosspayments/tosspayments-sdk';
+	import { generateOfferOrderId } from '$lib/utils/displayId';
 
 	interface Props {
 		isOpen: boolean;
@@ -191,7 +192,7 @@
 	}
 
 	function generateOrderId() {
-		return `ORDER_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+		return generateOfferOrderId();
 	}
 
 	// Close modal on escape key

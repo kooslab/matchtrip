@@ -30,3 +30,6 @@ usage_tracking*.json
 
 # backups
 backups
+
+# logs
+logs
