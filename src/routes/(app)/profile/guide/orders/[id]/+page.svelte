@@ -135,14 +135,6 @@
 					<span class="text-gray-600">총 상품금액 (1개)</span>
 					<span class="font-medium">{formatPrice(offer.price)}원</span>
 				</div>
-				{#if payment}
-					<div class="flex items-center justify-between">
-						<span class="text-gray-600">할인금액</span>
-						<span class="font-medium text-red-600"
-							>-{formatPrice(Math.floor(offer.price * 0.033))}원</span
-						>
-					</div>
-				{/if}
 			</div>
 		</div>
 

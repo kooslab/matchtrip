@@ -169,17 +169,13 @@
 							{data.offer.price.toLocaleString()}원
 						</span>
 					</div>
-					<div class="flex items-center justify-between">
-						<span class="text-sm text-gray-600">할인금액</span>
-						<span class="text-base font-medium text-red-600"> -4,000원 </span>
-					</div>
 				</div>
 
 				<div class="mt-4 border-t border-gray-200 pt-4">
 					<div class="flex items-center justify-between">
 						<span class="text-base font-semibold text-gray-900">총 결제금액</span>
 						<span class="text-xl font-bold text-gray-900">
-							{(data.offer.price - 4000).toLocaleString()}원
+							{data.offer.price.toLocaleString()}원
 						</span>
 					</div>
 					<div class="mt-2 flex justify-end">
