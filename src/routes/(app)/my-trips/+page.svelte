@@ -92,6 +92,27 @@
 		return methodMap[method] || method;
 	}
 
+	function calculateRemainingDays(startDate: string | Date) {
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+		
+		const tripStartDate = new Date(startDate);
+		tripStartDate.setHours(0, 0, 0, 0);
+		
+		const diffTime = tripStartDate.getTime() - today.getTime();
+		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+		
+		if (diffDays < 0) {
+			return '여행 시작됨';
+		} else if (diffDays === 0) {
+			return '오늘 출발';
+		} else if (diffDays === 1) {
+			return '내일 출발';
+		} else {
+			return `남은 기간 ${diffDays}일`;
+		}
+	}
+
 	function goToCreateTrip() {
 		goto('/my-trips/create');
 	}
@@ -281,7 +302,7 @@
 										<span class="text-base font-medium text-gray-900">{trip.offerCount || 0}건</span
 										>
 									</div>
-									<p class="mt-2 text-sm text-gray-500">남은 기간 7일</p>
+									<p class="mt-2 text-sm text-gray-500">{calculateRemainingDays(trip.startDate)}</p>
 								</div>
 
 								<!-- Action Button -->
