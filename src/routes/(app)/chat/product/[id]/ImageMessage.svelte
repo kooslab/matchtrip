@@ -76,7 +76,7 @@
 
 		<img
 			src={imageUrl}
-			alt="Full size image"
+			alt="Enlarged view"
 			class="max-h-full max-w-full object-contain"
 			onclick={(e) => e.stopPropagation()}
 		/>

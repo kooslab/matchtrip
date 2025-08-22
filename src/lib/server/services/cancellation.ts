@@ -13,7 +13,8 @@ import {
 	type User
 } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { calculateRefundAmount, fetchRefundPolicies } from '$lib/utils/refundCalculator';
+import { calculateRefundAmount } from '$lib/utils/refundCalculator';
+import { fetchRefundPolicies } from '$lib/server/utils/refundCalculator';
 import type {
 	TravelerCancellationReason,
 	GuideCancellationReason

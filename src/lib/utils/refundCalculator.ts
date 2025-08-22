@@ -3,11 +3,8 @@ import type {
 	TravelerCancellationReason,
 	GuideCancellationReason
 } from '$lib/constants/cancellation';
-import { db } from '$lib/server/db';
-import { refundPolicies } from '$lib/server/db/schema';
-import { and, eq, gte, lte, or, isNull } from 'drizzle-orm';
 
-interface RefundCalculationParams {
+export interface RefundCalculationParams {
 	amount: number; // Original payment amount in KRW
 	tripStartDate: Date; // Trip start date
 	cancellationDate?: Date; // Date of cancellation request (defaults to now)
@@ -17,14 +14,14 @@ interface RefundCalculationParams {
 	customPolicies?: RefundPolicy[]; // Optional custom policies (from database)
 }
 
-interface RefundPolicy {
+export interface RefundPolicy {
 	daysBeforeStart: number;
 	daysBeforeEnd: number | null;
 	refundPercentage: number;
 	applicableTo: string;
 }
 
-interface RefundCalculationResult {
+export interface RefundCalculationResult {
 	originalAmount: number;
 	refundAmount: number;
 	refundPercentage: number;
@@ -32,34 +29,6 @@ interface RefundCalculationResult {
 	daysBeforeTrip: number;
 	policyApplied: string;
 	requiresAdminApproval: boolean;
-}
-
-/**
- * Fetch active refund policies from database
- */
-export async function fetchRefundPolicies(policyType: 'trip' | 'product'): Promise<RefundPolicy[]> {
-	try {
-		const policies = await db
-			.select({
-				daysBeforeStart: refundPolicies.daysBeforeStart,
-				daysBeforeEnd: refundPolicies.daysBeforeEnd,
-				refundPercentage: refundPolicies.refundPercentage,
-				applicableTo: refundPolicies.applicableTo
-			})
-			.from(refundPolicies)
-			.where(
-				and(
-					eq(refundPolicies.applicableTo, policyType),
-					eq(refundPolicies.isActive, true)
-				)
-			)
-			.orderBy(refundPolicies.daysBeforeStart);
-
-		return policies;
-	} catch (error) {
-		console.error('Error fetching refund policies:', error);
-		return [];
-	}
 }
 
 /**
