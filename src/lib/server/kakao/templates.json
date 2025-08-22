@@ -11,12 +11,12 @@
 				"type": "URL",
 				"name": "나의프로필보기",
 				"dev": {
-					"urlMobile": "https://dev.matchtrip.net/profile/traveler",
-					"urlPc": "https://dev.matchtrip.net/profile/traveler"
+					"urlMobile": "https://dev.matchtrip.net/redirect/external?to=/profile/traveler",
+					"urlPc": "https://dev.matchtrip.net/redirect/external?to=/profile/traveler"
 				},
 				"prod": {
-					"urlMobile": "https://matchtrip.net/profile/traveler",
-					"urlPc": "https://matchtrip.net/profile/traveler"
+					"urlMobile": "https://matchtrip.net/redirect/external?to=/profile/traveler",
+					"urlPc": "https://matchtrip.net/redirect/external?to=/profile/traveler"
 				}
 			}
 		},
@@ -31,12 +31,12 @@
 				"type": "URL",
 				"name": "나의프로필보기",
 				"dev": {
-					"urlMobile": "https://dev.matchtrip.net/profile/guide",
-					"urlPc": "https://dev.matchtrip.net/profile/guide"
+					"urlMobile": "https://dev.matchtrip.net/redirect/external?to=/profile/guide",
+					"urlPc": "https://dev.matchtrip.net/redirect/external?to=/profile/guide"
 				},
 				"prod": {
-					"urlMobile": "https://matchtrip.net/profile/guide",
-					"urlPc": "https://matchtrip.net/profile/guide"
+					"urlMobile": "https://matchtrip.net/redirect/external?to=/profile/guide",
+					"urlPc": "https://matchtrip.net/redirect/external?to=/profile/guide"
 				}
 			}
 		},
@@ -51,12 +51,12 @@
 				"type": "URL",
 				"name": "나의여행보기",
 				"dev": {
-					"urlMobile": "https://dev.matchtrip.net/my-trips",
-					"urlPc": "https://dev.matchtrip.net/my-trips"
+					"urlMobile": "https://dev.matchtrip.net/redirect/external?to=/my-trips",
+					"urlPc": "https://dev.matchtrip.net/redirect/external?to=/my-trips"
 				},
 				"prod": {
-					"urlMobile": "https://matchtrip.net/my-trips",
-					"urlPc": "https://matchtrip.net/my-trips"
+					"urlMobile": "https://matchtrip.net/redirect/external?to=/my-trips",
+					"urlPc": "https://matchtrip.net/redirect/external?to=/my-trips"
 				}
 			}
 		},
@@ -71,12 +71,12 @@
 				"type": "URL",
 				"name": "나의여행보기",
 				"dev": {
-					"urlMobile": "https://dev.matchtrip.net/my-trips",
-					"urlPc": "https://dev.matchtrip.net/my-trips"
+					"urlMobile": "https://dev.matchtrip.net/redirect/external?to=/my-trips",
+					"urlPc": "https://dev.matchtrip.net/redirect/external?to=/my-trips"
 				},
 				"prod": {
-					"urlMobile": "https://matchtrip.net/my-trips",
-					"urlPc": "https://matchtrip.net/my-trips"
+					"urlMobile": "https://matchtrip.net/redirect/external?to=/my-trips",
+					"urlPc": "https://matchtrip.net/redirect/external?to=/my-trips"
 				}
 			}
 		},
@@ -91,12 +91,12 @@
 				"type": "URL",
 				"name": "메세지확인하기",
 				"dev": {
-					"urlMobile": "https://dev.matchtrip.net/chat",
-					"urlPc": "https://dev.matchtrip.net/chat"
+					"urlMobile": "https://dev.matchtrip.net/redirect/external?to=/chat",
+					"urlPc": "https://dev.matchtrip.net/redirect/external?to=/chat"
 				},
 				"prod": {
-					"urlMobile": "https://matchtrip.net/chat",
-					"urlPc": "https://matchtrip.net/chat"
+					"urlMobile": "https://matchtrip.net/redirect/external?to=/chat",
+					"urlPc": "https://matchtrip.net/redirect/external?to=/chat"
 				}
 			}
 		},
@@ -111,12 +111,12 @@
 				"type": "URL",
 				"name": "주문내역",
 				"dev": {
-					"urlMobile": "https://dev.matchtrip.net/settlement",
-					"urlPc": "https://dev.matchtrip.net/settlement"
+					"urlMobile": "https://dev.matchtrip.net/redirect/external?to=/settlement",
+					"urlPc": "https://dev.matchtrip.net/redirect/external?to=/settlement"
 				},
 				"prod": {
-					"urlMobile": "https://matchtrip.net/settlement",
-					"urlPc": "https://matchtrip.net/settlement"
+					"urlMobile": "https://matchtrip.net/redirect/external?to=/settlement",
+					"urlPc": "https://matchtrip.net/redirect/external?to=/settlement"
 				}
 			}
 		},
@@ -131,12 +131,12 @@
 				"type": "URL",
 				"name": "나의여행",
 				"dev": {
-					"urlMobile": "https://dev.matchtrip.net/my-trips",
-					"urlPc": "https://dev.matchtrip.net/my-trips"
+					"urlMobile": "https://dev.matchtrip.net/redirect/external?to=/my-trips",
+					"urlPc": "https://dev.matchtrip.net/redirect/external?to=/my-trips"
 				},
 				"prod": {
-					"urlMobile": "https://matchtrip.net/my-trips",
-					"urlPc": "https://matchtrip.net/my-trips"
+					"urlMobile": "https://matchtrip.net/redirect/external?to=/my-trips",
+					"urlPc": "https://matchtrip.net/redirect/external?to=/my-trips"
 				}
 			}
 		},
@@ -152,8 +152,8 @@
 				"name": "1:1문의보기",
 				"dev": null,
 				"prod": {
-					"urlMobile": "https://matchtrip.net/contact",
-					"urlPc": "https://matchtrip.net/contact"
+					"urlMobile": "https://matchtrip.net/redirect/external?to=/contact",
+					"urlPc": "https://matchtrip.net/redirect/external?to=/contact"
 				}
 			}
 		},
@@ -168,12 +168,12 @@
 				"type": "URL",
 				"name": "나의제안보기",
 				"dev": {
-					"urlMobile": "https://dev.matchtrip.net/my-offers",
-					"urlPc": "https://dev.matchtrip.net/my-offers"
+					"urlMobile": "https://dev.matchtrip.net/redirect/external?to=/my-offers",
+					"urlPc": "https://dev.matchtrip.net/redirect/external?to=/my-offers"
 				},
 				"prod": {
-					"urlMobile": "https://matchtrip.net/my-offers",
-					"urlPc": "https://matchtrip.net/my-offers"
+					"urlMobile": "https://matchtrip.net/redirect/external?to=/my-offers",
+					"urlPc": "https://matchtrip.net/redirect/external?to=/my-offers"
 				}
 			}
 		},
@@ -188,12 +188,12 @@
 				"type": "URL",
 				"name": "메세지확인하기",
 				"dev": {
-					"urlMobile": "https://dev.matchtrip.net/chat",
-					"urlPc": "https://dev.matchtrip.net/chat"
+					"urlMobile": "https://dev.matchtrip.net/redirect/external?to=/chat",
+					"urlPc": "https://dev.matchtrip.net/redirect/external?to=/chat"
 				},
 				"prod": {
-					"urlMobile": "https://matchtrip.net/chat",
-					"urlPc": "https://matchtrip.net/chat"
+					"urlMobile": "https://matchtrip.net/redirect/external?to=/chat",
+					"urlPc": "https://matchtrip.net/redirect/external?to=/chat"
 				}
 			}
 		},
@@ -208,12 +208,12 @@
 				"type": "URL",
 				"name": "나의제안보기",
 				"dev": {
-					"urlMobile": "https://dev.matchtrip.net/my-offers",
-					"urlPc": "https://dev.matchtrip.net/my-offers"
+					"urlMobile": "https://dev.matchtrip.net/redirect/external?to=/my-offers",
+					"urlPc": "https://dev.matchtrip.net/redirect/external?to=/my-offers"
 				},
 				"prod": {
-					"urlMobile": "https://matchtrip.net/my-offers",
-					"urlPc": "https://matchtrip.net/my-offers"
+					"urlMobile": "https://matchtrip.net/redirect/external?to=/my-offers",
+					"urlPc": "https://matchtrip.net/redirect/external?to=/my-offers"
 				}
 			}
 		},
@@ -228,12 +228,12 @@
 				"type": "URL",
 				"name": "나의제안보기",
 				"dev": {
-					"urlMobile": "https://dev.matchtrip.net/my-offers",
-					"urlPc": "https://dev.matchtrip.net/my-offers"
+					"urlMobile": "https://dev.matchtrip.net/redirect/external?to=/my-offers",
+					"urlPc": "https://dev.matchtrip.net/redirect/external?to=/my-offers"
 				},
 				"prod": {
-					"urlMobile": "https://matchtrip.net/my-offers",
-					"urlPc": "https://matchtrip.net/my-offers"
+					"urlMobile": "https://matchtrip.net/redirect/external?to=/my-offers",
+					"urlPc": "https://matchtrip.net/redirect/external?to=/my-offers"
 				}
 			}
 		},
@@ -248,12 +248,12 @@
 				"type": "URL",
 				"name": "주문내",
 				"dev": {
-					"urlMobile": "https://dev.matchtrip.net/settlement",
-					"urlPc": "https://dev.matchtrip.net/settlement"
+					"urlMobile": "https://dev.matchtrip.net/redirect/external?to=/settlement",
+					"urlPc": "https://dev.matchtrip.net/redirect/external?to=/settlement"
 				},
 				"prod": {
-					"urlMobile": "https://matchtrip.net/settlement",
-					"urlPc": "https://matchtrip.net/settlement"
+					"urlMobile": "https://matchtrip.net/redirect/external?to=/settlement",
+					"urlPc": "https://matchtrip.net/redirect/external?to=/settlement"
 				}
 			}
 		},
@@ -268,12 +268,12 @@
 				"type": "URL",
 				"name": "나의제안보기",
 				"dev": {
-					"urlMobile": "https://dev.matchtrip.net/my-offers",
-					"urlPc": "https://dev.matchtrip.net/my-offers"
+					"urlMobile": "https://dev.matchtrip.net/redirect/external?to=/my-offers",
+					"urlPc": "https://dev.matchtrip.net/redirect/external?to=/my-offers"
 				},
 				"prod": {
-					"urlMobile": "https://matchtrip.net/my-offers",
-					"urlPc": "https://matchtrip.net/my-offers"
+					"urlMobile": "https://matchtrip.net/redirect/external?to=/my-offers",
+					"urlPc": "https://matchtrip.net/redirect/external?to=/my-offers"
 				}
 			}
 		},
@@ -288,12 +288,12 @@
 				"type": "URL",
 				"name": "나의제안보기",
 				"dev": {
-					"urlMobile": "https://dev.matchtrip.net/my-offers",
-					"urlPc": "https://dev.matchtrip.net/my-offers"
+					"urlMobile": "https://dev.matchtrip.net/redirect/external?to=/my-offers",
+					"urlPc": "https://dev.matchtrip.net/redirect/external?to=/my-offers"
 				},
 				"prod": {
-					"urlMobile": "https://matchtrip.net/my-offers",
-					"urlPc": "https://matchtrip.net/my-offers"
+					"urlMobile": "https://matchtrip.net/redirect/external?to=/my-offers",
+					"urlPc": "https://matchtrip.net/redirect/external?to=/my-offers"
 				}
 			}
 		},
@@ -308,12 +308,12 @@
 				"type": "URL",
 				"name": "주문내역",
 				"dev": {
-					"urlMobile": "https://dev.matchtrip.net/settlement",
-					"urlPc": "https://dev.matchtrip.net/settlement"
+					"urlMobile": "https://dev.matchtrip.net/redirect/external?to=/settlement",
+					"urlPc": "https://dev.matchtrip.net/redirect/external?to=/settlement"
 				},
 				"prod": {
-					"urlMobile": "https://matchtrip.net/settlement",
-					"urlPc": "https://matchtrip.net/settlement"
+					"urlMobile": "https://matchtrip.net/redirect/external?to=/settlement",
+					"urlPc": "https://matchtrip.net/redirect/external?to=/settlement"
 				}
 			}
 		},
@@ -328,12 +328,12 @@
 				"type": "URL",
 				"name": "주문내역",
 				"dev": {
-					"urlMobile": "https://dev.matchtrip.net/settlement",
-					"urlPc": "https://dev.matchtrip.net/settlement"
+					"urlMobile": "https://dev.matchtrip.net/redirect/external?to=/settlement",
+					"urlPc": "https://dev.matchtrip.net/redirect/external?to=/settlement"
 				},
 				"prod": {
-					"urlMobile": "https://matchtrip.net/settlement",
-					"urlPc": "https://matchtrip.net/settlement"
+					"urlMobile": "https://matchtrip.net/redirect/external?to=/settlement",
+					"urlPc": "https://matchtrip.net/redirect/external?to=/settlement"
 				}
 			}
 		},
@@ -348,12 +348,12 @@
 				"type": "URL",
 				"name": "나의제안보기",
 				"dev": {
-					"urlMobile": "https://dev.matchtrip.net/my-offers",
-					"urlPc": "https://dev.matchtrip.net/my-offers"
+					"urlMobile": "https://dev.matchtrip.net/redirect/external?to=/my-offers",
+					"urlPc": "https://dev.matchtrip.net/redirect/external?to=/my-offers"
 				},
 				"prod": {
-					"urlMobile": "https://matchtrip.net/my-offers",
-					"urlPc": "https://matchtrip.net/my-offers"
+					"urlMobile": "https://matchtrip.net/redirect/external?to=/my-offers",
+					"urlPc": "https://matchtrip.net/redirect/external?to=/my-offers"
 				}
 			}
 		},
@@ -368,12 +368,12 @@
 				"type": "URL",
 				"name": "나의제안보기",
 				"dev": {
-					"urlMobile": "https://dev.matchtrip.net/my-offers",
-					"urlPc": "https://dev.matchtrip.net/my-offers"
+					"urlMobile": "https://dev.matchtrip.net/redirect/external?to=/my-offers",
+					"urlPc": "https://dev.matchtrip.net/redirect/external?to=/my-offers"
 				},
 				"prod": {
-					"urlMobile": "https://matchtrip.net/my-offers",
-					"urlPc": "https://matchtrip.net/my-offers"
+					"urlMobile": "https://matchtrip.net/redirect/external?to=/my-offers",
+					"urlPc": "https://matchtrip.net/redirect/external?to=/my-offers"
 				}
 			}
 		},
@@ -388,12 +388,12 @@
 				"type": "URL",
 				"name": "주문내역",
 				"dev": {
-					"urlMobile": "https://dev.matchtrip.net/settlement",
-					"urlPc": "https://dev.matchtrip.net/settlement"
+					"urlMobile": "https://dev.matchtrip.net/redirect/external?to=/settlement",
+					"urlPc": "https://dev.matchtrip.net/redirect/external?to=/settlement"
 				},
 				"prod": {
-					"urlMobile": "https://matchtrip.net/settlement",
-					"urlPc": "https://matchtrip.net/settlement"
+					"urlMobile": "https://matchtrip.net/redirect/external?to=/settlement",
+					"urlPc": "https://matchtrip.net/redirect/external?to=/settlement"
 				}
 			}
 		}
