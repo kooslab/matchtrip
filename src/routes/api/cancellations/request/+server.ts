@@ -107,8 +107,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			// Continue even if notifications fail
 		}
 
-		// If auto-approved (guide cancellation without admin approval needed), process refund immediately
-		if (result.cancellationRequest.status === 'approved' && user.role === 'guide') {
+		// If auto-approved (cancellation within policy that doesn't need admin approval), process refund immediately
+		if (result.cancellationRequest.status === 'approved') {
 			try {
 				const refundService = new RefundService();
 
@@ -116,15 +116,18 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				const { payment } = await getPaymentDetails(paymentId);
 
 				if (payment && payment.paymentKey) {
+					const cancelReasonPrefix = user.role === 'guide' ? '가이드 취소' : '고객 취소';
 					await refundService.processRefund({
 						paymentKey: payment.paymentKey,
-						cancelReason: `가이드 취소: ${reasonType}`,
+						cancelReason: `${cancelReasonPrefix}: ${reasonType}`,
 						refundAmount: result.refundCalculation.refundAmount,
 						cancellationRequestId: result.cancellationRequest.id
 					});
+					
+					console.log(`[CANCELLATION] Auto-refund processed for ${user.role} cancellation. Amount: ${result.refundCalculation.refundAmount}`);
 				}
 			} catch (refundError) {
-				console.error('Auto-refund failed for guide cancellation:', refundError);
+				console.error(`Auto-refund failed for ${user.role} cancellation:`, refundError);
 				// Continue even if refund fails - admin can process manually
 			}
 		}
