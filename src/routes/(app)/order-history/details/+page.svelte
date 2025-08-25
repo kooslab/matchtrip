@@ -4,12 +4,14 @@
 	import CalendarCheckIcon from '$lib/icons/icon-calendar-check-mono.svg';
 	import UserTwoIcon from '$lib/icons/icon-user-two-mono.svg';
 	import CancellationRequestModal from '$lib/components/cancellation/CancellationRequestModal.svelte';
+	import CancellationFlow from '$lib/components/cancellation/CancellationFlow.svelte';
 	import { canCancelBooking } from '$lib/utils/refundCalculator';
 
 	let { data } = $props();
 	let order = $derived(data.order);
 
 	let showCancelModal = $state(false);
+	let showCancelFlow = $state(false);
 	let canCancel = $derived(() => {
 		if (!order) return false;
 		// Allow cancellation for completed payments
@@ -124,7 +126,8 @@
 
 	function handleCancelRequest() {
 		if (canCancel()) {
-			showCancelModal = true;
+			// Use the new step-by-step flow instead of modal
+			showCancelFlow = true;
 		}
 	}
 
@@ -418,8 +421,8 @@
 	</div>
 </div>
 
-<!-- Cancellation Modal -->
-{#if order}
+<!-- Cancellation Modal (keeping for backward compatibility) -->
+{#if order && showCancelModal}
 	<CancellationRequestModal
 		isOpen={showCancelModal}
 		userRole={data.user?.role || 'traveler'}
@@ -428,6 +431,20 @@
 		tripStartDate={order.type === 'trip' ? order.startDate : null}
 		productDate={order.type === 'product' ? order.productDate : null}
 		on:close={() => (showCancelModal = false)}
+		on:success={handleCancelSuccess}
+	/>
+{/if}
+
+<!-- New Step-by-Step Cancellation Flow -->
+{#if order && showCancelFlow}
+	<CancellationFlow
+		isOpen={showCancelFlow}
+		userRole={data.user?.role || 'traveler'}
+		paymentId={order.payment.id}
+		paymentAmount={order.payment.amount}
+		tripStartDate={order.type === 'trip' ? order.startDate : null}
+		productDate={order.type === 'product' ? order.productDate : null}
+		on:close={() => (showCancelFlow = false)}
 		on:success={handleCancelSuccess}
 	/>
 {/if}

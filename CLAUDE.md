@@ -209,6 +209,61 @@ Required environment variables (see `.env.example`):
 - **Error boundaries**: Use `+error.svelte` files to handle navigation errors gracefully.
 - **Route guards**: Protect routes using hooks or layout logic (e.g., check authentication in `+layout.server.ts`).
 
+## Modal Implementation Rules
+
+### CRITICAL: Modal Structure Requirements
+
+When creating ANY modal in the application, follow these rules:
+
+1. **Use Svelte 5 State Management**:
+   - ALWAYS use `$state()` for modal visibility and data
+   - Example: `let showModal = $state(false)` NOT `let showModal = false`
+
+2. **Modal Structure Pattern**:
+   ```svelte
+   {#if showModal}
+     <!-- Backdrop - separate element -->
+     <div class="fixed inset-0 bg-black/50 z-40" onclick={closeModal}></div>
+     
+     <!-- Modal Content - separate element at same level -->
+     <div class="fixed [position] z-50">
+       <!-- Modal content here -->
+     </div>
+   {/if}
+   ```
+
+3. **Z-Index Layering**:
+   - Backdrop: `z-40` or `z-[40]`
+   - Modal content: `z-50` or `z-[50]`
+   - Higher priority modals: `z-[60]`, `z-[70]` etc.
+
+4. **Background Opacity**:
+   - Use Tailwind's modern syntax: `bg-black/50` NOT `bg-opacity-50`
+   - Standard opacity: `/50` for 50% opacity
+   - Light overlay: `/10` or `/20` for subtle overlays
+
+5. **Bottom Sheet Modals** (Mobile):
+   ```svelte
+   <div class="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl max-w-md mx-auto z-50">
+   ```
+
+6. **Right-Side Slide Modals** (Admin):
+   ```svelte
+   <div class="fixed right-0 top-0 h-full w-full max-w-2xl bg-white shadow-xl z-50 overflow-y-auto">
+   ```
+
+7. **Center Modals**:
+   ```svelte
+   <div class="fixed inset-0 flex items-center justify-center z-50">
+     <div class="bg-white rounded-lg max-w-md w-full mx-4">
+   ```
+
+8. **NEVER**:
+   - Don't nest the backdrop inside wrapper divs
+   - Don't use `bg-opacity-X` classes (use `/X` syntax)
+   - Don't forget to use `$state()` for reactive variables
+   - Don't use transform classes unnecessarily
+
 ## UI Layout Rules
 
 ### CRITICAL: Mobile Viewport Constraints

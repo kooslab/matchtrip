@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { calculateRefundAmount, getRefundPolicyDescription } from '$lib/utils/refundCalculator';
 import { db } from '$lib/server/db';
-import { payments, trips, products } from '$lib/server/db/schema';
+import { payments, trips, productOffers } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
@@ -26,11 +26,11 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			.select({
 				payment: payments,
 				tripStartDate: trips.startDate,
-				productDate: products.date
+				productOfferStartDate: productOffers.startDate
 			})
 			.from(payments)
 			.leftJoin(trips, eq(payments.tripId, trips.id))
-			.leftJoin(products, eq(payments.productId, products.id))
+			.leftJoin(productOffers, eq(payments.productOfferId, productOffers.id))
 			.where(eq(payments.id, paymentId))
 			.limit(1);
 
@@ -38,8 +38,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			return json({ success: false, error: '결제 정보를 찾을 수 없습니다.' }, { status: 404 });
 		}
 
-		const { payment, tripStartDate, productDate } = paymentData[0];
-		const eventDate = tripStartDate || productDate;
+		const { payment, tripStartDate, productOfferStartDate } = paymentData[0];
+		const eventDate = tripStartDate || productOfferStartDate;
 
 		if (!eventDate) {
 			return json(
