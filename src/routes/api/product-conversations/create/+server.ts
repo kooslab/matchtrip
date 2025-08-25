@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { productConversations, products } from '$lib/server/db/schema';
+import { productConversations, products, productOffers } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
 
@@ -29,7 +29,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			return json({ error: 'Invalid guide for this product' }, { status: 400 });
 		}
 
-		// Check if conversation already exists
+		// Check if there's an existing conversation for this product and user
 		const existingConversation = await db
 			.select()
 			.from(productConversations)
@@ -41,12 +41,41 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			)
 			.limit(1);
 
+		let shouldCreateNew = false;
+
+		// If there's an existing conversation, check if it has an accepted offer
 		if (existingConversation.length > 0) {
-			// Return existing conversation
-			return json({
-				conversationId: existingConversation[0].id,
-				isNew: false
-			});
+			const conversationId = existingConversation[0].id;
+			
+			// Check if this conversation has any accepted offers
+			const acceptedOffer = await db
+				.select({
+					id: productOffers.id,
+					status: productOffers.status
+				})
+				.from(productOffers)
+				.where(
+					and(
+						eq(productOffers.conversationId, conversationId),
+						eq(productOffers.status, 'accepted')
+					)
+				)
+				.limit(1);
+			
+			console.log('Existing conversation found:', conversationId);
+			console.log('Accepted offer found:', acceptedOffer.length > 0);
+			
+			// If there's an accepted offer (meaning it was paid for), create a new conversation
+			if (acceptedOffer.length > 0) {
+				shouldCreateNew = true;
+				console.log('Found accepted offer, will create new conversation');
+			} else {
+				// No accepted offer, return the existing conversation
+				return json({
+					conversationId: existingConversation[0].id,
+					isNew: false
+				});
+			}
 		}
 
 		// Create new conversation

@@ -603,7 +603,22 @@
 									? 'bg-blue-500 text-white'
 									: 'bg-gray-100'} rounded-2xl px-4 py-2"
 							>
-								<p class="text-sm">{message.content}</p>
+								<p class="text-sm">
+									{#each parseMarkdownLink(message.content) as part}
+										{#if part.type === 'text'}
+											{part.content}
+										{:else if part.type === 'link'}
+											<a 
+												href={part.url} 
+												class="{message.senderId === currentUserId ? 'text-white underline font-semibold' : 'text-blue-500 underline hover:text-blue-600'}"
+												target={part.url.startsWith('/') ? '_self' : '_blank'}
+												rel={part.url.startsWith('/') ? '' : 'noopener noreferrer'}
+											>
+												{part.text}
+											</a>
+										{/if}
+									{/each}
+								</p>
 							</div>
 						{:else if message.messageType === 'cancellation_request'}
 							<div
