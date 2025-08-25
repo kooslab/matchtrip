@@ -315,14 +315,71 @@ Required environment variables (see `.env.example`):
 
 The application automatically selects the correct Kakao AlimTalk template codes based on the environment:
 
-- **Development (default)**: Uses `testcodeXX` templates (e.g., `testcode01`, `testcode02`)
-- **Production**: Uses `codeXX` templates (e.g., `code01`, `code02`)
+- **Development (default)**: Uses `testcodeXX` templates (e.g., `testcode21`, `testcode23`)
+- **Production**: Uses `codeXX` templates (e.g., `code01`, `code23`)
 
 **Configuration:**
 - Development: No configuration needed (default behavior)
 - Production: Must set `NODE_ENV=production` environment variable
 
 The template selection is handled in `src/lib/server/kakao/templateHelper.ts` which checks `NODE_ENV` to determine the environment. When `NODE_ENV=production`, production template codes are automatically used.
+
+### Template Code Updates (As of 2025-08-25)
+
+**Important:** Several template codes have been deprecated and replaced with new ones:
+
+#### Deprecated Template Codes (DO NOT USE):
+- `testcode01` → Use `testcode21` (traveler signup)
+- `testcode03` → Use `testcode23` (trip registration)
+- `testcode04` → Use `testcode24` (guide offer arrival)
+- `testcode06` → Use `testcode26` (payment completion)
+- `testcode09` → Use `testcode29` (guide offer registration)
+
+#### Active Template Codes:
+
+**Development Environment:**
+- `testcode21` - Traveler signup welcome
+- `testcode02` - Guide signup welcome
+- `testcode23` - Trip registration confirmation
+- `testcode24` - Guide offer arrival notification
+- `testcode05` - Guide reply to traveler
+- `testcode26` - Payment completion
+- `testcode07` - Trip reminder for traveler
+- `testcode08` - CS inquiry registration
+- `testcode29` - Guide offer registration
+- `testcode10` - Traveler inquiry to guide
+- `testcode11` - Offer acceptance notification
+- `testcode12` - Trip reminder for guide
+- `testcode13` - Customer cancellation request
+- `testcode14` - Customer cancellation notification to guide
+- `testcode15` - Guide cancellation request
+- `testcode16` - Guide cancellation notification to customer
+- `testcode17` - Customer cancellation completion
+- `testcode18` - Customer cancellation completion to guide
+- `testcode19` - Guide cancellation completion
+- `testcode20` - Guide cancellation completion to customer
+
+**Production Environment:**
+- `code01` - Traveler signup welcome
+- `code02` - Guide signup welcome
+- `code23` - Trip registration confirmation
+- `code24` - Guide offer arrival notification
+- `code05` - Guide reply to traveler
+- `code26` - Payment completion
+- `code07` - Trip reminder for traveler
+- `code08` - CS inquiry registration
+- `code29` - Guide offer registration
+- `code10` - Traveler inquiry to guide
+- `code11` - Offer acceptance notification
+- `code12` - Trip reminder for guide
+- `code13` - Customer cancellation request
+- `code14` - Customer cancellation notification to guide
+- `code15` - Guide cancellation request
+- `code16` - Guide cancellation notification to customer
+- `code17` - Customer cancellation completion
+- `code18` - Customer cancellation completion to guide
+- `code19` - Guide cancellation completion
+- `code20` - Guide cancellation completion to customer
 
 ### CRITICAL: Implementation Rules (Based on Trial & Error)
 

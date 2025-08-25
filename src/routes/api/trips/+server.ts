@@ -51,7 +51,7 @@ export async function POST({ request, locals }) {
 			console.log('File upload not yet implemented');
 		}
 
-		// Send trip registration notification (testcode03)
+		// Send trip registration notification (testcode23)
 		try {
 			// Get user details for notification
 			const [user] = await db
@@ -68,7 +68,7 @@ export async function POST({ request, locals }) {
 				await notificationService.sendNotification({
 					userId: session.user.id,
 					phoneNumber: decryptedPhone,
-					templateCode: 'testcode03',
+					templateCode: 'testcode23',
 					templateData: {
 						SHOPNAME: '매치트립',
 						NAME: decryptedName || '고객'

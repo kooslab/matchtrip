@@ -71,7 +71,7 @@ export const POST: RequestHandler = async ({ locals }) => {
 			hasName: !!freshUser?.name
 		});
 
-		// Send welcome AlimTalk notification (testcode01)
+		// Send welcome AlimTalk notification (testcode21)
 		if (freshUser?.phone) {
 			try {
 				console.log('[API COMPLETE ONBOARDING] Sending welcome AlimTalk notification');
@@ -81,7 +81,7 @@ export const POST: RequestHandler = async ({ locals }) => {
 				await notificationService.sendNotification({
 					userId: freshUser.id,
 					phoneNumber: decryptedPhone,
-					templateCode: 'testcode01',
+					templateCode: 'testcode21',
 					templateData: {
 						SHOPNAME: '매치트립',
 						NAME: decryptedName || '고객'

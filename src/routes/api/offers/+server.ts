@@ -106,7 +106,7 @@ export const POST: RequestHandler = async ({ request }) => {
 					.limit(1)
 			]);
 
-			// Send offer registration notification to guide (testcode09)
+			// Send offer registration notification to guide (testcode29)
 			if (guideUser[0]?.phone) {
 				console.log('[OFFERS API] Sending offer registration AlimTalk to guide');
 				const decryptedGuideName = guideUser[0].name ? decrypt(guideUser[0].name) : null;
@@ -115,7 +115,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				await notificationService.sendNotification({
 					userId: session.user.id,
 					phoneNumber: decryptedGuidePhone,
-					templateCode: 'testcode09',
+					templateCode: 'testcode29',
 					templateData: {
 						SHOPNAME: '매치트립',
 						NAME: decryptedGuideName || '가이드'
@@ -123,7 +123,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				});
 			}
 
-			// Send offer arrival notification to traveler (testcode04)
+			// Send offer arrival notification to traveler (testcode24)
 			if (travelerUser[0]?.phone) {
 				console.log('[OFFERS API] Sending offer arrival AlimTalk to traveler');
 				const decryptedTravelerPhone = decrypt(travelerUser[0].phone);
@@ -132,7 +132,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				await notificationService.sendNotification({
 					userId: tripDetails[0].userId,
 					phoneNumber: decryptedTravelerPhone,
-					templateCode: 'testcode04',
+					templateCode: 'testcode24',
 					templateData: {
 						SHOPNAME: '매치트립',
 						가이드: decryptedGuideName || '가이드',

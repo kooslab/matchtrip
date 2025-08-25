@@ -171,7 +171,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		console.log('Updated trip status:', updatedTrip[0]?.status);
 		console.log('Updated offer status:', updatedOffer[0]?.status);
 
-		// Send payment completion notification (testcode06)
+		// Send payment completion notification (testcode26)
 		try {
 			// Get user details
 			const userDetails = await db
@@ -193,7 +193,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				await notificationService.sendNotification({
 					userId: user.id,
 					phoneNumber: decryptedPhone,
-					templateCode: 'testcode06',
+					templateCode: 'testcode26',
 					templateData: {
 						SHOPNAME: '매치트립',
 						고객: decryptedName || '고객',

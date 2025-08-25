@@ -28,7 +28,7 @@ export const GET: RequestHandler = async () => {
 			}
 		],
 		suggestions: [
-			'1. Verify template code "testcode01" is approved in Infobip dashboard',
+			'1. Verify template code "testcode21" is approved in Infobip dashboard',
 			'2. Check if the sender profile key matches the one used for template registration',
 			'3. Ensure the exact text (after substitution) matches the registered template',
 			'4. Try sending without any Korean characters first to test basic connectivity',
