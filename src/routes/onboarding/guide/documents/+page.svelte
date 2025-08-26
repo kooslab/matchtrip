@@ -40,6 +40,11 @@
 			id: 'identity',
 			title: '신분증 또는 여권',
 			description: '지원되는 파일 형식: pdf, pptx, hwp, docx, jpg, png , gif'
+		},
+		{
+			id: 'bank-account',
+			title: '통장 사본',
+			description: '지원되는 파일 형식: jpg, png, pdf'
 		}
 	];
 
