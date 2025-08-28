@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { onMount, onDestroy } from 'svelte';
 	import PaymentModal from '$lib/components/PaymentModal.svelte';
 	import OfferSummaryCard from '$lib/components/OfferSummaryCard.svelte';
 	import OfferDetailModal from '$lib/components/OfferDetailModal.svelte';
@@ -45,10 +46,23 @@
 	let { data } = $props();
 	let trip = $derived(data.trip as TripData);
 	console.log('trip', trip);
-	let offers = $derived(data.offers);
-	console.log('offers', offers);
+	
+	// Use $state for offers to enable reactive updates
+	let offers = $state(data.offers);
 	let acceptedOffer = $derived(offers.find((o) => o.status === 'accepted'));
 	let review = $derived(data.review);
+	
+	// Polling state
+	let pollingInterval: number | null = null;
+	let isPolling = $state(false);
+	let lastUpdated = $state(new Date().toISOString());
+	let newOfferIds = $state<Set<string>>(new Set());
+	let hasNewOffers = $state(false);
+	let pollingErrorCount = $state(0);
+	const MAX_ERROR_COUNT = 3;
+	const POLLING_INTERVAL = 5000; // 5 seconds
+	const MAX_POLLING_DURATION = 30 * 60 * 1000; // 30 minutes
+	let pollingStartTime: number | null = null;
 
 	// Check if trip has ended and review can be written
 	let tripHasEnded = $derived(() => {
@@ -87,6 +101,141 @@
 	let expandedSections = $state({
 		request: true,
 		files: true
+	});
+
+	// Fetch offers from API
+	async function fetchOffers() {
+		if (!trip?.id) return;
+		
+		try {
+			const response = await fetch(`/api/trips/${trip.id}/offers`);
+			if (!response.ok) {
+				throw new Error('Failed to fetch offers');
+			}
+			
+			const data = await response.json();
+			const newOffers = data.offers;
+			
+			// Check for new offers
+			const currentOfferIds = new Set(offers.map(o => o.id));
+			const fetchedOfferIds = new Set(newOffers.map(o => o.id));
+			
+			// Identify new offers
+			const newIds = new Set<string>();
+			for (const id of fetchedOfferIds) {
+				if (!currentOfferIds.has(id)) {
+					newIds.add(id);
+					hasNewOffers = true;
+				}
+			}
+			
+			// Update new offer IDs (for visual highlighting)
+			if (newIds.size > 0) {
+				newOfferIds = newIds;
+				// Clear new offer highlights after 5 seconds
+				setTimeout(() => {
+					newOfferIds = new Set();
+					hasNewOffers = false;
+				}, 5000);
+			}
+			
+			// Update offers
+			offers = newOffers;
+			lastUpdated = data.metadata.lastUpdated;
+			pollingErrorCount = 0; // Reset error count on success
+			
+		} catch (error) {
+			console.error('Error fetching offers:', error);
+			pollingErrorCount++;
+			
+			// Stop polling after too many errors
+			if (pollingErrorCount >= MAX_ERROR_COUNT) {
+				stopPolling();
+				console.log('Polling stopped due to repeated errors');
+			}
+		}
+	}
+	
+	// Start polling
+	function startPolling() {
+		if (pollingInterval) return; // Already polling
+		
+		isPolling = true;
+		pollingStartTime = Date.now();
+		
+		// Initial fetch
+		fetchOffers();
+		
+		// Set up interval
+		pollingInterval = setInterval(() => {
+			// Check if we've been polling too long
+			if (pollingStartTime && Date.now() - pollingStartTime > MAX_POLLING_DURATION) {
+				stopPolling();
+				console.log('Polling stopped due to timeout');
+				return;
+			}
+			
+			// Check if tab is visible
+			if (document.hidden) {
+				return; // Skip fetch if tab is not visible
+			}
+			
+			fetchOffers();
+		}, POLLING_INTERVAL);
+	}
+	
+	// Stop polling
+	function stopPolling() {
+		if (pollingInterval) {
+			clearInterval(pollingInterval);
+			pollingInterval = null;
+		}
+		isPolling = false;
+		pollingStartTime = null;
+	}
+	
+	// Handle visibility change
+	function handleVisibilityChange() {
+		if (document.hidden) {
+			// Tab is hidden, pause polling
+			console.log('Tab hidden, pausing polling');
+		} else {
+			// Tab is visible, resume polling if we were polling
+			if (isPolling) {
+				console.log('Tab visible, resuming polling');
+				fetchOffers(); // Immediate fetch when tab becomes visible
+			}
+		}
+	}
+	
+	// Lifecycle hooks
+	onMount(() => {
+		// Only start polling if we're on the offers tab and trip is not completed
+		if (trip.status !== 'completed' && trip.status !== 'cancelled') {
+			startPolling();
+		}
+		
+		// Listen for visibility changes
+		document.addEventListener('visibilitychange', handleVisibilityChange);
+	});
+	
+	onDestroy(() => {
+		stopPolling();
+		document.removeEventListener('visibilitychange', handleVisibilityChange);
+	});
+	
+	// Watch for tab changes
+	$effect(() => {
+		if (activeTab === 'offers' && trip.status !== 'completed' && trip.status !== 'cancelled') {
+			if (!isPolling) {
+				startPolling();
+			}
+		} else {
+			// Stop polling when not on offers tab
+			if (isPolling && activeTab !== 'offers') {
+				stopPolling();
+			}
+		}
 	});
 
 	// Calculate nights and days
@@ -237,12 +386,15 @@
 				여행 정보
 			</button>
 			<button
-				class="flex-1 py-3 text-sm font-medium {activeTab === 'offers'
+				class="relative flex-1 py-3 text-sm font-medium {activeTab === 'offers'
 					? 'border-b-2 border-gray-900 text-gray-900'
 					: 'text-gray-500'}"
 				onclick={() => (activeTab = 'offers')}
 			>
 				받은 제안 ({offers.length})
+				{#if hasNewOffers && activeTab !== 'offers'}
+					<span class="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>
+				{/if}
 			</button>
 		</div>
 	</header>
@@ -381,11 +533,46 @@
 		{:else}
 			<!-- Offers Tab -->
 			<div class="px-4 py-4">
+				<!-- Polling Status Indicator -->
+				{#if isPolling}
+					<div class="mb-3 flex items-center justify-between rounded-lg bg-blue-50 px-3 py-2">
+						<div class="flex items-center gap-2">
+							<div class="h-2 w-2 rounded-full bg-blue-500 animate-pulse"></div>
+							<span class="text-xs text-blue-700">실시간 업데이트 중</span>
+						</div>
+						<button 
+							onclick={stopPolling}
+							class="text-xs text-blue-600 hover:text-blue-800 underline"
+						>
+							중지
+						</button>
+					</div>
+				{:else if trip.status !== 'completed' && trip.status !== 'cancelled'}
+					<div class="mb-3 flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
+						<span class="text-xs text-gray-600">업데이트 일시정지됨</span>
+						<button 
+							onclick={startPolling}
+							class="text-xs text-blue-600 hover:text-blue-800 underline"
+						>
+							재시작
+						</button>
+					</div>
+				{/if}
+				
+				{#if hasNewOffers}
+					<div class="mb-3 rounded-lg bg-green-50 px-3 py-2">
+						<span class="text-xs text-green-700 font-medium">✨ 새로운 제안이 도착했습니다!</span>
+					</div>
+				{/if}
+
 				{#if offers.length === 0}
 					<div class="py-16 text-center">
 						<div class="mb-4 text-6xl">📝</div>
 						<h3 class="mb-2 text-lg font-medium text-gray-900">아직 제안이 없습니다</h3>
 						<p class="text-gray-600">가이드들의 제안을 기다려보세요!</p>
+						{#if isPolling}
+							<p class="mt-2 text-xs text-gray-500">새로운 제안이 도착하면 자동으로 표시됩니다</p>
+						{/if}
 					</div>
 				{:else}
 					<div class="space-y-4">
@@ -430,13 +617,20 @@
 							</div>
 						</div>
 						{#each offers as offer, index}
-							<OfferSummaryCard
-								{offer}
-								onclick={() => openOfferDetail(offer)}
-								showBadge={index === 0}
-								badgeText={index === 0 ? '가장 저렴한 가격' : ''}
-								badgeColor="#4daeeb"
-							/>
+							<div class="relative {newOfferIds.has(offer.id) ? 'animate-highlight' : ''}">
+								{#if newOfferIds.has(offer.id)}
+									<div class="absolute -top-2 -left-2 rounded-full bg-green-500 px-2 py-1 text-xs text-white z-10">
+										NEW!
+									</div>
+								{/if}
+								<OfferSummaryCard
+									{offer}
+									onclick={() => openOfferDetail(offer)}
+									showBadge={index === 0 && !newOfferIds.has(offer.id)}
+									badgeText={index === 0 ? '가장 저렴한 가격' : ''}
+									badgeColor="#4daeeb"
+								/>
+							</div>
 						{/each}
 					</div>
 				{/if}
@@ -573,5 +767,42 @@
 		display: block;
 		width: 100%;
 		height: 100%;
+	}
+	
+	/* Pulse animation for status indicator */
+	@keyframes pulse {
+		0%, 100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.5;
+		}
+	}
+	
+	.animate-pulse {
+		animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+	}
+	
+	/* Highlight animation for new offers */
+	@keyframes highlight {
+		0% {
+			background-color: rgba(34, 197, 94, 0.1);
+			transform: scale(1);
+		}
+		50% {
+			background-color: rgba(34, 197, 94, 0.2);
+			transform: scale(1.01);
+		}
+		100% {
+			background-color: rgba(34, 197, 94, 0.1);
+			transform: scale(1);
+		}
+	}
+	
+	.animate-highlight {
+		animation: highlight 2s ease-in-out infinite;
+		border-radius: 0.5rem;
+		padding: 0.25rem;
+		margin: -0.25rem;
 	}
 </style>
