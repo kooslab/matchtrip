@@ -42,12 +42,14 @@
 		"prettier": "^3.5.3",
 		"prettier-plugin-svelte": "^3.3.3",
 		"prettier-plugin-tailwindcss": "^0.6.11",
+		"sharp": "^0.34.3",
 		"svelte": "^5.23.0",
 		"svelte-check": "^4.1.5",
 		"tailwindcss": "^4.0.14",
 		"tsx": "^4.20.3",
 		"typescript": "^5.8.2",
 		"vite": "^6.2.2",
+		"vite-plugin-pwa": "^1.0.3",
 		"vite-plugin-svelte-svg": "^2.3.0"
 	},
 	"dependencies": {
