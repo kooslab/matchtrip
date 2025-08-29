@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
 import { offerDescriptionTemplates } from '$lib/server/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { auth } from '$lib/auth';
 
 // DELETE: Delete a template
@@ -57,7 +57,7 @@ export const PATCH: RequestHandler = async ({ request, params }) => {
 		const [template] = await db
 			.update(offerDescriptionTemplates)
 			.set({
-				usageCount: db.sql`${offerDescriptionTemplates.usageCount} + 1`,
+				usageCount: sql`${offerDescriptionTemplates.usageCount} + 1`,
 				updatedAt: new Date()
 			})
 			.where(

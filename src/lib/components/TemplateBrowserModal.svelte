@@ -101,7 +101,12 @@
 
 {#if showModal}
 	<!-- Backdrop -->
-	<div class="fixed inset-0 z-40 bg-black/50" onclick={onclose}></div>
+	<button
+		class="fixed inset-0 z-40 bg-black/50"
+		onclick={onclose}
+		aria-label="Close modal"
+		tabindex="-1"
+	></button>
 
 	<!-- Modal -->
 	<div class="fixed right-0 bottom-0 left-0 z-50 mx-auto max-w-md rounded-t-2xl bg-white">
@@ -155,11 +160,19 @@
 					<div class="space-y-3">
 						{#each templates as template}
 							<div
+								role="button"
+								tabindex="0"
 								class="cursor-pointer rounded-lg border p-4 transition-all
 									{selectedTemplate?.id === template.id
 									? 'border-blue-500 bg-blue-50'
 									: 'border-gray-200 hover:border-gray-300'}"
 								onclick={() => handleSelectTemplate(template)}
+								onkeydown={(e) => {
+									if (e.key === 'Enter' || e.key === ' ') {
+										e.preventDefault();
+										handleSelectTemplate(template);
+									}
+								}}
 							>
 								<div class="flex items-start justify-between">
 									<div class="min-w-0 flex-1">
@@ -212,10 +225,12 @@
 
 <!-- Delete Confirmation Modal -->
 {#if deleteConfirmTemplate}
-	<div
+	<button
 		class="fixed inset-0 z-[60] bg-black/50"
 		onclick={() => (deleteConfirmTemplate = null)}
-	></div>
+		aria-label="Cancel delete"
+		tabindex="-1"
+	></button>
 	<div
 		class="fixed top-1/2 left-1/2 z-[70] mx-4 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6"
 	>
