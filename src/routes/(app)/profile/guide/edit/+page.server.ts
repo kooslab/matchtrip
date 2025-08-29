@@ -25,7 +25,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.limit(1);
 
 	return {
-		user,
+		user: {
+			...user,
+			name: user.name ? decrypt(user.name) : null,
+			phone: user.phone ? decrypt(user.phone) : null,
+			countryCode: user.countryCode || '+82'
+		},
 		guideProfile
 	};
 };
@@ -42,6 +47,7 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const name = formData.get('name') as string;
 		const phone = formData.get('phone') as string;
+		const countryCode = formData.get('countryCode') as string;
 		const bio = formData.get('bio') as string;
 		const languages = formData.get('languages') as string;
 		const specialties = formData.get('specialties') as string;
@@ -54,19 +60,24 @@ export const actions: Actions = {
 			// Decrypt current values for comparison
 			const currentName = user.name ? decrypt(user.name) : '';
 			const currentPhone = user.phone ? decrypt(user.phone) : '';
+			const currentCountryCode = user.countryCode || '+82';
 			
 			if (name && name !== currentName) {
 				// Encrypt name before saving
 				userUpdates.name = encrypt(name);
 			}
 			if (phone && phone !== currentPhone) {
-				// Validate phone (7-15 digits) on raw value
+				// Validate phone (mobile number only, 7-15 digits)
 				if (phone.length >= 7 && phone.length <= 15) {
-					// Encrypt phone before saving
+					// Encrypt phone before saving (mobile number only)
 					userUpdates.phone = encrypt(phone);
 				} else {
 					return fail(400, { error: 'Invalid phone number format' });
 				}
+			}
+			if (countryCode && countryCode !== currentCountryCode) {
+				// Save country code separately
+				userUpdates.countryCode = countryCode;
 			}
 
 			if (Object.keys(userUpdates).length > 0) {

@@ -233,12 +233,12 @@
 	// Save profile
 	async function saveProfile() {
 		const birthDate = `${formData.birthYear}-${formData.birthMonth.padStart(2, '0')}-${formData.birthDay.padStart(2, '0')}`;
-		const fullMobile = `${formData.countryCode}${formData.mobile}`;
 
 		// Create FormData for file upload
 		const profileData = new FormData();
 		profileData.append('name', formData.name);
-		profileData.append('mobile', fullMobile);
+		profileData.append('phone', formData.mobile);
+		profileData.append('countryCode', formData.countryCode);
 		profileData.append('birthDate', birthDate);
 		profileData.append('gender', formData.gender);
 		profileData.append('languages', JSON.stringify(formData.languages));

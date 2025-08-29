@@ -27,27 +27,14 @@
 	// Initialize phone from user data - only on mount
 	let phoneInitialized = false;
 	$effect(() => {
-		if (!phoneInitialized && data.user?.phone) {
+		if (!phoneInitialized && (data.user?.phone || data.user?.countryCode)) {
 			phoneInitialized = true;
-			const phone = data.user.phone;
-			// Find matching country code
-			for (const country of countryCodesForDropdown) {
-				if (phone.startsWith(country.code.replace('+', ''))) {
-					countryCode = country.code;
-					mobile = phone.substring(country.code.length - 1); // Remove country code
-					break;
-				}
-			}
-			// If no country code matched, assume it's a local Korean number
-			if (!mobile && phone) {
-				if (phone.startsWith('010') || phone.startsWith('011')) {
-					countryCode = '+82';
-					mobile = phone;
-				} else {
-					// Fallback: show as is
-					mobile = phone;
-				}
-			}
+			
+			// Use separate fields if available
+			countryCode = data.user.countryCode || '+82';
+			mobile = data.user.phone || ''; // Phone is already decrypted in server load
+			
+			console.log('Loaded from DB - countryCode:', countryCode, 'mobile:', mobile);
 		}
 	});
 
@@ -219,6 +206,7 @@
 				return () => {};
 			}
 
+			console.log('Form submission - countryCode:', countryCode, 'mobile:', mobile, 'combined:', countryCode.replace('+', '') + mobile);
 			isSubmitting = true;
 
 			return async ({ update, result }) => {
@@ -368,8 +356,9 @@
 					<input type="hidden" name="bio" value={bio} />
 				</div>
 
-				<!-- Hidden input for full phone number with country code -->
-				<input type="hidden" name="phone" value={countryCode.replace('+', '') + mobile} />
+				<!-- Hidden inputs for phone and country code separately -->
+				<input type="hidden" name="phone" value={mobile} />
+				<input type="hidden" name="countryCode" value={countryCode} />
 			</div>
 		</div>
 

@@ -74,6 +74,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		// Extract form fields
 		const name = formData.get('name')?.toString();
 		const phone = formData.get('phone')?.toString();
+		const countryCode = formData.get('countryCode')?.toString();
 		const nickname = formData.get('nickname')?.toString();
 		const frequentArea = formData.get('frequentArea')?.toString();
 		const birthDate = formData.get('birthDate')?.toString();
@@ -203,6 +204,9 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		if (phone) {
 			const encryptedPhone = encrypt(phone) || phone;
 			userUpdates.phone = encryptedPhone;
+		}
+		if (countryCode) {
+			userUpdates.countryCode = countryCode;
 		}
 		if (birthDate) {
 			userUpdates.birthDate = birthDate;
