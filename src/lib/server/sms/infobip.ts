@@ -46,41 +46,65 @@ class InfobipSMS {
 			]
 		};
 
-		console.log('Sending SMS request to:', url);
-		console.log('Payload:', JSON.stringify(payload, null, 2));
-		console.log(
-			'Using API Key:',
-			this.config.apiKey ? 'Yes (length: ' + this.config.apiKey.length + ')' : 'No'
-		);
+		console.log('================== SMS SEND START ==================');
+		console.log('[SMS] Sending to:', to);
+		console.log('[SMS] Message length:', text.length, 'characters');
+		console.log('[SMS] From:', from || this.config.sender || 'default');
+		console.log('[SMS] API Endpoint:', url);
+		console.log('[SMS] Request payload:', JSON.stringify(payload, null, 2));
+		console.log('[SMS] API Key configured:', this.config.apiKey ? `Yes (length: ${this.config.apiKey.length})` : 'No');
+		console.log('====================================================');
 
-		const response = await fetch(url, {
-			method: 'POST',
-			headers: {
-				Authorization: `App ${this.config.apiKey}`,
-				'Content-Type': 'application/json',
-				Accept: 'application/json'
-			},
-			body: JSON.stringify(payload)
-		});
+		try {
+			const response = await fetch(url, {
+				method: 'POST',
+				headers: {
+					Authorization: `App ${this.config.apiKey}`,
+					'Content-Type': 'application/json',
+					Accept: 'application/json'
+				},
+				body: JSON.stringify(payload)
+			});
 
-		const responseText = await response.text();
-		console.log('Response status:', response.status);
-		console.log('Response body:', responseText);
+			const responseText = await response.text();
+			console.log('[SMS] Response status:', response.status, response.statusText);
+			console.log('[SMS] Response headers:', Object.fromEntries(response.headers.entries()));
+			console.log('[SMS] Response body:', responseText);
 
-		if (!response.ok) {
-			throw new Error(`Infobip API error: ${response.status} - ${responseText}`);
+			if (!response.ok) {
+				console.error('[SMS] ❌ API Error:', response.status, '-', responseText);
+				console.log('================== SMS SEND FAILED ==================');
+				throw new Error(`Infobip API error: ${response.status} - ${responseText}`);
+			}
+
+			const data = JSON.parse(responseText) as InfobipResponse;
+
+			// Check message status
+			if (data.messages && data.messages.length > 0) {
+				const message = data.messages[0];
+				console.log('[SMS] Message ID:', message.messageId);
+				console.log('[SMS] Status:', `${message.status.groupName} (${message.status.name})`);
+				console.log('[SMS] Status Description:', message.status.description);
+				
+				// Check if SMS was accepted (group 1 = Pending/Accepted, 3 = Delivered)
+				if (message.status.groupId === 1 || message.status.groupId === 3) {
+					console.log('[SMS] ✅ SMS successfully accepted for delivery');
+					console.log('[SMS] To:', message.to);
+					console.log('[SMS] Message ID:', message.messageId);
+				} else {
+					console.error('[SMS] ⚠️ SMS not accepted. Status group:', message.status.groupId);
+				}
+			} else {
+				console.error('[SMS] ⚠️ No message response received');
+			}
+
+			console.log('================== SMS SEND END ==================');
+			return data;
+		} catch (error) {
+			console.error('[SMS] ❌ Exception during SMS send:', error);
+			console.log('================== SMS SEND FAILED ==================');
+			throw error;
 		}
-
-		const data = JSON.parse(responseText) as InfobipResponse;
-
-		// Check message status
-		if (data.messages && data.messages.length > 0) {
-			const message = data.messages[0];
-			console.log('Message status:', message.status);
-			console.log('Message ID:', message.messageId);
-		}
-
-		return data;
 	}
 
 	async sendBulkSMS(

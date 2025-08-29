@@ -135,18 +135,26 @@ export class NotificationService {
 		templateName: string,
 		templateData: TemplateData
 	): Promise<{ success: boolean; messageId?: string; error?: string }> {
+		console.log('============= SMS FALLBACK START =============');
+		console.log('[SMS Fallback] Original phone:', phoneNumber);
+		console.log('[SMS Fallback] Template:', templateName);
+		console.log('[SMS Fallback] Template data:', templateData);
+		
 		try {
 			// Convert Kakao template to SMS format
 			const isDev = process.env.NODE_ENV !== 'production';
 			let smsMessage = convertKakaoTemplateToSMS(templateName, templateData, isDev);
+			console.log('[SMS Fallback] Converted message:', smsMessage);
 			
 			// Format the message for SMS
 			smsMessage = formatSMSMessage(smsMessage);
+			console.log('[SMS Fallback] Formatted message (length:', smsMessage.length, '):', smsMessage);
 			
 			// Format phone number for international SMS
 			const formattedPhone = formatPhoneForInternationalSMS(phoneNumber);
+			console.log('[SMS Fallback] Formatted phone:', formattedPhone);
 			
-			console.log(`Sending SMS to ${formattedPhone}:`, smsMessage);
+			console.log('[SMS Fallback] Sending SMS to', formattedPhone);
 			
 			// Send SMS via Infobip
 			const response = await infobipSMS.sendSMS({
@@ -157,16 +165,24 @@ export class NotificationService {
 			// Check if SMS was sent successfully
 			if (response.messages && response.messages.length > 0) {
 				const message = response.messages[0];
+				console.log('[SMS Fallback] Response message:', message);
 				
 				// Check status group (1 = Pending, 2 = Undeliverable, 3 = Delivered, etc.)
 				if (message.status.groupId === 1 || message.status.groupId === 3) {
-					console.log(`SMS sent successfully to ${formattedPhone}. Message ID: ${message.messageId}`);
+					console.log('[SMS Fallback] ✅ SUCCESS - SMS sent to', formattedPhone);
+					console.log('[SMS Fallback] Message ID:', message.messageId);
+					console.log('[SMS Fallback] Status:', message.status.name, '-', message.status.description);
+					console.log('============= SMS FALLBACK SUCCESS =============');
 					return {
 						success: true,
 						messageId: message.messageId
 					};
 				} else {
-					console.error(`SMS failed for ${formattedPhone}. Status:`, message.status);
+					console.error('[SMS Fallback] ❌ FAILED - SMS rejected for', formattedPhone);
+					console.error('[SMS Fallback] Status:', message.status);
+					console.error('[SMS Fallback] Group ID:', message.status.groupId);
+					console.error('[SMS Fallback] Description:', message.status.description);
+					console.log('============= SMS FALLBACK FAILED =============');
 					return {
 						success: false,
 						error: `SMS failed: ${message.status.description}`
@@ -174,12 +190,16 @@ export class NotificationService {
 				}
 			}
 			
+			console.error('[SMS Fallback] ❌ No response from SMS service');
+			console.log('============= SMS FALLBACK FAILED =============');
 			return {
 				success: false,
 				error: 'No response from SMS service'
 			};
 		} catch (error) {
-			console.error('Error sending SMS notification:', error);
+			console.error('[SMS Fallback] ❌ Exception:', error);
+			console.error('[SMS Fallback] Error details:', error instanceof Error ? error.stack : error);
+			console.log('============= SMS FALLBACK FAILED =============');
 			return {
 				success: false,
 				error: error instanceof Error ? error.message : 'Failed to send SMS'
