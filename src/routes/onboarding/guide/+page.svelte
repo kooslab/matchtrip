@@ -125,8 +125,8 @@
 			case 'name':
 				return formData.name.trim().length >= 2;
 			case 'mobile':
-				const mobileLength = getMobileLength(formData.countryCode);
-				return formData.mobile.length === mobileLength;
+				// Accept any phone number with 7-15 digits (ITU-T E.164 standard)
+				return formData.mobile.length >= 7 && formData.mobile.length <= 15;
 			case 'profile':
 				return (
 					formData.name.trim().length >= 2 &&
@@ -142,63 +142,19 @@
 		}
 	}
 
-	// Get expected mobile number length for country (without leading zero)
-	function getMobileLength(countryCode: string): number {
-		switch (countryCode) {
-			case '+82':
-				return 10; // Korea: 1012345678 (no leading 0)
-			case '+1':
-				return 10; // US: 1234567890
-			case '+81':
-				return 10; // Japan: 9012345678 (no leading 0)
-			case '+86':
-				return 11; // China: 13812345678
-			case '+44':
-				return 10; // UK: 7123456789
-			case '+33':
-				return 10; // France: 612345678
-			case '+49':
-				return 11; // Germany: 15123456789
-			default:
-				return 10;
-		}
+	// Get minimum mobile number length - very flexible for all countries
+	function getMinMobileLength(countryCode: string): number {
+		// Most international mobile numbers are at least 7 digits
+		// Being very permissive to accept all formats worldwide
+		return 7; // Universal minimum for any country
 	}
 
-	// Get maximum formatted length including separators
-	function getFormattedMaxLength(countryCode: string): number {
-		switch (countryCode) {
-			case '+82':
-				return 12; // Korea: 10-1234-5678 (12 chars)
-			case '+1':
-				return 14; // US: (123) 456-7890 (14 chars)
-			case '+81':
-				return 12; // Japan: 90-1234-5678 (12 chars)
-			case '+86':
-				return 13; // China: 138-1234-5678 (13 chars)
-			case '+44':
-				return 12; // UK: 71-2345-6789 (12 chars)
-			case '+33':
-				return 14; // France: 61-23-45-67-89 (14 chars)
-			case '+49':
-				return 13; // Germany: 151-2345-6789 (13 chars)
-			default:
-				return 15;
-		}
-	}
 
-	// Format mobile number for display in completed steps
+	// Format mobile number for display in completed steps - now just shows raw digits
 	function getFormattedMobile(mobile: string, countryCode: string): string {
 		if (!mobile) return '';
-		switch (countryCode) {
-			case '+82': // Korea: 010-1234-5678
-				return mobile.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
-			case '+1': // US: (123) 456-7890
-				return mobile.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-			case '+81': // Japan: 090-1234-5678
-				return mobile.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
-			default:
-				return mobile;
-		}
+		// Simply return the raw mobile number without any formatting
+		return mobile;
 	}
 
 	// Handle next step
@@ -334,11 +290,10 @@
 		}
 	}
 
-	// Handle mobile input formatting
+	// Handle mobile input - simplified version without pattern formatting
 	function handleMobileInput(e: Event) {
 		const input = e.target as HTMLInputElement;
-		const cursorPosition = input.selectionStart || 0;
-
+		
 		// Extract only digits from the input
 		let digits = input.value.replace(/\D/g, '');
 
@@ -347,104 +302,15 @@
 			digits = digits.substring(1);
 		}
 
-		// Limit to expected length
-		const maxLength = getMobileLength(formData.countryCode);
-		digits = digits.substring(0, maxLength);
+		// Limit to maximum 15 digits (ITU-T E.164 standard)
+		digits = digits.substring(0, 15);
 
-		// Store raw digits for validation
+		// Store raw digits for validation and submission
 		formData.mobile = digits;
-
-		// Count how many digits were before the cursor position in the input
-		let digitsBeforeCursor = 0;
-		for (let i = 0; i < cursorPosition && i < input.value.length; i++) {
-			if (/\d/.test(input.value[i])) {
-				digitsBeforeCursor++;
-			}
-		}
-
-		// Format with separators based on country
-		const value = formData.mobile; // Use the stored mobile digits
-		let formattedValue = '';
-		switch (formData.countryCode) {
-			case '+82': // Korea: 10-1234-5678
-				if (value.length >= 2) formattedValue += value.substring(0, 2) + '-';
-				else formattedValue += value.substring(0, 2);
-				if (value.length >= 6) formattedValue += value.substring(2, 6) + '-';
-				else if (value.length > 2) formattedValue += value.substring(2);
-				if (value.length > 6) formattedValue += value.substring(6);
-				break;
-			case '+1': // US: (123) 456-7890
-				if (value.length >= 3) formattedValue += '(' + value.substring(0, 3) + ') ';
-				else if (value.length > 0) formattedValue += '(' + value;
-				if (value.length >= 6) formattedValue += value.substring(3, 6) + '-';
-				else if (value.length > 3) formattedValue += value.substring(3);
-				if (value.length > 6) formattedValue += value.substring(6);
-				break;
-			case '+81': // Japan: 90-1234-5678
-				if (value.length >= 2) formattedValue += value.substring(0, 2) + '-';
-				else formattedValue += value.substring(0, 2);
-				if (value.length >= 6) formattedValue += value.substring(2, 6) + '-';
-				else if (value.length > 2) formattedValue += value.substring(2);
-				if (value.length > 6) formattedValue += value.substring(6);
-				break;
-			case '+86': // China: 138-1234-5678
-				if (value.length >= 3) formattedValue += value.substring(0, 3) + '-';
-				else formattedValue += value.substring(0, 3);
-				if (value.length >= 7) formattedValue += value.substring(3, 7) + '-';
-				else if (value.length > 3) formattedValue += value.substring(3);
-				if (value.length > 7) formattedValue += value.substring(7);
-				break;
-			case '+44': // UK: 71-2345-6789
-				if (value.length >= 2) formattedValue += value.substring(0, 2) + '-';
-				else formattedValue += value.substring(0, 2);
-				if (value.length >= 6) formattedValue += value.substring(2, 6) + '-';
-				else if (value.length > 2) formattedValue += value.substring(2);
-				if (value.length > 6) formattedValue += value.substring(6);
-				break;
-			case '+33': // France: 61-23-45-67-89
-				if (value.length >= 2) formattedValue += value.substring(0, 2) + '-';
-				else formattedValue += value.substring(0, 2);
-				if (value.length >= 4) formattedValue += value.substring(2, 4) + '-';
-				else if (value.length > 2) formattedValue += value.substring(2);
-				if (value.length >= 6) formattedValue += value.substring(4, 6) + '-';
-				else if (value.length > 4) formattedValue += value.substring(4);
-				if (value.length >= 8) formattedValue += value.substring(6, 8) + '-';
-				else if (value.length > 6) formattedValue += value.substring(6);
-				if (value.length > 8) formattedValue += value.substring(8);
-				break;
-			case '+49': // Germany: 151-2345-6789
-				if (value.length >= 3) formattedValue += value.substring(0, 3) + '-';
-				else formattedValue += value.substring(0, 3);
-				if (value.length >= 7) formattedValue += value.substring(3, 7) + '-';
-				else if (value.length > 3) formattedValue += value.substring(3);
-				if (value.length > 7) formattedValue += value.substring(7);
-				break;
-			default:
-				formattedValue = value;
-		}
-
-		// Store formatted value and update display
-		formData.mobileFormatted = formattedValue;
-
-		// Force update the input value to ensure no text remains
-		input.value = formattedValue;
-
-		// Set cursor position after the same number of digits as before
-		let newPosition = 0;
-		let digitCount = 0;
-
-		// Find position in formatted string after digitsBeforeCursor digits
-		for (let i = 0; i < formattedValue.length && digitCount < digitsBeforeCursor; i++) {
-			newPosition++;
-			if (/\d/.test(formattedValue[i])) {
-				digitCount++;
-			}
-		}
-
-		// Use setTimeout to ensure cursor position is set after the value update
-		setTimeout(() => {
-			input.setSelectionRange(newPosition, newPosition);
-		}, 0);
+		formData.mobileFormatted = digits; // No formatting, just raw digits
+		
+		// Update the input field with raw digits (no formatting)
+		input.value = digits;
 	}
 
 	// Handle file upload
@@ -589,9 +455,9 @@
 								id="mobile-input"
 								type="tel"
 								inputmode="numeric"
-								pattern="[0-9\-\(\)\s]*"
+								pattern="[0-9]*"
 								value={formData.mobileFormatted}
-								maxlength={getFormattedMaxLength(formData.countryCode)}
+								maxlength="15"
 								oninput={handleMobileInput}
 								onkeydown={(e) => {
 									// Allow special keys
