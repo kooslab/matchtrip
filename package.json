@@ -27,7 +27,9 @@
 		"sync:templates": "bun ../sync-kakao-templates.ts",
 		"r2:list": "tsx scripts/list-r2-contents.ts",
 		"r2:copy-to-private": "tsx scripts/copy-to-private-bucket.ts",
-		"r2:copy-dry": "tsx scripts/copy-to-private-bucket.ts --dry-run"
+		"r2:copy-dry": "tsx scripts/copy-to-private-bucket.ts --dry-run",
+		"update:email-hash": "tsx scripts/update-email-hash.ts",
+		"update:email-hash:prod": "bun --env-file=.env.prod tsx scripts/update-email-hash.ts"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^4.0.0",

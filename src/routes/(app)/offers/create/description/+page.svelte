@@ -11,11 +11,16 @@
 	import Link from '@tiptap/extension-link';
 	import Placeholder from '@tiptap/extension-placeholder';
 	import pictureIconUrl from '$lib/icons/icon-picture-mono.svg';
+	import documentIconUrl from '$lib/icons/icon-document-mono.svg';
+	import TemplateBrowserModal from '$lib/components/TemplateBrowserModal.svelte';
+	import SaveTemplateModal from '$lib/components/SaveTemplateModal.svelte';
 
 	let tripId = $derived($page.url.searchParams.get('tripId'));
 	let element: HTMLDivElement;
 	let editor: Editor;
 	let isUploading = $state(false);
+	let showTemplateBrowser = $state(false);
+	let showSaveTemplateModal = $state(false);
 
 	// Bind to store value
 	let description = $state($offerFormStore.description || '');
@@ -138,8 +143,44 @@
 
 	function handleNext() {
 		if ($offerFormValidation.isDescriptionValid) {
-			goto(`/offers/create/files?tripId=${tripId}`);
+			// Show save template modal
+			showSaveTemplateModal = true;
 		}
+	}
+
+	async function handleSaveTemplate(title: string) {
+		try {
+			const response = await fetch('/api/offer-templates', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ title, description })
+			});
+
+			if (response.ok) {
+				// Template saved successfully
+				showSaveTemplateModal = false;
+				goto(`/offers/create/files?tripId=${tripId}`);
+			} else {
+				alert('템플릿 저장에 실패했습니다.');
+			}
+		} catch (error) {
+			console.error('Error saving template:', error);
+			alert('템플릿 저장 중 오류가 발생했습니다.');
+		}
+	}
+
+	function handleContinueWithoutSaving() {
+		showSaveTemplateModal = false;
+		goto(`/offers/create/files?tripId=${tripId}`);
+	}
+
+	function handleSelectTemplate(template: { id: string; title: string; description: string }) {
+		if (editor) {
+			editor.commands.setContent(template.description);
+			description = template.description;
+			offerFormStore.setDescription(description);
+		}
+		showTemplateBrowser = false;
 	}
 </script>
 
@@ -266,6 +307,18 @@
 						<span class="text-sm font-medium">사진</span>
 					</button>
 					<span class="ml-2 self-center text-xs text-gray-500">최대 5MB</span>
+
+					<div class="mx-1 h-6 w-px self-center bg-gray-300"></div>
+
+					<button
+						type="button"
+						onclick={() => showTemplateBrowser = true}
+						class="flex items-center gap-1 rounded border border-gray-300 bg-white px-3 py-2 hover:bg-gray-200"
+						title="템플릿 불러오기"
+					>
+						<img src={documentIconUrl} alt="템플릿" class="h-4 w-4" />
+						<span class="text-sm font-medium">템플릿</span>
+					</button>
 				</div>
 			{/if}
 
@@ -344,6 +397,21 @@
 		</button>
 	</div>
 </div>
+
+<!-- Template Browser Modal -->
+<TemplateBrowserModal
+	bind:showModal={showTemplateBrowser}
+	onclose={() => showTemplateBrowser = false}
+	onselect={handleSelectTemplate}
+/>
+
+<!-- Save Template Modal -->
+<SaveTemplateModal
+	bind:showModal={showSaveTemplateModal}
+	onclose={() => showSaveTemplateModal = false}
+	onsave={handleSaveTemplate}
+	oncontinue={handleContinueWithoutSaving}
+/>
 
 <style>
 	/* Tiptap editor styles */

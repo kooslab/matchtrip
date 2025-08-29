@@ -881,6 +881,26 @@ export const productOffers = pgTable(
 	})
 );;
 
+// Offer Description Templates
+export const offerDescriptionTemplates = pgTable(
+	'offer_description_templates',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		guideId: uuid('guide_id')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
+		title: varchar('title', { length: 255 }).notNull(),
+		description: text('description').notNull(), // Rich HTML content
+		usageCount: integer('usage_count').notNull().default(0),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at').defaultNow().notNull()
+	},
+	(table) => ({
+		guideIdIdx: index('offer_description_templates_guide_id_idx').on(table.guideId),
+		createdAtIdx: index('offer_description_templates_created_at_idx').on(table.createdAt)
+	})
+);
+
 // Kakao AlimTalk notification tracking
 export const kakaoNotificationStatusEnum = pgEnum('kakao_notification_status', [
 	'pending',
