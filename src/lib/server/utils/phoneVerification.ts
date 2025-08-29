@@ -37,6 +37,56 @@ export function formatPhoneForSMS(phone: string): string {
 	return `+${cleaned}`;
 }
 
+/**
+ * Format phone number for international SMS
+ * Handles various country formats and ensures proper + prefix
+ */
+export function formatPhoneForInternationalSMS(phone: string): string {
+	// Remove any non-numeric characters except +
+	const cleanedWithPlus = phone.replace(/[^\d+]/g, '');
+	
+	// If already has + prefix, return as is
+	if (cleanedWithPlus.startsWith('+')) {
+		return cleanedWithPlus;
+	}
+	
+	// Extract just digits
+	const digits = phone.replace(/\D/g, '');
+	
+	// If no digits, return empty
+	if (!digits) {
+		return '';
+	}
+	
+	// Check for common country codes without + prefix
+	// These are common international formats that might not have +
+	const countryCodePatterns = [
+		{ pattern: /^1\d{10}$/, prefix: '+' },       // US/Canada (1 + 10 digits)
+		{ pattern: /^44\d{10}$/, prefix: '+' },      // UK (44 + 10 digits)
+		{ pattern: /^33\d{9}$/, prefix: '+' },       // France (33 + 9 digits)
+		{ pattern: /^49\d{10,11}$/, prefix: '+' },   // Germany (49 + 10-11 digits)
+		{ pattern: /^81\d{9,10}$/, prefix: '+' },    // Japan (81 + 9-10 digits)
+		{ pattern: /^86\d{11}$/, prefix: '+' },      // China (86 + 11 digits)
+		{ pattern: /^82\d{9,10}$/, prefix: '+' },    // Korea (82 + 9-10 digits)
+	];
+	
+	// Check if matches any country pattern
+	for (const { pattern, prefix } of countryCodePatterns) {
+		if (pattern.test(digits)) {
+			return prefix + digits;
+		}
+	}
+	
+	// For other formats, assume it needs + prefix if it's long enough to be international
+	// Most international numbers are at least 10 digits with country code
+	if (digits.length >= 10) {
+		return '+' + digits;
+	}
+	
+	// Return with + anyway for safety
+	return '+' + digits;
+}
+
 export async function canSendVerificationCode(
 	phone: string
 ): Promise<{ allowed: boolean; reason?: string }> {

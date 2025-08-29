@@ -8,6 +8,9 @@ import {
 	type TemplateData
 } from '$lib/server/kakao/templateHelper';
 import { eq } from 'drizzle-orm';
+import { infobipSMS } from '$lib/server/sms/infobip';
+import { convertKakaoTemplateToSMS, formatSMSMessage } from '$lib/server/sms/smsTemplateConverter';
+import { formatPhoneForInternationalSMS } from '$lib/server/utils/phoneVerification';
 
 export interface NotificationOptions {
 	userId?: string;
@@ -23,6 +26,30 @@ export class NotificationService {
 
 	constructor() {
 		this.db = db;
+	}
+
+	/**
+	 * Check if phone number is Korean (for Kakao AlimTalk)
+	 */
+	private isKoreanPhoneNumber(phone: string): boolean {
+		const cleaned = phone.replace(/\D/g, '');
+		
+		// Check if starts with Korean country code 82
+		if (cleaned.startsWith('82')) {
+			return true;
+		}
+		
+		// Check if starts with +82
+		if (phone.startsWith('+82')) {
+			return true;
+		}
+		
+		// Check if it's a local Korean number (starts with 0)
+		if (cleaned.startsWith('0') && (cleaned.length === 10 || cleaned.length === 11)) {
+			return true;
+		}
+		
+		return false;
 	}
 
 	/**
@@ -98,6 +125,66 @@ export class NotificationService {
 		}
 
 		return recent.length > 0;
+	}
+
+	/**
+	 * Send SMS notification for international phone numbers
+	 */
+	private async sendSMSNotification(
+		phoneNumber: string,
+		templateName: string,
+		templateData: TemplateData
+	): Promise<{ success: boolean; messageId?: string; error?: string }> {
+		try {
+			// Convert Kakao template to SMS format
+			const isDev = process.env.NODE_ENV !== 'production';
+			let smsMessage = convertKakaoTemplateToSMS(templateName, templateData, isDev);
+			
+			// Format the message for SMS
+			smsMessage = formatSMSMessage(smsMessage);
+			
+			// Format phone number for international SMS
+			const formattedPhone = formatPhoneForInternationalSMS(phoneNumber);
+			
+			console.log(`Sending SMS to ${formattedPhone}:`, smsMessage);
+			
+			// Send SMS via Infobip
+			const response = await infobipSMS.sendSMS({
+				to: formattedPhone,
+				text: smsMessage
+			});
+			
+			// Check if SMS was sent successfully
+			if (response.messages && response.messages.length > 0) {
+				const message = response.messages[0];
+				
+				// Check status group (1 = Pending, 2 = Undeliverable, 3 = Delivered, etc.)
+				if (message.status.groupId === 1 || message.status.groupId === 3) {
+					console.log(`SMS sent successfully to ${formattedPhone}. Message ID: ${message.messageId}`);
+					return {
+						success: true,
+						messageId: message.messageId
+					};
+				} else {
+					console.error(`SMS failed for ${formattedPhone}. Status:`, message.status);
+					return {
+						success: false,
+						error: `SMS failed: ${message.status.description}`
+					};
+				}
+			}
+			
+			return {
+				success: false,
+				error: 'No response from SMS service'
+			};
+		} catch (error) {
+			console.error('Error sending SMS notification:', error);
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : 'Failed to send SMS'
+			};
+		}
 	}
 
 	/**
@@ -216,16 +303,23 @@ export class NotificationService {
 				};
 			}
 
-			// Format phone number
-			const formattedPhone = this.formatPhoneNumber(phoneNumber);
-
-			// Validate phone format
-			const phoneRegex = /^82\d{9,11}$/;
-			if (!phoneRegex.test(formattedPhone)) {
-				return {
-					success: false,
-					error: `Invalid phone number format: ${formattedPhone}`
-				};
+			// Check if phone number is Korean
+			const isKorean = this.isKoreanPhoneNumber(phoneNumber);
+			console.log(`Phone number ${phoneNumber} is ${isKorean ? 'Korean' : 'International'}`);
+			
+			// For Korean numbers, format for Kakao AlimTalk
+			let formattedPhone = '';
+			if (isKorean) {
+				formattedPhone = this.formatPhoneNumber(phoneNumber);
+				
+				// Validate Korean phone format
+				const phoneRegex = /^82\d{9,11}$/;
+				if (!phoneRegex.test(formattedPhone)) {
+					return {
+						success: false,
+						error: `Invalid Korean phone number format: ${formattedPhone}`
+					};
+				}
 			}
 
 			// Decrypt template data if it contains personal information
@@ -261,15 +355,17 @@ export class NotificationService {
 
 			// Check for duplicates unless skipped
 			if (!options.skipDuplicateCheck) {
+				// Use original phone for international, formatted for Korean
+				const checkPhone = isKorean ? formattedPhone : phoneNumber;
 				const isDuplicate = await this.isDuplicateNotification(
-					formattedPhone,
+					checkPhone,
 					template.templateCode,
 					decryptedTemplateData
 				);
 
 				if (isDuplicate) {
 					console.log(
-						`Skipping duplicate notification: ${template.templateCode} to ${formattedPhone}`
+						`Skipping duplicate notification: ${template.templateCode} to ${checkPhone}`
 					);
 					return {
 						success: true,
@@ -278,30 +374,53 @@ export class NotificationService {
 				}
 			}
 
-			// Send notification using the environment-specific template code
-			const result = await kakaoAlimTalk.sendAlimTalk({
-				to: formattedPhone,
-				templateCode: template.templateCode,
-				text: template.text,
-				buttons: template.button ? [template.button] : undefined
-			});
+			// Send notification based on phone type
+			let result: any;
+			let messageId: string | undefined;
+			let bulkId: string | undefined;
+			let notificationType: 'kakao' | 'sms' = 'kakao';
+			
+			if (isKorean) {
+				// Send Kakao AlimTalk for Korean numbers
+				result = await kakaoAlimTalk.sendAlimTalk({
+					to: formattedPhone,
+					templateCode: template.templateCode,
+					text: template.text,
+					buttons: template.button ? [template.button] : undefined
+				});
+				
+				messageId = result.messages?.[0]?.messageId;
+				bulkId = result.bulkId;
+				
+				console.log(`AlimTalk sent: ${template.templateCode} (${templateName}) to ${formattedPhone}`);
+			} else {
+				// Send SMS for international numbers
+				notificationType = 'sms';
+				const smsResult = await this.sendSMSNotification(
+					phoneNumber,
+					templateName,
+					decryptedTemplateData
+				);
+				
+				if (!smsResult.success) {
+					throw new Error(smsResult.error || 'Failed to send SMS');
+				}
+				
+				messageId = smsResult.messageId;
+				console.log(`SMS sent: ${templateName} to ${phoneNumber}`);
+			}
 
-			// Get message ID from result
-			const messageId = result.messages?.[0]?.messageId;
-			const bulkId = result.bulkId;
-
-			// Log successful notification
+			// Log successful notification (use original phone for international, formatted for Korean)
+			const logPhone = isKorean ? formattedPhone : phoneNumber;
 			await this.logNotification(
 				options.userId,
-				formattedPhone,
+				logPhone,
 				template.templateCode,
 				decryptedTemplateData,
 				'sent',
 				messageId,
 				bulkId
 			);
-
-			console.log(`AlimTalk sent: ${template.templateCode} (${templateName}) to ${formattedPhone}`);
 
 			return {
 				success: true,

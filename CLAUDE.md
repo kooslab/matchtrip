@@ -499,6 +499,34 @@ The template selection is handled in `src/lib/server/kakao/templateHelper.ts` wh
 - `code19` - Guide cancellation completion
 - `code20` - Guide cancellation completion to customer
 
+### SMS Fallback for International Numbers (Added 2025-08-29)
+
+**Automatic Routing**: The notification service automatically detects phone types and routes accordingly:
+- **Korean numbers** (starting with 82, +82, or local 010-019): Sent via Kakao AlimTalk
+- **International numbers** (all others): Sent via SMS with Infobip
+
+**Implementation Details**:
+- Detection logic in `NotificationService.isKoreanPhoneNumber()`
+- SMS template conversion in `/lib/server/sms/smsTemplateConverter.ts`
+- Converts Kakao templates to SMS format with full URLs (SMS doesn't support buttons)
+- International phone formatting ensures proper country codes with + prefix
+- Message length limited to 210 characters (3 SMS segments)
+
+**No Code Changes Required**: Existing notification calls work automatically:
+```typescript
+// This works for both Korean and international numbers
+await notificationService.sendNotification({
+  phoneNumber: anyPhoneNumber, // Korean or international
+  templateName: 'signup01',
+  templateData: { NAME: 'User', SHOPNAME: '매치트립' }
+});
+```
+
+**Testing**: Use `/api/test-sms` endpoint:
+- `?type=notification` - Test full routing logic
+- `?type=template` - Test template conversion only
+- `?type=direct` - Send direct SMS
+
 ### CRITICAL: Implementation Rules (Based on Trial & Error)
 
 **Template Management:**
