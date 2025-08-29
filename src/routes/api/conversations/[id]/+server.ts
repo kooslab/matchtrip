@@ -282,12 +282,12 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 				const decryptedSenderName = sender[0]?.name ? decrypt(sender[0].name) : null;
 				
 				if (isGuide) {
-					// Guide replied to traveler (testcode05)
+					// Guide replied to traveler (chat01)
 					console.log('[CONVERSATIONS API] Sending guide reply AlimTalk to traveler');
 					await notificationService.sendNotification({
 						userId: recipientId,
 						phoneNumber: decryptedRecipientPhone,
-						templateCode: 'testcode05',
+						templateName: 'chat01',
 						templateData: {
 							SHOPNAME: '매치트립',
 							가이드: decryptedSenderName || '가이드',
@@ -295,12 +295,12 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 						}
 					});
 				} else {
-					// Traveler sent inquiry to guide (testcode10)
+					// Traveler sent inquiry to guide (chat02)
 					console.log('[CONVERSATIONS API] Sending traveler inquiry AlimTalk to guide');
 					await notificationService.sendNotification({
 						userId: recipientId,
 						phoneNumber: decryptedRecipientPhone,
-						templateCode: 'testcode10',
+						templateName: 'chat02',
 						templateData: {
 							SHOPNAME: '매치트립',
 							고객: decryptedSenderName || '고객',

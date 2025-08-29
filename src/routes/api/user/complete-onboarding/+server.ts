@@ -81,7 +81,7 @@ export const POST: RequestHandler = async ({ locals }) => {
 				await notificationService.sendNotification({
 					userId: freshUser.id,
 					phoneNumber: decryptedPhone,
-					templateCode: 'testcode21',
+					templateName: 'signup05',
 					templateData: {
 						SHOPNAME: '매치트립',
 						NAME: decryptedName || '고객'

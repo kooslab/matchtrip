@@ -50,7 +50,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				await notificationService.sendNotification({
 					userId: session.user.id,
 					phoneNumber: decryptedPhone,
-					templateCode: 'testcode08',
+					templateName: 'cs01',
 					templateData: {
 						SHOPNAME: '매치트립',
 						NAME: decryptedName || '고객'

@@ -42,13 +42,13 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 				if (user.role === 'traveler') {
 					// Customer requested cancellation
-					// Send testcode13 to customer (confirmation)
+					// Send rqcancel01 to customer (confirmation)
 					if (customerPhone) {
 						console.log('[CANCELLATION] Sending cancellation request confirmation to customer');
 						await notificationService.sendNotification({
 							userId: user.id,
 							phoneNumber: customerPhone,
-							templateCode: 'testcode13',
+							templateName: 'rqcancel01',
 							templateData: {
 								SHOPNAME: '매치트립',
 								고객: customerName || '고객',
@@ -57,12 +57,12 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 						});
 					}
 
-					// Send testcode14 to guide (notification)
+					// Send rqcancel02 to guide (notification)
 					if (guidePhone) {
 						console.log('[CANCELLATION] Sending cancellation request notification to guide');
 						await notificationService.sendNotification({
 							phoneNumber: guidePhone,
-							templateCode: 'testcode14',
+							templateName: 'rqcancel02',
 							templateData: {
 								SHOPNAME: '매치트립',
 								고객: customerName || '고객',
@@ -72,13 +72,13 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 					}
 				} else if (user.role === 'guide') {
 					// Guide requested cancellation
-					// Send testcode15 to guide (confirmation)
+					// Send rqcancel03 to guide (confirmation)
 					if (guidePhone) {
 						console.log('[CANCELLATION] Sending cancellation request confirmation to guide');
 						await notificationService.sendNotification({
 							userId: user.id,
 							phoneNumber: guidePhone,
-							templateCode: 'testcode15',
+							templateName: 'rqcancel03',
 							templateData: {
 								SHOPNAME: '매치트립',
 								가이드님: guideName || '가이드',
@@ -87,12 +87,12 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 						});
 					}
 
-					// Send testcode16 to customer (notification)
+					// Send rqcancel04 to customer (notification)
 					if (customerPhone) {
 						console.log('[CANCELLATION] Sending cancellation request notification to customer');
 						await notificationService.sendNotification({
 							phoneNumber: customerPhone,
-							templateCode: 'testcode16',
+							templateName: 'rqcancel04',
 							templateData: {
 								SHOPNAME: '매치트립',
 								가이드: guideName || '가이드',

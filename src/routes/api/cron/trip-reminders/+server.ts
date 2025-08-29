@@ -87,14 +87,14 @@ export const GET: RequestHandler = async ({ request }) => {
 					guidePhone: acceptedOffer[0].guidePhone
 				});
 
-				// Send reminder to traveler (testcode07)
+				// Send reminder to traveler (remind01)
 				if (decryptedTraveler.phone) {
 					try {
 						console.log(`[CRON] Sending reminder to traveler ${decryptedTraveler.name}`);
 						const travelerResult = await notificationService.sendNotification({
 							userId: trip.travelerId,
 							phoneNumber: decryptedTraveler.phone,
-							templateCode: 'testcode07',
+							templateName: 'remind01',
 							templateData: {
 								SHOPNAME: '매치트립',
 								가이드: guide.guideName || '가이드',
@@ -119,14 +119,14 @@ export const GET: RequestHandler = async ({ request }) => {
 					}
 				}
 
-				// Send reminder to guide (testcode12)
+				// Send reminder to guide (remind02)
 				if (guide.guidePhone) {
 					try {
 						console.log(`[CRON] Sending reminder to guide ${guide.guideName}`);
 						const guideResult = await notificationService.sendNotification({
 							userId: guide.guideId,
 							phoneNumber: guide.guidePhone,
-							templateCode: 'testcode12',
+							templateName: 'remind02',
 							templateData: {
 								SHOPNAME: '매치트립',
 								고객: decryptedTraveler.name || '고객',

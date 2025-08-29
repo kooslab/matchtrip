@@ -72,7 +72,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				.set({ status: 'rejected' })
 				.where(and(eq(offers.tripId, offer[0].tripId), eq(offers.status, 'pending')));
 
-			// Send offer acceptance notification to guide (testcode11)
+			// Send offer acceptance notification to guide (myoffers02)
 			try {
 				// Get guide and traveler details
 				const [guideUser, travelerUser] = await Promise.all([
@@ -97,7 +97,7 @@ export const POST: RequestHandler = async ({ request }) => {
 					await notificationService.sendNotification({
 						userId: offer[0].guideId,
 						phoneNumber: decryptedGuidePhone,
-						templateCode: 'testcode11',
+						templateName: 'myoffers02',
 						templateData: {
 							SHOPNAME: '매치트립',
 							고객: decryptedTravelerName || '고객',

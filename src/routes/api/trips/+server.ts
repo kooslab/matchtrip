@@ -68,7 +68,7 @@ export async function POST({ request, locals }) {
 				await notificationService.sendNotification({
 					userId: session.user.id,
 					phoneNumber: decryptedPhone,
-					templateCode: 'testcode23',
+					templateName: 'mytrip05',
 					templateData: {
 						SHOPNAME: '매치트립',
 						NAME: decryptedName || '고객'
