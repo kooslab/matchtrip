@@ -1,5 +1,24 @@
 /**
+ * IMPORTANT NOTE (as of 2025-08-29):
+ * =========================================
+ * These formatter functions are currently NOT USED in guide onboarding.
+ * 
+ * Guide onboarding has been updated to use flexible validation without pattern formatting:
+ * - Accepts 7-15 digits (ITU-T E.164 standard)
+ * - No country-specific formatting patterns
+ * - See: /routes/onboarding/guide/+page.svelte
+ * 
+ * These functions are kept for potential future use if pattern formatting
+ * needs to be re-implemented. Traveler onboarding still uses its own
+ * validation for Korean phone numbers.
+ * =========================================
+ */
+
+/**
  * Formats a phone number string to German/European format
+ * 
+ * STATUS: Currently unused - kept for future use
+ * 
  * Automatically adds '+' prefix for international format
  * Supports formats like:
  * - German mobile: +49 176 12345678
@@ -82,6 +101,9 @@ export function formatPhoneNumber(value: string): string {
 
 /**
  * Creates an input event handler for phone number formatting
+ * 
+ * STATUS: Currently unused - kept for future use
+ * 
  * @param setValue - Function to set the phone number value in the component
  * @returns Event handler function
  */

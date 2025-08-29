@@ -120,12 +120,16 @@
 	});
 
 	// Form validation
+	// IMPORTANT: Mobile validation has been intentionally made flexible (2025-08-29)
+	// to accept all international phone formats without strict patterns
 	function canProceed(): boolean {
 		switch (currentStep) {
 			case 'name':
 				return formData.name.trim().length >= 2;
 			case 'mobile':
 				// Accept any phone number with 7-15 digits (ITU-T E.164 standard)
+				// This flexible validation replaces the previous strict country-specific patterns
+				// to prevent users from getting stuck with valid but differently formatted numbers
 				return formData.mobile.length >= 7 && formData.mobile.length <= 15;
 			case 'profile':
 				return (
@@ -291,6 +295,10 @@
 	}
 
 	// Handle mobile input - simplified version without pattern formatting
+	// IMPORTANT: Pattern formatting has been intentionally removed (2025-08-29)
+	// This function now only extracts digits and enforces the 15-digit maximum
+	// No country-specific formatting patterns are applied
+	// See CLAUDE.md for full documentation on this change
 	function handleMobileInput(e: Event) {
 		const input = e.target as HTMLInputElement;
 		

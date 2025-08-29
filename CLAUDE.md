@@ -343,6 +343,54 @@ When creating ANY modal in the application, follow these rules:
   />
   ```
 
+## Mobile Phone Validation
+
+### Current Implementation (as of 2025-08-29)
+
+**Guide Onboarding** (`/onboarding/guide/+page.svelte`):
+- **No pattern formatting** - Users enter raw digits only
+- **Flexible validation**: Accepts 7-15 digits (ITU-T E.164 standard)
+- **Universal acceptance**: Works for any country's mobile format
+- **No strict length requirements** per country
+- Leading zeros are automatically removed for international format
+
+**Traveler Onboarding** (`/onboarding/traveler/+page.svelte`):
+- Uses Korean mobile format validation (11 digits)
+- Works well with existing implementation, no changes made
+- Includes SMS verification flow
+
+### Formatter Functions (Currently Unused)
+
+The phone formatter utility (`/lib/utils/phoneFormatter.ts`) contains:
+- `formatPhoneNumber(value: string)`: Formats phone numbers with country-specific patterns
+- `createPhoneInputHandler(setValue: function)`: Creates formatted input handlers
+
+**Status**: These functions are intentionally kept for potential future use but are NOT currently used in guide onboarding. They remain available if pattern formatting needs to be re-implemented in the future.
+
+### Why This Change Was Made
+
+Previous implementation had strict pattern enforcement that:
+- Forced specific formatting for each country (e.g., `(123) 456-7890` for US)
+- Had rigid length validation that could reject valid numbers
+- European phone numbers had incorrect length requirements
+- Users could get stuck if their valid number didn't match the exact pattern
+
+Current implementation benefits:
+- Accepts virtually all international mobile formats
+- No confusing formatting patterns during input
+- Simple digit-only entry
+- Based on ITU-T E.164 international telecommunications standard
+- Prevents user frustration with overly strict validation
+
+### Validation Rules
+
+```javascript
+// Guide onboarding validation
+case 'mobile':
+    // Accept any phone number with 7-15 digits (ITU-T E.164 standard)
+    return formData.mobile.length >= 7 && formData.mobile.length <= 15;
+```
+
 ## Common Development Tasks
 
 ### Running Tests
