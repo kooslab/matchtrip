@@ -71,10 +71,7 @@ export const load = async ({ request, locals }) => {
 			try {
 				console.log('Layout server - Querying database for user:', session.user.id);
 				const user = await db.query.users.findFirst({
-					where: and(
-						eq(users.id, session.user.id),
-						eq(users.isDeleted, false)
-					),
+					where: and(eq(users.id, session.user.id), eq(users.isDeleted, false)),
 					columns: {
 						id: true,
 						role: true,
@@ -130,7 +127,7 @@ export const load = async ({ request, locals }) => {
 					// User has a session but doesn't exist in database or is deleted
 					// This means they've been deleted - force logout
 					console.log('Layout server - User deleted or not found, forcing logout');
-					
+
 					// Delete the session directly from the database
 					try {
 						await db.delete(sessions).where(eq(sessions.userId, session.user.id));
@@ -138,7 +135,7 @@ export const load = async ({ request, locals }) => {
 					} catch (deleteError) {
 						console.error('Layout server - Error deleting session:', deleteError);
 					}
-					
+
 					// Clear cookies and redirect to sign-out
 					throw redirect(302, '/api/auth/sign-out?redirectTo=/');
 				}
@@ -148,7 +145,7 @@ export const load = async ({ request, locals }) => {
 					// This is a redirect, re-throw it
 					throw error;
 				}
-				
+
 				console.error('Layout server - Failed to fetch user role:', error);
 				console.error(
 					'Layout server - Error details:',
@@ -188,7 +185,7 @@ export const load = async ({ request, locals }) => {
 		if (error instanceof Error && error.message.includes('redirect')) {
 			throw error;
 		}
-		
+
 		console.error('[LAYOUT SERVER] Critical error:', error);
 		console.error(
 			'[LAYOUT SERVER] Error stack:',
@@ -204,4 +201,4 @@ export const load = async ({ request, locals }) => {
 			hasAgreedToTerms: false
 		};
 	}
-};;
+};

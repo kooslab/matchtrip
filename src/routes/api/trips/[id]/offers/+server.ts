@@ -7,14 +7,14 @@ import { decryptUserFields } from '$lib/server/encryption';
 
 export const GET: RequestHandler = async ({ params, locals }) => {
 	const session = locals.session;
-	
+
 	// Check authentication
 	if (!session?.user) {
 		return json({ error: 'Unauthorized' }, { status: 401 });
 	}
 
 	const tripId = params.id;
-	
+
 	if (!tripId) {
 		return json({ error: 'Trip ID is required' }, { status: 400 });
 	}
@@ -63,8 +63,8 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 		// Get metadata
 		const lastUpdated = new Date().toISOString();
 		const offerCount = decryptedOffers.length;
-		const hasAcceptedOffer = decryptedOffers.some(offer => offer.status === 'accepted');
-		const pendingCount = decryptedOffers.filter(offer => offer.status === 'pending').length;
+		const hasAcceptedOffer = decryptedOffers.some((offer) => offer.status === 'accepted');
+		const pendingCount = decryptedOffers.filter((offer) => offer.status === 'pending').length;
 
 		return json({
 			offers: decryptedOffers,

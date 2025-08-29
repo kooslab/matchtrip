@@ -512,8 +512,10 @@
 				>
 					Matchtrip
 				</h1>
-				<p class="mb-8 text-lg text-gray-300 lg:mb-6 lg:text-base">Match Your Trip, Make It Yours</p>
-			
+				<p class="mb-8 text-lg text-gray-300 lg:mb-6 lg:text-base">
+					Match Your Trip, Make It Yours
+				</p>
+
 				<!-- Sign in text -->
 				<p class="mb-6 text-center text-white lg:mb-4">Sign in with Social Networks</p>
 
@@ -601,7 +603,7 @@
 
 				<!-- Bottom text -->
 				<p class="text-center text-sm text-white/80">@Matchtrip.corp.</p>
-				
+
 				<!-- Bottom bar indicator - mobile only -->
 				<div class="mt-8 flex justify-center lg:hidden">
 					<div class="h-1 w-32 rounded-full bg-white"></div>

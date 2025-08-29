@@ -104,7 +104,7 @@ const authHandler = (async ({ event, resolve }) => {
 						// Use raw user data if decryption fails (for debugging)
 						decryptedUser = user;
 					}
-					
+
 					event.locals.user = decryptedUser;
 					console.log(
 						'Hooks - User loaded in locals:',
@@ -133,7 +133,10 @@ const authHandler = (async ({ event, resolve }) => {
 				} else {
 					// User has a session but doesn't exist in database
 					// Delete the orphaned session
-					console.log('[HOOKS] User not found, deleting orphaned session for user:', session.user.id);
+					console.log(
+						'[HOOKS] User not found, deleting orphaned session for user:',
+						session.user.id
+					);
 					try {
 						await db.delete(sessions).where(eq(sessions.userId, session.user.id));
 						console.log('[HOOKS] Successfully deleted orphaned session');
@@ -295,6 +298,6 @@ const authHandler = (async ({ event, resolve }) => {
 
 	// Return the response from svelteKitHandler
 	return response;
-}) satisfies Handle;;
+}) satisfies Handle;
 
 export const handle = sequence(corsHandler, authHandler);

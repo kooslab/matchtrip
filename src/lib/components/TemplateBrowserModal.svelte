@@ -101,17 +101,22 @@
 
 {#if showModal}
 	<!-- Backdrop -->
-	<div class="fixed inset-0 bg-black/50 z-40" onclick={onclose}></div>
+	<div class="fixed inset-0 z-40 bg-black/50" onclick={onclose}></div>
 
 	<!-- Modal -->
-	<div class="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl max-w-md mx-auto z-50">
-		<div class="flex flex-col max-h-[80vh]">
+	<div class="fixed right-0 bottom-0 left-0 z-50 mx-auto max-w-md rounded-t-2xl bg-white">
+		<div class="flex max-h-[80vh] flex-col">
 			<!-- Header -->
-			<div class="flex items-center justify-between p-4 border-b">
+			<div class="flex items-center justify-between border-b p-4">
 				<h2 class="text-lg font-semibold">양식</h2>
 				<button onclick={onclose} class="p-2">
-					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+					<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M6 18L18 6M6 6l12 12"
+						></path>
 					</svg>
 				</button>
 			</div>
@@ -120,17 +125,29 @@
 			<div class="flex-1 overflow-y-auto p-4">
 				{#if loading}
 					<div class="flex justify-center py-8">
-						<div class="w-8 h-8 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+						<div
+							class="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-blue-500"
+						></div>
 					</div>
 				{:else if templates.length === 0}
 					<!-- No templates -->
 					<div class="flex flex-col items-center justify-center py-12 text-center">
-						<div class="mb-4 p-4 bg-gray-100 rounded-full">
-							<svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+						<div class="mb-4 rounded-full bg-gray-100 p-4">
+							<svg
+								class="h-12 w-12 text-gray-400"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+								></path>
 							</svg>
 						</div>
-						<p class="text-gray-600 mb-2">아직 저장된 템플릿이 없습니다</p>
+						<p class="mb-2 text-gray-600">아직 저장된 템플릿이 없습니다</p>
 						<p class="text-sm text-gray-500">제안 내용을 작성한 후 템플릿으로 저장해보세요</p>
 					</div>
 				{:else}
@@ -138,17 +155,19 @@
 					<div class="space-y-3">
 						{#each templates as template}
 							<div
-								class="border rounded-lg p-4 cursor-pointer transition-all
-									{selectedTemplate?.id === template.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}"
+								class="cursor-pointer rounded-lg border p-4 transition-all
+									{selectedTemplate?.id === template.id
+									? 'border-blue-500 bg-blue-50'
+									: 'border-gray-200 hover:border-gray-300'}"
 								onclick={() => handleSelectTemplate(template)}
 							>
 								<div class="flex items-start justify-between">
-									<div class="flex-1 min-w-0">
-										<h3 class="font-medium text-gray-900 mb-1">{template.title}</h3>
-										<p class="text-sm text-gray-600 line-clamp-2">
+									<div class="min-w-0 flex-1">
+										<h3 class="mb-1 font-medium text-gray-900">{template.title}</h3>
+										<p class="line-clamp-2 text-sm text-gray-600">
 											{truncateText(template.description)}
 										</p>
-										<div class="flex items-center gap-3 mt-2">
+										<div class="mt-2 flex items-center gap-3">
 											<span class="text-xs text-gray-500">
 												사용 횟수: {template.usageCount}회
 											</span>
@@ -162,9 +181,9 @@
 											e.stopPropagation();
 											confirmDelete(template);
 										}}
-										class="ml-3 p-2 text-gray-400 hover:text-red-500 transition-colors"
+										class="ml-3 p-2 text-gray-400 transition-colors hover:text-red-500"
 									>
-										<img src={binIconUrl} alt="삭제" class="w-4 h-4" />
+										<img src={binIconUrl} alt="삭제" class="h-4 w-4" />
 									</button>
 								</div>
 							</div>
@@ -175,14 +194,12 @@
 
 			<!-- Footer -->
 			{#if templates.length > 0}
-				<div class="p-4 border-t">
+				<div class="border-t p-4">
 					<button
 						onclick={handleUseTemplate}
 						disabled={!selectedTemplate}
-						class="w-full py-3 rounded-lg font-medium text-white transition-all
-							{selectedTemplate 
-								? 'bg-blue-500 hover:bg-blue-600' 
-								: 'bg-gray-300 cursor-not-allowed'}"
+						class="w-full rounded-lg py-3 font-medium text-white transition-all
+							{selectedTemplate ? 'bg-blue-500 hover:bg-blue-600' : 'cursor-not-allowed bg-gray-300'}"
 						style="background-color: {selectedTemplate ? colors.primary : '#CBD5E1'}"
 					>
 						선택
@@ -195,22 +212,27 @@
 
 <!-- Delete Confirmation Modal -->
 {#if deleteConfirmTemplate}
-	<div class="fixed inset-0 bg-black/50 z-[60]" onclick={() => deleteConfirmTemplate = null}></div>
-	<div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl p-6 max-w-sm w-full mx-4 z-[70]">
-		<h3 class="text-lg font-semibold mb-2">템플릿 삭제</h3>
-		<p class="text-gray-600 mb-6">
+	<div
+		class="fixed inset-0 z-[60] bg-black/50"
+		onclick={() => (deleteConfirmTemplate = null)}
+	></div>
+	<div
+		class="fixed top-1/2 left-1/2 z-[70] mx-4 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6"
+	>
+		<h3 class="mb-2 text-lg font-semibold">템플릿 삭제</h3>
+		<p class="mb-6 text-gray-600">
 			"{deleteConfirmTemplate.title}" 템플릿을 삭제하시겠습니까?
 		</p>
 		<div class="flex gap-3">
 			<button
-				onclick={() => deleteConfirmTemplate = null}
-				class="flex-1 py-3 rounded-lg border border-gray-300 font-medium"
+				onclick={() => (deleteConfirmTemplate = null)}
+				class="flex-1 rounded-lg border border-gray-300 py-3 font-medium"
 			>
 				취소
 			</button>
 			<button
 				onclick={handleDeleteTemplate}
-				class="flex-1 py-3 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600"
+				class="flex-1 rounded-lg bg-red-500 py-3 font-medium text-white hover:bg-red-600"
 			>
 				삭제
 			</button>

@@ -123,8 +123,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 						refundAmount: result.refundCalculation.refundAmount,
 						cancellationRequestId: result.cancellationRequest.id
 					});
-					
-					console.log(`[CANCELLATION] Auto-refund processed for ${user.role} cancellation. Amount: ${result.refundCalculation.refundAmount}`);
+
+					console.log(
+						`[CANCELLATION] Auto-refund processed for ${user.role} cancellation. Amount: ${result.refundCalculation.refundAmount}`
+					);
 				}
 			} catch (refundError) {
 				console.error(`Auto-refund failed for ${user.role} cancellation:`, refundError);

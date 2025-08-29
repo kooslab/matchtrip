@@ -50,25 +50,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **⚠️ IMPORTANT: User PII Encryption Status ⚠️**
 
 In the users table, the following fields are encrypted:
+
 - `name` - **ENCRYPTED** (use `encrypt()` when writing, `decrypt()` when reading)
-- `phone` - **ENCRYPTED** (use `encrypt()` when writing, `decrypt()` when reading)  
+- `phone` - **ENCRYPTED** (use `encrypt()` when writing, `decrypt()` when reading)
 - `email` - **NOT ENCRYPTED** (store and read directly, no encryption/decryption needed)
 
 Example when handling user data:
+
 ```typescript
 // When storing user data
 const userData = {
-  name: encrypt(name),      // Encrypt name
-  email: email,            // Email is NOT encrypted
-  phone: encrypt(phone)    // Encrypt phone
-}
+	name: encrypt(name), // Encrypt name
+	email: email, // Email is NOT encrypted
+	phone: encrypt(phone) // Encrypt phone
+};
 
 // When reading user data
 const decryptedUser = {
-  name: decrypt(user.name),    // Decrypt name
-  email: user.email,           // Email is NOT encrypted
-  phone: decrypt(user.phone)   // Decrypt phone
-}
+	name: decrypt(user.name), // Decrypt name
+	email: user.email, // Email is NOT encrypted
+	phone: decrypt(user.phone) // Decrypt phone
+};
 ```
 
 ## Typography System
@@ -220,15 +222,16 @@ When creating ANY modal in the application, follow these rules:
    - Example: `let showModal = $state(false)` NOT `let showModal = false`
 
 2. **Modal Structure Pattern**:
+
    ```svelte
    {#if showModal}
-     <!-- Backdrop - separate element -->
-     <div class="fixed inset-0 bg-black/50 z-40" onclick={closeModal}></div>
-     
-     <!-- Modal Content - separate element at same level -->
-     <div class="fixed [position] z-50">
-       <!-- Modal content here -->
-     </div>
+   	<!-- Backdrop - separate element -->
+   	<div class="fixed inset-0 z-40 bg-black/50" onclick={closeModal}></div>
+
+   	<!-- Modal Content - separate element at same level -->
+   	<div class="[position] fixed z-50">
+   		<!-- Modal content here -->
+   	</div>
    {/if}
    ```
 
@@ -243,16 +246,19 @@ When creating ANY modal in the application, follow these rules:
    - Light overlay: `/10` or `/20` for subtle overlays
 
 5. **Bottom Sheet Modals** (Mobile):
+
    ```svelte
    <div class="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl max-w-md mx-auto z-50">
    ```
 
 6. **Right-Side Slide Modals** (Admin):
+
    ```svelte
    <div class="fixed right-0 top-0 h-full w-full max-w-2xl bg-white shadow-xl z-50 overflow-y-auto">
    ```
 
 7. **Center Modals**:
+
    ```svelte
    <div class="fixed inset-0 flex items-center justify-center z-50">
      <div class="bg-white rounded-lg max-w-md w-full mx-4">
@@ -348,6 +354,7 @@ When creating ANY modal in the application, follow these rules:
 ### Current Implementation (as of 2025-08-29)
 
 **Guide Onboarding** (`/onboarding/guide/+page.svelte`):
+
 - **No pattern formatting** - Users enter raw digits only
 - **Flexible validation**: Accepts 7-15 digits (ITU-T E.164 standard)
 - **Universal acceptance**: Works for any country's mobile format
@@ -355,6 +362,7 @@ When creating ANY modal in the application, follow these rules:
 - Leading zeros are automatically removed for international format
 
 **Traveler Onboarding** (`/onboarding/traveler/+page.svelte`):
+
 - Uses Korean mobile format validation (11 digits)
 - Works well with existing implementation, no changes made
 - Includes SMS verification flow
@@ -362,6 +370,7 @@ When creating ANY modal in the application, follow these rules:
 ### Formatter Functions (Currently Unused)
 
 The phone formatter utility (`/lib/utils/phoneFormatter.ts`) contains:
+
 - `formatPhoneNumber(value: string)`: Formats phone numbers with country-specific patterns
 - `createPhoneInputHandler(setValue: function)`: Creates formatted input handlers
 
@@ -370,12 +379,14 @@ The phone formatter utility (`/lib/utils/phoneFormatter.ts`) contains:
 ### Why This Change Was Made
 
 Previous implementation had strict pattern enforcement that:
+
 - Forced specific formatting for each country (e.g., `(123) 456-7890` for US)
 - Had rigid length validation that could reject valid numbers
 - European phone numbers had incorrect length requirements
 - Users could get stuck if their valid number didn't match the exact pattern
 
 Current implementation benefits:
+
 - Accepts virtually all international mobile formats
 - No confusing formatting patterns during input
 - Simple digit-only entry
@@ -422,6 +433,7 @@ The application automatically selects the correct Kakao AlimTalk template codes 
 - **Production**: Uses `codeXX` templates (e.g., `code01`, `code23`)
 
 **Configuration:**
+
 - Development: No configuration needed (default behavior)
 - Production: Must set `NODE_ENV=production` environment variable
 
@@ -432,6 +444,7 @@ The template selection is handled in `src/lib/server/kakao/templateHelper.ts` wh
 **Important:** Several template codes have been deprecated and replaced with new ones:
 
 #### Deprecated Template Codes (DO NOT USE):
+
 - `testcode01` → Use `testcode21` (traveler signup)
 - `testcode03` → Use `testcode23` (trip registration)
 - `testcode04` → Use `testcode24` (guide offer arrival)
@@ -441,6 +454,7 @@ The template selection is handled in `src/lib/server/kakao/templateHelper.ts` wh
 #### Active Template Codes:
 
 **Development Environment:**
+
 - `testcode21` - Traveler signup welcome
 - `testcode02` - Guide signup welcome
 - `testcode23` - Trip registration confirmation
@@ -463,6 +477,7 @@ The template selection is handled in `src/lib/server/kakao/templateHelper.ts` wh
 - `testcode20` - Guide cancellation completion to customer
 
 **Production Environment:**
+
 - `code01` - Traveler signup welcome
 - `code02` - Guide signup welcome
 - `code23` - Trip registration confirmation
@@ -638,9 +653,11 @@ curl -X POST http://localhost:5173/api/webhooks/test \
 ### Google OAuth Profile Images
 
 #### Issue
+
 Google OAuth profile images are sometimes stored without the protocol prefix (e.g., `ACg8ocI2_O3-x_nW_Ya1EG7DzUGrSop6Q_YPqjjB7-ghNcuo1E-g5QM=s96-c`), which causes 400 Bad Request errors when the browser tries to load them.
 
 #### Solution
+
 The `transformImageUrl` utility in `src/lib/utils/imageUrl.ts` handles this by:
 
 1. Detecting Google profile image IDs (pattern: `[A-Za-z0-9_-]+=s\d+-c`)
@@ -650,15 +667,19 @@ The `transformImageUrl` utility in `src/lib/utils/imageUrl.ts` handles this by:
 ### Kakao OAuth Profile Images
 
 #### TODO: Implementation Needed
+
 Kakao OAuth profile images need special handling similar to Google OAuth images.
 
 **Known Issues:**
+
 - (To be documented when Kakao login is implemented)
 
 **Solution:**
+
 - (To be implemented in `transformImageUrl` utility)
 
 **Pattern Detection:**
+
 - (To be determined based on Kakao's image URL format)
 
 ### Implementation Notes

@@ -106,11 +106,12 @@ export function calculateRefundAmount(params: RefundCalculationParams): RefundCa
 
 		for (const policy of customPolicies) {
 			const meetsStartCondition = daysBeforeTrip >= policy.daysBeforeStart;
-			const meetsEndCondition = policy.daysBeforeEnd === null || daysBeforeTrip <= policy.daysBeforeEnd;
+			const meetsEndCondition =
+				policy.daysBeforeEnd === null || daysBeforeTrip <= policy.daysBeforeEnd;
 
 			if (meetsStartCondition && meetsEndCondition) {
 				applicablePolicy = policy;
-				
+
 				// Generate label based on policy range
 				if (policy.daysBeforeStart === 0 && policy.daysBeforeEnd === 0) {
 					policyLabel = '여행일 당일';

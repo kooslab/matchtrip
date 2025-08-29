@@ -13,7 +13,7 @@ async function clearCorruptedUserSessions() {
 	try {
 		// Get all sessions
 		const allSessions = await db.select().from(sessions);
-		
+
 		let totalSessions = allSessions.length;
 		let corruptedSessions = 0;
 		let deletedSessions = 0;
@@ -27,9 +27,13 @@ async function clearCorruptedUserSessions() {
 			if (session.userId) {
 				// Look for sessions with the specific corrupted email pattern
 				const sessionDataStr = JSON.stringify(session);
-				
+
 				// Check for the corrupted email pattern from the logs
-				if (sessionDataStr.includes('encrypted:jtjrqlhrwmsxnl3aqkyqlg==:9kg/catoadmj3iberx6vfg==:4ssqm9mzsnxocpibhcoir1cbnu1i')) {
+				if (
+					sessionDataStr.includes(
+						'encrypted:jtjrqlhrwmsxnl3aqkyqlg==:9kg/catoadmj3iberx6vfg==:4ssqm9mzsnxocpibhcoir1cbnu1i'
+					)
+				) {
 					console.log(`Found session with corrupted email data: ${session.id}`);
 					hasCorruptedData = true;
 				}
@@ -47,7 +51,9 @@ async function clearCorruptedUserSessions() {
 							try {
 								decrypt(match);
 							} catch (error) {
-								console.log(`Cannot decrypt data in session ${session.id}: ${match.substring(0, 50)}...`);
+								console.log(
+									`Cannot decrypt data in session ${session.id}: ${match.substring(0, 50)}...`
+								);
 								hasCorruptedData = true;
 							}
 						}
@@ -57,7 +63,7 @@ async function clearCorruptedUserSessions() {
 
 			if (hasCorruptedData) {
 				corruptedSessions++;
-				
+
 				// Delete the corrupted session
 				await db.delete(sessions).where({ id: session.id } as any);
 				deletedSessions++;
@@ -76,7 +82,6 @@ async function clearCorruptedUserSessions() {
 			console.log('\n✨ All corrupted sessions have been cleared!');
 			console.log('Users with cleared sessions will need to log in again.');
 		}
-
 	} catch (error) {
 		console.error('Fatal error:', error);
 		process.exit(1);

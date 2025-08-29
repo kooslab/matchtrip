@@ -111,7 +111,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				console.log('[OFFERS API] Sending offer registration AlimTalk to guide');
 				const decryptedGuideName = guideUser[0].name ? decrypt(guideUser[0].name) : null;
 				const decryptedGuidePhone = decrypt(guideUser[0].phone);
-				
+
 				await notificationService.sendNotification({
 					userId: session.user.id,
 					phoneNumber: decryptedGuidePhone,
@@ -128,7 +128,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				console.log('[OFFERS API] Sending offer arrival AlimTalk to traveler');
 				const decryptedTravelerPhone = decrypt(travelerUser[0].phone);
 				const decryptedGuideName = guideUser[0]?.name ? decrypt(guideUser[0].name) : null;
-				
+
 				await notificationService.sendNotification({
 					userId: tripDetails[0].userId,
 					phoneNumber: decryptedTravelerPhone,
@@ -152,4 +152,4 @@ export const POST: RequestHandler = async ({ request }) => {
 		console.error('Error creating offer:', error);
 		return json({ success: false, error: '서버 오류가 발생했습니다.' }, { status: 500 });
 	}
-};;
+};

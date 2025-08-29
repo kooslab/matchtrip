@@ -150,7 +150,9 @@ export const load = async ({ params, locals }) => {
 	// Decrypt traveler data before returning
 	const offer = {
 		...offerDetails[0],
-		traveler: offerDetails[0].traveler ? decryptUserFields(offerDetails[0].traveler) : offerDetails[0].traveler
+		traveler: offerDetails[0].traveler
+			? decryptUserFields(offerDetails[0].traveler)
+			: offerDetails[0].traveler
 	};
 
 	return {

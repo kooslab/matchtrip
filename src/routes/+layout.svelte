@@ -33,7 +33,7 @@
 	<div class="relative mx-auto min-h-screen max-w-[430px] bg-white">
 		<slot />
 	</div>
-	
+
 	<!-- PWA Install Banner -->
 	<PWAInstallBanner />
 </MobileContainer>

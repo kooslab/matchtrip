@@ -12,10 +12,10 @@ async function deleteSpecificUser() {
 
 	try {
 		const userId = '85f5b50a-2b2a-4f22-a86d-1837a9798de4';
-		
+
 		// Check if user exists first
 		const existingUser = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-		
+
 		if (existingUser.length === 0) {
 			console.log('❌ User not found in database');
 			return;
@@ -37,7 +37,6 @@ async function deleteSpecificUser() {
 
 		console.log('\n✨ Successfully deleted the corrupted user and all related data!');
 		console.log('The cookieCache has been disabled, so new Kakao logins should work correctly.');
-
 	} catch (error) {
 		console.error('Fatal error:', error);
 		process.exit(1);

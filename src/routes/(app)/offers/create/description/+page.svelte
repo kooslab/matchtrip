@@ -129,7 +129,8 @@
 				editor.view.dispatch(transaction);
 			} catch (error) {
 				console.error('Upload error:', error);
-				const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
+				const errorMessage =
+					error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
 				alert(`이미지 업로드에 실패했습니다.\n\n${errorMessage}`);
 				// Remove placeholder on error
 				editor.commands.undo();
@@ -207,7 +208,7 @@
 						type="button"
 						onclick={() => editor?.chain().focus().toggleBold().run()}
 						class="rounded p-2 hover:bg-gray-200 {editor?.isActive('bold') ? 'bg-gray-200' : ''}"
-						disabled={!editor || !editor.can().chain().focus().toggleBold().run()}
+						disabled={!editor}
 					>
 						<svg
 							class="h-4 w-4"
@@ -225,7 +226,7 @@
 						type="button"
 						onclick={() => editor?.chain().focus().toggleItalic().run()}
 						class="rounded p-2 hover:bg-gray-200 {editor?.isActive('italic') ? 'bg-gray-200' : ''}"
-						disabled={!editor || !editor.can().chain().focus().toggleItalic().run()}
+						disabled={!editor}
 					>
 						<svg
 							class="h-4 w-4"
@@ -312,7 +313,7 @@
 
 					<button
 						type="button"
-						onclick={() => showTemplateBrowser = true}
+						onclick={() => (showTemplateBrowser = true)}
 						class="flex items-center gap-1 rounded border border-gray-300 bg-white px-3 py-2 hover:bg-gray-200"
 						title="템플릿 불러오기"
 					>
@@ -401,14 +402,14 @@
 <!-- Template Browser Modal -->
 <TemplateBrowserModal
 	bind:showModal={showTemplateBrowser}
-	onclose={() => showTemplateBrowser = false}
+	onclose={() => (showTemplateBrowser = false)}
 	onselect={handleSelectTemplate}
 />
 
 <!-- Save Template Modal -->
 <SaveTemplateModal
 	bind:showModal={showSaveTemplateModal}
-	onclose={() => showSaveTemplateModal = false}
+	onclose={() => (showSaveTemplateModal = false)}
 	onsave={handleSaveTemplate}
 	oncontinue={handleContinueWithoutSaving}
 />

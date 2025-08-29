@@ -46,7 +46,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		// If there's an existing conversation, check if it has an accepted offer
 		if (existingConversation.length > 0) {
 			const conversationId = existingConversation[0].id;
-			
+
 			// Check if this conversation has any accepted offers
 			const acceptedOffer = await db
 				.select({
@@ -61,10 +61,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 					)
 				)
 				.limit(1);
-			
+
 			console.log('Existing conversation found:', conversationId);
 			console.log('Accepted offer found:', acceptedOffer.length > 0);
-			
+
 			// If there's an accepted offer (meaning it was paid for), create a new conversation
 			if (acceptedOffer.length > 0) {
 				shouldCreateNew = true;

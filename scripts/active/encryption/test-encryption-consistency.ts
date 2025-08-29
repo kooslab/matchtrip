@@ -1,13 +1,19 @@
 #!/usr/bin/env bun
 /**
  * Test Encryption Consistency
- * 
+ *
  * This script validates that encryption is consistent across both apps
  * and follows the encryption standard.
  */
 
 import { config } from 'dotenv';
-import { encrypt, decrypt, isEncrypted, validateEncryptedFormat, isLegacyEncrypted } from '../src/lib/server/encryption';
+import {
+	encrypt,
+	decrypt,
+	isEncrypted,
+	validateEncryptedFormat,
+	isLegacyEncrypted
+} from '../src/lib/server/encryption';
 
 // Load environment variables
 config();
@@ -32,40 +38,40 @@ let allPassed = true;
 for (const testData of testCases) {
 	console.log(`\nTesting: "${testData || '(empty string)'}"`);
 	console.log('-'.repeat(30));
-	
+
 	try {
 		// Test encryption
 		const encrypted = encrypt(testData);
-		
+
 		if (testData && !encrypted) {
 			console.error('❌ Encryption returned null for non-empty string');
 			allPassed = false;
 			continue;
 		}
-		
+
 		if (!testData && encrypted !== null) {
 			console.error('❌ Encryption should return null for empty string');
 			allPassed = false;
 			continue;
 		}
-		
+
 		if (testData) {
 			console.log(`Encrypted: ${encrypted?.substring(0, 50)}...`);
-			
+
 			// Validate format
 			if (!validateEncryptedFormat(encrypted!)) {
 				console.error('❌ Encrypted format does not match standard!');
 				allPassed = false;
 				continue;
 			}
-			
+
 			// Check prefix
 			if (!encrypted!.startsWith('encrypted:')) {
 				console.error('❌ Missing or incorrect prefix');
 				allPassed = false;
 				continue;
 			}
-			
+
 			// Check structure
 			const parts = encrypted!.slice('encrypted:'.length).split(':');
 			if (parts.length !== 3) {
@@ -73,7 +79,7 @@ for (const testData of testCases) {
 				allPassed = false;
 				continue;
 			}
-			
+
 			// Check base64 encoding
 			const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
 			for (let i = 0; i < parts.length; i++) {
@@ -83,10 +89,10 @@ for (const testData of testCases) {
 					continue;
 				}
 			}
-			
+
 			// Test decryption
 			const decrypted = decrypt(encrypted);
-			
+
 			if (decrypted !== testData) {
 				console.error(`❌ Decryption failed!`);
 				console.error(`   Expected: "${testData}"`);
@@ -94,19 +100,18 @@ for (const testData of testCases) {
 				allPassed = false;
 				continue;
 			}
-			
+
 			// Test isEncrypted
 			if (!isEncrypted(encrypted)) {
 				console.error('❌ isEncrypted() returned false for encrypted data');
 				allPassed = false;
 				continue;
 			}
-			
+
 			console.log('✅ Encryption/Decryption successful');
 		} else {
 			console.log('✅ Empty string handled correctly');
 		}
-		
 	} catch (error) {
 		console.error(`❌ Error: ${error}`);
 		allPassed = false;
@@ -140,11 +145,7 @@ console.log('\n' + '='.repeat(50));
 console.log('Testing legacy encryption detection:');
 console.log('-'.repeat(30));
 
-const legacyFormats = [
-	'ENC:abc:def:ghi',
-	'enc:abc:def:ghi',
-	'ENCRYPTED:abc:def:ghi'
-];
+const legacyFormats = ['ENC:abc:def:ghi', 'enc:abc:def:ghi', 'ENCRYPTED:abc:def:ghi'];
 
 for (const legacy of legacyFormats) {
 	if (!isLegacyEncrypted(legacy)) {

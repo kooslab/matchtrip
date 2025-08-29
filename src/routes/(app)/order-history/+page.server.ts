@@ -134,13 +134,14 @@ export const load = async ({ request, locals }) => {
 	// Transform trip orders
 	const tripOrders = paidTrips.map((trip) => {
 		// Decrypt guide information if present
-		const decryptedGuide = trip.guideId && trip.guideName && trip.guideEmail
-			? decryptUserFields({
-					id: trip.guideId,
-					name: trip.guideName,
-					email: trip.guideEmail
-				})
-			: null;
+		const decryptedGuide =
+			trip.guideId && trip.guideName && trip.guideEmail
+				? decryptUserFields({
+						id: trip.guideId,
+						name: trip.guideName,
+						email: trip.guideEmail
+					})
+				: null;
 
 		return {
 			type: 'trip' as const,
@@ -186,13 +187,14 @@ export const load = async ({ request, locals }) => {
 	// Transform product orders
 	const productOrders = paidProducts.map((product) => {
 		// Decrypt guide information if present
-		const decryptedGuide = product.guideId && product.guideName && product.guideEmail
-			? decryptUserFields({
-					id: product.guideId,
-					name: product.guideName,
-					email: product.guideEmail
-				})
-			: null;
+		const decryptedGuide =
+			product.guideId && product.guideName && product.guideEmail
+				? decryptUserFields({
+						id: product.guideId,
+						name: product.guideName,
+						email: product.guideEmail
+					})
+				: null;
 
 		return {
 			type: 'product' as const,

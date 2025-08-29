@@ -1,16 +1,16 @@
 /**
  * MatchTrip Main App Encryption Module
- * 
+ *
  * This module wraps the core encryption functions and provides
  * app-specific utilities. The core encryption logic MUST remain
  * consistent across all apps.
- * 
+ *
  * See ENCRYPTION_STANDARD.md for the encryption standard.
  */
 
-import { 
-	encryptCore, 
-	decryptCore, 
+import {
+	encryptCore,
+	decryptCore,
 	isEncryptedCore,
 	isLegacyEncrypted,
 	validateEncryptedFormat
@@ -23,7 +23,6 @@ export const isEncrypted = isEncryptedCore;
 
 // Export additional utilities
 export { isLegacyEncrypted, validateEncryptedFormat };
-
 
 /**
  * Decrypt user object fields
@@ -84,4 +83,3 @@ export function encryptUserFields<T extends Record<string, any>>(user: Partial<T
 
 	return encrypted;
 }
-

@@ -64,7 +64,7 @@ export async function POST({ request, locals }) {
 				console.log('[TRIPS API] Sending trip registration AlimTalk notification');
 				const decryptedPhone = decrypt(user.phone);
 				const decryptedName = user.name ? decrypt(user.name) : null;
-				
+
 				await notificationService.sendNotification({
 					userId: session.user.id,
 					phoneNumber: decryptedPhone,

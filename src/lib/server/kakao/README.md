@@ -112,28 +112,28 @@ const prepared = prepareTemplate('chat02', {
 
 ## Template Reference
 
-| Logical Name | Dev Code    | Prod Code | Description                 | Variables                        |
-| ------------ | ----------- | --------- | --------------------------- | -------------------------------- |
-| signup01     | testcode01  | code01    | 회원가입 - 여행자           | SHOPNAME, NAME                   |
-| signup02     | testcode02  | code02    | 회원가입 - 가이드           | SHOPNAME, NAME                   |
-| mytrip01     | testcode03  | code03    | 여행 의뢰 등록 완료         | SHOPNAME, NAME                   |
-| mytrip02     | testcode04  | code04    | 여행 제안 도착 알림         | SHOPNAME, 가이드, 나의여행       |
-| chat01       | testcode05  | code05    | 가이드 답변 도착            | SHOPNAME, 가이드, 메세지확인하기 |
-| settlement01 | testcode06  | code06    | 결제 완료                   | SHOPNAME, 고객, 여행총결제금액   |
-| remind01     | testcode07  | code07    | 여행 시작 리마인더 - 고객   | SHOPNAME, 가이드, 나의여행       |
-| cs01         | testcode08  | code08    | 문의 등록 완료              | SHOPNAME, NAME                   |
-| myoffers01   | testcode09  | code09    | 여행 제안 등록 완료         | SHOPNAME, NAME                   |
-| chat02       | testcode10  | code10    | 고객 문의 도착              | SHOPNAME, 고객, 메세지확인하기   |
-| myoffers02   | testcode11  | code11    | 제안 채택 알림              | SHOPNAME, 고객, 가이드, 나의제안 |
-| remind02     | testcode12  | code12    | 여행 시작 리마인더 - 가이드 | SHOPNAME, 고객, 나의제안         |
-| rqcancel01   | testcode13  | code13    | 취소요청 - 고객이 요청      | SHOPNAME, 고객, 주문내역         |
-| rqcancel02   | testcode14  | code14    | 취소요청 - 고객이 요청 (가이드에게) | SHOPNAME, 고객, 나의제안  |
-| rqcancel03   | testcode15  | code15    | 취소요청 - 가이드가 요청    | SHOPNAME, 가이드님, 나의제안     |
-| rqcancel04   | testcode16  | code16    | 취소요청 - 가이드가 요청 (고객에게) | SHOPNAME, 가이드, 주문내역 |
-| cpcancel01   | testcode17  | code17    | 취소완료 - 고객 취소 (고객에게) | SHOPNAME, 고객, 주문내역     |
-| cpcancel02   | testcode18  | code18    | 취소완료 - 고객 취소 (가이드에게) | SHOPNAME, 고객, 나의제안   |
-| cpcancel03   | testcode19  | code19    | 취소완료 - 가이드 취소 (가이드에게) | SHOPNAME, 가이드, 나의제안 |
-| cpcancel04   | testcode20  | code20    | 취소완료 - 가이드 취소 (고객에게) | SHOPNAME, 가이드, 주문내역 |
+| Logical Name | Dev Code   | Prod Code | Description                         | Variables                        |
+| ------------ | ---------- | --------- | ----------------------------------- | -------------------------------- |
+| signup01     | testcode01 | code01    | 회원가입 - 여행자                   | SHOPNAME, NAME                   |
+| signup02     | testcode02 | code02    | 회원가입 - 가이드                   | SHOPNAME, NAME                   |
+| mytrip01     | testcode03 | code03    | 여행 의뢰 등록 완료                 | SHOPNAME, NAME                   |
+| mytrip02     | testcode04 | code04    | 여행 제안 도착 알림                 | SHOPNAME, 가이드, 나의여행       |
+| chat01       | testcode05 | code05    | 가이드 답변 도착                    | SHOPNAME, 가이드, 메세지확인하기 |
+| settlement01 | testcode06 | code06    | 결제 완료                           | SHOPNAME, 고객, 여행총결제금액   |
+| remind01     | testcode07 | code07    | 여행 시작 리마인더 - 고객           | SHOPNAME, 가이드, 나의여행       |
+| cs01         | testcode08 | code08    | 문의 등록 완료                      | SHOPNAME, NAME                   |
+| myoffers01   | testcode09 | code09    | 여행 제안 등록 완료                 | SHOPNAME, NAME                   |
+| chat02       | testcode10 | code10    | 고객 문의 도착                      | SHOPNAME, 고객, 메세지확인하기   |
+| myoffers02   | testcode11 | code11    | 제안 채택 알림                      | SHOPNAME, 고객, 가이드, 나의제안 |
+| remind02     | testcode12 | code12    | 여행 시작 리마인더 - 가이드         | SHOPNAME, 고객, 나의제안         |
+| rqcancel01   | testcode13 | code13    | 취소요청 - 고객이 요청              | SHOPNAME, 고객, 주문내역         |
+| rqcancel02   | testcode14 | code14    | 취소요청 - 고객이 요청 (가이드에게) | SHOPNAME, 고객, 나의제안         |
+| rqcancel03   | testcode15 | code15    | 취소요청 - 가이드가 요청            | SHOPNAME, 가이드님, 나의제안     |
+| rqcancel04   | testcode16 | code16    | 취소요청 - 가이드가 요청 (고객에게) | SHOPNAME, 가이드, 주문내역       |
+| cpcancel01   | testcode17 | code17    | 취소완료 - 고객 취소 (고객에게)     | SHOPNAME, 고객, 주문내역         |
+| cpcancel02   | testcode18 | code18    | 취소완료 - 고객 취소 (가이드에게)   | SHOPNAME, 고객, 나의제안         |
+| cpcancel03   | testcode19 | code19    | 취소완료 - 가이드 취소 (가이드에게) | SHOPNAME, 가이드, 나의제안       |
+| cpcancel04   | testcode20 | code20    | 취소완료 - 가이드 취소 (고객에게)   | SHOPNAME, 가이드, 주문내역       |
 
 ## Important Notes
 

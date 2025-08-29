@@ -17,12 +17,7 @@ export async function fetchRefundPolicies(policyType: 'trip' | 'product'): Promi
 				applicableTo: refundPolicies.applicableTo
 			})
 			.from(refundPolicies)
-			.where(
-				and(
-					eq(refundPolicies.applicableTo, policyType),
-					eq(refundPolicies.isActive, true)
-				)
-			)
+			.where(and(eq(refundPolicies.applicableTo, policyType), eq(refundPolicies.isActive, true)))
 			.orderBy(refundPolicies.daysBeforeStart);
 
 		return policies;

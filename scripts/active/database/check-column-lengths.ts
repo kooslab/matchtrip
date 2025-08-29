@@ -25,11 +25,13 @@ async function checkColumnLengths() {
 
 		console.log('📊 Users table column definitions:');
 		console.log('='.repeat(80));
-		
-		const rows = Array.isArray(result) ? result : (result.rows || []);
+
+		const rows = Array.isArray(result) ? result : result.rows || [];
 		for (const row of rows) {
 			const col = row as any;
-			console.log(`${col.column_name.padEnd(20)} | ${col.data_type.padEnd(15)} | Max Length: ${col.character_maximum_length || 'unlimited'} | Nullable: ${col.is_nullable}`);
+			console.log(
+				`${col.column_name.padEnd(20)} | ${col.data_type.padEnd(15)} | Max Length: ${col.character_maximum_length || 'unlimited'} | Nullable: ${col.is_nullable}`
+			);
 		}
 
 		console.log('\n🔍 Checking encrypted data lengths in database...\n');
@@ -55,7 +57,7 @@ async function checkColumnLengths() {
 		console.log('User ID'.padEnd(36) + ' | Email Len | Name Len | Phone Len | Sample Email');
 		console.log('='.repeat(100));
 
-		const userRows = Array.isArray(usersResult) ? usersResult : (usersResult.rows || []);
+		const userRows = Array.isArray(usersResult) ? usersResult : usersResult.rows || [];
 		for (const row of userRows) {
 			const user = row as any;
 			const emailSample = user.email ? user.email.substring(0, 60) + '...' : 'null';
@@ -63,7 +65,6 @@ async function checkColumnLengths() {
 				`${user.id} | ${String(user.email_length || 0).padEnd(9)} | ${String(user.name_length || 0).padEnd(8)} | ${String(user.phone_length || 0).padEnd(9)} | ${emailSample}`
 			);
 		}
-
 	} catch (error) {
 		console.error('Fatal error:', error);
 		process.exit(1);

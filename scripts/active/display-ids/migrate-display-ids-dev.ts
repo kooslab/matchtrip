@@ -2,11 +2,11 @@
 /**
  * Development Migration Script for Display IDs
  * Updates existing display_ids from old format to new format
- * 
+ *
  * Old formats:
  * - PRODUCT_1755676035754_p2yptgpln
  * - ORDER_1755748358423_mxo1i5jmd
- * 
+ *
  * New formats:
  * - PRD-YYMM-XXXXX (products)
  * - ORD-YYMM-XXXXX (offer orders)
@@ -88,7 +88,7 @@ function extractDateFromOldId(oldId: string): Date | null {
 function generateNewDisplayId(type: string, date?: Date): string {
 	const yearMonth = getYearMonth(date);
 	const shortId = generateShortId();
-	
+
 	switch (type) {
 		case 'product':
 			return `PRD-${yearMonth}-${shortId}`;
@@ -110,12 +110,12 @@ function generateNewDisplayId(type: string, date?: Date): string {
  */
 function needsMigration(displayId: string | null): boolean {
 	if (!displayId) return false;
-	
+
 	// Check if it matches old formats
 	return (
 		displayId.startsWith('PRODUCT_') ||
 		displayId.startsWith('ORDER_') ||
-		displayId.startsWith('OFFER_') && !displayId.match(/^OFFER-\d{4}-[A-Z0-9]{5}$/) ||
+		(displayId.startsWith('OFFER_') && !displayId.match(/^OFFER-\d{4}-[A-Z0-9]{5}$/)) ||
 		displayId.includes('_')
 	);
 }
@@ -127,22 +127,22 @@ async function migrateTable(
 	getPaymentType?: (record: any) => string
 ) {
 	log(`\n${colors.bright}Migrating ${tableName}...${colors.reset}`);
-	
+
 	try {
 		// Count records needing migration
 		const records = await db.select().from(table).execute();
-		const needMigration = records.filter(r => needsMigration(r.displayId));
-		
+		const needMigration = records.filter((r) => needsMigration(r.displayId));
+
 		if (needMigration.length === 0) {
 			success(`No records need migration in ${tableName}`);
 			return { migrated: 0, skipped: records.length };
 		}
-		
+
 		info(`Found ${needMigration.length} records to migrate out of ${records.length} total`);
-		
+
 		if (DRY_RUN) {
 			warning('DRY RUN MODE - No actual changes will be made');
-			
+
 			// Show sample of what would be changed
 			const samples = needMigration.slice(0, 5);
 			console.log('\nSample migrations:');
@@ -152,32 +152,28 @@ async function migrateTable(
 				const newId = generateNewDisplayId(finalType, date || record.createdAt);
 				console.log(`  ${record.displayId} → ${newId}`);
 			}
-			
+
 			return { migrated: needMigration.length, skipped: records.length - needMigration.length };
 		}
-		
+
 		// Perform actual migration in batches
 		let migrated = 0;
 		let failed = 0;
-		
+
 		for (let i = 0; i < needMigration.length; i += BATCH_SIZE) {
 			const batch = needMigration.slice(i, i + BATCH_SIZE);
-			
+
 			for (const record of batch) {
 				try {
 					const date = extractDateFromOldId(record.displayId);
 					const finalType = getPaymentType ? getPaymentType(record) : type;
 					const newId = generateNewDisplayId(finalType, date || record.createdAt);
-					
+
 					// Update the record
-					await db
-						.update(table)
-						.set({ displayId: newId })
-						.where(eq(table.id, record.id))
-						.execute();
-					
+					await db.update(table).set({ displayId: newId }).where(eq(table.id, record.id)).execute();
+
 					migrated++;
-					
+
 					if (migrated % 10 === 0) {
 						process.stdout.write(`\r  Migrated: ${migrated}/${needMigration.length}`);
 					}
@@ -187,13 +183,13 @@ async function migrateTable(
 				}
 			}
 		}
-		
+
 		console.log(); // New line after progress
 		success(`Migrated ${migrated} records in ${tableName}`);
 		if (failed > 0) {
 			error(`Failed to migrate ${failed} records`);
 		}
-		
+
 		return { migrated, failed, skipped: records.length - needMigration.length };
 	} catch (err) {
 		error(`Error migrating ${tableName}: ${err}`);
@@ -203,37 +199,37 @@ async function migrateTable(
 
 async function main() {
 	log(`${colors.bright}${colors.cyan}Display ID Migration Script (Development)${colors.reset}`);
-	log('=' .repeat(50));
-	
+	log('='.repeat(50));
+
 	if (DRY_RUN) {
 		warning('Running in DRY RUN mode - no changes will be made');
 		info('To perform actual migration, run without DRY_RUN=true');
 	} else {
 		warning('This will modify your database!');
 		info('To preview changes without modifying, run with DRY_RUN=true');
-		
+
 		// Give user time to cancel
 		console.log('\nStarting migration in 3 seconds... (Press Ctrl+C to cancel)');
-		await new Promise(resolve => setTimeout(resolve, 3000));
+		await new Promise((resolve) => setTimeout(resolve, 3000));
 	}
-	
+
 	const stats = {
 		products: { migrated: 0, failed: 0, skipped: 0 },
 		offers: { migrated: 0, failed: 0, skipped: 0 },
 		payments: { migrated: 0, failed: 0, skipped: 0 },
 		productOffers: { migrated: 0, failed: 0, skipped: 0 }
 	};
-	
+
 	try {
 		// Migrate products
 		stats.products = await migrateTable('products', products, 'product');
-		
+
 		// Migrate offers
 		stats.offers = await migrateTable('offers', offers, 'offer');
-		
+
 		// Migrate product_offers
 		stats.productOffers = await migrateTable('product_offers', productOffers, 'product_offer');
-		
+
 		// Migrate payments (need to determine if it's for offer or product)
 		stats.payments = await migrateTable('payments', payments, 'payment_offer', (record) => {
 			// Check if it's a product payment based on the old display_id
@@ -246,41 +242,40 @@ async function main() {
 			}
 			return 'payment_offer';
 		});
-		
+
 		// Print summary
 		console.log('\n' + '='.repeat(50));
 		log(`${colors.bright}Migration Summary${colors.reset}`);
 		console.log('='.repeat(50));
-		
+
 		const tables = ['products', 'offers', 'payments', 'productOffers'];
 		let totalMigrated = 0;
 		let totalFailed = 0;
 		let totalSkipped = 0;
-		
+
 		for (const tableName of tables) {
 			const stat = stats[tableName as keyof typeof stats];
 			console.log(`\n${tableName}:`);
 			console.log(`  Migrated: ${stat.migrated}`);
 			if (stat.failed > 0) console.log(`  Failed: ${stat.failed}`);
 			console.log(`  Skipped: ${stat.skipped}`);
-			
+
 			totalMigrated += stat.migrated;
 			totalFailed += stat.failed || 0;
 			totalSkipped += stat.skipped;
 		}
-		
+
 		console.log('\n' + '-'.repeat(50));
 		console.log(`Total migrated: ${totalMigrated}`);
 		if (totalFailed > 0) console.log(`Total failed: ${totalFailed}`);
 		console.log(`Total skipped: ${totalSkipped}`);
-		
+
 		if (DRY_RUN) {
 			info('\nThis was a dry run. No changes were made.');
 			info('Run without DRY_RUN=true to perform actual migration.');
 		} else {
 			success('\nMigration completed successfully!');
 		}
-		
 	} catch (err) {
 		error(`Migration failed: ${err}`);
 		process.exit(1);

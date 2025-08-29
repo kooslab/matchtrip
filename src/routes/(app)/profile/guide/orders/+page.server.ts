@@ -99,7 +99,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	});
 
 	// Decrypt buyer information for all orders
-	const decryptedOrders = allOrders.map(order => {
+	const decryptedOrders = allOrders.map((order) => {
 		if (order.buyerName || order.buyerEmail) {
 			const decryptedBuyer = decryptUserFields({
 				name: order.buyerName,

@@ -46,12 +46,12 @@
 	let { data } = $props();
 	let trip = $derived(data.trip as TripData);
 	console.log('trip', trip);
-	
+
 	// Use $state for offers to enable reactive updates
 	let offers = $state(data.offers);
 	let acceptedOffer = $derived(offers.find((o) => o.status === 'accepted'));
 	let review = $derived(data.review);
-	
+
 	// Polling state
 	let pollingInterval: number | null = null;
 	let isPolling = $state(false);
@@ -106,20 +106,20 @@
 	// Fetch offers from API
 	async function fetchOffers() {
 		if (!trip?.id) return;
-		
+
 		try {
 			const response = await fetch(`/api/trips/${trip.id}/offers`);
 			if (!response.ok) {
 				throw new Error('Failed to fetch offers');
 			}
-			
+
 			const data = await response.json();
 			const newOffers = data.offers;
-			
+
 			// Check for new offers
-			const currentOfferIds = new Set(offers.map(o => o.id));
-			const fetchedOfferIds = new Set(newOffers.map(o => o.id));
-			
+			const currentOfferIds = new Set(offers.map((o) => o.id));
+			const fetchedOfferIds = new Set(newOffers.map((o) => o.id));
+
 			// Identify new offers
 			const newIds = new Set<string>();
 			for (const id of fetchedOfferIds) {
@@ -128,7 +128,7 @@
 					hasNewOffers = true;
 				}
 			}
-			
+
 			// Update new offer IDs (for visual highlighting)
 			if (newIds.size > 0) {
 				newOfferIds = newIds;
@@ -138,16 +138,15 @@
 					hasNewOffers = false;
 				}, 5000);
 			}
-			
+
 			// Update offers
 			offers = newOffers;
 			lastUpdated = data.metadata.lastUpdated;
 			pollingErrorCount = 0; // Reset error count on success
-			
 		} catch (error) {
 			console.error('Error fetching offers:', error);
 			pollingErrorCount++;
-			
+
 			// Stop polling after too many errors
 			if (pollingErrorCount >= MAX_ERROR_COUNT) {
 				stopPolling();
@@ -155,17 +154,17 @@
 			}
 		}
 	}
-	
+
 	// Start polling
 	function startPolling() {
 		if (pollingInterval) return; // Already polling
-		
+
 		isPolling = true;
 		pollingStartTime = Date.now();
-		
+
 		// Initial fetch
 		fetchOffers();
-		
+
 		// Set up interval
 		pollingInterval = setInterval(() => {
 			// Check if we've been polling too long
@@ -174,16 +173,16 @@
 				console.log('Polling stopped due to timeout');
 				return;
 			}
-			
+
 			// Check if tab is visible
 			if (document.hidden) {
 				return; // Skip fetch if tab is not visible
 			}
-			
+
 			fetchOffers();
 		}, POLLING_INTERVAL);
 	}
-	
+
 	// Stop polling
 	function stopPolling() {
 		if (pollingInterval) {
@@ -193,7 +192,7 @@
 		isPolling = false;
 		pollingStartTime = null;
 	}
-	
+
 	// Handle visibility change
 	function handleVisibilityChange() {
 		if (document.hidden) {
@@ -207,23 +206,23 @@
 			}
 		}
 	}
-	
+
 	// Lifecycle hooks
 	onMount(() => {
 		// Only start polling if we're on the offers tab and trip is not completed
 		if (trip.status !== 'completed' && trip.status !== 'cancelled') {
 			startPolling();
 		}
-		
+
 		// Listen for visibility changes
 		document.addEventListener('visibilitychange', handleVisibilityChange);
 	});
-	
+
 	onDestroy(() => {
 		stopPolling();
 		document.removeEventListener('visibilitychange', handleVisibilityChange);
 	});
-	
+
 	// Watch for tab changes
 	$effect(() => {
 		if (activeTab === 'offers' && trip.status !== 'completed' && trip.status !== 'cancelled') {
@@ -393,7 +392,7 @@
 			>
 				받은 제안 ({offers.length})
 				{#if hasNewOffers && activeTab !== 'offers'}
-					<span class="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>
+					<span class="absolute top-2 right-2 h-2 w-2 animate-pulse rounded-full bg-red-500"></span>
 				{/if}
 			</button>
 		</div>
@@ -537,12 +536,12 @@
 				{#if isPolling}
 					<div class="mb-3 flex items-center justify-between rounded-lg bg-blue-50 px-3 py-2">
 						<div class="flex items-center gap-2">
-							<div class="h-2 w-2 rounded-full bg-blue-500 animate-pulse"></div>
+							<div class="h-2 w-2 animate-pulse rounded-full bg-blue-500"></div>
 							<span class="text-xs text-blue-700">실시간 업데이트 중</span>
 						</div>
-						<button 
+						<button
 							onclick={stopPolling}
-							class="text-xs text-blue-600 hover:text-blue-800 underline"
+							class="text-xs text-blue-600 underline hover:text-blue-800"
 						>
 							중지
 						</button>
@@ -550,18 +549,18 @@
 				{:else if trip.status !== 'completed' && trip.status !== 'cancelled'}
 					<div class="mb-3 flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
 						<span class="text-xs text-gray-600">업데이트 일시정지됨</span>
-						<button 
+						<button
 							onclick={startPolling}
-							class="text-xs text-blue-600 hover:text-blue-800 underline"
+							class="text-xs text-blue-600 underline hover:text-blue-800"
 						>
 							재시작
 						</button>
 					</div>
 				{/if}
-				
+
 				{#if hasNewOffers}
 					<div class="mb-3 rounded-lg bg-green-50 px-3 py-2">
-						<span class="text-xs text-green-700 font-medium">✨ 새로운 제안이 도착했습니다!</span>
+						<span class="text-xs font-medium text-green-700">✨ 새로운 제안이 도착했습니다!</span>
 					</div>
 				{/if}
 
@@ -619,7 +618,9 @@
 						{#each offers as offer, index}
 							<div class="relative {newOfferIds.has(offer.id) ? 'animate-highlight' : ''}">
 								{#if newOfferIds.has(offer.id)}
-									<div class="absolute -top-2 -left-2 rounded-full bg-green-500 px-2 py-1 text-xs text-white z-10">
+									<div
+										class="absolute -top-2 -left-2 z-10 rounded-full bg-green-500 px-2 py-1 text-xs text-white"
+									>
 										NEW!
 									</div>
 								{/if}
@@ -768,21 +769,22 @@
 		width: 100%;
 		height: 100%;
 	}
-	
+
 	/* Pulse animation for status indicator */
 	@keyframes pulse {
-		0%, 100% {
+		0%,
+		100% {
 			opacity: 1;
 		}
 		50% {
 			opacity: 0.5;
 		}
 	}
-	
+
 	.animate-pulse {
 		animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 	}
-	
+
 	/* Highlight animation for new offers */
 	@keyframes highlight {
 		0% {
@@ -798,7 +800,7 @@
 			transform: scale(1);
 		}
 	}
-	
+
 	.animate-highlight {
 		animation: highlight 2s ease-in-out infinite;
 		border-radius: 0.5rem;

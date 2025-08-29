@@ -54,9 +54,9 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 		.leftJoin(users, eq(productMessages.senderId, users.id))
 		.where(eq(productMessages.conversationId, conversationId))
 		.orderBy(productMessages.createdAt);
-	
+
 	// Decrypt user data in messages
-	const decryptedMessages = messages.map(msg => ({
+	const decryptedMessages = messages.map((msg) => ({
 		...msg,
 		sender: msg.sender ? decryptUserFields(msg.sender) : null
 	}));

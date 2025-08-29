@@ -105,109 +105,109 @@ export const auth = betterAuth({
 					},
 					// Add custom getUserInfo that properly requests email from Kakao
 					getUserInfo: async (data) => {
-					console.log('[KAKAO OAUTH] Custom getUserInfo called');
-					const accessToken = data.accessToken || (data as any).access_token || data;
+						console.log('[KAKAO OAUTH] Custom getUserInfo called');
+						const accessToken = data.accessToken || (data as any).access_token || data;
 
-					try {
-						// Make request to Kakao API with property_keys
-						const propertyKeys = ['kakao_account.email', 'kakao_account.profile'];
-						const response = await fetch('https://kapi.kakao.com/v2/user/me', {
-							method: 'POST',
-							headers: {
-								Authorization: `Bearer ${accessToken}`,
-								'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
-							},
-							body: new URLSearchParams({
-								property_keys: JSON.stringify(propertyKeys)
-							})
-						});
+						try {
+							// Make request to Kakao API with property_keys
+							const propertyKeys = ['kakao_account.email', 'kakao_account.profile'];
+							const response = await fetch('https://kapi.kakao.com/v2/user/me', {
+								method: 'POST',
+								headers: {
+									Authorization: `Bearer ${accessToken}`,
+									'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+								},
+								body: new URLSearchParams({
+									property_keys: JSON.stringify(propertyKeys)
+								})
+							});
 
-						if (!response.ok) {
-							const errorText = await response.text();
-							throw new Error(`Kakao API error: ${response.status} - ${errorText}`);
+							if (!response.ok) {
+								const errorText = await response.text();
+								throw new Error(`Kakao API error: ${response.status} - ${errorText}`);
+							}
+
+							const userData = await response.json();
+							console.log(
+								'[KAKAO OAUTH] Got user data from Kakao:',
+								JSON.stringify(userData, null, 2)
+							);
+
+							// Better-auth expects email at the top level of the returned object
+							// Extract and normalize the data
+							const email = userData.kakao_account?.email;
+							if (!email) {
+								throw new Error('Email not provided by Kakao');
+							}
+
+							const name = userData.kakao_account?.profile?.nickname || 'Kakao User';
+
+							// Encrypt only name (keep email unencrypted to avoid better-auth truncation)
+							console.log('[KAKAO OAUTH] Encrypting name:', name);
+							const encryptedName = encrypt(name);
+							console.log('[KAKAO OAUTH] Encrypted name result:', encryptedName);
+
+							const normalizedUser = {
+								id: userData.id?.toString() || '',
+								email: email, // Keep email unencrypted to avoid better-auth truncation issues
+								name: encryptedName || name, // Fallback to original if encryption fails
+								image: userData.kakao_account?.profile?.profile_image_url || null,
+								emailVerified: userData.kakao_account?.is_email_verified || false,
+								createdAt: new Date(),
+								updatedAt: new Date()
+							};
+
+							console.log(
+								'[KAKAO OAUTH] Returning normalized user data:',
+								JSON.stringify({ ...normalizedUser, name: '[ENCRYPTED]' }, null, 2)
+							);
+							return normalizedUser;
+						} catch (error) {
+							console.error('[KAKAO OAUTH] Error in getUserInfo:', error);
+							throw error;
 						}
-
-						const userData = await response.json();
+					},
+					mapProfileToUser: async (profile) => {
 						console.log(
-							'[KAKAO OAUTH] Got user data from Kakao:',
-							JSON.stringify(userData, null, 2)
+							'[KAKAO OAUTH] mapProfileToUser called with:',
+							JSON.stringify(profile, null, 2)
 						);
 
-						// Better-auth expects email at the top level of the returned object
-						// Extract and normalize the data
-						const email = userData.kakao_account?.email;
-						if (!email) {
+						// Since getUserInfo already normalized the data, we can use it directly
+						// Check if this is already normalized data or raw Kakao data
+						if (profile.email && profile.id) {
+							// Already normalized by getUserInfo
+							console.log('[KAKAO OAUTH] Using pre-normalized user data');
+
+							// Encrypt only name (keep email unencrypted)
+							console.log('[KAKAO OAUTH] mapProfileToUser - Encrypting name:', profile.name);
+							const encryptedName = encrypt(profile.name);
+							console.log('[KAKAO OAUTH] mapProfileToUser - Encrypted name result:', encryptedName);
+
+							return {
+								email: profile.email, // Keep email unencrypted to avoid better-auth truncation issues
+								name: encryptedName || profile.name || undefined, // Fallback to original if encryption fails
+								image: profile.image,
+								emailVerified: profile.emailVerified
+							};
+						}
+
+						// Fallback for raw Kakao data (shouldn't happen with our getUserInfo)
+						const kakaoAccount = profile.kakao_account || {};
+						if (!kakaoAccount.email) {
 							throw new Error('Email not provided by Kakao');
 						}
 
-						const name = userData.kakao_account?.profile?.nickname || 'Kakao User';
-						
-						// Encrypt only name (keep email unencrypted to avoid better-auth truncation)
-						console.log('[KAKAO OAUTH] Encrypting name:', name);
-						const encryptedName = encrypt(name);
-						console.log('[KAKAO OAUTH] Encrypted name result:', encryptedName);
+						const nameToEncrypt = kakaoAccount.profile?.nickname || 'Kakao User';
+						const encryptedName = encrypt(nameToEncrypt);
 
-						const normalizedUser = {
-							id: userData.id?.toString() || '',
-							email: email, // Keep email unencrypted to avoid better-auth truncation issues
-							name: encryptedName || name, // Fallback to original if encryption fails
-							image: userData.kakao_account?.profile?.profile_image_url || null,
-							emailVerified: userData.kakao_account?.is_email_verified || false,
-							createdAt: new Date(),
-							updatedAt: new Date()
-						};
-
-						console.log(
-							'[KAKAO OAUTH] Returning normalized user data:',
-							JSON.stringify({ ...normalizedUser, name: '[ENCRYPTED]' }, null, 2)
-						);
-						return normalizedUser;
-					} catch (error) {
-						console.error('[KAKAO OAUTH] Error in getUserInfo:', error);
-						throw error;
-					}
-				},
-					mapProfileToUser: async (profile) => {
-					console.log(
-						'[KAKAO OAUTH] mapProfileToUser called with:',
-						JSON.stringify(profile, null, 2)
-					);
-
-					// Since getUserInfo already normalized the data, we can use it directly
-					// Check if this is already normalized data or raw Kakao data
-					if (profile.email && profile.id) {
-						// Already normalized by getUserInfo
-						console.log('[KAKAO OAUTH] Using pre-normalized user data');
-						
-						// Encrypt only name (keep email unencrypted)
-						console.log('[KAKAO OAUTH] mapProfileToUser - Encrypting name:', profile.name);
-						const encryptedName = encrypt(profile.name);
-						console.log('[KAKAO OAUTH] mapProfileToUser - Encrypted name result:', encryptedName);
-						
 						return {
-							email: profile.email, // Keep email unencrypted to avoid better-auth truncation issues
-							name: encryptedName || profile.name || undefined, // Fallback to original if encryption fails
-							image: profile.image,
-							emailVerified: profile.emailVerified
+							email: kakaoAccount.email, // Keep email unencrypted to avoid better-auth truncation issues
+							name: encryptedName || nameToEncrypt, // Fallback to original if encryption fails
+							image: kakaoAccount.profile?.profile_image_url,
+							emailVerified: kakaoAccount.is_email_verified || false
 						};
 					}
-
-					// Fallback for raw Kakao data (shouldn't happen with our getUserInfo)
-					const kakaoAccount = profile.kakao_account || {};
-					if (!kakaoAccount.email) {
-						throw new Error('Email not provided by Kakao');
-					}
-
-					const nameToEncrypt = kakaoAccount.profile?.nickname || 'Kakao User';
-					const encryptedName = encrypt(nameToEncrypt);
-
-					return {
-						email: kakaoAccount.email, // Keep email unencrypted to avoid better-auth truncation issues
-						name: encryptedName || nameToEncrypt, // Fallback to original if encryption fails
-						image: kakaoAccount.profile?.profile_image_url,
-						emailVerified: kakaoAccount.is_email_verified || false
-					};
-				}
 				}
 			]
 		})

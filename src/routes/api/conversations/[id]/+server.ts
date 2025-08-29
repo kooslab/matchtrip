@@ -75,14 +75,16 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 			.leftJoin(users, eq(messages.senderId, users.id))
 			.where(eq(messages.conversationId, conversationId))
 			.orderBy(asc(messages.createdAt));
-		
+
 		// Decrypt user data in messages
-		const decryptedMessages = conversationMessages.map(msg => ({
+		const decryptedMessages = conversationMessages.map((msg) => ({
 			...msg,
-			sender: msg.sender ? {
-				...decryptUserFields(msg.sender),
-				image: transformImageUrl(msg.sender.image)
-			} : null
+			sender: msg.sender
+				? {
+						...decryptUserFields(msg.sender),
+						image: transformImageUrl(msg.sender.image)
+					}
+				: null
 		}));
 
 		// Update last read timestamp
@@ -280,7 +282,7 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 				// Decrypt phone and names
 				const decryptedRecipientPhone = decrypt(recipient[0].phone);
 				const decryptedSenderName = sender[0]?.name ? decrypt(sender[0].name) : null;
-				
+
 				if (isGuide) {
 					// Guide replied to traveler (chat01)
 					console.log('[CONVERSATIONS API] Sending guide reply AlimTalk to traveler');

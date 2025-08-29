@@ -48,12 +48,14 @@
 					{:else}
 						<div class="flex h-16 w-16 items-center justify-center rounded-full bg-gray-200">
 							<svg class="h-8 w-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-								<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+								<path
+									d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+								/>
 							</svg>
 						</div>
 					{/if}
 				</div>
-				
+
 				<!-- User Info and Edit Button -->
 				<div class="flex flex-1 items-center justify-between">
 					<h2 class="text-lg font-semibold">

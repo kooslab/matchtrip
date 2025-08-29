@@ -3,12 +3,14 @@
 ## ✅ Successfully Resolved Double Encryption Issue
 
 ### Problem
+
 - Data was double-encrypted with different implementations
 - Names showed as "ENC::IvBmL6JXq3D2hDGkId1rVw==:..." in admin app
 - Inner "ENC:" layer used a different, incompatible encryption method
 - Could not decrypt the inner layer even with the same key
 
 ### Solution
+
 1. Created `reset-double-encrypted-names.ts` script
 2. Reset 10 double-encrypted user names to values derived from emails
 3. Removed 9 double-encrypted phone numbers
@@ -17,6 +19,7 @@
 ## 🔐 New Encryption Standard Established
 
 ### Core Implementation
+
 - **Location**: `encryption-core.ts` in both apps (identical copy)
 - **Algorithm**: AES-256-GCM
 - **Format**: `encrypted:<iv_base64>:<auth_tag_base64>:<data_base64>`
@@ -25,6 +28,7 @@
 ### Files Created/Updated
 
 #### Main App (matchtrip)
+
 - `/src/lib/server/encryption-core.ts` - Core encryption logic
 - `/src/lib/server/encryption.ts` - Wrapper that imports core
 - `/scripts/reset-double-encrypted-names.ts` - Fix double encryption
@@ -32,6 +36,7 @@
 - `/ENCRYPTION_STANDARD.md` - Documentation
 
 #### Admin App (admin-matchtrip)
+
 - `/src/lib/server/encryption-core.ts` - Identical core logic
 - `/src/lib/server/encryption.ts` - Wrapper that imports core
 - `/scripts/test-cross-app-decryption.ts` - Cross-app validation
@@ -40,6 +45,7 @@
 ## ✅ Verification Complete
 
 ### Tests Performed
+
 1. **Consistency Test**: All encryption/decryption tests pass
 2. **Cross-App Test**: Data encrypted in main app decrypts in admin app ✅
 3. **Reverse Test**: Data encrypted in admin app decrypts in main app ✅
@@ -49,6 +55,7 @@
 ## 📋 Critical Rules Going Forward
 
 ### DO:
+
 - ✅ Always use the `encryption-core.ts` module
 - ✅ Keep both apps' core modules identical
 - ✅ Use "encrypted:" prefix (lowercase with colon)
@@ -57,6 +64,7 @@
 - ✅ Test cross-app compatibility before deploying
 
 ### DON'T:
+
 - ❌ Never use different prefixes (ENC:, enc:, ENCRYPTED:)
 - ❌ Never use different encoding (hex, URL-safe base64)
 - ❌ Never modify core without updating both apps
@@ -66,11 +74,13 @@
 ## 🔄 Migration Complete
 
 ### Before:
+
 - 10 users with double-encrypted names
 - 9 users with double-encrypted phones
 - Inconsistent encryption methods
 
 ### After:
+
 - All names properly encrypted with single method
 - Names reset to email-derived defaults
 - Phone numbers removed (users can re-add)

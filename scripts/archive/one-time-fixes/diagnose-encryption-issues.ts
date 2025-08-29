@@ -13,7 +13,7 @@ async function diagnoseEncryptionIssues() {
 	try {
 		// Get all users
 		const allUsers = await db.select().from(users);
-		
+
 		let totalUsers = allUsers.length;
 		let encryptedEmails = 0;
 		let encryptedNames = 0;
@@ -95,17 +95,17 @@ async function diagnoseEncryptionIssues() {
 		console.log('📊 ENCRYPTION DIAGNOSIS SUMMARY');
 		console.log('='.repeat(60));
 		console.log(`Total users: ${totalUsers}\n`);
-		
+
 		console.log('📧 EMAIL STATUS:');
 		console.log(`  ✅ Properly encrypted: ${encryptedEmails}`);
 		console.log(`  ❌ Corrupted encrypted: ${corruptedEmails}`);
 		console.log(`  ⚠️  Plain text: ${plainEmails}\n`);
-		
+
 		console.log('👤 NAME STATUS:');
 		console.log(`  ✅ Properly encrypted: ${encryptedNames}`);
 		console.log(`  ❌ Corrupted encrypted: ${corruptedNames}`);
 		console.log(`  ⚠️  Plain text: ${plainNames}\n`);
-		
+
 		console.log('📱 PHONE STATUS:');
 		console.log(`  ✅ Properly encrypted: ${encryptedPhones}`);
 		console.log(`  ❌ Corrupted encrypted: ${corruptedPhones}`);
@@ -129,7 +129,6 @@ async function diagnoseEncryptionIssues() {
 		if (totalCorrupted === 0 && totalPlain === 0) {
 			console.log('✨ All data is properly encrypted and can be decrypted!');
 		}
-
 	} catch (error) {
 		console.error('Fatal error:', error);
 		process.exit(1);

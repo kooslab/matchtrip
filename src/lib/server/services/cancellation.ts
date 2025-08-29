@@ -72,15 +72,15 @@ export class CancellationService {
 
 		// Calculate refund amount
 		// Priority: tripStartDate (for trips) > productOfferStartDate (for product offers)
-		const tripOrProductDate =
-			paymentData.tripStartDate || paymentData.productOfferStartDate;
+		const tripOrProductDate = paymentData.tripStartDate || paymentData.productOfferStartDate;
 
 		if (!tripOrProductDate) {
 			throw new Error('Cannot determine trip/product date for refund calculation');
 		}
 
 		// Determine policy type based on what's being cancelled
-		const policyType = paymentData.payment.productId || paymentData.payment.productOfferId ? 'product' : 'trip';
+		const policyType =
+			paymentData.payment.productId || paymentData.payment.productOfferId ? 'product' : 'trip';
 
 		// Fetch refund policies from database
 		const policies = await fetchRefundPolicies(policyType);
@@ -287,7 +287,7 @@ export class CancellationService {
 				.from(productOffers)
 				.where(eq(productOffers.id, paymentData.payment.productOfferId))
 				.limit(1);
-			
+
 			if (productOffer) {
 				const [conv] = await db
 					.select()

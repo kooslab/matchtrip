@@ -48,7 +48,7 @@
 	</div>
 
 	<!-- Bottom CTA -->
-	<div class="px-4 py-4 pb-safe">
+	<div class="pb-safe px-4 py-4">
 		<button
 			onclick={goToHome}
 			class="w-full rounded-lg py-3.5 text-base font-semibold text-white transition-all hover:opacity-90"

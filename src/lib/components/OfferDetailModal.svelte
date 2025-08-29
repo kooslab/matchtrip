@@ -235,12 +235,12 @@
 									<p class="flex-shrink-0 text-sm text-gray-500">여행 일정</p>
 									<div class="flex items-center gap-2">
 										<p class="text-sm text-gray-900">
-											{trip?.startDate && trip?.endDate 
+											{trip?.startDate && trip?.endDate
 												? `${formatKoreanDate(trip.startDate)} ~ ${formatKoreanDate(trip.endDate)}`
 												: '날짜 미정'}
 										</p>
 										<p class="text-sm text-blue-600">
-											{trip?.startDate && trip?.endDate 
+											{trip?.startDate && trip?.endDate
 												? calculateNightsAndDays(trip.startDate, trip.endDate)
 												: ''}
 										</p>
@@ -251,7 +251,7 @@
 								<div class="flex items-center justify-between">
 									<p class="text-sm text-gray-500">인원</p>
 									<p class="text-sm text-gray-900">
-										{trip?.adultsCount 
+										{trip?.adultsCount
 											? `성인 ${trip.adultsCount}명${trip.childrenCount ? ` · 아동 ${trip.childrenCount}명` : ''}`
 											: '인원 미정'}
 									</p>

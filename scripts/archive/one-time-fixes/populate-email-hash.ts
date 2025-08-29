@@ -15,11 +15,8 @@ async function populateEmailHashes() {
 
 	try {
 		// Fetch all users without email_hash
-		const usersWithoutHash = await db
-			.select()
-			.from(users)
-			.where(isNull(users.emailHash));
-		
+		const usersWithoutHash = await db.select().from(users).where(isNull(users.emailHash));
+
 		console.log(`Found ${usersWithoutHash.length} users without email hash\n`);
 
 		let successCount = 0;
@@ -29,13 +26,10 @@ async function populateEmailHashes() {
 			try {
 				// Generate hash for the email
 				const emailHash = hashEmail(user.email);
-				
+
 				// Update user with email hash
-				await db
-					.update(users)
-					.set({ emailHash })
-					.where(eq(users.id, user.id));
-				
+				await db.update(users).set({ emailHash }).where(eq(users.id, user.id));
+
 				console.log(`✓ User ${user.id}: Email hash added`);
 				successCount++;
 			} catch (error) {
@@ -60,7 +54,6 @@ async function populateEmailHashes() {
 		} else {
 			console.log('✅ Email hash population completed successfully!');
 		}
-
 	} catch (error) {
 		console.error('Fatal error during email hash population:', error);
 		process.exit(1);
@@ -73,22 +66,16 @@ async function dryRun() {
 	console.log('='.repeat(50));
 
 	try {
-		const usersWithoutHash = await db
-			.select()
-			.from(users)
-			.where(isNull(users.emailHash));
-		
-		const usersWithHash = await db
-			.select()
-			.from(users)
-			.where(eq(users.emailHash, users.emailHash));
+		const usersWithoutHash = await db.select().from(users).where(isNull(users.emailHash));
+
+		const usersWithHash = await db.select().from(users).where(eq(users.emailHash, users.emailHash));
 
 		console.log(`Users without email hash: ${usersWithoutHash.length}`);
 		console.log(`Users with email hash: ${usersWithHash.length}`);
-		
+
 		if (usersWithoutHash.length > 0) {
 			console.log('\nSample of users that would be updated:');
-			usersWithoutHash.slice(0, 5).forEach(user => {
+			usersWithoutHash.slice(0, 5).forEach((user) => {
 				console.log(`  - User ${user.id}: ${user.email.substring(0, 3)}***`);
 			});
 		}
@@ -98,7 +85,6 @@ async function dryRun() {
 		console.log('='.repeat(50));
 		console.log(`Would update: ${usersWithoutHash.length} users`);
 		console.log('='.repeat(50) + '\n');
-
 	} catch (error) {
 		console.error('Error during dry run:', error);
 		process.exit(1);
@@ -115,7 +101,7 @@ if (isDryRun) {
 	console.log('⚠️  WARNING: This will populate email_hash for all users.');
 	console.log('Run with --dry-run flag to preview changes.\n');
 	console.log('Starting in 3 seconds... Press Ctrl+C to cancel.\n');
-	
+
 	setTimeout(() => {
 		populateEmailHashes();
 	}, 3000);

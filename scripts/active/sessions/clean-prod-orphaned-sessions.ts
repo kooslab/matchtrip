@@ -10,8 +10,10 @@ import { eq } from 'drizzle-orm';
 
 async function cleanProdOrphanedSessions() {
 	// Use production database URL
-	const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://dev_owner:npg_JyqW5RA0ZePO@ep-frosty-mud-a2r43wg5-pooler.eu-central-1.aws.neon.tech/dev?sslmode=require&channel_binding=require';
-	
+	const DATABASE_URL =
+		process.env.DATABASE_URL ||
+		'postgresql://dev_owner:npg_JyqW5RA0ZePO@ep-frosty-mud-a2r43wg5-pooler.eu-central-1.aws.neon.tech/dev?sslmode=require&channel_binding=require';
+
 	console.log('🧹 Cleaning up orphaned sessions in PRODUCTION...\n');
 	console.log('📡 Database URL:', DATABASE_URL.replace(/:[^:@]*@/, ':****@'));
 
@@ -25,11 +27,11 @@ async function cleanProdOrphanedSessions() {
 
 		// Get all user IDs
 		const allUsers = await db.select({ id: users.id }).from(users);
-		const userIds = new Set(allUsers.map(u => u.id));
+		const userIds = new Set(allUsers.map((u) => u.id));
 		console.log(`📊 Total users: ${allUsers.length}`);
 
 		// Find orphaned sessions
-		const orphanedSessions = allSessions.filter(session => !userIds.has(session.userId));
+		const orphanedSessions = allSessions.filter((session) => !userIds.has(session.userId));
 		console.log(`🔍 Found ${orphanedSessions.length} orphaned sessions`);
 
 		if (orphanedSessions.length === 0) {
@@ -53,7 +55,6 @@ async function cleanProdOrphanedSessions() {
 
 		console.log(`\n✨ Successfully cleaned up ${orphanedSessions.length} orphaned sessions!`);
 		console.log('Users can now login with Kakao without issues.');
-
 	} catch (error) {
 		console.error('Fatal error:', error);
 		process.exit(1);

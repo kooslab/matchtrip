@@ -123,7 +123,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		});
 
 		// Decrypt traveler names in the reviews
-		const decryptedReviews = guideReviews.map(review => ({
+		const decryptedReviews = guideReviews.map((review) => ({
 			...review,
 			traveler: review.traveler ? decryptUserFields(review.traveler) : null
 		}));

@@ -14,7 +14,7 @@ async function decryptExistingEmails() {
 	try {
 		// Get all users with encrypted emails
 		const allUsers = await db.select().from(users);
-		
+
 		let processedCount = 0;
 		let errorCount = 0;
 
@@ -23,15 +23,16 @@ async function decryptExistingEmails() {
 				try {
 					console.log(`🔓 Decrypting email for user ${user.id}...`);
 					const decryptedEmail = decrypt(user.email);
-					
+
 					// Update the user with decrypted email
-					await db.update(users)
-						.set({ 
+					await db
+						.update(users)
+						.set({
 							email: decryptedEmail,
 							updatedAt: new Date()
 						})
 						.where(eq(users.id, user.id));
-					
+
 					console.log(`  ✅ Successfully decrypted email for user ${user.id}`);
 					processedCount++;
 				} catch (error) {
@@ -48,11 +49,12 @@ async function decryptExistingEmails() {
 		console.log(`  - Errors (corrupted data): ${errorCount}`);
 
 		if (errorCount > 0) {
-			console.log(`\n⚠️  ${errorCount} users have corrupted encrypted emails that need manual deletion.`);
+			console.log(
+				`\n⚠️  ${errorCount} users have corrupted encrypted emails that need manual deletion.`
+			);
 		}
 
 		console.log('\n✨ Email decryption process completed!');
-
 	} catch (error) {
 		console.error('Fatal error:', error);
 		process.exit(1);

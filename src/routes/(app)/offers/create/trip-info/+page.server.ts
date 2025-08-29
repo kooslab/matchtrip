@@ -45,8 +45,12 @@ export const load: PageServerLoad = async ({ url }) => {
 	// Decrypt traveler information
 	const decryptedTrip = {
 		...trip[0],
-		travelerName: trip[0].travelerName ? decryptUserFields({ name: trip[0].travelerName }).name : null,
-		travelerEmail: trip[0].travelerEmail ? decryptUserFields({ email: trip[0].travelerEmail }).email : null
+		travelerName: trip[0].travelerName
+			? decryptUserFields({ name: trip[0].travelerName }).name
+			: null,
+		travelerEmail: trip[0].travelerEmail
+			? decryptUserFields({ email: trip[0].travelerEmail }).email
+			: null
 	};
 
 	return {

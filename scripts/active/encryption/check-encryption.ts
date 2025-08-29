@@ -21,7 +21,7 @@ async function checkEncryption() {
 
 	// Test encryption
 	console.log('\n🧪 Testing encryption...');
-	
+
 	const testCases = [
 		'John Doe',
 		'test@example.com',
@@ -34,11 +34,11 @@ async function checkEncryption() {
 
 	for (const testCase of testCases) {
 		console.log(`\nTesting: "${testCase}"`);
-		
+
 		try {
 			// Test encryption
 			const encrypted = encrypt(testCase);
-			
+
 			if (testCase === '') {
 				if (encrypted === null) {
 					console.log('  ✅ Empty string returns null (expected behavior)');
@@ -67,7 +67,7 @@ async function checkEncryption() {
 
 			// Test decryption
 			const decrypted = decrypt(encrypted);
-			
+
 			if (decrypted !== testCase) {
 				console.log(`  ❌ Decryption failed. Expected: "${testCase}", Got: "${decrypted}"`);
 				allPassed = false;
@@ -75,7 +75,6 @@ async function checkEncryption() {
 			}
 
 			console.log('  ✅ Encryption and decryption successful');
-
 		} catch (error) {
 			console.log(`  ❌ Error: ${error}`);
 			allPassed = false;

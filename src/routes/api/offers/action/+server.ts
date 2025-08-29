@@ -92,8 +92,10 @@ export const POST: RequestHandler = async ({ request }) => {
 					console.log('[OFFERS ACTION] Sending offer acceptance AlimTalk to guide');
 					const decryptedGuidePhone = decrypt(guideUser[0].phone);
 					const decryptedGuideName = guideUser[0].name ? decrypt(guideUser[0].name) : null;
-					const decryptedTravelerName = travelerUser[0]?.name ? decrypt(travelerUser[0].name) : null;
-					
+					const decryptedTravelerName = travelerUser[0]?.name
+						? decrypt(travelerUser[0].name)
+						: null;
+
 					await notificationService.sendNotification({
 						userId: offer[0].guideId,
 						phoneNumber: decryptedGuidePhone,

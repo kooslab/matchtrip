@@ -77,7 +77,7 @@ export const POST: RequestHandler = async ({ locals }) => {
 				console.log('[API COMPLETE ONBOARDING] Sending welcome AlimTalk notification');
 				const decryptedPhone = decrypt(freshUser.phone);
 				const decryptedName = freshUser.name ? decrypt(freshUser.name) : null;
-				
+
 				await notificationService.sendNotification({
 					userId: freshUser.id,
 					phoneNumber: decryptedPhone,
@@ -96,7 +96,9 @@ export const POST: RequestHandler = async ({ locals }) => {
 				);
 			}
 		} else {
-			console.log('[API COMPLETE ONBOARDING] No phone number found for user - AlimTalk notification not sent');
+			console.log(
+				'[API COMPLETE ONBOARDING] No phone number found for user - AlimTalk notification not sent'
+			);
 		}
 
 		return json({

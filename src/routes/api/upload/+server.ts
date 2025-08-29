@@ -58,11 +58,11 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			'application/vnd.openxmlformats-officedocument.presentationml.presentation', // PPTX
 			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // XLSX
 		];
-		
+
 		// Determine allowed types and formats based on upload type
 		let allowedTypes: string[];
 		let allowedFormats: string;
-		
+
 		if (type === 'destination' || type === 'offer-description') {
 			// Only images for destination and offer descriptions
 			allowedTypes = imageTypes;

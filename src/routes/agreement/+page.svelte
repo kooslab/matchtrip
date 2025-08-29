@@ -54,7 +54,7 @@
 		} catch (error) {
 			console.error('Error saving agreements:', error);
 			const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-			
+
 			// Show more detailed error in development
 			if (window.location.hostname === 'localhost') {
 				alert(`Error: ${errorMessage}\n\nCheck the browser console for more details.`);
@@ -178,7 +178,7 @@
 		<Button onclick={handleSubmit} disabled={!allRequiredAgreed || isSubmitting} class="w-full">
 			{isSubmitting ? '처리 중...' : '동의하고 시작하기'}
 		</Button>
-		
+
 		<!-- Add sign out option for edge cases -->
 		<button
 			onclick={async () => {

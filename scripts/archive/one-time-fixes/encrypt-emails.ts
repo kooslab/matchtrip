@@ -33,7 +33,7 @@ async function encryptEmails() {
 
 		for (const user of allUsers) {
 			console.log(`\nProcessing user ${user.id}:`);
-			
+
 			let needsUpdate = false;
 			const updates: Partial<typeof users.$inferSelect> = {};
 
@@ -65,9 +65,7 @@ async function encryptEmails() {
 			// Update the user if any fields need changes
 			if (needsUpdate) {
 				try {
-					await db.update(users)
-						.set(updates)
-						.where(eq(users.id, user.id));
+					await db.update(users).set(updates).where(eq(users.id, user.id));
 					console.log(`  ✓ User ${user.id} updated successfully`);
 				} catch (error) {
 					console.error(`  ✗ Failed to update user ${user.id}:`, error);
@@ -90,13 +88,14 @@ async function encryptEmails() {
 
 		if (errorCount > 0) {
 			console.error('⚠️  Some users failed to update. Check the errors above.');
-			console.error('⚠️  If emails were already encrypted without hashes, manual intervention may be needed.');
+			console.error(
+				'⚠️  If emails were already encrypted without hashes, manual intervention may be needed.'
+			);
 			process.exit(1);
 		} else {
 			console.log('✅ Email encryption completed successfully!');
 			console.log('ℹ️  Email hashes are preserved for authentication and lookups.');
 		}
-
 	} catch (error) {
 		console.error('Fatal error during email encryption:', error);
 		process.exit(1);
@@ -119,7 +118,7 @@ async function dryRun() {
 
 		for (const user of allUsers) {
 			let needsEncryption = false;
-			
+
 			if (user.email && !isEncrypted(user.email)) {
 				console.log(`User ${user.id} - email needs encryption: ${user.email.substring(0, 3)}***`);
 				needsEncryption = true;
@@ -127,10 +126,12 @@ async function dryRun() {
 			} else if (user.email && isEncrypted(user.email)) {
 				alreadyEncrypted++;
 			}
-			
+
 			if (!user.emailHash) {
 				if (user.email && isEncrypted(user.email)) {
-					console.log(`User ${user.id} - ⚠️  Email is encrypted but hash is missing (cannot generate)`);
+					console.log(
+						`User ${user.id} - ⚠️  Email is encrypted but hash is missing (cannot generate)`
+					);
 					encryptedWithoutHash++;
 				} else {
 					console.log(`User ${user.id} - email hash missing (will be generated)`);
@@ -153,7 +154,6 @@ async function dryRun() {
 			console.error('⚠️  WARNING: Some emails are already encrypted without hashes.');
 			console.error('   These users may have authentication issues after encryption.');
 		}
-
 	} catch (error) {
 		console.error('Error during dry run:', error);
 		process.exit(1);
@@ -175,7 +175,7 @@ if (isDryRun) {
 	console.log('  4. Backed up your database');
 	console.log('\nRun with --dry-run flag to preview changes.\n');
 	console.log('Starting in 5 seconds... Press Ctrl+C to cancel.\n');
-	
+
 	setTimeout(() => {
 		encryptEmails();
 	}, 5000);

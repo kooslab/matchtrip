@@ -5,10 +5,12 @@
 These scripts migrate display IDs from the old format to the new format across all relevant tables.
 
 ### Old Formats
+
 - `PRODUCT_1755676035754_p2yptgpln` (timestamp-based)
 - `ORDER_1755748358423_mxo1i5jmd` (timestamp-based)
 
 ### New Formats
+
 - **Products**: `PRD-YYMM-XXXXX` (e.g., `PRD-2508-YAA8R`)
 - **Offers**: `OFFER-YYMM-XXXXX` (e.g., `OFFER-2508-NSVAT`)
 - **Orders (Offer-based)**: `ORD-YYMM-XXXXX` (e.g., `ORD-2508-CN447`)
@@ -34,6 +36,7 @@ bun run scripts/migrate-display-ids-dev.ts
 Use this for production environment with enhanced safety features.
 
 **Features:**
+
 - Requires explicit confirmation
 - Creates backup tables automatically
 - Transaction-based updates
@@ -70,6 +73,7 @@ DRY_RUN=false CONFIRM_ROLLBACK=yes bun run scripts/rollback-display-ids.ts
 ### Recommended Steps for Production:
 
 1. **Test in Development First**
+
    ```bash
    # On development environment
    DRY_RUN=true bun run scripts/migrate-display-ids-dev.ts
@@ -81,16 +85,20 @@ DRY_RUN=false CONFIRM_ROLLBACK=yes bun run scripts/rollback-display-ids.ts
    - The script also creates table-specific backups
 
 3. **Run Dry Run on Production**
+
    ```bash
    DRY_RUN=true CONFIRM_PRODUCTION=yes bun run scripts/migrate-display-ids-prod.ts
    ```
+
    - Review the log file in `logs/` directory
    - Verify the migration plan looks correct
 
 4. **Perform Production Migration**
+
    ```bash
    DRY_RUN=false CONFIRM_PRODUCTION=yes CREATE_BACKUP=true bun run scripts/migrate-display-ids-prod.ts
    ```
+
    - Monitor the progress
    - Check the log file for any errors
 
@@ -106,13 +114,16 @@ DRY_RUN=false CONFIRM_ROLLBACK=yes bun run scripts/rollback-display-ids.ts
 ## Important Notes
 
 ### Affected Tables
+
 - `products` - Product display IDs
-- `offers` - Offer display IDs  
+- `offers` - Offer display IDs
 - `payments` - Order/Payment display IDs
 - `product_offers` - Product offer display IDs
 
 ### Backup Tables
+
 When `CREATE_BACKUP=true`, the following backup tables are created:
+
 - `products_display_id_backup`
 - `offers_display_id_backup`
 - `payments_display_id_backup`
@@ -121,11 +132,13 @@ When `CREATE_BACKUP=true`, the following backup tables are created:
 These contain: `id`, `display_id`, `backup_date`
 
 ### ID Generation Logic
+
 - Uses the timestamp from old IDs when available (preserves chronological order)
 - Falls back to `created_at` field if timestamp extraction fails
 - Generates 5-character alphanumeric suffix using safe alphabet (excludes confusing characters like 0, O, I, 1, L)
 
 ### Safety Features in Production Script
+
 1. **Explicit Confirmation Required**: Must set `CONFIRM_PRODUCTION=yes`
 2. **Default Dry Run**: Defaults to dry run unless explicitly set to false
 3. **Automatic Backups**: Creates backup tables before migration
@@ -166,6 +179,7 @@ These contain: `id`, `display_id`, `backup_date`
 ## Support
 
 If you encounter issues:
+
 1. Check the log files in `logs/` directory
 2. Verify database connectivity
 3. Ensure all environment variables are set correctly

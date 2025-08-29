@@ -7,11 +7,11 @@ import { createHash } from 'crypto';
 export function hashEmail(email: string): string {
 	// Normalize email to lowercase for consistent hashing
 	const normalizedEmail = email.toLowerCase().trim();
-	
+
 	// Create SHA-256 hash
 	const hash = createHash('sha256');
 	hash.update(normalizedEmail);
-	
+
 	// Return hex-encoded hash
 	return hash.digest('hex');
 }

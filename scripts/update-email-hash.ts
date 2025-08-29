@@ -11,15 +11,12 @@ import crypto from 'crypto';
 async function hashEmail(email: string): Promise<string> {
 	// Create a consistent hash of the email for matching
 	// Using SHA-256 for consistency
-	return crypto
-		.createHash('sha256')
-		.update(email.toLowerCase().trim())
-		.digest('hex');
+	return crypto.createHash('sha256').update(email.toLowerCase().trim()).digest('hex');
 }
 
 async function updateEmailHashes() {
 	console.log('Starting email_hash update process...');
-	
+
 	try {
 		// Fetch all users with null email_hash
 		const usersWithNullHash = await db
@@ -30,17 +27,17 @@ async function updateEmailHashes() {
 			})
 			.from(users)
 			.where(isNull(users.emailHash));
-		
+
 		console.log(`Found ${usersWithNullHash.length} users with null email_hash`);
-		
+
 		if (usersWithNullHash.length === 0) {
 			console.log('No users need updating. Exiting.');
 			return;
 		}
-		
+
 		// Check for potential duplicates before updating
 		const emailHashMap = new Map<string, string[]>();
-		
+
 		for (const user of usersWithNullHash) {
 			const hash = await hashEmail(user.email);
 			if (!emailHashMap.has(hash)) {
@@ -48,50 +45,49 @@ async function updateEmailHashes() {
 			}
 			emailHashMap.get(hash)!.push(user.email);
 		}
-		
+
 		// Check for duplicate hashes
-		const duplicates = Array.from(emailHashMap.entries()).filter(([_, emails]) => emails.length > 1);
-		
+		const duplicates = Array.from(emailHashMap.entries()).filter(
+			([_, emails]) => emails.length > 1
+		);
+
 		if (duplicates.length > 0) {
 			console.warn('⚠️  Warning: Found duplicate email hashes:');
 			duplicates.forEach(([hash, emails]) => {
 				console.warn(`  Hash ${hash.substring(0, 10)}... is shared by:`);
-				emails.forEach(email => console.warn(`    - ${email}`));
+				emails.forEach((email) => console.warn(`    - ${email}`));
 			});
-			
+
 			console.log('\nDo you want to continue? The unique constraint will prevent duplicates.');
 			console.log('Only the first email for each hash will be updated.');
 		}
-		
+
 		// Update each user's email_hash
 		let successCount = 0;
 		let errorCount = 0;
-		const errors: Array<{email: string, error: string}> = [];
-		
+		const errors: Array<{ email: string; error: string }> = [];
+
 		for (const user of usersWithNullHash) {
 			try {
 				const hash = await hashEmail(user.email);
-				
+
 				// Check if this hash already exists in the database
 				const existingUser = await db
 					.select({ id: users.id })
 					.from(users)
 					.where(eq(users.emailHash, hash))
 					.limit(1);
-				
+
 				if (existingUser.length > 0) {
 					console.warn(`⚠️  Skipping ${user.email}: hash already exists`);
 					errors.push({ email: user.email, error: 'Hash already exists' });
 					errorCount++;
 					continue;
 				}
-				
+
 				// Update the user's email_hash
-				await db
-					.update(users)
-					.set({ emailHash: hash })
-					.where(eq(users.id, user.id));
-				
+				await db.update(users).set({ emailHash: hash }).where(eq(users.id, user.id));
+
 				successCount++;
 				console.log(`✓ Updated email_hash for ${user.email}`);
 			} catch (error) {
@@ -101,7 +97,7 @@ async function updateEmailHashes() {
 				console.error(`✗ Failed to update ${user.email}: ${errorMessage}`);
 			}
 		}
-		
+
 		// Summary
 		console.log('\n========================================');
 		console.log('Update process completed!');
@@ -114,7 +110,6 @@ async function updateEmailHashes() {
 			});
 		}
 		console.log('========================================');
-		
 	} catch (error) {
 		console.error('Fatal error during update process:', error);
 		process.exit(1);

@@ -17,7 +17,7 @@
 		paymentKey = urlParams.get('paymentKey') || '';
 		orderId = urlParams.get('orderId') || '';
 		amount = urlParams.get('amount') || '';
-		
+
 		// Check if we've already processed this payment in this session
 		const processedPayments = sessionStorage.getItem('processedPayments');
 		if (processedPayments) {
@@ -33,7 +33,11 @@
 					const pendingPaymentStr = sessionStorage.getItem('pendingPayment');
 					if (pendingPaymentStr) {
 						const pendingPayment = JSON.parse(pendingPaymentStr);
-						if (pendingPayment.type === 'product' && pendingPayment.conversationId && pendingPayment.conversationId !== 'undefined') {
+						if (
+							pendingPayment.type === 'product' &&
+							pendingPayment.conversationId &&
+							pendingPayment.conversationId !== 'undefined'
+						) {
 							goto(`/chat/product/${pendingPayment.conversationId}`);
 						} else {
 							goto('/products');
@@ -156,7 +160,7 @@
 				const processed = processedPayments ? JSON.parse(processedPayments) : [];
 				processed.push(paymentKey);
 				sessionStorage.setItem('processedPayments', JSON.stringify(processed));
-				
+
 				// Clear pending payment
 				sessionStorage.removeItem('pendingPayment');
 
@@ -188,17 +192,19 @@
 					const processed = processedPayments ? JSON.parse(processedPayments) : [];
 					processed.push(paymentKey);
 					sessionStorage.setItem('processedPayments', JSON.stringify(processed));
-					
+
 					// Clear pending payment
 					sessionStorage.removeItem('pendingPayment');
-					
+
 					// Redirect based on payment type
 					setTimeout(() => {
 						if (isProductPayment) {
 							if (pendingPayment.conversationId && pendingPayment.conversationId !== 'undefined') {
 								goto(`/chat/product/${pendingPayment.conversationId}`);
 							} else {
-								console.warn('ConversationId missing in payment data, redirecting to products page');
+								console.warn(
+									'ConversationId missing in payment data, redirecting to products page'
+								);
 								goto('/products');
 							}
 						} else {

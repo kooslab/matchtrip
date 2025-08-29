@@ -26,8 +26,8 @@ function createPWAStore() {
 			const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
 			// @ts-ignore - navigator.standalone is iOS specific
 			const isIOSStandalone = window.navigator.standalone === true;
-			
-			update(state => ({
+
+			update((state) => ({
 				...state,
 				isInstalled: isStandalone || isIOSStandalone
 			}));
@@ -45,9 +45,9 @@ function createPWAStore() {
 		window.addEventListener('beforeinstallprompt', (e: any) => {
 			// Prevent the default prompt
 			e.preventDefault();
-			
+
 			// Store the event for later use
-			update(state => ({
+			update((state) => ({
 				...state,
 				deferredPrompt: e,
 				isInstallable: true,
@@ -57,7 +57,7 @@ function createPWAStore() {
 
 		// Listen for app installed event
 		window.addEventListener('appinstalled', () => {
-			update(state => ({
+			update((state) => ({
 				...state,
 				isInstalled: true,
 				isInstallable: false,
@@ -68,23 +68,23 @@ function createPWAStore() {
 
 		// Listen for online/offline events
 		window.addEventListener('online', () => {
-			update(state => ({ ...state, isOnline: true }));
+			update((state) => ({ ...state, isOnline: true }));
 		});
 
 		window.addEventListener('offline', () => {
-			update(state => ({ ...state, isOnline: false }));
+			update((state) => ({ ...state, isOnline: false }));
 		});
 	};
 
 	// Install the app
 	const install = async () => {
 		let installed = false;
-		
-		update(state => {
+
+		update((state) => {
 			if (state.deferredPrompt) {
 				// Show the install prompt
 				state.deferredPrompt.prompt();
-				
+
 				// Wait for the user's response
 				state.deferredPrompt.userChoice.then((choiceResult: any) => {
 					if (choiceResult.outcome === 'accepted') {
@@ -93,26 +93,26 @@ function createPWAStore() {
 					} else {
 						console.log('User dismissed the install prompt');
 					}
-					
+
 					// Clear the deferred prompt
-					update(s => ({
+					update((s) => ({
 						...s,
 						deferredPrompt: null,
 						showInstallPrompt: false
 					}));
 				});
 			}
-			
+
 			return state;
 		});
-		
+
 		return installed;
 	};
 
 	// Dismiss the install prompt
 	const dismissPrompt = () => {
 		localStorage.setItem('pwa-install-dismissed', 'true');
-		update(state => ({
+		update((state) => ({
 			...state,
 			showInstallPrompt: false
 		}));
@@ -121,7 +121,7 @@ function createPWAStore() {
 	// Reset dismissed status (for testing or re-prompting later)
 	const resetDismissed = () => {
 		localStorage.removeItem('pwa-install-dismissed');
-		update(state => ({
+		update((state) => ({
 			...state,
 			showInstallPrompt: state.isInstallable && !state.isInstalled
 		}));

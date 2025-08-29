@@ -16,15 +16,15 @@ function getEncryptionKey(): Buffer {
 	if (!key) {
 		throw new Error('ENCRYPTION_KEY environment variable is not set');
 	}
-	
+
 	// Convert base64 key to buffer
 	const keyBuffer = Buffer.from(key, 'base64');
-	
+
 	// Ensure key is 32 bytes for AES-256
 	if (keyBuffer.length !== 32) {
 		throw new Error('ENCRYPTION_KEY must be exactly 32 bytes (256 bits)');
 	}
-	
+
 	return keyBuffer;
 }
 
@@ -35,17 +35,14 @@ function encrypt(plainText: string): string {
 	const key = getEncryptionKey();
 	const iv = randomBytes(16);
 	const cipher = createCipheriv(ALGORITHM, key, iv);
-	
-	const encrypted = Buffer.concat([
-		cipher.update(plainText, 'utf8'),
-		cipher.final()
-	]);
-	
+
+	const encrypted = Buffer.concat([cipher.update(plainText, 'utf8'), cipher.final()]);
+
 	const authTag = cipher.getAuthTag();
-	
+
 	// Combine all parts with colon separator
 	const combined = `${ENCRYPTED_PREFIX}${iv.toString('base64')}:${authTag.toString('base64')}:${encrypted.toString('base64')}`;
-	
+
 	return combined;
 }
 
@@ -56,31 +53,28 @@ function decryptOuterLayer(encryptedData: string): string {
 	if (!encryptedData || !encryptedData.startsWith(ENCRYPTED_PREFIX)) {
 		return encryptedData;
 	}
-	
+
 	try {
 		// Remove prefix and split parts
 		const withoutPrefix = encryptedData.slice(ENCRYPTED_PREFIX.length);
 		const parts = withoutPrefix.split(':');
-		
+
 		if (parts.length !== 3) {
 			throw new Error('Invalid encrypted data format');
 		}
-		
+
 		const [ivBase64, authTagBase64, encryptedBase64] = parts;
-		
+
 		const key = getEncryptionKey();
 		const iv = Buffer.from(ivBase64, 'base64');
 		const authTag = Buffer.from(authTagBase64, 'base64');
 		const encrypted = Buffer.from(encryptedBase64, 'base64');
-		
+
 		const decipher = createDecipheriv(ALGORITHM, key, iv);
 		decipher.setAuthTag(authTag);
-		
-		const decrypted = Buffer.concat([
-			decipher.update(encrypted),
-			decipher.final()
-		]);
-		
+
+		const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
+
 		return decrypted.toString('utf8');
 	} catch (error) {
 		console.error('Failed to decrypt outer layer:', error);
@@ -96,19 +90,19 @@ function tryDecryptInnerLayer(encryptedData: string): string | null {
 	if (!encryptedData || !encryptedData.startsWith(OLD_ENCRYPTED_PREFIX)) {
 		return encryptedData;
 	}
-	
+
 	// Remove ENC: prefix and split parts
 	const withoutPrefix = encryptedData.slice(OLD_ENCRYPTED_PREFIX.length);
 	const parts = withoutPrefix.split(':');
-	
+
 	if (parts.length !== 3) {
 		console.error('Invalid old encrypted format');
 		return null;
 	}
-	
+
 	const [ivBase64, authTagBase64, encryptedBase64] = parts;
 	const key = getEncryptionKey();
-	
+
 	// Try different decoding methods
 	const attempts = [
 		// Method 1: Standard base64
@@ -122,7 +116,10 @@ function tryDecryptInnerLayer(encryptedData: string): string | null {
 		() => {
 			const iv = Buffer.from(ivBase64.replace(/-/g, '+').replace(/_/g, '/'), 'base64');
 			const authTag = Buffer.from(authTagBase64.replace(/-/g, '+').replace(/_/g, '/'), 'base64');
-			const encrypted = Buffer.from(encryptedBase64.replace(/-/g, '+').replace(/_/g, '/'), 'base64');
+			const encrypted = Buffer.from(
+				encryptedBase64.replace(/-/g, '+').replace(/_/g, '/'),
+				'base64'
+			);
 			return { iv, authTag, encrypted };
 		},
 		// Method 3: Hex encoding
@@ -137,22 +134,19 @@ function tryDecryptInnerLayer(encryptedData: string): string | null {
 			}
 		}
 	];
-	
+
 	for (let i = 0; i < attempts.length; i++) {
 		try {
 			const buffers = attempts[i]();
 			if (!buffers) continue;
-			
+
 			const { iv, authTag, encrypted } = buffers;
-			
+
 			const decipher = createDecipheriv(ALGORITHM, key, iv);
 			decipher.setAuthTag(authTag);
-			
-			const decrypted = Buffer.concat([
-				decipher.update(encrypted),
-				decipher.final()
-			]);
-			
+
+			const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
+
 			const result = decrypted.toString('utf8');
 			console.log(`  Method ${i + 1} succeeded: ${result}`);
 			return result;
@@ -160,7 +154,7 @@ function tryDecryptInnerLayer(encryptedData: string): string | null {
 			// This method didn't work, try next
 		}
 	}
-	
+
 	return null;
 }
 
@@ -189,12 +183,12 @@ async function fixDoubleEncryption() {
 			if (user.name && user.name.startsWith(ENCRYPTED_PREFIX)) {
 				try {
 					const firstDecrypt = decryptOuterLayer(user.name);
-					
+
 					if (firstDecrypt.startsWith(OLD_ENCRYPTED_PREFIX)) {
 						// Double encrypted! Try to fully decrypt
 						console.log(`User ${user.id}: Double encryption detected in name`);
 						const fullyDecrypted = tryDecryptInnerLayer(firstDecrypt);
-						
+
 						if (fullyDecrypted) {
 							// Successfully decrypted! Re-encrypt with current method
 							console.log(`  -> Fully decrypted name: ${fullyDecrypted}`);
@@ -223,12 +217,12 @@ async function fixDoubleEncryption() {
 			if (user.phone && user.phone.startsWith(ENCRYPTED_PREFIX)) {
 				try {
 					const firstDecrypt = decryptOuterLayer(user.phone);
-					
+
 					if (firstDecrypt.startsWith(OLD_ENCRYPTED_PREFIX)) {
 						// Double encrypted! Try to fully decrypt
 						console.log(`User ${user.id}: Double encryption detected in phone`);
 						const fullyDecrypted = tryDecryptInnerLayer(firstDecrypt);
-						
+
 						if (fullyDecrypted) {
 							// Successfully decrypted! Re-encrypt with current method
 							console.log(`  -> Fully decrypted phone: ${fullyDecrypted}`);
@@ -251,9 +245,7 @@ async function fixDoubleEncryption() {
 			// Update the user if needed
 			if (needsUpdate) {
 				try {
-					await db.update(users)
-						.set(updates)
-						.where(eq(users.id, user.id));
+					await db.update(users).set(updates).where(eq(users.id, user.id));
 					console.log(`✓ User ${user.id} fixed successfully\n`);
 				} catch (error) {
 					console.error(`✗ Failed to update user ${user.id}:`, error);
@@ -278,7 +270,6 @@ async function fixDoubleEncryption() {
 		} else {
 			console.log('✅ Double encryption fix completed successfully!');
 		}
-
 	} catch (error) {
 		console.error('Fatal error during fix:', error);
 		process.exit(1);
@@ -304,13 +295,13 @@ async function dryRun() {
 			if (user.name && user.name.startsWith(ENCRYPTED_PREFIX)) {
 				try {
 					const firstDecrypt = decryptOuterLayer(user.name);
-					
+
 					if (firstDecrypt.startsWith(OLD_ENCRYPTED_PREFIX)) {
 						doubleEncryptedCount++;
 						console.log(`User ${user.id}: Double encrypted name`);
 						console.log(`  Current: ${user.name.substring(0, 50)}...`);
 						console.log(`  After outer decrypt: ${firstDecrypt.substring(0, 50)}...`);
-						
+
 						const fullyDecrypted = tryDecryptInnerLayer(firstDecrypt);
 						if (fullyDecrypted) {
 							console.log(`  ✓ Can fully decrypt: ${fullyDecrypted}`);
@@ -338,7 +329,6 @@ async function dryRun() {
 		console.log(`Cannot decrypt inner layer: ${cannotFullyDecrypt}`);
 		console.log(`Properly encrypted: ${properlyEncryptedCount}`);
 		console.log('='.repeat(50) + '\n');
-
 	} catch (error) {
 		console.error('Error during dry run:', error);
 		process.exit(1);
@@ -357,7 +347,7 @@ if (isDryRun) {
 	console.log('Data that cannot be decrypted will have the outer layer removed.');
 	console.log('Run with --dry-run flag to preview changes.\n');
 	console.log('Starting in 5 seconds... Press Ctrl+C to cancel.\n');
-	
+
 	setTimeout(() => {
 		fixDoubleEncryption();
 	}, 5000);

@@ -14,7 +14,7 @@ async function fixUnencryptedData() {
 	try {
 		// Get all users
 		const allUsers = await db.select().from(users);
-		
+
 		let unencryptedEmailCount = 0;
 		let unencryptedPhoneCount = 0;
 		let fixedEmailCount = 0;
@@ -39,7 +39,9 @@ async function fixUnencryptedData() {
 						console.log(`✅ Will encrypt email for user ${user.id}`);
 					} else {
 						errorCount++;
-						console.error(`❌ Failed to encrypt email for user ${user.id} - encryption returned null`);
+						console.error(
+							`❌ Failed to encrypt email for user ${user.id} - encryption returned null`
+						);
 					}
 				} catch (error) {
 					errorCount++;
@@ -61,7 +63,9 @@ async function fixUnencryptedData() {
 						console.log(`✅ Will encrypt phone for user ${user.id}`);
 					} else {
 						errorCount++;
-						console.error(`❌ Failed to encrypt phone for user ${user.id} - encryption returned null`);
+						console.error(
+							`❌ Failed to encrypt phone for user ${user.id} - encryption returned null`
+						);
 					}
 				} catch (error) {
 					errorCount++;
@@ -72,10 +76,7 @@ async function fixUnencryptedData() {
 			// Update the user if needed
 			if (needsUpdate) {
 				try {
-					await db
-						.update(users)
-						.set(updates)
-						.where(eq(users.id, user.id));
+					await db.update(users).set(updates).where(eq(users.id, user.id));
 					console.log(`✅ Updated user ${user.id} with encrypted data`);
 				} catch (error) {
 					errorCount++;
@@ -94,12 +95,16 @@ async function fixUnencryptedData() {
 
 		if (unencryptedEmailCount === 0 && unencryptedPhoneCount === 0) {
 			console.log('\n✨ All user emails and phones are already encrypted!');
-		} else if (fixedEmailCount === unencryptedEmailCount && fixedPhoneCount === unencryptedPhoneCount) {
+		} else if (
+			fixedEmailCount === unencryptedEmailCount &&
+			fixedPhoneCount === unencryptedPhoneCount
+		) {
 			console.log('\n✨ Successfully encrypted all unencrypted data!');
 		} else if (errorCount > 0) {
-			console.log('\n⚠️ Some data could not be encrypted. Please check the ENCRYPTION_KEY environment variable.');
+			console.log(
+				'\n⚠️ Some data could not be encrypted. Please check the ENCRYPTION_KEY environment variable.'
+			);
 		}
-
 	} catch (error) {
 		console.error('Fatal error:', error);
 		process.exit(1);

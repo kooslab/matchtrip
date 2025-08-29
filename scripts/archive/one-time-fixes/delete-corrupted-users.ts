@@ -14,7 +14,7 @@ async function deleteCorruptedUsers() {
 	try {
 		// Get all users
 		const allUsers = await db.select().from(users);
-		
+
 		let corruptedUsers = [];
 
 		for (const user of allUsers) {
@@ -55,7 +55,9 @@ async function deleteCorruptedUsers() {
 			}
 		}
 
-		console.log(`\n📊 Found ${corruptedUsers.length} corrupted users out of ${allUsers.length} total users`);
+		console.log(
+			`\n📊 Found ${corruptedUsers.length} corrupted users out of ${allUsers.length} total users`
+		);
 
 		if (corruptedUsers.length === 0) {
 			console.log('✨ No corrupted users found!');
@@ -79,9 +81,10 @@ async function deleteCorruptedUsers() {
 			console.log(`  ✅ Deleted user ${user.id}`);
 		}
 
-		console.log(`\n✨ Successfully deleted ${corruptedUsers.length} corrupted users and their related data!`);
+		console.log(
+			`\n✨ Successfully deleted ${corruptedUsers.length} corrupted users and their related data!`
+		);
 		console.log('You can now try Kakao login again with fresh data.');
-
 	} catch (error) {
 		console.error('Fatal error:', error);
 		process.exit(1);

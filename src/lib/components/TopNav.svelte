@@ -1,13 +1,10 @@
 <script lang="ts">
 	import logoUrl from '$lib/images/Matchtrip.svg';
 	import { page } from '$app/stores';
-	
+
 	// Pages that need special desktop margin to avoid fake mobile frame
-	const pagesNeedingDesktopMargin = [
-		'/chat',
-		'/profile/guide'
-	];
-	
+	const pagesNeedingDesktopMargin = ['/chat', '/profile/guide'];
+
 	// Check if current page needs special desktop styling
 	let needsDesktopMargin = $derived(pagesNeedingDesktopMargin.includes($page.url.pathname));
 </script>

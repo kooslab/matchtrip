@@ -55,11 +55,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	const { payment, offer, trip, destination, guide, guideProfile } = paymentData[0];
 
 	// Get the traveler (buyer) information separately
-	const travelerData = await db
-		.select()
-		.from(users)
-		.where(eq(users.id, payment.userId))
-		.limit(1);
+	const travelerData = await db.select().from(users).where(eq(users.id, payment.userId)).limit(1);
 
 	if (!travelerData || travelerData.length === 0) {
 		throw error(404, 'Traveler not found');

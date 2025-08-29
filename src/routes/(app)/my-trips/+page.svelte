@@ -4,6 +4,7 @@
 	import { invalidate } from '$app/navigation';
 	import { formatDate, formatDateRange, formatKoreanDateRange } from '$lib/utils/dateFormatter';
 	import { userTimezone, userLocale } from '$lib/stores/location';
+	import { onMount, onDestroy } from 'svelte';
 	import flightIconUrl from '$lib/icons/icon-flight-mono.svg';
 	import calendarIconUrl from '$lib/icons/icon-calendar-check-mono.svg';
 	import userIconUrl from '$lib/icons/icon-user-two-mono.svg';
@@ -21,8 +22,8 @@
 		}
 	});
 
-	// Get trips from server data
-	let trips = $derived(data.trips || []);
+	// Use $state for trips to enable reactive updates
+	let trips = $state(data.trips || []);
 	let serverError = $derived(data.error);
 	let loading = $derived(!data.trips && !data.error);
 
@@ -31,6 +32,135 @@
 
 	// Refresh state
 	let refreshing = $state(false);
+
+	// Polling state
+	let pollingInterval: number | null = null;
+	let isPolling = $state(false);
+	let lastUpdated = $state(new Date().toISOString());
+	let updatedTripIds = $state<Set<string>>(new Set());
+	let pollingErrorCount = $state(0);
+	const MAX_ERROR_COUNT = 3;
+	const POLLING_INTERVAL = 5000; // 5 seconds
+	const MAX_POLLING_DURATION = 30 * 60 * 1000; // 30 minutes
+	let pollingStartTime: number | null = null;
+
+	// Fetch trips from API
+	async function fetchTrips() {
+		try {
+			const response = await fetch('/api/trips');
+			if (!response.ok) {
+				throw new Error('Failed to fetch trips');
+			}
+
+			const newTrips = await response.json();
+
+			// Check for updated trips (compare offer counts)
+			const currentTripsMap = new Map(trips.map((t) => [t.id, t]));
+			const updatedIds = new Set<string>();
+
+			for (const newTrip of newTrips) {
+				const currentTrip = currentTripsMap.get(newTrip.id);
+				if (currentTrip && currentTrip.offerCount !== newTrip.offerCount) {
+					updatedIds.add(newTrip.id);
+				}
+			}
+
+			// Update trip IDs that have changes
+			if (updatedIds.size > 0) {
+				updatedTripIds = updatedIds;
+				// Clear highlights after 5 seconds
+				setTimeout(() => {
+					updatedTripIds = new Set();
+				}, 5000);
+			}
+
+			// Update trips
+			trips = newTrips;
+			lastUpdated = new Date().toISOString();
+			pollingErrorCount = 0; // Reset error count on success
+		} catch (error) {
+			console.error('Error fetching trips:', error);
+			pollingErrorCount++;
+
+			// Stop polling after too many errors
+			if (pollingErrorCount >= MAX_ERROR_COUNT) {
+				stopPolling();
+				console.log('Polling stopped due to repeated errors');
+			}
+		}
+	}
+
+	// Start polling
+	function startPolling() {
+		if (pollingInterval) return; // Already polling
+
+		isPolling = true;
+		pollingStartTime = Date.now();
+
+		// Initial fetch
+		fetchTrips();
+
+		// Set up interval
+		pollingInterval = setInterval(() => {
+			// Check if we've been polling too long
+			if (pollingStartTime && Date.now() - pollingStartTime > MAX_POLLING_DURATION) {
+				stopPolling();
+				console.log('Polling stopped due to timeout');
+				return;
+			}
+
+			// Check if tab is visible
+			if (document.hidden) {
+				return; // Skip fetch if tab is not visible
+			}
+
+			fetchTrips();
+		}, POLLING_INTERVAL);
+	}
+
+	// Stop polling
+	function stopPolling() {
+		if (pollingInterval) {
+			clearInterval(pollingInterval);
+			pollingInterval = null;
+		}
+		isPolling = false;
+		pollingStartTime = null;
+	}
+
+	// Handle visibility change
+	function handleVisibilityChange() {
+		if (document.hidden) {
+			// Tab is hidden, pause polling
+			console.log('Tab hidden, pausing polling');
+		} else {
+			// Tab is visible, resume polling if we were polling
+			if (isPolling) {
+				console.log('Tab visible, resuming polling');
+				fetchTrips(); // Immediate fetch when tab becomes visible
+			}
+		}
+	}
+
+	// Lifecycle hooks
+	onMount(() => {
+		// Start polling for active trips
+		const hasActiveTrips = trips.some(
+			(t) => t.status !== 'completed' && t.status !== 'cancelled' && t.status !== 'draft'
+		);
+
+		if (hasActiveTrips) {
+			startPolling();
+		}
+
+		// Listen for visibility changes
+		document.addEventListener('visibilitychange', handleVisibilityChange);
+	});
+
+	onDestroy(() => {
+		stopPolling();
+		document.removeEventListener('visibilitychange', handleVisibilityChange);
+	});
 
 	// Refresh trips data
 	async function refreshTrips() {
@@ -95,13 +225,13 @@
 	function calculateRemainingDays(startDate: string | Date) {
 		const today = new Date();
 		today.setHours(0, 0, 0, 0);
-		
+
 		const tripStartDate = new Date(startDate);
 		tripStartDate.setHours(0, 0, 0, 0);
-		
+
 		const diffTime = tripStartDate.getTime() - today.getTime();
 		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-		
+
 		if (diffDays < 0) {
 			return '여행 시작됨';
 		} else if (diffDays === 0) {
@@ -140,10 +270,16 @@
 		<!-- Header -->
 		<div class="border-b border-gray-200 bg-white px-4 py-4">
 			<div class="flex items-center justify-between">
-				<div class="flex items-center gap-2">
+				<div class="flex items-center gap-3">
 					<span class="text-sm text-gray-900">
 						전체 <span class="text-sm font-bold text-blue-600">{trips.length}</span>
 					</span>
+					{#if isPolling}
+						<div class="flex items-center gap-1.5">
+							<div class="h-2 w-2 animate-pulse rounded-full bg-green-500"></div>
+							<span class="text-xs text-gray-500">실시간 업데이트 중</span>
+						</div>
+					{/if}
 				</div>
 				<button class="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900">
 					<span>최신순</span>
@@ -243,8 +379,22 @@
 					{#each trips as trip}
 						<button
 							onclick={() => goToTripDetails(trip.id)}
-							class="w-full cursor-pointer overflow-hidden rounded-xl border border-gray-100 bg-white text-left transition-shadow hover:shadow-md"
+							class="relative w-full cursor-pointer overflow-hidden rounded-xl border bg-white text-left transition-shadow hover:shadow-md {updatedTripIds.has(
+								trip.id
+							)
+								? 'animate-pulse border-blue-400 ring-2 ring-blue-100'
+								: 'border-gray-100'}"
 						>
+							<!-- New offer indicator -->
+							{#if updatedTripIds.has(trip.id)}
+								<div class="absolute top-2 right-2 flex h-3 w-3">
+									<span
+										class="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75"
+									></span>
+									<span class="relative inline-flex h-3 w-3 rounded-full bg-blue-500"></span>
+								</div>
+							{/if}
+
 							<!-- Status Badge -->
 							<div class="px-4 pt-4">
 								<span
@@ -294,12 +444,25 @@
 								</div>
 
 								<!-- Offer Status Section -->
-								<div class="mt-4 rounded-lg bg-gray-50 p-3">
+								<div
+									class="mt-4 rounded-lg p-3 {updatedTripIds.has(trip.id)
+										? 'bg-blue-50'
+										: 'bg-gray-50'}"
+								>
 									<div class="flex items-center justify-between">
 										<div class="flex items-center gap-2">
-											<span class="text-sm text-gray-600">요청 사항</span>
+											<span
+												class="text-sm {updatedTripIds.has(trip.id)
+													? 'font-medium text-blue-700'
+													: 'text-gray-600'}"
+											>
+												{updatedTripIds.has(trip.id) ? '새로운 제안!' : '요청 사항'}
+											</span>
 										</div>
-										<span class="text-base font-medium text-gray-900">{trip.offerCount || 0}건</span
+										<span
+											class="text-base font-medium {updatedTripIds.has(trip.id)
+												? 'text-blue-700'
+												: 'text-gray-900'}">{trip.offerCount || 0}건</span
 										>
 									</div>
 									<p class="mt-2 text-sm text-gray-500">{calculateRemainingDays(trip.startDate)}</p>
@@ -315,7 +478,7 @@
 											goToTripDetails(trip.id);
 										}
 									}}
-									class="mt-4 w-full rounded-lg border border-gray-300 bg-white py-2.5 text-center text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+									class="mt-4 w-full cursor-pointer rounded-lg border border-gray-300 bg-white py-2.5 text-center text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
 								>
 									{#if trip.offerCount === 0}
 										받은 제안 0건

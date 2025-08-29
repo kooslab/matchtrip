@@ -209,10 +209,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 		if (Object.keys(userUpdates).length > 0) {
 			userUpdates.updatedAt = new Date();
-			await db
-				.update(users)
-				.set(userUpdates)
-				.where(eq(users.id, userId));
+			await db.update(users).set(userUpdates).where(eq(users.id, userId));
 			console.log('[API GUIDE PROFILE] Updated user basic information');
 		}
 

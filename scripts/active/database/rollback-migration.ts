@@ -2,7 +2,7 @@
 /**
  * Rollback Migration Script
  * Restores database from backup or removes display ID changes
- * 
+ *
  * Usage:
  * - For dev: bun run scripts/rollback-migration.ts [backup-file]
  * - For prod: bun --env-file=.env.prod run scripts/rollback-migration.ts [backup-file]
@@ -48,7 +48,7 @@ async function promptUser(question: string): Promise<boolean> {
 		input: process.stdin,
 		output: process.stdout
 	});
-	
+
 	return new Promise((resolve) => {
 		rl.question(`${question} (yes/no): `, (answer) => {
 			rl.close();
@@ -59,56 +59,57 @@ async function promptUser(question: string): Promise<boolean> {
 
 async function listBackups(): Promise<string[]> {
 	const backupDir = path.join(process.cwd(), 'backups');
-	
+
 	if (!fs.existsSync(backupDir)) {
 		return [];
 	}
-	
-	const files = fs.readdirSync(backupDir)
-		.filter(f => f.endsWith('.sql'))
+
+	const files = fs
+		.readdirSync(backupDir)
+		.filter((f) => f.endsWith('.sql'))
 		.sort()
 		.reverse(); // Most recent first
-	
-	return files.map(f => path.join(backupDir, f));
+
+	return files.map((f) => path.join(backupDir, f));
 }
 
 async function restoreFromBackup(backupFile: string) {
 	if (!fs.existsSync(backupFile)) {
 		throw new Error(`Backup file not found: ${backupFile}`);
 	}
-	
+
 	const databaseUrl = process.env.DATABASE_URL;
 	if (!databaseUrl) {
 		throw new Error('DATABASE_URL not found in environment variables');
 	}
-	
+
 	info(`Restoring from backup: ${backupFile}`);
-	
+
 	// Parse database name from URL
 	const dbName = databaseUrl.split('/').pop()?.split('?')[0];
-	
+
 	try {
 		// Drop all tables and restore
 		warning('This will DROP all existing tables and restore from backup');
 		const confirm = await promptUser('Are you sure you want to continue?');
-		
+
 		if (!confirm) {
 			info('Rollback cancelled');
 			return false;
 		}
-		
+
 		// Create a temporary database URL for psql
 		const tempUrl = databaseUrl.replace(`/${dbName}`, '/postgres');
-		
+
 		// Drop and recreate database
 		info('Dropping existing database...');
 		await execAsync(`psql "${tempUrl}" -c "DROP DATABASE IF EXISTS ${dbName}"`);
 		await execAsync(`psql "${tempUrl}" -c "CREATE DATABASE ${dbName}"`);
-		
+
 		// Restore from backup
 		info('Restoring database from backup...');
 		await execAsync(`psql "${databaseUrl}" < "${backupFile}"`);
-		
+
 		success('Database restored successfully');
 		return true;
 	} catch (err) {
@@ -119,39 +120,45 @@ async function restoreFromBackup(backupFile: string) {
 
 async function removeDisplayIdColumns() {
 	info('Removing display ID columns and related changes...');
-	
+
 	try {
 		// Start transaction
 		await db.execute(sql`BEGIN`);
-		
+
 		// Drop constraints first
 		const tables = ['products', 'product_offers', 'offers', 'payments'];
-		
+
 		for (const table of tables) {
 			try {
 				// Drop unique constraint
-				await db.execute(sql.raw(`
+				await db.execute(
+					sql.raw(`
 					ALTER TABLE ${table} 
 					DROP CONSTRAINT IF EXISTS ${table}_display_id_unique
-				`));
-				
+				`)
+				);
+
 				// Drop index
-				await db.execute(sql.raw(`
+				await db.execute(
+					sql.raw(`
 					DROP INDEX IF EXISTS ${table}_display_id_idx
-				`));
-				
+				`)
+				);
+
 				// Drop column
-				await db.execute(sql.raw(`
+				await db.execute(
+					sql.raw(`
 					ALTER TABLE ${table} 
 					DROP COLUMN IF EXISTS display_id
-				`));
-				
+				`)
+				);
+
 				info(`Removed display_id from ${table}`);
 			} catch (err) {
 				warning(`Could not remove display_id from ${table}: ${err}`);
 			}
 		}
-		
+
 		// Drop product_sequences table
 		try {
 			await db.execute(sql`DROP TABLE IF EXISTS product_sequences`);
@@ -159,16 +166,16 @@ async function removeDisplayIdColumns() {
 		} catch (err) {
 			warning(`Could not remove product_sequences table: ${err}`);
 		}
-		
+
 		// Also remove tables from migration 0024 if they exist
 		const newTables = [
 			'cancellation_requests',
-			'kakao_notifications', 
+			'kakao_notifications',
 			'payment_refunds',
 			'refund_policies',
 			'webhook_events'
 		];
-		
+
 		for (const table of newTables) {
 			try {
 				await db.execute(sql.raw(`DROP TABLE IF EXISTS ${table} CASCADE`));
@@ -177,7 +184,7 @@ async function removeDisplayIdColumns() {
 				warning(`Could not remove ${table} table: ${err}`);
 			}
 		}
-		
+
 		// Remove added columns from existing tables
 		try {
 			await db.execute(sql`
@@ -191,7 +198,7 @@ async function removeDisplayIdColumns() {
 		} catch (err) {
 			warning(`Could not remove payment columns: ${err}`);
 		}
-		
+
 		try {
 			await db.execute(sql`
 				ALTER TABLE product_offers
@@ -202,7 +209,7 @@ async function removeDisplayIdColumns() {
 		} catch (err) {
 			warning(`Could not remove product_offers columns: ${err}`);
 		}
-		
+
 		try {
 			await db.execute(sql`
 				ALTER TABLE reviews
@@ -213,7 +220,7 @@ async function removeDisplayIdColumns() {
 		} catch (err) {
 			warning(`Could not remove reviews columns: ${err}`);
 		}
-		
+
 		try {
 			await db.execute(sql`
 				ALTER TABLE users
@@ -223,7 +230,7 @@ async function removeDisplayIdColumns() {
 		} catch (err) {
 			warning(`Could not remove users email_hash: ${err}`);
 		}
-		
+
 		// Drop custom types
 		const types = [
 			'cancellation_reason_guide',
@@ -231,7 +238,7 @@ async function removeDisplayIdColumns() {
 			'cancellation_status',
 			'kakao_notification_status'
 		];
-		
+
 		for (const type of types) {
 			try {
 				await db.execute(sql.raw(`DROP TYPE IF EXISTS ${type} CASCADE`));
@@ -240,13 +247,12 @@ async function removeDisplayIdColumns() {
 				warning(`Could not remove ${type} type: ${err}`);
 			}
 		}
-		
+
 		// Commit transaction
 		await db.execute(sql`COMMIT`);
-		
+
 		success('Display ID changes removed successfully');
 		return true;
-		
 	} catch (err) {
 		// Rollback on error
 		await db.execute(sql`ROLLBACK`);
@@ -259,21 +265,21 @@ async function main() {
 	console.log('');
 	console.log('🔙 Database Rollback Script');
 	console.log('═'.repeat(60));
-	
+
 	const isProduction = process.env.DATABASE_URL?.includes('ep-frosty-mud');
 	const environment = isProduction ? 'PRODUCTION' : 'DEVELOPMENT';
-	
+
 	warning(`Environment: ${environment}`);
-	
+
 	if (isProduction) {
 		console.log('');
 		error('⚠️  WARNING: You are about to rollback PRODUCTION database!');
 		console.log('');
 	}
-	
+
 	const args = process.argv.slice(2);
 	const backupFile = args[0];
-	
+
 	try {
 		if (backupFile) {
 			// Restore from specific backup
@@ -281,13 +287,12 @@ async function main() {
 				error(`Backup file not found: ${backupFile}`);
 				process.exit(1);
 			}
-			
+
 			console.log('Option: Restore from backup file');
 			console.log(`File: ${backupFile}`);
 			console.log('');
-			
+
 			await restoreFromBackup(backupFile);
-			
 		} else {
 			// Show options
 			console.log('Choose rollback option:');
@@ -295,9 +300,9 @@ async function main() {
 			console.log('2. Restore from backup (complete restore)');
 			console.log('3. Cancel');
 			console.log('');
-			
+
 			const backups = await listBackups();
-			
+
 			if (backups.length > 0) {
 				info('Available backups:');
 				backups.slice(0, 5).forEach((backup, index) => {
@@ -306,12 +311,12 @@ async function main() {
 				});
 				console.log('');
 			}
-			
+
 			// For simplicity, we'll just remove display ID changes
 			// In a real scenario, you'd implement a menu system
-			
+
 			const removeOnly = await promptUser('Remove display ID changes only?');
-			
+
 			if (removeOnly) {
 				await removeDisplayIdColumns();
 			} else {
@@ -323,11 +328,10 @@ async function main() {
 				}
 			}
 		}
-		
+
 		console.log('');
 		console.log('═'.repeat(60));
 		success('Rollback completed successfully!');
-		
 	} catch (err) {
 		console.log('');
 		console.log('═'.repeat(60));

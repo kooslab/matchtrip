@@ -153,7 +153,6 @@
 		return 7; // Universal minimum for any country
 	}
 
-
 	// Format mobile number for display in completed steps - now just shows raw digits
 	function getFormattedMobile(mobile: string, countryCode: string): string {
 		if (!mobile) return '';
@@ -301,7 +300,7 @@
 	// See CLAUDE.md for full documentation on this change
 	function handleMobileInput(e: Event) {
 		const input = e.target as HTMLInputElement;
-		
+
 		// Extract only digits from the input
 		let digits = input.value.replace(/\D/g, '');
 
@@ -316,7 +315,7 @@
 		// Store raw digits for validation and submission
 		formData.mobile = digits;
 		formData.mobileFormatted = digits; // No formatting, just raw digits
-		
+
 		// Update the input field with raw digits (no formatting)
 		input.value = digits;
 	}

@@ -2,7 +2,7 @@
 /**
  * Script to shorten display ID suffixes from 6 to 5 characters
  * This is for records that already have the correct format but with 6-char suffixes
- * 
+ *
  * Current: PRD-2508-8V77DU (6 chars)
  * Target:  PRD-2508-8V77D (5 chars)
  */
@@ -52,7 +52,7 @@ function warning(message: string) {
  */
 function needsShortening(displayId: string | null): boolean {
 	if (!displayId) return false;
-	
+
 	// Match format like PRD-2508-XXXXXX (6 chars at end)
 	const match = displayId.match(/^[A-Z]+-\d{4}-([A-Z0-9]{6})$/);
 	return !!match;
@@ -71,7 +71,7 @@ function shortenDisplayId(displayId: string): string {
  */
 async function checkForDuplicates(records: any[]): Promise<Map<string, string[]>> {
 	const shortened = new Map<string, string[]>();
-	
+
 	for (const record of records) {
 		if (needsShortening(record.displayId)) {
 			const newId = shortenDisplayId(record.displayId);
@@ -81,7 +81,7 @@ async function checkForDuplicates(records: any[]): Promise<Map<string, string[]>
 			shortened.get(newId)!.push(record.displayId);
 		}
 	}
-	
+
 	// Find duplicates
 	const duplicates = new Map<string, string[]>();
 	for (const [newId, oldIds] of shortened) {
@@ -89,46 +89,43 @@ async function checkForDuplicates(records: any[]): Promise<Map<string, string[]>
 			duplicates.set(newId, oldIds);
 		}
 	}
-	
+
 	return duplicates;
 }
 
-async function shortenTableIds(
-	tableName: string,
-	table: any
-) {
+async function shortenTableIds(tableName: string, table: any) {
 	log(`\n${colors.bright}${colors.magenta}Processing ${tableName}...${colors.reset}`);
-	
+
 	try {
 		// Get all records
 		const records = await db.select().from(table).execute();
-		const needShortening = records.filter(r => needsShortening(r.displayId));
-		
+		const needShortening = records.filter((r) => needsShortening(r.displayId));
+
 		if (needShortening.length === 0) {
 			info(`No records need shortening in ${tableName}`);
 			return { shortened: 0, skipped: records.length, failed: 0 };
 		}
-		
+
 		info(`Found ${needShortening.length} records to shorten out of ${records.length} total`);
-		
+
 		// Check for potential duplicates
 		const duplicates = await checkForDuplicates(records);
 		if (duplicates.size > 0) {
 			error(`Found potential duplicates after shortening:`);
 			for (const [newId, oldIds] of duplicates) {
 				console.log(`  ${newId} would be created from:`);
-				oldIds.forEach(id => console.log(`    - ${id}`));
+				oldIds.forEach((id) => console.log(`    - ${id}`));
 			}
-			
+
 			if (!DRY_RUN) {
 				error('Cannot proceed with shortening due to duplicate conflicts');
 				return { shortened: 0, skipped: records.length, failed: needShortening.length };
 			}
 		}
-		
+
 		if (DRY_RUN) {
 			warning('DRY RUN MODE - No actual changes will be made');
-			
+
 			// Show sample of what would be changed
 			console.log('\nSample changes (first 5):');
 			const samples = needShortening.slice(0, 5);
@@ -136,30 +133,26 @@ async function shortenTableIds(
 				const newId = shortenDisplayId(record.displayId);
 				console.log(`  ${record.displayId} → ${newId}`);
 			}
-			
-			return { 
-				shortened: needShortening.length, 
+
+			return {
+				shortened: needShortening.length,
 				skipped: records.length - needShortening.length,
 				failed: 0
 			};
 		}
-		
+
 		// Perform actual update
 		let shortened = 0;
 		let failed = 0;
-		
+
 		for (const record of needShortening) {
 			try {
 				const newId = shortenDisplayId(record.displayId);
-				
-				await db
-					.update(table)
-					.set({ displayId: newId })
-					.where(eq(table.id, record.id))
-					.execute();
-				
+
+				await db.update(table).set({ displayId: newId }).where(eq(table.id, record.id)).execute();
+
 				shortened++;
-				
+
 				if (shortened % 5 === 0) {
 					process.stdout.write(`\r  Progress: ${shortened}/${needShortening.length}`);
 				}
@@ -168,18 +161,17 @@ async function shortenTableIds(
 				error(`Failed to shorten ${record.displayId}: ${err}`);
 			}
 		}
-		
+
 		console.log(); // New line
-		
+
 		if (shortened > 0) {
 			success(`Successfully shortened ${shortened} records in ${tableName}`);
 		}
 		if (failed > 0) {
 			error(`Failed to shorten ${failed} records`);
 		}
-		
+
 		return { shortened, failed, skipped: records.length - needShortening.length };
-		
 	} catch (err) {
 		error(`Error processing ${tableName}: ${err}`);
 		return { shortened: 0, failed: 0, skipped: 0 };
@@ -188,70 +180,70 @@ async function shortenTableIds(
 
 async function main() {
 	log(`${colors.bright}${colors.cyan}Display ID Suffix Shortening Script${colors.reset}`);
-	log('=' .repeat(50));
-	
+	log('='.repeat(50));
+
 	if (!CONFIRM) {
 		warning('You must confirm this operation');
 		info('Run with CONFIRM=yes to proceed');
 		process.exit(1);
 	}
-	
+
 	if (DRY_RUN) {
 		warning('Running in DRY RUN mode - no changes will be made');
 		info('To perform actual shortening, run with DRY_RUN=false');
 	} else {
 		warning('⚠️  This will modify display IDs in the database!');
-		
+
 		// Give user time to cancel
 		console.log('\nStarting in 5 seconds... (Press Ctrl+C to cancel)');
 		for (let i = 5; i > 0; i--) {
 			process.stdout.write(`\r  ${i}...  `);
-			await new Promise(resolve => setTimeout(resolve, 1000));
+			await new Promise((resolve) => setTimeout(resolve, 1000));
 		}
 		console.log('\n');
 	}
-	
+
 	const stats = {
 		products: { shortened: 0, failed: 0, skipped: 0 },
 		offers: { shortened: 0, failed: 0, skipped: 0 },
 		payments: { shortened: 0, failed: 0, skipped: 0 },
 		productOffers: { shortened: 0, failed: 0, skipped: 0 }
 	};
-	
+
 	try {
 		// Process each table
 		stats.products = await shortenTableIds('products', products);
 		stats.offers = await shortenTableIds('offers', offers);
 		stats.productOffers = await shortenTableIds('product_offers', productOffers);
 		stats.payments = await shortenTableIds('payments', payments);
-		
+
 		// Print summary
 		console.log('\n' + '='.repeat(50));
 		log(`${colors.bright}Summary${colors.reset}`);
 		console.log('='.repeat(50));
-		
+
 		const tables = ['products', 'offers', 'payments', 'productOffers'];
 		let totalShortened = 0;
 		let totalFailed = 0;
 		let totalSkipped = 0;
-		
+
 		for (const tableName of tables) {
 			const stat = stats[tableName as keyof typeof stats];
 			console.log(`\n${tableName}:`);
 			console.log(`  Shortened: ${stat.shortened}`);
 			if (stat.failed > 0) console.log(`  Failed: ${stat.failed}`);
 			console.log(`  Skipped: ${stat.skipped}`);
-			
+
 			totalShortened += stat.shortened;
 			totalFailed += stat.failed;
 			totalSkipped += stat.skipped;
 		}
-		
+
 		console.log('\n' + '-'.repeat(50));
 		console.log(`Total shortened: ${totalShortened}`);
 		if (totalFailed > 0) console.log(`Total failed: ${totalFailed}`);
 		console.log(`Total skipped: ${totalSkipped}`);
-		
+
 		if (DRY_RUN) {
 			info('\nThis was a dry run. No changes were made.');
 			info('Run with DRY_RUN=false CONFIRM=yes to perform actual shortening.');
@@ -262,7 +254,6 @@ async function main() {
 				warning('\n⚠️  Shortening completed with some failures.');
 			}
 		}
-		
 	} catch (err) {
 		error(`Script failed: ${err}`);
 		process.exit(1);

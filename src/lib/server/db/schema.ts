@@ -337,7 +337,7 @@ export const offers = pgTable(
 		guideStatusIdx: index('offers_guide_status_idx').on(table.guideId, table.status),
 		displayIdIdx: index('offers_display_id_idx').on(table.displayId)
 	})
-);;
+);
 
 export const tripStatusHistory = pgTable('trip_status_history', {
 	id: uuid('id').primaryKey().defaultRandom(),
@@ -453,7 +453,7 @@ export const payments = pgTable(
 		// CHECK ((trip_id IS NOT NULL AND offer_id IS NOT NULL AND product_id IS NULL AND product_offer_id IS NULL)
 		//     OR (product_id IS NOT NULL AND product_offer_id IS NOT NULL AND trip_id IS NULL AND offer_id IS NULL));
 	})
-);;
+);
 
 // Payment refunds table for tracking individual refund transactions
 export const paymentRefunds = pgTable(
@@ -779,7 +779,7 @@ export const products = pgTable(
 		guideStatusIdx: index('products_guide_status_idx').on(table.guideId, table.status),
 		displayIdIdx: index('products_display_id_idx').on(table.displayId)
 	})
-);;
+);
 
 // Product sequences table for generating unique MT-YYYYMM-XXXXXX format titles
 export const productSequences = pgTable('product_sequences', {
@@ -879,7 +879,7 @@ export const productOffers = pgTable(
 		statusIdx: index('product_offers_status_idx').on(table.status),
 		displayIdIdx: index('product_offers_display_id_idx').on(table.displayId)
 	})
-);;
+);
 
 // Offer Description Templates
 export const offerDescriptionTemplates = pgTable(

@@ -46,7 +46,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				console.log('[SUPPORT API] Sending CS inquiry AlimTalk notification');
 				const decryptedPhone = decrypt(userDetails[0].phone);
 				const decryptedName = userDetails[0].name ? decrypt(userDetails[0].name) : null;
-				
+
 				await notificationService.sendNotification({
 					userId: session.user.id,
 					phoneNumber: decryptedPhone,

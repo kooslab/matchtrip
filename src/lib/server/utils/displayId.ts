@@ -65,7 +65,7 @@ export function parseDisplayId(displayId: string): {
 } | null {
 	const match = displayId.match(/^([A-Z]+)-(\d{4})-([A-Z0-9]{5})$/);
 	if (!match) return null;
-	
+
 	return {
 		prefix: match[1],
 		yearMonth: match[2],
@@ -86,7 +86,7 @@ export function isValidDisplayId(displayId: string): boolean {
 export function formatDisplayId(displayId: string): string {
 	const parts = parseDisplayId(displayId);
 	if (!parts) return displayId;
-	
+
 	// Add spacing for better readability when displayed
 	return `${parts.prefix}-${parts.yearMonth}-${parts.shortId}`;
 }

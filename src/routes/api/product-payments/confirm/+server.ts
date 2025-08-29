@@ -139,26 +139,32 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 		if (!tossResponse.ok) {
 			console.error('Toss payment confirmation failed:', tossData);
-			
+
 			// Check if this is a duplicate request error (S008)
-			if (tossData.code === 'ALREADY_PROCESSED_PAYMENT' || 
+			if (
+				tossData.code === 'ALREADY_PROCESSED_PAYMENT' ||
 				(tossData.message && tossData.message.includes('[S008]')) ||
-				(tossData.message && tossData.message.includes('기존 요청을 처리중입니다'))) {
-				
+				(tossData.message && tossData.message.includes('기존 요청을 처리중입니다'))
+			) {
 				console.log('Duplicate payment request detected, checking payment status...');
-				
+
 				// Try to fetch the payment status from Toss to verify it was successful
-				const statusResponse = await fetch(`https://api.tosspayments.com/v1/payments/${paymentKey}`, {
-					method: 'GET',
-					headers: {
-						Authorization: `Basic ${Buffer.from(tossSecretKey + ':').toString('base64')}`
+				const statusResponse = await fetch(
+					`https://api.tosspayments.com/v1/payments/${paymentKey}`,
+					{
+						method: 'GET',
+						headers: {
+							Authorization: `Basic ${Buffer.from(tossSecretKey + ':').toString('base64')}`
+						}
 					}
-				});
-				
+				);
+
 				if (statusResponse.ok) {
 					const paymentStatus = await statusResponse.json();
 					if (paymentStatus.status === 'DONE') {
-						console.log('Payment was already successfully processed, continuing with database update');
+						console.log(
+							'Payment was already successfully processed, continuing with database update'
+						);
 						// Continue with the normal flow to save payment in database
 					} else {
 						return json(

@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 /**
  * Verify Email Encryption
- * 
+ *
  * This script verifies that:
  * 1. All emails are encrypted
  * 2. All users have email_hash
@@ -36,7 +36,7 @@ async function verifyEmailEncryption() {
 
 		for (const user of allUsers) {
 			const issues: string[] = [];
-			
+
 			// Check if email exists
 			if (!user.email) {
 				console.log(`User ${user.id}: No email`);
@@ -50,11 +50,11 @@ async function verifyEmailEncryption() {
 				allGood = false;
 			} else {
 				encryptedCount++;
-				
+
 				// Try to decrypt
 				try {
 					const decryptedEmail = decrypt(user.email);
-					
+
 					if (!decryptedEmail || !decryptedEmail.includes('@')) {
 						issues.push('Invalid decrypted email');
 						decryptionErrors++;
@@ -70,7 +70,9 @@ async function verifyEmailEncryption() {
 							if (user.emailHash === expectedHash) {
 								hashMatchCount++;
 							} else {
-								issues.push(`Hash mismatch: expected ${expectedHash.substring(0, 8)}..., got ${user.emailHash.substring(0, 8)}...`);
+								issues.push(
+									`Hash mismatch: expected ${expectedHash.substring(0, 8)}..., got ${user.emailHash.substring(0, 8)}...`
+								);
 								hashMismatchCount++;
 								allGood = false;
 							}
@@ -86,7 +88,7 @@ async function verifyEmailEncryption() {
 			// Report issues for this user
 			if (issues.length > 0) {
 				console.log(`❌ User ${user.id}:`);
-				issues.forEach(issue => console.log(`   - ${issue}`));
+				issues.forEach((issue) => console.log(`   - ${issue}`));
 			} else {
 				console.log(`✅ User ${user.id}: All checks passed`);
 			}
@@ -118,20 +120,20 @@ async function verifyEmailEncryption() {
 		console.log('\n' + '='.repeat(50));
 		console.log('OAuth Lookup Test:');
 		console.log('='.repeat(50));
-		
+
 		// Pick a user to test
-		const testUser = allUsers.find(u => u.email && isEncrypted(u.email));
+		const testUser = allUsers.find((u) => u.email && isEncrypted(u.email));
 		if (testUser) {
 			const decryptedEmail = decrypt(testUser.email!);
 			console.log(`Testing with user: ${testUser.id}`);
 			console.log(`Decrypted email: ${decryptedEmail}`);
-			
+
 			// Simulate OAuth lookup by email_hash
 			const lookupHash = hashEmail(decryptedEmail!);
 			const foundUser = await db.query.users.findFirst({
 				where: (users, { eq }) => eq(users.emailHash, lookupHash)
 			});
-			
+
 			if (foundUser && foundUser.id === testUser.id) {
 				console.log('✅ OAuth lookup by email_hash works!');
 			} else {
@@ -139,7 +141,6 @@ async function verifyEmailEncryption() {
 				allGood = false;
 			}
 		}
-
 	} catch (error) {
 		console.error('Fatal error during verification:', error);
 		process.exit(1);

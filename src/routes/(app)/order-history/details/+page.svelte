@@ -353,14 +353,14 @@
 									{formatPaymentMethod(order.payment.paymentMethod)}
 								</div>
 							</div>
-							
+
 							{#if order.payment.displayId}
-							<div class="flex items-center justify-between">
-								<div class="text-gray-99 text-xs">주문번호</div>
-								<div class="text-gray-99 text-xs font-medium">
-									{order.payment.displayId}
+								<div class="flex items-center justify-between">
+									<div class="text-gray-99 text-xs">주문번호</div>
+									<div class="text-gray-99 text-xs font-medium">
+										{order.payment.displayId}
+									</div>
 								</div>
-							</div>
 							{/if}
 						</div>
 

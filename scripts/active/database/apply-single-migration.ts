@@ -2,7 +2,7 @@
 /**
  * Apply a single migration directly to the database
  * This bypasses Drizzle's migration system when it's out of sync
- * 
+ *
  * Usage:
  *   bun run scripts/apply-single-migration.ts prod 0027_drop_email_hash
  */
@@ -39,7 +39,7 @@ if (!process.env.DATABASE_URL) {
 async function applySingleMigration() {
 	console.log(`🔧 Applying migration: ${migrationName}\n`);
 	console.log(`📦 Database: ${process.env.DATABASE_URL?.substring(0, 50)}...\n`);
-	
+
 	// Connect to database
 	const sql = postgres(process.env.DATABASE_URL, {
 		ssl: 'require',
@@ -50,22 +50,22 @@ async function applySingleMigration() {
 		// Read migration file
 		const migrationPath = join(process.cwd(), 'drizzle', `${migrationName}.sql`);
 		const migrationSQL = await readFile(migrationPath, 'utf-8');
-		
+
 		console.log('📄 Migration SQL:');
 		console.log('─'.repeat(50));
 		console.log(migrationSQL);
 		console.log('─'.repeat(50));
 		console.log('');
-		
+
 		// Split by statement breakpoint and execute each statement
-		const statements = migrationSQL.split('--> statement-breakpoint').filter(s => s.trim());
-		
+		const statements = migrationSQL.split('--> statement-breakpoint').filter((s) => s.trim());
+
 		for (let i = 0; i < statements.length; i++) {
 			const statement = statements[i].trim();
 			if (statement) {
 				console.log(`⚙️  Executing statement ${i + 1}/${statements.length}...`);
 				console.log(`   ${statement.substring(0, 60)}${statement.length > 60 ? '...' : ''}`);
-				
+
 				try {
 					await sql.unsafe(statement);
 					console.log(`   ✅ Success`);
@@ -81,19 +81,18 @@ async function applySingleMigration() {
 				}
 			}
 		}
-		
+
 		console.log('\n📝 Recording migration in __drizzle_migrations table...');
-		
+
 		// Record the migration
 		await sql`
 			INSERT INTO drizzle.__drizzle_migrations (hash, created_at)
 			VALUES (${migrationName}, ${Date.now()})
 		`;
-		
+
 		console.log('✅ Migration recorded successfully');
-		
+
 		console.log('\n🎉 Migration applied successfully!');
-		
 	} catch (error) {
 		console.error('\n❌ Error applying migration:', error);
 		process.exit(1);
@@ -103,7 +102,7 @@ async function applySingleMigration() {
 }
 
 // Run it
-applySingleMigration().catch(error => {
+applySingleMigration().catch((error) => {
 	console.error('Unhandled error:', error);
 	process.exit(1);
 });

@@ -63,13 +63,16 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			error: error instanceof Error ? error.message : String(error),
 			stack: error instanceof Error ? error.stack : undefined
 		});
-		
+
 		// Provide more detailed error message
 		const errorMessage = error instanceof Error ? error.message : 'Database error';
-		return json({ 
-			error: `Failed to save agreements: ${errorMessage}`,
-			details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
-		}, { status: 500 });
+		return json(
+			{
+				error: `Failed to save agreements: ${errorMessage}`,
+				details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+			},
+			{ status: 500 }
+		);
 	}
 };
 

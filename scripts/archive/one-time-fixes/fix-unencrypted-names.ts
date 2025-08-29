@@ -14,7 +14,7 @@ async function fixUnencryptedNames() {
 	try {
 		// Get all users
 		const allUsers = await db.select().from(users);
-		
+
 		let unencryptedCount = 0;
 		let fixedCount = 0;
 		let errorCount = 0;
@@ -33,19 +33,18 @@ async function fixUnencryptedNames() {
 				try {
 					// Encrypt the name
 					const encryptedName = encrypt(user.name);
-					
+
 					if (encryptedName) {
 						// Update the user with encrypted name
-						await db
-							.update(users)
-							.set({ name: encryptedName })
-							.where(eq(users.id, user.id));
-						
+						await db.update(users).set({ name: encryptedName }).where(eq(users.id, user.id));
+
 						fixedCount++;
 						console.log(`✅ Encrypted name for user ${user.id}`);
 					} else {
 						errorCount++;
-						console.error(`❌ Failed to encrypt name for user ${user.id} - encryption returned null`);
+						console.error(
+							`❌ Failed to encrypt name for user ${user.id} - encryption returned null`
+						);
 					}
 				} catch (error) {
 					errorCount++;
@@ -65,9 +64,10 @@ async function fixUnencryptedNames() {
 		} else if (fixedCount === unencryptedCount) {
 			console.log('\n✨ Successfully encrypted all unencrypted names!');
 		} else if (errorCount > 0) {
-			console.log('\n⚠️ Some names could not be encrypted. Please check the ENCRYPTION_KEY environment variable.');
+			console.log(
+				'\n⚠️ Some names could not be encrypted. Please check the ENCRYPTION_KEY environment variable.'
+			);
 		}
-
 	} catch (error) {
 		console.error('Fatal error:', error);
 		process.exit(1);

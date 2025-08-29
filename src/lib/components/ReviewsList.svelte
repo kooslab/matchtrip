@@ -161,57 +161,57 @@
 			{#each reviews as review}
 				{#if review}
 					<div class="border-b border-gray-100 py-4 first:pt-0 last:border-0">
-					<!-- Reviewer Info -->
-					<div class="mb-4 flex items-start justify-between">
-						<div class="flex items-start gap-3">
-							{#if review.traveler?.image}
-								<img
-									src={review.traveler.image}
-									alt={review.traveler?.name || '여행자'}
-									class="h-10 w-10 rounded-full object-cover"
-								/>
-							{:else}
-								<div class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200">
-									<User class="h-5 w-5 text-gray-400" />
-								</div>
-							{/if}
-							<div>
-								<p class="font-medium text-gray-800">{review.traveler?.name || '익명'}</p>
-								<div class="mt-1 flex items-center gap-4 text-sm text-gray-500">
-									{#if review.trip?.destination?.city}
-										<div class="flex items-center gap-1">
-											<MapPin class="h-3 w-3 flex-shrink-0" />
-											<span>{review.trip.destination.city}</span>
-										</div>
-									{/if}
-									{#if review.trip?.startDate}
-										<div class="flex items-center gap-1">
-											<Calendar class="h-3 w-3 flex-shrink-0" />
-											<span>{formatDate(review.trip.startDate)}</span>
-										</div>
-									{/if}
+						<!-- Reviewer Info -->
+						<div class="mb-4 flex items-start justify-between">
+							<div class="flex items-start gap-3">
+								{#if review.traveler?.image}
+									<img
+										src={review.traveler.image}
+										alt={review.traveler?.name || '여행자'}
+										class="h-10 w-10 rounded-full object-cover"
+									/>
+								{:else}
+									<div class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200">
+										<User class="h-5 w-5 text-gray-400" />
+									</div>
+								{/if}
+								<div>
+									<p class="font-medium text-gray-800">{review.traveler?.name || '익명'}</p>
+									<div class="mt-1 flex items-center gap-4 text-sm text-gray-500">
+										{#if review.trip?.destination?.city}
+											<div class="flex items-center gap-1">
+												<MapPin class="h-3 w-3 flex-shrink-0" />
+												<span>{review.trip.destination.city}</span>
+											</div>
+										{/if}
+										{#if review.trip?.startDate}
+											<div class="flex items-center gap-1">
+												<Calendar class="h-3 w-3 flex-shrink-0" />
+												<span>{formatDate(review.trip.startDate)}</span>
+											</div>
+										{/if}
+									</div>
 								</div>
 							</div>
+							<div class="flex gap-0.5">
+								{#each [1, 2, 3, 4, 5] as star}
+									<Star
+										class="h-4 w-4 {star <= review.rating
+											? 'fill-yellow-400 text-yellow-400'
+											: 'text-gray-300'}"
+									/>
+								{/each}
+							</div>
 						</div>
-						<div class="flex gap-0.5">
-							{#each [1, 2, 3, 4, 5] as star}
-								<Star
-									class="h-4 w-4 {star <= review.rating
-										? 'fill-yellow-400 text-yellow-400'
-										: 'text-gray-300'}"
-								/>
-							{/each}
-						</div>
+
+						<!-- Review Content -->
+						<p class="whitespace-pre-wrap text-gray-700">{review.content}</p>
+
+						<!-- Review Date -->
+						<p class="mt-4 text-sm text-gray-400">
+							{formatDate(review.createdAt)}
+						</p>
 					</div>
-
-					<!-- Review Content -->
-					<p class="whitespace-pre-wrap text-gray-700">{review.content}</p>
-
-					<!-- Review Date -->
-					<p class="mt-4 text-sm text-gray-400">
-						{formatDate(review.createdAt)}
-					</p>
-				</div>
 				{/if}
 			{/each}
 

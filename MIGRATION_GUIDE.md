@@ -5,6 +5,7 @@ This guide explains how to safely migrate the database from `main` branch to `de
 ## Overview of Changes
 
 The `dev` branch introduces:
+
 - **Display ID System**: Human-readable unique identifiers (e.g., `PRD-2412-ABC123`)
 - **Product Sequences Table**: For generating sequential numbers
 - **Additional Tables**: Refund management, webhooks, cancellations
@@ -13,9 +14,11 @@ The `dev` branch introduces:
 ## Migration Scripts
 
 ### 1. Safe Migration Script (`scripts/safe-migration.ts`)
+
 Main script that handles the entire migration process with safety checks.
 
 **Features:**
+
 - Automatic database backup
 - Phased migration approach
 - Display ID population
@@ -23,6 +26,7 @@ Main script that handles the entire migration process with safety checks.
 - NOT NULL constraint application
 
 **Usage:**
+
 ```bash
 # For development database
 bun run scripts/safe-migration.ts
@@ -32,9 +36,11 @@ bun --env-file=.env.prod run scripts/safe-migration.ts
 ```
 
 ### 2. Verification Script (`scripts/verify-display-ids.ts`)
+
 Checks the status and validity of display IDs in the database.
 
 **Features:**
+
 - Validates display ID format
 - Checks for duplicates
 - Verifies prefixes
@@ -42,6 +48,7 @@ Checks the status and validity of display IDs in the database.
 - Constraint status
 
 **Usage:**
+
 ```bash
 # For development database
 bun run scripts/verify-display-ids.ts
@@ -51,14 +58,17 @@ bun --env-file=.env.prod run scripts/verify-display-ids.ts
 ```
 
 ### 3. Rollback Script (`scripts/rollback-migration.ts`)
+
 Emergency rollback in case of issues.
 
 **Features:**
+
 - Remove display ID changes only
 - Full database restore from backup
 - Transaction-safe operations
 
 **Usage:**
+
 ```bash
 # Interactive mode
 bun run scripts/rollback-migration.ts
@@ -70,6 +80,7 @@ bun run scripts/rollback-migration.ts backups/backup_2024-12-20T10-30-00.sql
 ## Step-by-Step Migration Process
 
 ### Prerequisites
+
 1. Ensure you have PostgreSQL client tools installed (`pg_dump`, `psql`)
 2. Have database credentials ready (`.env` for dev, `.env.prod` for production)
 3. Ensure sufficient disk space for backup
@@ -77,17 +88,20 @@ bun run scripts/rollback-migration.ts backups/backup_2024-12-20T10-30-00.sql
 ### Migration Steps
 
 #### 1. **Switch to dev branch**
+
 ```bash
 git checkout dev
 git pull origin dev
 ```
 
 #### 2. **Install dependencies**
+
 ```bash
 bun install
 ```
 
 #### 3. **Run the safe migration script**
+
 ```bash
 # For development
 bun run scripts/safe-migration.ts
@@ -97,6 +111,7 @@ bun --env-file=.env.prod run scripts/safe-migration.ts
 ```
 
 The script will:
+
 - Create a backup in `./backups/` directory
 - Check current migration status
 - Apply migrations 0023-0025 (nullable columns)
@@ -105,17 +120,20 @@ The script will:
 - Apply migration 0026 (NOT NULL constraints)
 
 #### 4. **Verify the migration**
+
 ```bash
 bun run scripts/verify-display-ids.ts
 ```
 
 Check that:
+
 - All tables have 100% display ID coverage
 - No invalid formats
 - No duplicates
 - Correct prefixes
 
 #### 5. **Deploy application code**
+
 Once database is migrated, deploy the application code that uses display IDs.
 
 ## Display ID Format
@@ -138,6 +156,7 @@ Example: `PRD-2412-K7N3P9`
 ### Issue: Migration fails midway
 
 **Solution:**
+
 1. Check error message in console
 2. Run verification script to see current state
 3. If needed, use rollback script
@@ -146,6 +165,7 @@ Example: `PRD-2412-K7N3P9`
 ### Issue: Some records missing display IDs
 
 **Solution:**
+
 1. Run `populate-display-ids.ts` manually:
    ```bash
    bun run scripts/populate-display-ids.ts
@@ -155,6 +175,7 @@ Example: `PRD-2412-K7N3P9`
 ### Issue: Duplicate display IDs
 
 **Solution:**
+
 1. This shouldn't happen with proper random generation
 2. If it does, manually update duplicates in database
 3. Re-run verification
@@ -162,6 +183,7 @@ Example: `PRD-2412-K7N3P9`
 ### Issue: Need to rollback everything
 
 **Solution:**
+
 1. Use the rollback script with a backup file:
    ```bash
    bun run scripts/rollback-migration.ts backups/[your-backup-file].sql
@@ -172,6 +194,7 @@ Example: `PRD-2412-K7N3P9`
 ### For Production Migration
 
 ⚠️ **CRITICAL WARNINGS:**
+
 1. **Always test on development first**
 2. **Schedule during low-traffic period**
 3. **Have a rollback plan ready**
@@ -186,6 +209,7 @@ Example: `PRD-2412-K7N3P9`
 ### Migration Files
 
 The following SQL migrations are involved:
+
 - `0023_product_sequences.sql` - Creates sequence table
 - `0024_redundant_marauders.sql` - Adds refund/webhook tables
 - `0025_funny_loa.sql` - Adds display_id columns (nullable)
@@ -204,6 +228,7 @@ The following SQL migrations are involved:
 ## Support
 
 If you encounter issues:
+
 1. Check this guide first
 2. Run verification script for diagnostics
 3. Review application logs

@@ -9,7 +9,7 @@ dotenv.config();
 
 export default defineConfig({
 	plugins: [
-		sveltekit(), 
+		sveltekit(),
 		tailwindcss(),
 		VitePWA({
 			registerType: 'autoUpdate',

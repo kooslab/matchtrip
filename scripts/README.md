@@ -1,11 +1,13 @@
 # Scripts Directory Guide
 
 ## Overview
+
 This directory contains maintenance and utility scripts for the MatchTrip application. Scripts are organized by their purpose and current status.
 
 ## Directory Structure
 
 ### 📂 Active Scripts
+
 Currently used scripts for regular maintenance and operations.
 
 - **`active/display-ids/`** - Display ID format management (PRD-YYMM-XXXXX)
@@ -15,7 +17,8 @@ Currently used scripts for regular maintenance and operations.
 - **`active/encryption/`** - Data encryption management
 
 ### 📦 Archive
-Historical scripts kept for reference. 
+
+Historical scripts kept for reference.
 ⚠️ **WARNING**: DO NOT RUN these scripts unless you fully understand their purpose and implications!
 
 - **`archive/one-time-fixes/`** - Completed one-time operations
@@ -26,16 +29,17 @@ Historical scripts kept for reference.
 
 ### Regular Maintenance Schedule
 
-| Frequency | Task | Script Location |
-|-----------|------|-----------------|
-| Weekly | Clean orphaned sessions | `active/sessions/clean-orphaned-sessions.ts` |
-| Monthly | Check for orphaned files | `active/storage/check-orphaned-files.ts` |
-| As needed | Database backup | `active/database/create-backup.ts` |
-| As needed | Display ID migration | `active/display-ids/migrate-display-ids-*.ts` |
+| Frequency | Task                     | Script Location                               |
+| --------- | ------------------------ | --------------------------------------------- |
+| Weekly    | Clean orphaned sessions  | `active/sessions/clean-orphaned-sessions.ts`  |
+| Monthly   | Check for orphaned files | `active/storage/check-orphaned-files.ts`      |
+| As needed | Database backup          | `active/database/create-backup.ts`            |
+| As needed | Display ID migration     | `active/display-ids/migrate-display-ids-*.ts` |
 
 ### Common Operations
 
 #### 🔄 Display ID Management
+
 ```bash
 # Check current display ID format
 bun run scripts/active/display-ids/verify-display-ids.ts
@@ -45,6 +49,7 @@ DRY_RUN=true bun run scripts/active/display-ids/migrate-display-ids-dev.ts
 ```
 
 #### 🧹 Session Cleanup
+
 ```bash
 # Clean development sessions
 bun run scripts/active/sessions/clean-orphaned-sessions.ts
@@ -54,6 +59,7 @@ bun run scripts/active/sessions/clean-prod-orphaned-sessions.ts
 ```
 
 #### 💾 Database Operations
+
 ```bash
 # Create backup
 bun run scripts/active/database/create-backup.ts
@@ -73,6 +79,7 @@ bun run scripts/active/database/apply-single-migration.ts
 ## Environment Variables
 
 Most scripts respect these environment variables:
+
 - `DRY_RUN=true` - Preview changes without applying them
 - `CONFIRM_PRODUCTION=yes` - Required for production operations
 - `CREATE_BACKUP=true` - Create backups before operations

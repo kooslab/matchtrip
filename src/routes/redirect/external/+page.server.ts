@@ -24,37 +24,37 @@ const ALLOWED_DOMAINS = [
 export const load: PageServerLoad = async ({ url }) => {
 	// Get the target path from query parameter
 	const targetPath = url.searchParams.get('to');
-	
+
 	// Validate the target path
 	if (!targetPath) {
 		// If no target, redirect to home
 		throw redirect(302, '/');
 	}
-	
+
 	// Ensure the path starts with /
 	const normalizedPath = targetPath.startsWith('/') ? targetPath : `/${targetPath}`;
-	
+
 	// Check if the path is in our whitelist
-	const isAllowedPath = ALLOWED_PATHS.some(allowed => 
-		normalizedPath === allowed || normalizedPath.startsWith(`${allowed}/`)
+	const isAllowedPath = ALLOWED_PATHS.some(
+		(allowed) => normalizedPath === allowed || normalizedPath.startsWith(`${allowed}/`)
 	);
-	
+
 	if (!isAllowedPath) {
 		console.warn(`Attempted redirect to non-whitelisted path: ${normalizedPath}`);
 		throw redirect(302, '/');
 	}
-	
+
 	// Get the current domain
 	const currentProtocol = url.protocol;
 	const currentHost = url.host;
 	const currentDomain = `${currentProtocol}//${currentHost}`;
-	
+
 	// Build the full redirect URL
 	const redirectUrl = `${currentDomain}${normalizedPath}`;
-	
+
 	// Log for debugging
 	console.log(`External redirect from Kakao: ${redirectUrl}`);
-	
+
 	// Perform the redirect with headers to encourage external browser
 	// Note: These headers might help but aren't guaranteed to force external browser
 	throw redirect(302, redirectUrl);

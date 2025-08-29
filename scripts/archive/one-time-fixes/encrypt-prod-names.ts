@@ -46,12 +46,12 @@ function getEncryptionKey(): Buffer {
 	}
 	// Convert base64 key to buffer (same as main app)
 	const keyBuffer = Buffer.from(key, 'base64');
-	
+
 	// Ensure key is 32 bytes for AES-256
 	if (keyBuffer.length !== 32) {
 		throw new Error('ENCRYPTION_KEY must be exactly 32 bytes (256 bits)');
 	}
-	
+
 	return keyBuffer;
 }
 
@@ -62,7 +62,7 @@ function isEncrypted(data: string | null | undefined): boolean {
 
 function encrypt(data: string | null | undefined): string | null {
 	if (!data) return data as any;
-	
+
 	// Already encrypted
 	if (isEncrypted(data)) {
 		return data;
@@ -72,17 +72,14 @@ function encrypt(data: string | null | undefined): string | null {
 		const key = getEncryptionKey();
 		const iv = randomBytes(IV_LENGTH);
 		const cipher = createCipheriv(ALGORITHM, key, iv);
-		
-		const encrypted = Buffer.concat([
-			cipher.update(data, 'utf8'),
-			cipher.final()
-		]);
-		
+
+		const encrypted = Buffer.concat([cipher.update(data, 'utf8'), cipher.final()]);
+
 		const authTag = cipher.getAuthTag();
-		
+
 		// Combine IV, auth tag, and encrypted data
 		const combined = `${ENCRYPTED_PREFIX}${iv.toString('base64')}:${authTag.toString('base64')}:${encrypted.toString('base64')}`;
-		
+
 		return combined;
 	} catch (error) {
 		console.error('Encryption error:', error);
@@ -92,7 +89,7 @@ function encrypt(data: string | null | undefined): string | null {
 
 function decrypt(encryptedData: string | null | undefined): string | null {
 	if (!encryptedData) return encryptedData as any;
-	
+
 	// Check if data is encrypted
 	if (!isEncrypted(encryptedData)) {
 		// Return as-is if not encrypted
@@ -103,7 +100,7 @@ function decrypt(encryptedData: string | null | undefined): string | null {
 		// Remove prefix and split parts
 		const withoutPrefix = encryptedData.slice(ENCRYPTED_PREFIX.length);
 		const parts = withoutPrefix.split(':');
-		
+
 		if (parts.length !== 3) {
 			throw new Error('Invalid encrypted data format');
 		}
@@ -118,10 +115,7 @@ function decrypt(encryptedData: string | null | undefined): string | null {
 		const decipher = createDecipheriv(ALGORITHM, key, iv);
 		decipher.setAuthTag(authTag);
 
-		const decrypted = Buffer.concat([
-			decipher.update(encrypted),
-			decipher.final()
-		]);
+		const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
 
 		return decrypted.toString('utf8');
 	} catch (error) {
@@ -133,41 +127,41 @@ function decrypt(encryptedData: string | null | undefined): string | null {
 // Main script
 async function main() {
 	const isDryRun = process.argv.includes('--dry-run');
-	
+
 	console.log('\n' + '='.repeat(60));
 	console.log('🔐 PRODUCTION NAME ENCRYPTION SCRIPT');
 	console.log('='.repeat(60));
-	
+
 	// Verify environment
 	if (!process.env.DATABASE_URL) {
 		console.error('❌ DATABASE_URL not found in .env.prod');
 		process.exit(1);
 	}
-	
+
 	if (!process.env.ENCRYPTION_KEY) {
 		console.error('❌ ENCRYPTION_KEY not found in .env.prod');
 		process.exit(1);
 	}
-	
+
 	console.log(`📦 Database: ${process.env.DATABASE_URL.substring(0, 40)}...`);
 	console.log(`🔑 Encryption key: ${process.env.ENCRYPTION_KEY.substring(0, 10)}...`);
 	console.log(`🏃 Mode: ${isDryRun ? 'DRY RUN (preview only)' : 'LIVE (will update database)'}`);
 	console.log('='.repeat(60) + '\n');
-	
+
 	if (!isDryRun) {
 		console.log('⚠️  WARNING: This will modify the PRODUCTION database!');
 		console.log('⚠️  Make sure you have a backup before proceeding.');
 		console.log('\nPress Ctrl+C to cancel, or wait 5 seconds to continue...\n');
-		await new Promise(resolve => setTimeout(resolve, 5000));
+		await new Promise((resolve) => setTimeout(resolve, 5000));
 	}
-	
+
 	// Create database connection
 	const connection = postgres(process.env.DATABASE_URL, {
 		ssl: 'require',
 		max: 1
 	});
 	const db = drizzle(connection);
-	
+
 	try {
 		// Test encryption key
 		console.log('🔑 Testing encryption key...');
@@ -178,7 +172,7 @@ async function main() {
 			throw new Error('Encryption key test failed!');
 		}
 		console.log('✅ Encryption key is valid\n');
-		
+
 		// Fetch all users
 		console.log('📊 Fetching users from database...');
 		const allUsers = await db
@@ -189,17 +183,17 @@ async function main() {
 				phone: users.phone
 			})
 			.from(users);
-		
+
 		console.log(`Found ${allUsers.length} total users\n`);
-		
+
 		let unencryptedNames: any[] = [];
 		let unencryptedPhones: any[] = [];
 		let alreadyEncryptedCount = 0;
-		
+
 		// Analyze users
 		for (const user of allUsers) {
 			let hasUnencryptedData = false;
-			
+
 			// Check name
 			if (user.name) {
 				if (!isEncrypted(user.name)) {
@@ -213,7 +207,7 @@ async function main() {
 					alreadyEncryptedCount++;
 				}
 			}
-			
+
 			// Check phone
 			if (user.phone) {
 				if (!isEncrypted(user.phone)) {
@@ -226,20 +220,20 @@ async function main() {
 				}
 			}
 		}
-		
+
 		// Report findings
 		console.log('📋 Analysis Results:');
 		console.log(`   • Unencrypted names: ${unencryptedNames.length}`);
 		console.log(`   • Unencrypted phones: ${unencryptedPhones.length}`);
 		console.log(`   • Already encrypted: ${alreadyEncryptedCount}`);
 		console.log('');
-		
+
 		if (unencryptedNames.length === 0 && unencryptedPhones.length === 0) {
 			console.log('✅ All data is already encrypted! Nothing to do.');
 			await connection.end();
 			process.exit(0);
 		}
-		
+
 		// Show preview of changes
 		if (unencryptedNames.length > 0) {
 			console.log('📝 Names to encrypt:');
@@ -251,7 +245,7 @@ async function main() {
 			}
 			console.log('');
 		}
-		
+
 		if (unencryptedPhones.length > 0) {
 			console.log('📱 Phones to encrypt:');
 			for (const user of unencryptedPhones.slice(0, 5)) {
@@ -262,19 +256,19 @@ async function main() {
 			}
 			console.log('');
 		}
-		
+
 		if (isDryRun) {
 			console.log('✅ DRY RUN COMPLETE - No changes were made');
 			console.log('Remove --dry-run flag to apply changes');
 		} else {
 			console.log('🔄 Starting encryption process...\n');
-			
+
 			let successCount = 0;
 			let errorCount = 0;
-			
+
 			// Process each user that needs updates
 			const usersToUpdate = new Map();
-			
+
 			// Collect all updates needed per user
 			for (const user of unencryptedNames) {
 				if (!usersToUpdate.has(user.id)) {
@@ -282,14 +276,14 @@ async function main() {
 				}
 				usersToUpdate.get(user.id).updates.name = encrypt(user.name);
 			}
-			
+
 			for (const user of unencryptedPhones) {
 				if (!usersToUpdate.has(user.id)) {
 					usersToUpdate.set(user.id, { updates: {}, email: user.email });
 				}
 				usersToUpdate.get(user.id).updates.phone = encrypt(user.phone);
 			}
-			
+
 			// Apply updates
 			for (const [userId, data] of usersToUpdate) {
 				try {
@@ -300,7 +294,7 @@ async function main() {
 							updatedAt: new Date()
 						})
 						.where(eq(users.id, userId));
-					
+
 					successCount++;
 					console.log(`✅ Updated user ${userId} (${data.email})`);
 				} catch (error) {
@@ -308,14 +302,14 @@ async function main() {
 					console.error(`❌ Failed to update user ${userId} (${data.email}):`, error);
 				}
 			}
-			
+
 			console.log('\n' + '='.repeat(60));
 			console.log('📈 FINAL RESULTS');
 			console.log('='.repeat(60));
 			console.log(`✅ Successfully updated: ${successCount} users`);
 			console.log(`❌ Failed updates: ${errorCount} users`);
 			console.log('='.repeat(60));
-			
+
 			if (errorCount > 0) {
 				console.log('\n⚠️  Some updates failed. Please check the errors above.');
 				process.exit(1);
@@ -323,7 +317,6 @@ async function main() {
 				console.log('\n🎉 All updates completed successfully!');
 			}
 		}
-		
 	} catch (error) {
 		console.error('\n❌ Fatal error:', error);
 		process.exit(1);
@@ -334,7 +327,7 @@ async function main() {
 }
 
 // Run the script
-main().catch(error => {
+main().catch((error) => {
 	console.error('Unhandled error:', error);
 	process.exit(1);
 });

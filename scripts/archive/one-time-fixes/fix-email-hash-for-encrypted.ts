@@ -1,12 +1,12 @@
 #!/usr/bin/env bun
 /**
  * Fix Email Hash for Encrypted Emails
- * 
+ *
  * This script:
  * 1. Decrypts encrypted email addresses
  * 2. Generates email_hash from the decrypted email
  * 3. Updates the email_hash column
- * 
+ *
  * This is needed when emails were encrypted before email_hash was populated.
  */
 
@@ -55,13 +55,14 @@ async function fixEmailHashes() {
 				// Plain text email - can hash directly
 				try {
 					const emailHash = hashEmail(user.email);
-					await db.update(users)
-						.set({ 
+					await db
+						.update(users)
+						.set({
 							emailHash: emailHash,
 							updatedAt: new Date()
 						})
 						.where(eq(users.id, user.id));
-					
+
 					console.log(`✓ User ${user.id}: Hash generated from plain text email`);
 					fixedCount++;
 				} catch (error) {
@@ -73,27 +74,30 @@ async function fixEmailHashes() {
 				// Encrypted email - need to decrypt first
 				try {
 					const decryptedEmail = decrypt(user.email);
-					
+
 					if (!decryptedEmail) {
 						throw new Error('Decryption returned null');
 					}
-					
+
 					if (!decryptedEmail.includes('@')) {
 						throw new Error(`Invalid email format: ${decryptedEmail}`);
 					}
-					
+
 					// Generate hash from decrypted email
 					const emailHash = hashEmail(decryptedEmail);
-					
+
 					// Update the user with email_hash
-					await db.update(users)
-						.set({ 
+					await db
+						.update(users)
+						.set({
 							emailHash: emailHash,
 							updatedAt: new Date()
 						})
 						.where(eq(users.id, user.id));
-					
-					console.log(`✓ User ${user.id}: Hash generated for ${decryptedEmail.substring(0, 3)}***@***`);
+
+					console.log(
+						`✓ User ${user.id}: Hash generated for ${decryptedEmail.substring(0, 3)}***@***`
+					);
 					fixedCount++;
 				} catch (error) {
 					console.error(`✗ User ${user.id}: Failed to decrypt and hash:`, error);
@@ -127,21 +131,20 @@ async function fixEmailHashes() {
 		console.log('\n' + '='.repeat(50));
 		console.log('Verification:');
 		console.log('='.repeat(50));
-		
+
 		const usersWithoutHash = await db.query.users.findMany({
-			where: (users, { and, isNotNull, isNull }) => 
+			where: (users, { and, isNotNull, isNull }) =>
 				and(isNotNull(users.email), isNull(users.emailHash))
 		});
-		
+
 		if (usersWithoutHash.length === 0) {
 			console.log('✅ All users with emails now have email_hash!');
 		} else {
 			console.error(`❌ Still ${usersWithoutHash.length} users without email_hash`);
-			usersWithoutHash.forEach(u => {
+			usersWithoutHash.forEach((u) => {
 				console.error(`  - User ${u.id}`);
 			});
 		}
-
 	} catch (error) {
 		console.error('Fatal error:', error);
 		process.exit(1);
@@ -176,13 +179,17 @@ async function dryRun() {
 					encryptedWithoutHashCount++;
 					try {
 						const decrypted = decrypt(user.email);
-						console.log(`User ${user.id}: Would generate hash for encrypted email: ${decrypted?.substring(0, 3)}***`);
+						console.log(
+							`User ${user.id}: Would generate hash for encrypted email: ${decrypted?.substring(0, 3)}***`
+						);
 					} catch (error) {
 						console.log(`User ${user.id}: ❌ Cannot decrypt email to generate hash`);
 					}
 				} else {
 					plainTextWithoutHashCount++;
-					console.log(`User ${user.id}: Would generate hash for plain text email: ${user.email.substring(0, 3)}***`);
+					console.log(
+						`User ${user.id}: Would generate hash for plain text email: ${user.email.substring(0, 3)}***`
+					);
 				}
 			}
 		}
@@ -197,7 +204,6 @@ async function dryRun() {
 		console.log(`Already has hash: ${alreadyHasHashCount}`);
 		console.log(`No email: ${noEmailCount}`);
 		console.log('='.repeat(50) + '\n');
-
 	} catch (error) {
 		console.error('Error during dry run:', error);
 		process.exit(1);
@@ -215,7 +221,7 @@ if (isDryRun) {
 	console.log('This is required for OAuth login to work with encrypted emails.');
 	console.log('\nRun with --dry-run flag to preview changes.\n');
 	console.log('Starting in 3 seconds... Press Ctrl+C to cancel.\n');
-	
+
 	setTimeout(() => {
 		fixEmailHashes();
 	}, 3000);

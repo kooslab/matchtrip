@@ -2,18 +2,18 @@
 /**
  * Production Migration Script for Display IDs
  * Updates existing display_ids from old format to new format
- * 
+ *
  * SAFETY FEATURES:
  * - Creates backup table before migration
  * - Validates all new IDs before applying
  * - Transaction-based updates
  * - Detailed logging
  * - Rollback capability
- * 
+ *
  * Old formats:
  * - PRODUCT_1755676035754_p2yptgpln
  * - ORDER_1755748358423_mxo1i5jmd
- * 
+ *
  * New formats:
  * - PRD-YYMM-XXXXX (products)
  * - ORD-YYMM-XXXXX (offer orders)
@@ -45,7 +45,10 @@ if (!fs.existsSync(logDir)) {
 	fs.mkdirSync(logDir, { recursive: true });
 }
 
-const logFile = path.join(logDir, `display-id-migration-${new Date().toISOString().replace(/:/g, '-')}.log`);
+const logFile = path.join(
+	logDir,
+	`display-id-migration-${new Date().toISOString().replace(/:/g, '-')}.log`
+);
 const logStream = fs.createWriteStream(logFile, { flags: 'a' });
 
 // Color codes for terminal output
@@ -120,7 +123,7 @@ function extractDateFromOldId(oldId: string): Date | null {
 function generateNewDisplayId(type: string, date?: Date): string {
 	const yearMonth = getYearMonth(date);
 	const shortId = generateShortId();
-	
+
 	switch (type) {
 		case 'product':
 			return `PRD-${yearMonth}-${shortId}`;
@@ -148,7 +151,7 @@ function validateNewDisplayId(displayId: string, type: string): boolean {
 		payment_product: /^PORD-\d{4}-[A-Z0-9]{5}$/,
 		product_offer: /^POFFER-\d{4}-[A-Z0-9]{5}$/
 	};
-	
+
 	return patterns[type]?.test(displayId) || false;
 }
 
@@ -157,12 +160,12 @@ function validateNewDisplayId(displayId: string, type: string): boolean {
  */
 function needsMigration(displayId: string | null): boolean {
 	if (!displayId) return false;
-	
+
 	// Check if it matches old formats
 	return (
 		displayId.startsWith('PRODUCT_') ||
 		displayId.startsWith('ORDER_') ||
-		displayId.startsWith('OFFER_') && !displayId.match(/^OFFER-\d{4}-[A-Z0-9]{5}$/) ||
+		(displayId.startsWith('OFFER_') && !displayId.match(/^OFFER-\d{4}-[A-Z0-9]{5}$/)) ||
 		displayId.includes('_')
 	);
 }
@@ -172,7 +175,7 @@ function needsMigration(displayId: string | null): boolean {
  */
 async function createBackup(tableName: string): Promise<void> {
 	if (!CREATE_BACKUP) return;
-	
+
 	try {
 		// Create backup table
 		await db.execute(sql`
@@ -180,7 +183,7 @@ async function createBackup(tableName: string): Promise<void> {
 			SELECT id, display_id, NOW() as backup_date
 			FROM ${sql.raw(tableName)}
 		`);
-		
+
 		success(`Created backup for ${tableName}`);
 	} catch (err) {
 		throw new Error(`Failed to create backup for ${tableName}: ${err}`);
@@ -197,29 +200,29 @@ async function migrateTable(
 	getPaymentType?: (record: any) => string
 ) {
 	log(`\n${colors.bright}${colors.magenta}Processing ${tableName}...${colors.reset}`);
-	
+
 	try {
 		// Create backup first
 		if (!DRY_RUN && CREATE_BACKUP) {
 			await createBackup(tableName);
 		}
-		
+
 		// Count records needing migration
 		const records = await db.select().from(table).execute();
-		const needMigration = records.filter(r => needsMigration(r.displayId));
-		
+		const needMigration = records.filter((r) => needsMigration(r.displayId));
+
 		if (needMigration.length === 0) {
 			success(`No records need migration in ${tableName}`);
-			return { 
-				migrated: 0, 
-				skipped: records.length, 
+			return {
+				migrated: 0,
+				skipped: records.length,
 				failed: 0,
-				total: records.length 
+				total: records.length
 			};
 		}
-		
+
 		info(`Found ${needMigration.length} records to migrate out of ${records.length} total`);
-		
+
 		// Prepare migration plan
 		const migrationPlan: Array<{
 			id: string;
@@ -227,32 +230,32 @@ async function migrateTable(
 			newId: string;
 			type: string;
 		}> = [];
-		
+
 		const duplicateCheck = new Set<string>();
-		
+
 		for (const record of needMigration) {
 			const date = extractDateFromOldId(record.displayId);
 			const finalType = getPaymentType ? getPaymentType(record) : type;
 			let newId = generateNewDisplayId(finalType, date || record.createdAt);
-			
+
 			// Ensure uniqueness
 			let attempts = 0;
 			while (duplicateCheck.has(newId) && attempts < 10) {
 				newId = generateNewDisplayId(finalType, date || record.createdAt);
 				attempts++;
 			}
-			
+
 			if (attempts >= 10) {
 				error(`Could not generate unique ID for record ${record.id}`);
 				continue;
 			}
-			
+
 			// Validate the new ID
 			if (!validateNewDisplayId(newId, finalType)) {
 				error(`Invalid new ID generated: ${newId} for type ${finalType}`);
 				continue;
 			}
-			
+
 			duplicateCheck.add(newId);
 			migrationPlan.push({
 				id: record.id,
@@ -261,86 +264,87 @@ async function migrateTable(
 				type: finalType
 			});
 		}
-		
+
 		if (DRY_RUN) {
 			warning('DRY RUN MODE - No actual changes will be made');
-			
+
 			// Show sample of what would be changed
 			console.log('\nMigration plan (first 10):');
 			const samples = migrationPlan.slice(0, 10);
 			for (const plan of samples) {
 				console.log(`  ${plan.oldId} → ${plan.newId}`);
 			}
-			
+
 			// Write full plan to log file
 			writeLog('\nFull migration plan:');
 			for (const plan of migrationPlan) {
 				writeLog(`${plan.id}: ${plan.oldId} → ${plan.newId}`);
 			}
-			
-			return { 
-				migrated: migrationPlan.length, 
+
+			return {
+				migrated: migrationPlan.length,
 				skipped: records.length - needMigration.length,
 				failed: 0,
 				total: records.length
 			};
 		}
-		
+
 		// Perform actual migration
 		let migrated = 0;
 		let failed = 0;
-		
+
 		info('Starting migration...');
-		
+
 		for (let i = 0; i < migrationPlan.length; i += BATCH_SIZE) {
 			const batch = migrationPlan.slice(i, i + BATCH_SIZE);
-			
+
 			// Use transaction for each batch
-			await db.transaction(async (tx) => {
-				for (const plan of batch) {
-					try {
-						await tx
-							.update(table)
-							.set({ displayId: plan.newId })
-							.where(eq(table.id, plan.id))
-							.execute();
-						
-						migrated++;
-						writeLog(`SUCCESS: ${plan.id}: ${plan.oldId} → ${plan.newId}`);
-						
-						if (migrated % 10 === 0) {
-							process.stdout.write(`\r  Progress: ${migrated}/${migrationPlan.length}`);
+			await db
+				.transaction(async (tx) => {
+					for (const plan of batch) {
+						try {
+							await tx
+								.update(table)
+								.set({ displayId: plan.newId })
+								.where(eq(table.id, plan.id))
+								.execute();
+
+							migrated++;
+							writeLog(`SUCCESS: ${plan.id}: ${plan.oldId} → ${plan.newId}`);
+
+							if (migrated % 10 === 0) {
+								process.stdout.write(`\r  Progress: ${migrated}/${migrationPlan.length}`);
+							}
+						} catch (err) {
+							failed++;
+							const errorMsg = `FAILED: ${plan.id}: ${err}`;
+							error(errorMsg);
+							writeLog(errorMsg);
+							throw err; // Rollback transaction
 						}
-					} catch (err) {
-						failed++;
-						const errorMsg = `FAILED: ${plan.id}: ${err}`;
-						error(errorMsg);
-						writeLog(errorMsg);
-						throw err; // Rollback transaction
 					}
-				}
-			}).catch((err) => {
-				error(`Transaction failed for batch: ${err}`);
-				failed += batch.length - (migrated % BATCH_SIZE);
-			});
+				})
+				.catch((err) => {
+					error(`Transaction failed for batch: ${err}`);
+					failed += batch.length - (migrated % BATCH_SIZE);
+				});
 		}
-		
+
 		console.log(); // New line after progress
-		
+
 		if (migrated > 0) {
 			success(`Successfully migrated ${migrated} records in ${tableName}`);
 		}
 		if (failed > 0) {
 			error(`Failed to migrate ${failed} records in ${tableName}`);
 		}
-		
-		return { 
-			migrated, 
-			failed, 
+
+		return {
+			migrated,
+			failed,
 			skipped: records.length - needMigration.length,
 			total: records.length
 		};
-		
 	} catch (err) {
 		const errorMsg = `Critical error migrating ${tableName}: ${err}`;
 		critical(errorMsg);
@@ -351,8 +355,8 @@ async function migrateTable(
 
 async function main() {
 	log(`${colors.bright}${colors.cyan}Display ID Migration Script (PRODUCTION)${colors.reset}`);
-	log('=' .repeat(60));
-	
+	log('='.repeat(60));
+
 	// Production safety checks
 	if (!CONFIRM_PRODUCTION) {
 		critical('PRODUCTION MIGRATION BLOCKED!');
@@ -360,7 +364,7 @@ async function main() {
 		info('Run with CONFIRM_PRODUCTION=yes to proceed.');
 		process.exit(1);
 	}
-	
+
 	if (DRY_RUN) {
 		warning('Running in DRY RUN mode - no changes will be made');
 		info('To perform actual migration, run with DRY_RUN=false');
@@ -368,37 +372,37 @@ async function main() {
 		critical('⚠️  PRODUCTION DATABASE WILL BE MODIFIED! ⚠️');
 		warning('Backup will be created: ' + (CREATE_BACKUP ? 'YES' : 'NO'));
 		info('Log file: ' + logFile);
-		
+
 		// Give user time to cancel
 		console.log('\n🚨 Starting PRODUCTION migration in 10 seconds... (Press Ctrl+C to cancel)');
 		for (let i = 10; i > 0; i--) {
 			process.stdout.write(`\r  ${i}...  `);
-			await new Promise(resolve => setTimeout(resolve, 1000));
+			await new Promise((resolve) => setTimeout(resolve, 1000));
 		}
 		console.log('\n');
 	}
-	
+
 	writeLog('Migration started');
 	writeLog(`DRY_RUN: ${DRY_RUN}`);
 	writeLog(`CREATE_BACKUP: ${CREATE_BACKUP}`);
-	
+
 	const stats = {
 		products: { migrated: 0, failed: 0, skipped: 0, total: 0 },
 		offers: { migrated: 0, failed: 0, skipped: 0, total: 0 },
 		payments: { migrated: 0, failed: 0, skipped: 0, total: 0 },
 		productOffers: { migrated: 0, failed: 0, skipped: 0, total: 0 }
 	};
-	
+
 	try {
 		// Migrate products
 		stats.products = await migrateTable('products', products, 'product');
-		
+
 		// Migrate offers
 		stats.offers = await migrateTable('offers', offers, 'offer');
-		
+
 		// Migrate product_offers
 		stats.productOffers = await migrateTable('product_offers', productOffers, 'product_offer');
-		
+
 		// Migrate payments (need to determine if it's for offer or product)
 		stats.payments = await migrateTable('payments', payments, 'payment_offer', (record) => {
 			// Check if it's a product payment based on the old display_id
@@ -411,18 +415,18 @@ async function main() {
 			}
 			return 'payment_offer';
 		});
-		
+
 		// Print summary
 		console.log('\n' + '='.repeat(60));
 		log(`${colors.bright}Migration Summary${colors.reset}`);
 		console.log('='.repeat(60));
-		
+
 		const tables = ['products', 'offers', 'payments', 'productOffers'];
 		let totalMigrated = 0;
 		let totalFailed = 0;
 		let totalSkipped = 0;
 		let grandTotal = 0;
-		
+
 		for (const tableName of tables) {
 			const stat = stats[tableName as keyof typeof stats];
 			console.log(`\n${tableName}:`);
@@ -430,25 +434,25 @@ async function main() {
 			console.log(`  Migrated: ${stat.migrated}`);
 			if (stat.failed > 0) console.log(`  Failed: ${stat.failed}`);
 			console.log(`  Skipped (already correct): ${stat.skipped}`);
-			
+
 			totalMigrated += stat.migrated;
 			totalFailed += stat.failed;
 			totalSkipped += stat.skipped;
 			grandTotal += stat.total;
 		}
-		
+
 		console.log('\n' + '-'.repeat(60));
 		console.log(`Grand total records: ${grandTotal}`);
 		console.log(`Total migrated: ${totalMigrated}`);
 		if (totalFailed > 0) console.log(`Total failed: ${totalFailed}`);
 		console.log(`Total skipped: ${totalSkipped}`);
-		
+
 		writeLog('\n' + '='.repeat(60));
 		writeLog('Migration completed');
 		writeLog(`Total migrated: ${totalMigrated}`);
 		writeLog(`Total failed: ${totalFailed}`);
 		writeLog(`Total skipped: ${totalSkipped}`);
-		
+
 		if (DRY_RUN) {
 			info('\nThis was a dry run. No changes were made.');
 			info('Review the log file for the full migration plan.');
@@ -457,7 +461,7 @@ async function main() {
 			if (totalFailed === 0) {
 				success('\n🎉 Migration completed successfully!');
 				info(`Check log file for details: ${logFile}`);
-				
+
 				if (CREATE_BACKUP) {
 					info('\nBackup tables created with suffix "_display_id_backup"');
 					info('To rollback, you can restore from these backup tables.');
@@ -468,16 +472,15 @@ async function main() {
 				info(`Check log file for details: ${logFile}`);
 			}
 		}
-		
 	} catch (err) {
 		critical(`Migration failed: ${err}`);
 		writeLog(`CRITICAL ERROR: ${err}`);
-		
+
 		if (!DRY_RUN && CREATE_BACKUP) {
 			info('\nBackup tables are available for recovery.');
 			info('To rollback, restore from tables with suffix "_display_id_backup"');
 		}
-		
+
 		process.exit(1);
 	} finally {
 		logStream.end();

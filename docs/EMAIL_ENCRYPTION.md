@@ -3,6 +3,7 @@
 ## Overview
 
 This implementation provides a secure way to encrypt email addresses at rest while maintaining the ability to:
+
 - Perform fast lookups for authentication (OAuth and regular login)
 - Search for users by email
 - Keep email addresses encrypted in the database
@@ -38,6 +39,7 @@ bun run db:migrate
 ```
 
 This adds:
+
 - `email_hash` column (text, unique)
 - Index on `email_hash` for fast lookups
 
@@ -87,13 +89,10 @@ bun run scripts/encrypt-emails.ts
 
 ```typescript
 // Admin searching for a user
-const searchEmail = "user@example.com";
+const searchEmail = 'user@example.com';
 const searchHash = hashEmail(searchEmail);
 
-const user = await db.select()
-  .from(users)
-  .where(eq(users.emailHash, searchHash))
-  .limit(1);
+const user = await db.select().from(users).where(eq(users.emailHash, searchHash)).limit(1);
 ```
 
 ### Email Operations
@@ -133,19 +132,22 @@ await sendEmail(decryptedEmail, subject, body);
 If you need to rollback:
 
 1. **Decrypt emails** (if you have the encryption key):
+
    ```typescript
    // Update all users to decrypt emails
    const allUsers = await db.select().from(users);
    for (const user of allUsers) {
-     if (isEncrypted(user.email)) {
-       await db.update(users)
-         .set({ email: decrypt(user.email) })
-         .where(eq(users.id, user.id));
-     }
+   	if (isEncrypted(user.email)) {
+   		await db
+   			.update(users)
+   			.set({ email: decrypt(user.email) })
+   			.where(eq(users.id, user.id));
+   	}
    }
    ```
 
 2. **Remove email_hash column** (optional):
+
    ```sql
    ALTER TABLE users DROP COLUMN email_hash;
    DROP INDEX users_email_hash_idx;
@@ -172,10 +174,10 @@ If you need to rollback:
 
 ```sql
 -- Check that emails are encrypted
-SELECT id, 
+SELECT id,
        substring(email, 1, 10) as email_sample,
        substring(email_hash, 1, 10) as hash_sample
-FROM users 
+FROM users
 LIMIT 5;
 ```
 
@@ -184,6 +186,7 @@ LIMIT 5;
 ### Adding New Users
 
 New users created through OAuth will automatically have:
+
 - Encrypted email
 - Email hash
 - Proper authentication
@@ -191,6 +194,7 @@ New users created through OAuth will automatically have:
 ### Email Changes
 
 When a user changes their email:
+
 1. Encrypt the new email
 2. Generate new email hash
 3. Update both columns atomically
@@ -198,6 +202,7 @@ When a user changes their email:
 ### Key Rotation
 
 If you need to rotate encryption keys:
+
 1. Decrypt all emails with old key
 2. Re-encrypt with new key
 3. Email hashes remain unchanged (no impact on auth)
@@ -243,6 +248,7 @@ KAKAO_CLIENT_SECRET=...
 ## Compliance
 
 This implementation helps with:
+
 - **GDPR**: Emails are encrypted (data protection)
 - **Security Audits**: PII is not stored in plaintext
 - **Data Breaches**: Encrypted emails are useless without the key

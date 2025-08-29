@@ -185,7 +185,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 				// Format amount with comma separator
 				const formattedAmount = amount.toLocaleString('ko-KR') + '원';
-				
+
 				// Decrypt personal data
 				const decryptedPhone = decrypt(userDetails[0].phone);
 				const decryptedName = userDetails[0].name ? decrypt(userDetails[0].name) : null;
@@ -254,22 +254,26 @@ async function confirmTossPayment(paymentKey: string, orderId: string, amount: n
 
 		if (!response.ok) {
 			console.error('Toss API error:', data);
-			
+
 			// Check if this is a duplicate request error (S008)
-			if (data.code === 'ALREADY_PROCESSED_PAYMENT' || 
+			if (
+				data.code === 'ALREADY_PROCESSED_PAYMENT' ||
 				(data.message && data.message.includes('[S008]')) ||
-				(data.message && data.message.includes('기존 요청을 처리중입니다'))) {
-				
+				(data.message && data.message.includes('기존 요청을 처리중입니다'))
+			) {
 				console.log('Duplicate payment request detected, checking payment status...');
-				
+
 				// Try to fetch the payment status from Toss to verify it was successful
-				const statusResponse = await fetch(`https://api.tosspayments.com/v1/payments/${paymentKey}`, {
-					method: 'GET',
-					headers: {
-						Authorization: encryptedSecretKey
+				const statusResponse = await fetch(
+					`https://api.tosspayments.com/v1/payments/${paymentKey}`,
+					{
+						method: 'GET',
+						headers: {
+							Authorization: encryptedSecretKey
+						}
 					}
-				});
-				
+				);
+
 				if (statusResponse.ok) {
 					const paymentStatus = await statusResponse.json();
 					if (paymentStatus.status === 'DONE') {
@@ -280,13 +284,13 @@ async function confirmTossPayment(paymentKey: string, orderId: string, amount: n
 						};
 					}
 				}
-				
+
 				return {
 					success: false,
 					error: '[S008] 기존 요청을 처리중입니다.'
 				};
 			}
-			
+
 			return {
 				success: false,
 				error: data.message || '결제 승인에 실패했습니다.'

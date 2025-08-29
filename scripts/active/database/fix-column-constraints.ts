@@ -23,22 +23,24 @@ async function fixColumnConstraints() {
 			ORDER BY column_name;
 		`);
 
-		const rows = Array.isArray(columnInfo) ? columnInfo : (columnInfo.rows || []);
+		const rows = Array.isArray(columnInfo) ? columnInfo : columnInfo.rows || [];
 		console.log('Current column types:');
 		for (const row of rows) {
 			const col = row as any;
-			console.log(`  ${col.column_name}: ${col.data_type} (max length: ${col.character_maximum_length || 'unlimited'})`);
+			console.log(
+				`  ${col.column_name}: ${col.data_type} (max length: ${col.character_maximum_length || 'unlimited'})`
+			);
 		}
 
 		// Fix column types to ensure they are unlimited TEXT
 		console.log('\n2. Updating column types to TEXT...');
-		
+
 		await db.execute(`ALTER TABLE "users" ALTER COLUMN "email" TYPE TEXT;`);
 		console.log('  ✅ Updated email column to TEXT');
-		
+
 		await db.execute(`ALTER TABLE "users" ALTER COLUMN "name" TYPE TEXT;`);
 		console.log('  ✅ Updated name column to TEXT');
-		
+
 		await db.execute(`ALTER TABLE "users" ALTER COLUMN "phone" TYPE TEXT;`);
 		console.log('  ✅ Updated phone column to TEXT');
 
@@ -56,16 +58,19 @@ async function fixColumnConstraints() {
 			ORDER BY column_name;
 		`);
 
-		const verifyRows = Array.isArray(verifyResult) ? verifyResult : (verifyResult.rows || []);
+		const verifyRows = Array.isArray(verifyResult) ? verifyResult : verifyResult.rows || [];
 		console.log('Updated column types:');
 		for (const row of verifyRows) {
 			const col = row as any;
-			console.log(`  ${col.column_name}: ${col.data_type} (max length: ${col.character_maximum_length || 'unlimited'})`);
+			console.log(
+				`  ${col.column_name}: ${col.data_type} (max length: ${col.character_maximum_length || 'unlimited'})`
+			);
 		}
 
 		console.log('\n✨ Column constraints have been fixed!');
-		console.log('Now you can safely delete users with truncated encrypted data and try Kakao login again.');
-
+		console.log(
+			'Now you can safely delete users with truncated encrypted data and try Kakao login again.'
+		);
 	} catch (error) {
 		console.error('Fatal error:', error);
 		process.exit(1);

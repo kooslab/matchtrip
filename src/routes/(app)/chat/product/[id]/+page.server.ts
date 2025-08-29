@@ -111,12 +111,14 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.orderBy(productMessages.createdAt);
 
 	// Decrypt sender information in messages and transform image URLs
-	const decryptedMessages = messages.map(msg => ({
+	const decryptedMessages = messages.map((msg) => ({
 		...msg,
-		sender: msg.sender ? {
-			...decryptUserFields(msg.sender),
-			image: transformImageUrl(msg.sender.image)
-		} : null
+		sender: msg.sender
+			? {
+					...decryptUserFields(msg.sender),
+					image: transformImageUrl(msg.sender.image)
+				}
+			: null
 	}));
 
 	// Fetch other user's info
@@ -134,10 +136,12 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.limit(1);
 
 	// Decrypt other user's data and transform image URL
-	const decryptedOtherUser = otherUser[0] ? {
-		...decryptUserFields(otherUser[0]),
-		image: transformImageUrl(otherUser[0].image)
-	} : null;
+	const decryptedOtherUser = otherUser[0]
+		? {
+				...decryptUserFields(otherUser[0]),
+				image: transformImageUrl(otherUser[0].image)
+			}
+		: null;
 
 	// Update last read timestamp
 	if (userRole === 'traveler') {

@@ -608,9 +608,11 @@
 										{#if part.type === 'text'}
 											{part.content}
 										{:else if part.type === 'link'}
-											<a 
-												href={part.url} 
-												class="{message.senderId === currentUserId ? 'text-white underline font-semibold' : 'text-blue-500 underline hover:text-blue-600'}"
+											<a
+												href={part.url}
+												class={message.senderId === currentUserId
+													? 'font-semibold text-white underline'
+													: 'text-blue-500 underline hover:text-blue-600'}
 												target={part.url.startsWith('/') ? '_self' : '_blank'}
 												rel={part.url.startsWith('/') ? '' : 'noopener noreferrer'}
 											>
