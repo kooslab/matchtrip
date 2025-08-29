@@ -3,6 +3,7 @@ import { db } from '$lib/server/db';
 import { guideProfiles, users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { redirect, fail } from '@sveltejs/kit';
+import { encrypt, decrypt } from '$lib/server/encryption';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const session = locals.session;
@@ -47,15 +48,22 @@ export const actions: Actions = {
 		const experience = formData.get('experience') as string;
 
 		try {
-			// Update user name and phone
+			// Update user name and phone with encryption
 			const userUpdates: any = {};
-			if (name && name !== user.name) {
-				userUpdates.name = name;
+			
+			// Decrypt current values for comparison
+			const currentName = user.name ? decrypt(user.name) : '';
+			const currentPhone = user.phone ? decrypt(user.phone) : '';
+			
+			if (name && name !== currentName) {
+				// Encrypt name before saving
+				userUpdates.name = encrypt(name);
 			}
-			if (phone && phone !== user.phone) {
-				// Validate phone (7-15 digits)
+			if (phone && phone !== currentPhone) {
+				// Validate phone (7-15 digits) on raw value
 				if (phone.length >= 7 && phone.length <= 15) {
-					userUpdates.phone = phone;
+					// Encrypt phone before saving
+					userUpdates.phone = encrypt(phone);
 				} else {
 					return fail(400, { error: 'Invalid phone number format' });
 				}
@@ -73,9 +81,9 @@ export const actions: Actions = {
 				.limit(1);
 
 			const profileData = {
-				bio: bio || '',
+				introduction: bio || '',
 				languages: languages ? languages.split(',').map((l) => l.trim()) : [],
-				specialties: specialties ? specialties.split(',').map((s) => s.trim()) : [],
+				activityAreas: specialties ? specialties.split(',').map((s) => s.trim()) : [],
 				experience: experience || '',
 				updatedAt: new Date()
 			};
@@ -88,11 +96,6 @@ export const actions: Actions = {
 				await db.insert(guideProfiles).values({
 					userId: user.id,
 					...profileData,
-					rating: 0,
-					reviewCount: 0,
-					completedTrips: 0,
-					responseRate: 100,
-					responseTime: '1시간 이내',
 					isVerified: false
 				});
 			}

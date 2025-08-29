@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { offerFormStore } from '$lib/stores/offerForm';
 	import arrowLeftUrl from '$lib/icons/icon-arrow-left-small-mono.svg';
+	import logoUrl from '$lib/images/Matchtrip.svg';
 	import { colors } from '$lib/constants/colors';
 
 	let { children } = $props();
@@ -97,7 +98,9 @@
 				<button onclick={handleBack} class="-ml-2 p-2">
 					<img src={arrowLeftUrl} alt="뒤로" class="h-6 w-6" />
 				</button>
-				<h1 class="text-lg font-semibold text-gray-900">나의 제안</h1>
+				<a href="/" class="flex items-center">
+					<img src={logoUrl} alt="Matchtrip" class="h-5" />
+				</a>
 				{#if showSkip}
 					<button
 						onclick={handleSkip}

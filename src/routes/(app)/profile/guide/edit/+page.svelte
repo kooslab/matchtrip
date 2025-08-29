@@ -3,6 +3,7 @@
 	import { enhance } from '$app/forms';
 	import { ChevronLeft, Camera, Plus, X } from 'lucide-svelte';
 	import RichTextEditor from '$lib/components/RichTextEditor.svelte';
+	import { countryCodesForDropdown } from '$lib/data/countryCodes';
 
 	const { data, form } = $props();
 
@@ -13,9 +14,9 @@
 
 	// Form fields
 	let name = $state(data.user?.name || '');
-	let bio = $state(data.guideProfile?.bio || '');
+	let bio = $state(data.guideProfile?.introduction || '');
 	let languages = $state(data.guideProfile?.languages?.join(', ') || '');
-	let specialties = $state(data.guideProfile?.specialties?.join(', ') || '');
+	let specialties = $state(data.guideProfile?.activityAreas?.join(', ') || '');
 	let experience = $state(data.guideProfile?.experience || '');
 
 	// Phone number fields
@@ -23,23 +24,14 @@
 	let mobile = $state('');
 	let isDropdownOpen = $state(false);
 
-	// Country codes for phone input
-	const countryCodes = [
-		{ code: '+82', flag: '🇰🇷', country: 'KR', name: '대한민국' },
-		{ code: '+1', flag: '🇺🇸', country: 'US', name: '미국' },
-		{ code: '+81', flag: '🇯🇵', country: 'JP', name: '일본' },
-		{ code: '+86', flag: '🇨🇳', country: 'CN', name: '중국' },
-		{ code: '+44', flag: '🇬🇧', country: 'GB', name: '영국' },
-		{ code: '+33', flag: '🇫🇷', country: 'FR', name: '프랑스' },
-		{ code: '+49', flag: '🇩🇪', country: 'DE', name: '독일' }
-	];
-
-	// Initialize phone from user data
+	// Initialize phone from user data - only on mount
+	let phoneInitialized = false;
 	$effect(() => {
-		if (data.user?.phone) {
+		if (!phoneInitialized && data.user?.phone) {
+			phoneInitialized = true;
 			const phone = data.user.phone;
 			// Find matching country code
-			for (const country of countryCodes) {
+			for (const country of countryCodesForDropdown) {
 				if (phone.startsWith(country.code.replace('+', ''))) {
 					countryCode = country.code;
 					mobile = phone.substring(country.code.length - 1); // Remove country code
@@ -61,7 +53,7 @@
 
 	// Get selected country object
 	const selectedCountry = $derived(
-		countryCodes.find((c) => c.code === countryCode) || countryCodes[0]
+		countryCodesForDropdown.find((c) => c.code === countryCode) || countryCodesForDropdown[0]
 	);
 
 	// Handle mobile input - only allow numbers
@@ -72,8 +64,6 @@
 		const numbersOnly = value.replace(/\D/g, '');
 		// Limit to 15 digits max
 		mobile = numbersOnly.slice(0, 15);
-		// Update the input value to reflect the cleaned value
-		input.value = mobile;
 	}
 
 	// Current profile image
@@ -307,7 +297,7 @@
 								<div
 									class="absolute left-0 right-0 top-full z-10 mt-1 max-h-60 overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg"
 								>
-									{#each countryCodes as country}
+									{#each countryCodesForDropdown as country}
 										<button
 											type="button"
 											onclick={() => {
@@ -330,7 +320,7 @@
 							name="phone"
 							inputmode="numeric"
 							pattern="[0-9]*"
-							value={mobile}
+							bind:value={mobile}
 							maxlength="15"
 							oninput={handleMobileInput}
 							onkeydown={(e) => {

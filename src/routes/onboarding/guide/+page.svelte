@@ -4,6 +4,7 @@
 	import { onMount } from 'svelte';
 	import { onboardingStore } from '$lib/stores/onboardingStore';
 	import arrowLeftUrl from '$lib/icons/icon-arrow-left-small-mono.svg';
+	import { countryCodesForDropdown } from '$lib/data/countryCodes';
 
 	let { data } = $props();
 
@@ -31,16 +32,6 @@
 		certificationFiles: [] as File[]
 	});
 
-	// Country codes for mobile
-	const countryCodes = [
-		{ code: '+82', flag: '🇰🇷', country: 'KR', name: '대한민국' },
-		{ code: '+1', flag: '🇺🇸', country: 'US', name: '미국' },
-		{ code: '+81', flag: '🇯🇵', country: 'JP', name: '일본' },
-		{ code: '+86', flag: '🇨🇳', country: 'CN', name: '중국' },
-		{ code: '+44', flag: '🇬🇧', country: 'GB', name: '영국' },
-		{ code: '+33', flag: '🇫🇷', country: 'FR', name: '프랑스' },
-		{ code: '+49', flag: '🇩🇪', country: 'DE', name: '독일' }
-	];
 
 	// Available destinations
 	const availableDestinations = [
@@ -103,10 +94,10 @@
 		if (storeData.phone) {
 			// Extract country code and mobile number
 			const phone = storeData.phone;
-			for (const country of countryCodes) {
-				if (phone.startsWith(country.code)) {
+			for (const country of countryCodesForDropdown) {
+				if (phone.startsWith(country.code.replace('+', ''))) {
 					formData.countryCode = country.code;
-					formData.mobile = phone.substring(country.code.length);
+					formData.mobile = phone.substring(country.code.length - 1);
 					// Format the mobile number
 					handleMobileInput({ target: { value: formData.mobile } } as any);
 					break;
@@ -259,7 +250,7 @@
 			profileData.append(`documents`, file);
 		});
 
-		const response = await fetch('/api/user/guide-profile', {
+		const response = await fetch('/api/profile/guide', {
 			method: 'POST',
 			body: profileData
 		});
@@ -417,7 +408,7 @@
 									style="--tw-ring-color: {colors.primary};"
 								>
 									<span class="text-sm"
-										>{countryCodes.find((c) => c.code === formData.countryCode)?.flag}
+										>{countryCodesForDropdown.find((c) => c.code === formData.countryCode)?.flag}
 										{formData.countryCode}</span
 									>
 									<svg
@@ -440,7 +431,7 @@
 									<div
 										class="absolute top-full right-0 left-0 z-50 mt-1 max-h-60 overflow-y-auto rounded-lg border border-gray-300 bg-white shadow-lg"
 									>
-										{#each countryCodes as country}
+										{#each countryCodesForDropdown as country}
 											<button
 												type="button"
 												onclick={() => {

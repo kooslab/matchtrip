@@ -79,6 +79,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		const birthDate = formData.get('birthDate')?.toString();
 		const destinationsStr = formData.get('destinations')?.toString();
 		const profileImageUrl = formData.get('profileImageUrl')?.toString();
+		const bio = formData.get('bio')?.toString() || ''; // Handle bio/introduction field
 
 		console.log('[API GUIDE PROFILE] Form data received:', {
 			hasName: !!name,
@@ -228,7 +229,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			activityAreas: destinations,
 			profileImageUrl: profileImageUrl,
 			idDocumentUrl: idDocumentUrl,
-			certificationUrls: certificationUrls
+			certificationUrls: certificationUrls,
+			introduction: bio // Save bio as introduction field
 		};
 
 		if (existingProfile.length > 0) {

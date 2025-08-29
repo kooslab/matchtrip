@@ -104,6 +104,7 @@
 			profileData.append('nickname', storeData.nickname);
 			profileData.append('frequentArea', storeData.frequentArea);
 			profileData.append('birthDate', storeData.birthDate);
+			profileData.append('bio', storeData.bio || '');
 			profileData.append('destinations', JSON.stringify(storeData.destinations));
 			if (storeData.profileImageUrl) {
 				profileData.append('profileImageUrl', storeData.profileImageUrl);
