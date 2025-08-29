@@ -137,7 +137,7 @@
 					</label>
 					<textarea
 						value={JSON.stringify(templateData, null, 2)}
-						on:input={(e) => {
+						oninput={(e) => {
 							try {
 								templateData = JSON.parse(e.currentTarget.value);
 							} catch {}

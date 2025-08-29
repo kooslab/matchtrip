@@ -40,15 +40,29 @@ export const actions: Actions = {
 
 		const formData = await request.formData();
 		const name = formData.get('name') as string;
+		const phone = formData.get('phone') as string;
 		const bio = formData.get('bio') as string;
 		const languages = formData.get('languages') as string;
 		const specialties = formData.get('specialties') as string;
 		const experience = formData.get('experience') as string;
 
 		try {
-			// Update user name
+			// Update user name and phone
+			const userUpdates: any = {};
 			if (name && name !== user.name) {
-				await db.update(users).set({ name }).where(eq(users.id, user.id));
+				userUpdates.name = name;
+			}
+			if (phone && phone !== user.phone) {
+				// Validate phone (7-15 digits)
+				if (phone.length >= 7 && phone.length <= 15) {
+					userUpdates.phone = phone;
+				} else {
+					return fail(400, { error: 'Invalid phone number format' });
+				}
+			}
+
+			if (Object.keys(userUpdates).length > 0) {
+				await db.update(users).set(userUpdates).where(eq(users.id, user.id));
 			}
 
 			// Check if guide profile exists
