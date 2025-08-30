@@ -8,9 +8,11 @@ import {
 	type TemplateData
 } from '$lib/server/kakao/templateHelper';
 import { eq } from 'drizzle-orm';
-import { infobipSMS } from '$lib/server/sms/infobip';
-import { convertKakaoTemplateToSMS, formatSMSMessage } from '$lib/server/sms/smsTemplateConverter';
-import { formatPhoneForInternationalSMS } from '$lib/server/utils/phoneVerification';
+// import { infobipSMS } from '$lib/server/sms/infobip'; // Replaced with email
+// import { convertKakaoTemplateToSMS, formatSMSMessage } from '$lib/server/sms/smsTemplateConverter'; // Replaced with email
+// import { formatPhoneForInternationalSMS } from '$lib/server/utils/phoneVerification'; // Replaced with email
+import { sendEmail } from '$lib/server/email/emailService';
+import { convertKakaoTemplateToEmail } from '$lib/server/email/emailTemplateConverter';
 
 export interface NotificationOptions {
 	userId?: string;
@@ -96,6 +98,20 @@ export class NotificationService {
 	}
 
 	/**
+	 * Get user email from database
+	 */
+	private async getUserEmail(userId: string): Promise<string | null> {
+		const user = await db
+			.select({ email: users.email })
+			.from(users)
+			.where(eq(users.id, userId))
+			.limit(1);
+
+		// Email is NOT encrypted
+		return user[0]?.email || null;
+	}
+
+	/**
 	 * Check if notification is duplicate (sent within last 5 minutes)
 	 */
 	private async isDuplicateNotification(
@@ -128,81 +144,65 @@ export class NotificationService {
 	}
 
 	/**
-	 * Send SMS notification for international phone numbers
+	 * Send Email notification for international phone numbers
 	 */
-	private async sendSMSNotification(
+	private async sendEmailNotification(
+		userId: string | undefined,
 		phoneNumber: string,
 		templateName: string,
 		templateData: TemplateData
 	): Promise<{ success: boolean; messageId?: string; error?: string }> {
-		console.log('============= SMS FALLBACK START =============');
-		console.log('[SMS Fallback] Original phone:', phoneNumber);
-		console.log('[SMS Fallback] Template:', templateName);
-		console.log('[SMS Fallback] Template data:', templateData);
+		console.log('============= EMAIL FALLBACK START =============');
+		console.log('[Email Fallback] Phone number (international):', phoneNumber);
+		console.log('[Email Fallback] Template:', templateName);
+		console.log('[Email Fallback] Template data:', templateData);
 		
 		try {
-			// Convert Kakao template to SMS format
-			const isDev = process.env.NODE_ENV !== 'production';
-			let smsMessage = convertKakaoTemplateToSMS(templateName, templateData, isDev);
-			console.log('[SMS Fallback] Converted message:', smsMessage);
-			
-			// Format the message for SMS
-			smsMessage = formatSMSMessage(smsMessage);
-			console.log('[SMS Fallback] Formatted message (length:', smsMessage.length, '):', smsMessage);
-			
-			// Format phone number for international SMS
-			const formattedPhone = formatPhoneForInternationalSMS(phoneNumber);
-			console.log('[SMS Fallback] Formatted phone:', formattedPhone);
-			
-			console.log('[SMS Fallback] Sending SMS to', formattedPhone);
-			
-			// Send SMS via Infobip
-			const response = await infobipSMS.sendSMS({
-				to: formattedPhone,
-				text: smsMessage
-			});
-			
-			// Check if SMS was sent successfully
-			if (response.messages && response.messages.length > 0) {
-				const message = response.messages[0];
-				console.log('[SMS Fallback] Response message:', message);
-				
-				// Check status group (1 = Pending, 2 = Undeliverable, 3 = Delivered, etc.)
-				if (message.status.groupId === 1 || message.status.groupId === 3) {
-					console.log('[SMS Fallback] ✅ SUCCESS - SMS sent to', formattedPhone);
-					console.log('[SMS Fallback] Message ID:', message.messageId);
-					console.log('[SMS Fallback] Status:', message.status.name, '-', message.status.description);
-					console.log('============= SMS FALLBACK SUCCESS =============');
-					return {
-						success: true,
-						messageId: message.messageId
-					};
-				} else {
-					console.error('[SMS Fallback] ❌ FAILED - SMS rejected for', formattedPhone);
-					console.error('[SMS Fallback] Status:', message.status);
-					console.error('[SMS Fallback] Group ID:', message.status.groupId);
-					console.error('[SMS Fallback] Description:', message.status.description);
-					console.log('============= SMS FALLBACK FAILED =============');
-					return {
-						success: false,
-						error: `SMS failed: ${message.status.description}`
-					};
-				}
+			// Get user email
+			let userEmail: string | null = null;
+			if (userId) {
+				userEmail = await this.getUserEmail(userId);
+				console.log('[Email Fallback] Email fetched from DB:', userEmail ? 'Found' : 'Not found');
 			}
 			
-			console.error('[SMS Fallback] ❌ No response from SMS service');
-			console.log('============= SMS FALLBACK FAILED =============');
+			if (!userEmail) {
+				console.error('[Email Fallback] ❌ No email address available for user');
+				console.log('============= EMAIL FALLBACK FAILED =============');
+				return {
+					success: false,
+					error: 'No email address available for user'
+				};
+			}
+			
+			// Convert Kakao template to Email format
+			const isDev = process.env.NODE_ENV !== 'production';
+			const emailContent = convertKakaoTemplateToEmail(templateName, templateData, isDev);
+			console.log('[Email Fallback] Email subject:', emailContent.subject);
+			console.log('[Email Fallback] Sending email to:', userEmail);
+			
+			// Send email
+			const result = await sendEmail({
+				to: userEmail,
+				subject: emailContent.subject,
+				html: emailContent.html,
+				text: emailContent.text
+			});
+			
+			console.log('[Email Fallback] ✅ SUCCESS - Email sent to', userEmail);
+			console.log('[Email Fallback] Email ID:', result?.id);
+			console.log('============= EMAIL FALLBACK SUCCESS =============');
+			
 			return {
-				success: false,
-				error: 'No response from SMS service'
+				success: true,
+				messageId: result?.id
 			};
 		} catch (error) {
-			console.error('[SMS Fallback] ❌ Exception:', error);
-			console.error('[SMS Fallback] Error details:', error instanceof Error ? error.stack : error);
-			console.log('============= SMS FALLBACK FAILED =============');
+			console.error('[Email Fallback] ❌ Exception:', error);
+			console.error('[Email Fallback] Error details:', error instanceof Error ? error.stack : error);
+			console.log('============= EMAIL FALLBACK FAILED =============');
 			return {
 				success: false,
-				error: error instanceof Error ? error.message : 'Failed to send SMS'
+				error: error instanceof Error ? error.message : 'Failed to send email'
 			};
 		}
 	}
@@ -401,20 +401,21 @@ export class NotificationService {
 				
 				console.log(`AlimTalk sent: ${template.templateCode} (${templateName}) to ${formattedPhone}`);
 			} else {
-				// Send SMS for international numbers
-				notificationType = 'sms';
-				const smsResult = await this.sendSMSNotification(
+				// Send Email for international numbers
+				notificationType = 'email';
+				const emailResult = await this.sendEmailNotification(
+					options.userId,
 					phoneNumber,
 					templateName,
 					decryptedTemplateData
 				);
 				
-				if (!smsResult.success) {
-					throw new Error(smsResult.error || 'Failed to send SMS');
+				if (!emailResult.success) {
+					throw new Error(emailResult.error || 'Failed to send email');
 				}
 				
-				messageId = smsResult.messageId;
-				console.log(`SMS sent: ${templateName} to ${phoneNumber}`);
+				messageId = emailResult.messageId;
+				console.log(`Email sent: ${templateName} to international user`);
 			}
 
 			// Log successful notification (use original phone for international, formatted for Korean)
