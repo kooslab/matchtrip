@@ -1,7 +1,7 @@
 {
 	"templates": {
 		"signup01": {
-			"dev": "testcode01",
+			"dev": "testcode21",
 			"prod": "code01",
 			"name": "signup01",
 			"description": "회원가입 - 여행자",
@@ -41,8 +41,8 @@
 			}
 		},
 		"mytrip01": {
-			"dev": "testcode03",
-			"prod": "code03",
+			"dev": "testcode23",
+			"prod": "code23",
 			"name": "mytrip01",
 			"description": "여행 의뢰 등록 완료",
 			"text": "[#{SHOPNAME}]에 #{NAME}님의 여행 의뢰가 정상적으로 등록 되었습니다.",
@@ -61,8 +61,8 @@
 			}
 		},
 		"mytrip02": {
-			"dev": "testcode04",
-			"prod": "code04",
+			"dev": "testcode24",
+			"prod": "code24",
 			"name": "mytrip02",
 			"description": "여행 제안 도착 알림",
 			"text": "[#{SHOPNAME}]에 #{가이드}님의 여행 제안이 도착하였습니다. #{나의여행}을 확인하세요.\n해당 메시지는 고객님께서 요청한 여행 제안이 있을 경우 발송됩니다",
@@ -101,8 +101,8 @@
 			}
 		},
 		"settlement01": {
-			"dev": "testcode06",
-			"prod": "code06",
+			"dev": "testcode26",
+			"prod": "code26",
 			"name": "settlement01",
 			"description": "결제 완료",
 			"text": "[#{SHOPNAME}]에 #{고객}님의 여행금액 #{여행총결제금액}이 정상적으로 결제 되었습니다.",
@@ -158,8 +158,8 @@
 			}
 		},
 		"myoffers01": {
-			"dev": "testcode09",
-			"prod": "code09",
+			"dev": "testcode29",
+			"prod": "code29",
 			"name": "myoffers01",
 			"description": "여행 제안 등록 완료",
 			"text": "[#{SHOPNAME}]에 #{NAME}님의 여행 제안이 정상적으로 등록 되었습니다.",
