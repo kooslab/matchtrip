@@ -242,6 +242,17 @@ export class NotificationService {
 		messageId?: string;
 		error?: string;
 	}> {
+		console.log('============= NOTIFICATION SERVICE START =============');
+		console.log('[NotificationService] Input options:', {
+			userId: options.userId,
+			hasPhoneNumber: !!options.phoneNumber,
+			phoneNumberLength: options.phoneNumber?.length,
+			templateName: options.templateName,
+			templateCode: options.templateCode,
+			templateData: options.templateData,
+			skipDuplicateCheck: options.skipDuplicateCheck
+		});
+		
 		try {
 			const { decrypt } = await import('$lib/server/encryption');
 
@@ -251,10 +262,14 @@ export class NotificationService {
 			if (options.templateName) {
 				// Use template name directly from templates.json
 				templateName = options.templateName;
+				console.log('[NotificationService] Using templateName:', templateName);
 			} else if (options.templateCode) {
 				// Legacy support - just use the code as-is
 				templateName = options.templateCode;
+				console.log('[NotificationService] Using legacy templateCode:', templateName);
 			} else {
+				console.error('[NotificationService] ❌ No template provided');
+				console.log('============= NOTIFICATION SERVICE END =============');
 				return {
 					success: false,
 					error: 'No template code or template name provided'
@@ -265,15 +280,24 @@ export class NotificationService {
 			let phoneNumber: string | null = options.phoneNumber || null;
 
 			if (!phoneNumber && options.userId) {
+				console.log('[NotificationService] No phone provided, fetching from userId:', options.userId);
 				phoneNumber = await this.getUserPhone(options.userId);
+				console.log('[NotificationService] Phone fetched from DB:', phoneNumber ? 'Found' : 'Not found');
 			}
 
 			if (!phoneNumber) {
+				console.error('[NotificationService] ❌ No phone number available');
+				console.log('============= NOTIFICATION SERVICE END =============');
 				return {
 					success: false,
 					error: 'No phone number provided or found for user'
 				};
 			}
+			
+			console.log('[NotificationService] Phone number:', {
+				length: phoneNumber.length,
+				prefix: phoneNumber.substring(0, 4) + '***'
+			});
 
 			// Check if phone number is Korean
 			const isKorean = this.isKoreanPhoneNumber(phoneNumber);
@@ -313,9 +337,13 @@ export class NotificationService {
 			}
 
 			// Validate template data
+			console.log('[NotificationService] Validating template data for:', templateName);
 			const validation = validateTemplateData(templateName, decryptedTemplateData);
 
 			if (!validation.valid) {
+				console.error('[NotificationService] ❌ Template validation failed');
+				console.error('[NotificationService] Missing variables:', validation.missing);
+				console.log('============= NOTIFICATION SERVICE END =============');
 				return {
 					success: false,
 					error: `Missing template variables: ${validation.missing.join(', ')}`
@@ -323,7 +351,14 @@ export class NotificationService {
 			}
 
 			// Prepare template with environment-specific code
+			console.log('[NotificationService] Preparing template...');
 			const template = prepareTemplate(templateName, decryptedTemplateData);
+			console.log('[NotificationService] Template prepared:', {
+				templateCode: template.templateCode,
+				hasText: !!template.text,
+				textLength: template.text?.length,
+				hasButton: !!template.button
+			});
 
 			// Check for duplicates unless skipped
 			if (!options.skipDuplicateCheck) {
@@ -394,12 +429,18 @@ export class NotificationService {
 				bulkId
 			);
 
+			console.log('[NotificationService] ✅ Success - returning result');
+			console.log('============= NOTIFICATION SERVICE END =============');
 			return {
 				success: true,
 				messageId
 			};
 		} catch (error) {
-			console.error('Failed to send AlimTalk:', error);
+			console.error('[NotificationService] ❌ Failed to send AlimTalk:', error);
+			console.error('[NotificationService] Error details:', {
+				message: error instanceof Error ? error.message : 'Unknown error',
+				stack: error instanceof Error ? error.stack : 'No stack'
+			});
 
 			// Log failed notification
 			if (options.userId || options.phoneNumber) {
@@ -420,6 +461,7 @@ export class NotificationService {
 				);
 			}
 
+			console.log('============= NOTIFICATION SERVICE END (ERROR) =============');
 			return {
 				success: false,
 				error: error instanceof Error ? error.message : 'Failed to send notification'

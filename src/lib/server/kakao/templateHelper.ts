@@ -18,7 +18,12 @@ export interface ProcessedTemplate {
 function getEnvironment(): 'dev' | 'prod' {
 	// Check NODE_ENV or other env variables to determine environment
 	// Default to 'dev' for safety
-	return env.NODE_ENV === 'production' ? 'prod' : 'dev';
+	const environment = env.NODE_ENV === 'production' ? 'prod' : 'dev';
+	console.log('[TemplateHelper] Environment detected:', {
+		NODE_ENV: env.NODE_ENV,
+		resolved: environment
+	});
+	return environment;
 }
 
 /**
@@ -26,9 +31,19 @@ function getEnvironment(): 'dev' | 'prod' {
  */
 export function getTemplate(templateName: string) {
 	const templates = templatesConfig.templates as Record<string, any>;
+	console.log('[TemplateHelper] Looking for template:', templateName);
+	console.log('[TemplateHelper] Available templates:', Object.keys(templates));
+	
 	if (!templates[templateName]) {
+		console.error('[TemplateHelper] ❌ Template not found:', templateName);
 		throw new Error(`Template ${templateName} not found`);
 	}
+	
+	console.log('[TemplateHelper] ✅ Template found:', {
+		name: templateName,
+		hasDevCode: !!templates[templateName].dev,
+		hasProdCode: !!templates[templateName].prod
+	});
 	return templates[templateName];
 }
 
@@ -57,12 +72,27 @@ export function processTemplateText(text: string, data: TemplateData): string {
  * Prepare a complete template for sending
  */
 export function prepareTemplate(templateName: string, data: TemplateData): ProcessedTemplate {
+	console.log('[TemplateHelper] prepareTemplate called:', {
+		templateName,
+		dataKeys: Object.keys(data)
+	});
+	
 	const template = getTemplate(templateName);
 	const env = getEnvironment();
 	const templateCode = template[env];
+	
+	console.log('[TemplateHelper] Template code selected:', {
+		environment: env,
+		templateCode: templateCode
+	});
 
 	// Process the text with variable replacement
 	const processedText = processTemplateText(template.text, data);
+	console.log('[TemplateHelper] Text processed:', {
+		originalLength: template.text.length,
+		processedLength: processedText.length,
+		preview: processedText.substring(0, 50) + '...'
+	});
 
 	// Get environment-specific button URLs
 	let processedButton: KakaoButton | undefined;
@@ -75,15 +105,28 @@ export function prepareTemplate(templateName: string, data: TemplateData): Proce
 				urlMobile: buttonUrls.urlMobile,
 				urlPc: buttonUrls.urlPc
 			};
+			console.log('[TemplateHelper] Button configured:', {
+				name: processedButton.name,
+				hasMobileUrl: !!processedButton.urlMobile,
+				hasPcUrl: !!processedButton.urlPc
+			});
 		}
 	}
 
 	// Return processed template with button if exists
-	return {
+	const result = {
 		text: processedText,
 		button: processedButton,
 		templateCode
 	};
+	
+	console.log('[TemplateHelper] Final template prepared:', {
+		templateCode: result.templateCode,
+		hasText: !!result.text,
+		hasButton: !!result.button
+	});
+	
+	return result;
 }
 
 /**
