@@ -9,11 +9,20 @@ export function convertKakaoTemplateToEmail(
 	templateData: TemplateData,
 	isDev: boolean = process.env.NODE_ENV !== 'production'
 ): { html: string; text: string; subject: string } {
-	// Get template from templates.json
-	const template = templates.templates[templateName as keyof typeof templates.templates];
+	// Get template from templates.json - look in both dev and prod sections
+	const templateSource = isDev ? templates.dev : templates.prod;
+	
+	// Find template by name property
+	let template: any = null;
+	for (const [key, tmpl] of Object.entries(templateSource || {})) {
+		if ((tmpl as any).name === templateName) {
+			template = tmpl;
+			break;
+		}
+	}
 	
 	if (!template) {
-		throw new Error(`Template ${templateName} not found`);
+		throw new Error(`Template ${templateName} not found in ${isDev ? 'dev' : 'prod'} templates`);
 	}
 	
 	// Process template text with variable replacement
@@ -27,8 +36,8 @@ export function convertKakaoTemplateToEmail(
 	let buttonHtml = '';
 	let buttonText = '';
 	if (template.button) {
-		const buttonUrls = isDev ? template.button.dev : template.button.prod;
-		const buttonUrl = buttonUrls.urlMobile || buttonUrls.urlPc;
+		// Button URLs are directly on the button object, not nested in dev/prod
+		const buttonUrl = template.button.urlMobile || template.button.urlPc;
 		
 		if (buttonUrl) {
 			buttonHtml = `

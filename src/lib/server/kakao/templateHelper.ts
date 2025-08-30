@@ -30,21 +30,43 @@ function getEnvironment(): 'dev' | 'prod' {
  * Get template by logical name (e.g., 'signup01', 'mytrip01')
  */
 export function getTemplate(templateName: string) {
-	const templates = templatesConfig.templates as Record<string, any>;
-	console.log('[TemplateHelper] Looking for template:', templateName);
-	console.log('[TemplateHelper] Available templates:', Object.keys(templates));
+	const env = getEnvironment();
+	const templateSource = env === 'dev' ? templatesConfig.dev : templatesConfig.prod;
 	
-	if (!templates[templateName]) {
+	console.log('[TemplateHelper] Looking for template:', templateName);
+	console.log('[TemplateHelper] Environment:', env);
+	
+	// Find template by name property in the current environment
+	let foundTemplate = null;
+	let foundCode = null;
+	
+	for (const [code, template] of Object.entries(templateSource || {})) {
+		if ((template as any).name === templateName) {
+			foundTemplate = template;
+			foundCode = code;
+			break;
+		}
+	}
+	
+	if (!foundTemplate) {
 		console.error('[TemplateHelper] ❌ Template not found:', templateName);
-		throw new Error(`Template ${templateName} not found`);
+		console.error('[TemplateHelper] Available templates in', env + ':', 
+			Object.entries(templateSource || {}).map(([k, v]: [string, any]) => v.name)
+		);
+		throw new Error(`Template ${templateName} not found in ${env} environment`);
 	}
 	
 	console.log('[TemplateHelper] ✅ Template found:', {
 		name: templateName,
-		hasDevCode: !!templates[templateName].dev,
-		hasProdCode: !!templates[templateName].prod
+		code: foundCode,
+		environment: env
 	});
-	return templates[templateName];
+	
+	// Return template with the code embedded for easier access
+	return {
+		...foundTemplate,
+		[env]: foundCode
+	};
 }
 
 /**
@@ -79,7 +101,7 @@ export function prepareTemplate(templateName: string, data: TemplateData): Proce
 	
 	const template = getTemplate(templateName);
 	const env = getEnvironment();
-	const templateCode = template[env];
+	const templateCode = template[env]; // This was embedded by getTemplate
 	
 	console.log('[TemplateHelper] Template code selected:', {
 		environment: env,
@@ -94,23 +116,20 @@ export function prepareTemplate(templateName: string, data: TemplateData): Proce
 		preview: processedText.substring(0, 50) + '...'
 	});
 
-	// Get environment-specific button URLs
+	// Get button URLs - they're directly on the button object now, not nested in env
 	let processedButton: KakaoButton | undefined;
 	if (template.button) {
-		const buttonUrls = template.button[env];
-		if (buttonUrls) {
-			processedButton = {
-				type: template.button.type,
-				name: template.button.name,
-				urlMobile: buttonUrls.urlMobile,
-				urlPc: buttonUrls.urlPc
-			};
-			console.log('[TemplateHelper] Button configured:', {
-				name: processedButton.name,
-				hasMobileUrl: !!processedButton.urlMobile,
-				hasPcUrl: !!processedButton.urlPc
-			});
-		}
+		processedButton = {
+			type: template.button.type,
+			name: template.button.name,
+			urlMobile: template.button.urlMobile,
+			urlPc: template.button.urlPc
+		};
+		console.log('[TemplateHelper] Button configured:', {
+			name: processedButton.name,
+			hasMobileUrl: !!processedButton.urlMobile,
+			hasPcUrl: !!processedButton.urlPc
+		});
 	}
 
 	// Return processed template with button if exists
