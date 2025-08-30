@@ -115,7 +115,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				await notificationService.sendNotification({
 					userId: session.user.id,
 					phoneNumber: decryptedGuidePhone,
-					templateName: 'myoffers05',
+					templateName: 'myoffers01', // Correct template for guide offer registration
 					templateData: {
 						SHOPNAME: '매치트립',
 						NAME: decryptedGuideName || '가이드'
@@ -123,7 +123,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				});
 			}
 
-			// Send offer arrival notification to traveler (mytrip06)
+			// Send offer arrival notification to traveler (mytrip02)
 			if (travelerUser[0]?.phone) {
 				console.log('[OFFERS API] Sending offer arrival AlimTalk to traveler');
 				const decryptedTravelerPhone = decrypt(travelerUser[0].phone);
@@ -132,7 +132,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				await notificationService.sendNotification({
 					userId: tripDetails[0].userId,
 					phoneNumber: decryptedTravelerPhone,
-					templateName: 'mytrip06',
+					templateName: 'mytrip02', // Correct template for offer arrival to traveler
 					templateData: {
 						SHOPNAME: '매치트립',
 						가이드: decryptedGuideName || '가이드',

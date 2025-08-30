@@ -53,14 +53,15 @@ export const POST: RequestHandler = async ({ locals }) => {
 
 		console.log('[API COMPLETE ONBOARDING] Verified user in DB:', updatedUser);
 
-		// Fetch fresh user data from database to get the phone number that was just saved
+		// Fetch fresh user data from database to get the phone number and role that was just saved
 		const freshUser = await db.query.users.findFirst({
 			where: eq(users.id, locals.user.id),
 			columns: {
 				id: true,
 				name: true,
 				phone: true,
-				email: true
+				email: true,
+				role: true
 			}
 		});
 
@@ -68,23 +69,30 @@ export const POST: RequestHandler = async ({ locals }) => {
 			id: freshUser?.id,
 			email: freshUser?.email,
 			hasPhone: !!freshUser?.phone,
-			hasName: !!freshUser?.name
+			hasName: !!freshUser?.name,
+			role: freshUser?.role
 		});
 
-		// Send welcome AlimTalk notification (testcode21)
+		// Send welcome AlimTalk notification based on user role
 		if (freshUser?.phone) {
 			try {
 				console.log('[API COMPLETE ONBOARDING] Sending welcome AlimTalk notification');
 				const decryptedPhone = decrypt(freshUser.phone);
 				const decryptedName = freshUser.name ? decrypt(freshUser.name) : null;
 
+				// Determine template based on user role
+				const templateName = freshUser.role === 'guide' ? 'signup02' : 'signup01';
+				const defaultName = freshUser.role === 'guide' ? '가이드' : '고객';
+
+				console.log(`[API COMPLETE ONBOARDING] Using template ${templateName} for role ${freshUser.role}`);
+
 				await notificationService.sendNotification({
 					userId: freshUser.id,
 					phoneNumber: decryptedPhone,
-					templateName: 'signup05',
+					templateName: templateName,
 					templateData: {
 						SHOPNAME: '매치트립',
-						NAME: decryptedName || '고객'
+						NAME: decryptedName || defaultName
 					}
 				});
 				console.log('[API COMPLETE ONBOARDING] AlimTalk notification sent successfully');

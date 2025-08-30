@@ -68,7 +68,7 @@ export async function POST({ request, locals }) {
 				await notificationService.sendNotification({
 					userId: session.user.id,
 					phoneNumber: decryptedPhone,
-					templateName: 'mytrip05',
+					templateName: 'mytrip01', // Correct template for trip registration
 					templateData: {
 						SHOPNAME: '매치트립',
 						NAME: decryptedName || '고객'
