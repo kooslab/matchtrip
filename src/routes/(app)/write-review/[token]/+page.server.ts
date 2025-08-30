@@ -13,6 +13,7 @@ import {
 	productOffers
 } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
+import { decryptUserFields } from '$lib/server/encryption';
 
 export const load: PageServerLoad = async ({ params, parent }) => {
 	const { user } = await parent();
@@ -71,11 +72,14 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 			.where(eq(reviews.reviewToken, token))
 			.then((rows) => rows[0]);
 
+		// Decrypt guide's name
+		const decryptedGuide = review.guide ? decryptUserFields(review.guide) : null;
+
 		return {
 			review: review.review,
 			trip: review.trip,
 			offer: review.offer,
-			guide: review.guide,
+			guide: decryptedGuide,
 			guideProfile: review.guideProfile,
 			destination: review.destination,
 			country: review.country,
@@ -99,11 +103,14 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 			.where(eq(reviews.reviewToken, token))
 			.then((rows) => rows[0]);
 
+		// Decrypt guide's name
+		const decryptedGuide = review.guide ? decryptUserFields(review.guide) : null;
+
 		return {
 			review: review.review,
 			product: review.product,
 			productOffer: review.productOffer,
-			guide: review.guide,
+			guide: decryptedGuide,
 			guideProfile: review.guideProfile,
 			reviewType: 'product'
 		};

@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
 import { reviews, trips, users, products } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
+import { decryptUserFields } from '$lib/server/encryption';
 
 // Submit a review using a token (from email link)
 export const POST: RequestHandler = async ({ request, locals }) => {
@@ -109,12 +110,15 @@ export const GET: RequestHandler = async ({ url }) => {
 		// Check if review was already submitted
 		const isSubmitted = review.content && review.rating > 0;
 
+		// Decrypt guide's name
+		const decryptedGuide = review.guide ? decryptUserFields(review.guide) : null;
+
 		return json({
 			review,
 			isSubmitted,
 			trip: review.trip,
 			product: review.product,
-			guide: review.guide,
+			guide: decryptedGuide,
 			offer: review.offer
 		});
 	} catch (error) {

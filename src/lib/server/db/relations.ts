@@ -130,6 +130,14 @@ export const reviewsRelations = relations(reviews, ({ one }) => ({
 		fields: [reviews.offerId],
 		references: [offers.id]
 	}),
+	product: one(products, {
+		fields: [reviews.productId],
+		references: [products.id]
+	}),
+	productOffer: one(productOffers, {
+		fields: [reviews.productOfferId],
+		references: [productOffers.id]
+	}),
 	guide: one(users, {
 		fields: [reviews.guideId],
 		references: [users.id],
