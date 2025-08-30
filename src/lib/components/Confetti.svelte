@@ -90,4 +90,4 @@
 	});
 </script>
 
-<canvas bind:this={canvas} class="pointer-events-none fixed inset-0" style="z-index: 50;" />
+<canvas bind:this={canvas} class="pointer-events-none fixed inset-0" style="z-index: 50;"></canvas>

@@ -16,11 +16,16 @@ export interface ProcessedTemplate {
  * Get current environment
  */
 function getEnvironment(): 'dev' | 'prod' {
+	// Check if we're using the test Kakao channel
+	// If KAKAO_TEST_MODE is set, always use dev templates regardless of NODE_ENV
+	const isTestMode = env.KAKAO_TEST_MODE === 'true' || env.KAKAO_TEST_MODE === '1';
+	
 	// Check NODE_ENV or other env variables to determine environment
 	// Default to 'dev' for safety
-	const environment = env.NODE_ENV === 'production' ? 'prod' : 'dev';
+	const environment = isTestMode ? 'dev' : (env.NODE_ENV === 'production' ? 'prod' : 'dev');
 	console.log('[TemplateHelper] Environment detected:', {
 		NODE_ENV: env.NODE_ENV,
+		KAKAO_TEST_MODE: env.KAKAO_TEST_MODE,
 		resolved: environment
 	});
 	return environment;

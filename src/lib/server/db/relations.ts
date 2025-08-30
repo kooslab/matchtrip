@@ -16,7 +16,9 @@ import {
 	fileUploads,
 	userAgreements,
 	tripStatusHistory,
-	payments
+	payments,
+	products,
+	productOffers
 } from './schema';
 
 // User relations
