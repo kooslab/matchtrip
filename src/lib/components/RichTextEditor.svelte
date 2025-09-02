@@ -340,13 +340,17 @@
 
 					// Replace temporary image with final URL and remove loading state
 					if (editorRef) {
+						let imageReplaced = false;
+						
+						// First try to find and update images in loading containers
 						const containers = editorRef.querySelectorAll('div[data-loading="true"]');
 						containers.forEach((container) => {
-							const img = container.querySelector('img');
-							if (img && (img.src === tempUrl || img.src.includes(tempUrl))) {
+							const img = container.querySelector('img.my-4.max-w-full.rounded-lg');
+							if (img && img.src === tempUrl) {
 								// Update image URL
 								img.src = data.url;
 								img.style.opacity = '1';
+								imageReplaced = true;
 
 								// Remove loading overlay
 								const overlay = container.querySelector('.image-loading-overlay');
@@ -367,14 +371,18 @@
 							}
 						});
 
-						// Also check for any images not in containers (fallback)
-						const imgs = editorRef.querySelectorAll('img');
-						imgs.forEach((img) => {
-							if (img.src === tempUrl || img.src.includes(tempUrl)) {
-								img.src = data.url;
-								img.style.opacity = '1';
-							}
-						});
+						// Only use fallback if no image was replaced in containers
+						if (!imageReplaced) {
+							// Check for images not in containers (shouldn't normally happen)
+							const imgs = editorRef.querySelectorAll('img.my-4.max-w-full.rounded-lg');
+							imgs.forEach((img) => {
+								// Use exact match only, not includes
+								if (img.src === tempUrl) {
+									img.src = data.url;
+									img.style.opacity = '1';
+								}
+							});
+						}
 
 						// Update content after replacing URL
 						handleInput();
