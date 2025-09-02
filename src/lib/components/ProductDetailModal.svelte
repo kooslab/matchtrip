@@ -10,6 +10,7 @@
 	} from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import StarIcon from '$lib/icons/icon-star-mono.svg';
 
 	interface Props {
 		product: any;
@@ -80,6 +81,43 @@
 	let showAttachments = $state(false);
 	let showCancellation = $state(false);
 	let showSeller = $state(false);
+
+	// Reviews state
+	let reviews = $state<any[]>([]);
+	let isLoadingReviews = $state(false);
+
+	// Fetch reviews when review tab is selected
+	$effect(() => {
+		if (activeTab === 'review' && product && reviews.length === 0 && !isLoadingReviews) {
+			fetchReviews();
+		}
+	});
+
+	// Fetch reviews function
+	const fetchReviews = async () => {
+		if (!product?.id) return;
+		
+		isLoadingReviews = true;
+		try {
+			const response = await fetch(`/api/products/${product.id}/reviews`);
+			if (response.ok) {
+				reviews = await response.json();
+			}
+		} catch (error) {
+			console.error('Failed to fetch reviews:', error);
+		} finally {
+			isLoadingReviews = false;
+		}
+	};
+
+	// Format date
+	const formatDate = (date: string) => {
+		return new Date(date).toLocaleDateString('ko-KR', {
+			year: 'numeric',
+			month: 'long',
+			day: 'numeric'
+		});
+	};
 
 	// Format price with commas
 	const formatPrice = (price: number) => {
@@ -229,7 +267,7 @@
 								? 'text-primary border-primary border-b-2'
 								: 'text-gray-500'}"
 						>
-							리뷰 <span class="text-gray-400">{product.reviewCount || 88}</span>
+							리뷰 <span class="text-gray-400">{product.reviewCount || 0}</span>
 						</button>
 					{/if}
 				</div>
@@ -445,10 +483,88 @@
 				{:else if activeTab === 'review' && showReviewTab}
 					<!-- Reviews Tab -->
 					<div class="p-4">
-						<div class="py-8 text-center">
-							<p class="text-gray-500">아직 리뷰가 없습니다</p>
-							<p class="mt-2 text-sm text-gray-400">첫 번째 리뷰를 작성해주세요!</p>
-						</div>
+						{#if isLoadingReviews}
+							<div class="py-8 text-center">
+								<svg
+									class="mx-auto h-8 w-8 animate-spin text-gray-400"
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+								>
+									<circle
+										class="opacity-25"
+										cx="12"
+										cy="12"
+										r="10"
+										stroke="currentColor"
+										stroke-width="4"
+									></circle>
+									<path
+										class="opacity-75"
+										fill="currentColor"
+										d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+									></path>
+								</svg>
+								<p class="mt-2 text-sm text-gray-500">리뷰를 불러오는 중...</p>
+							</div>
+						{:else if reviews.length > 0}
+							<div class="space-y-4">
+								{#each reviews as review}
+									<div class="border-b pb-4 last:border-b-0">
+										<div class="mb-2 flex items-start justify-between">
+											<div class="flex items-center gap-3">
+												<div class="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-gray-200">
+													{#if review.travelerProfile?.profileImageUrl || review.traveler?.image}
+														<img
+															src={review.travelerProfile?.profileImageUrl || review.traveler?.image}
+															alt={review.traveler?.name}
+															class="h-full w-full object-cover"
+														/>
+													{:else}
+														<div class="flex h-full w-full items-center justify-center text-gray-400">
+															<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+																<path
+																	stroke-linecap="round"
+																	stroke-linejoin="round"
+																	stroke-width="2"
+																	d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+																/>
+															</svg>
+														</div>
+													{/if}
+												</div>
+												<div>
+													<p class="font-medium text-gray-900">
+														{review.traveler?.name || review.travelerProfile?.username || '여행자'}
+													</p>
+													<p class="text-xs text-gray-500">{formatDate(review.createdAt)}</p>
+												</div>
+											</div>
+											<div class="flex items-center gap-0.5">
+												{#each Array(5) as _, i}
+													<div class="h-4 w-4">
+														<img 
+															src={StarIcon} 
+															alt="Star" 
+															class="h-full w-full"
+															style={i < review.rating ? 'filter: brightness(0) saturate(100%) invert(73%) sepia(95%) saturate(1352%) hue-rotate(6deg) brightness(104%) contrast(97%)' : 'filter: opacity(0.3)'}
+														/>
+													</div>
+												{/each}
+											</div>
+										</div>
+										{#if review.content}
+											<p class="text-sm text-gray-600">{review.content}</p>
+										{/if}
+									</div>
+								{/each}
+							</div>
+						{:else}
+							<div class="py-8 text-center">
+								<p class="text-gray-500">아직 리뷰가 없습니다</p>
+								<p class="mt-2 text-sm text-gray-400">첫 번째 리뷰를 작성해주세요!</p>
+							</div>
+						{/if}
 					</div>
 				{/if}
 			</div>
