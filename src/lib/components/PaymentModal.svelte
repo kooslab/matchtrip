@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { loadTossPayments, ANONYMOUS } from '@tosspayments/tosspayments-sdk';
-	import { generateOfferOrderId } from '$lib/utils/displayId';
+	import { generateOrderId } from '$lib/utils/displayId';
 
 	interface Props {
 		isOpen: boolean;
@@ -189,10 +189,6 @@
 				error = err.message || '결제 요청 중 오류가 발생했습니다.';
 			}
 		}
-	}
-
-	function generateOrderId() {
-		return generateOfferOrderId();
 	}
 
 	// Close modal on escape key

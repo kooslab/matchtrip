@@ -4,7 +4,6 @@ import { db } from '$lib/server/db';
 import { offers, trips, payments, users } from '$lib/server/db/schema';
 import { eq, and, ne } from 'drizzle-orm';
 import { notificationService } from '$lib/server/services/notificationService';
-import { generateOfferOrderId } from '$lib/server/utils/displayId';
 import { decrypt } from '$lib/server/encryption';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
@@ -125,7 +124,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			// Record payment in database
 			await tx.insert(payments).values({
 				id: crypto.randomUUID(),
-				displayId: generateOfferOrderId(),
+				displayId: orderId, // Use the same orderId for displayId
 				tripId: offerData.tripId,
 				offerId: offerId,
 				userId: user.id,
