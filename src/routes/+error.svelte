@@ -4,6 +4,10 @@
 	// Navigate back to home
 	const backUrl = '/';
 	const backText = '홈으로 돌아가기';
+	
+	// Use derived to safely access page store
+	let errorMessage = $derived($page.error?.message || '알 수 없는 오류가 발생했습니다.');
+	let statusCode = $derived($page.status);
 </script>
 
 <div class="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
@@ -12,12 +16,12 @@
 			<h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">오류가 발생했습니다</h2>
 			<div class="mt-4 rounded-md border border-red-200 bg-red-50 p-4">
 				<p class="text-sm text-red-800">
-					{$page.error?.message || '알 수 없는 오류가 발생했습니다.'}
+					{errorMessage}
 				</p>
 			</div>
-			{#if $page.status}
+			{#if statusCode}
 				<p class="mt-2 text-center text-sm text-gray-600">
-					상태 코드: {$page.status}
+					상태 코드: {statusCode}
 				</p>
 			{/if}
 			<div class="mt-6">

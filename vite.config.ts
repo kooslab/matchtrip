@@ -15,7 +15,7 @@ export default defineConfig({
 			registerType: 'autoUpdate',
 			includeAssets: ['favicon.svg', 'favicon.png', 'logo-1.png', 'logo-2.png'],
 			manifest: {
-				name: 'MatchTrip - 현지 가이드 매칭 플랫폼',
+				name: 'MatchTrip - 여행 가이드 매칭 전문 플랫폼',
 				short_name: '매치트립',
 				description: '가이드와 여행자를 연결하는 가장 스마트한 방법',
 				theme_color: '#1095f4',
