@@ -17,7 +17,7 @@ export default defineConfig({
 			manifest: {
 				name: 'MatchTrip - 현지 가이드 매칭 플랫폼',
 				short_name: '매치트립',
-				description: '여행자와 현지 가이드를 연결하는 스마트한 여행 플랫폼',
+				description: '가이드와 여행자를 연결하는 가장 스마트한 방법',
 				theme_color: '#1095f4',
 				background_color: '#ffffff',
 				display: 'standalone',
