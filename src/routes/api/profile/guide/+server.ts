@@ -4,6 +4,8 @@ import { guideProfiles, fileUploads, users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { encrypt } from '$lib/server/encryption';
 import { sendGuideOnboardingEmail } from '$lib/server/email/guideOnboarding';
+import { notificationService } from '$lib/server/services/notificationService';
+import { decrypt } from '$lib/server/encryption';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { env } from '$env/dynamic/private';
 import { dev } from '$app/environment';
@@ -74,11 +76,13 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		// Extract form fields
 		const name = formData.get('name')?.toString();
 		const phone = formData.get('phone')?.toString();
+		const countryCode = formData.get('countryCode')?.toString();
 		const nickname = formData.get('nickname')?.toString();
 		const frequentArea = formData.get('frequentArea')?.toString();
 		const birthDate = formData.get('birthDate')?.toString();
 		const destinationsStr = formData.get('destinations')?.toString();
 		const profileImageUrl = formData.get('profileImageUrl')?.toString();
+		const bio = formData.get('bio')?.toString() || ''; // Handle bio/introduction field
 
 		console.log('[API GUIDE PROFILE] Form data received:', {
 			hasName: !!name,
@@ -203,6 +207,9 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			const encryptedPhone = encrypt(phone) || phone;
 			userUpdates.phone = encryptedPhone;
 		}
+		if (countryCode) {
+			userUpdates.countryCode = countryCode;
+		}
 		if (birthDate) {
 			userUpdates.birthDate = birthDate;
 		}
@@ -228,7 +235,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			activityAreas: destinations,
 			profileImageUrl: profileImageUrl,
 			idDocumentUrl: idDocumentUrl,
-			certificationUrls: certificationUrls
+			certificationUrls: certificationUrls,
+			introduction: bio // Save bio as introduction field
 		};
 
 		if (existingProfile.length > 0) {
@@ -263,6 +271,29 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			} catch (emailError) {
 				// Log error but don't fail the request
 				console.error('[API GUIDE PROFILE] Failed to send onboarding email:', emailError);
+			}
+
+			// Send guide welcome AlimTalk notification
+			if (phone) {
+				try {
+					console.log('[API GUIDE PROFILE] Sending guide welcome AlimTalk notification');
+					const decryptedPhone = phone.startsWith('ENC:') ? decrypt(phone) : phone;
+					const decryptedName = name ? (name.startsWith('ENC:') ? decrypt(name) : name) : nickname;
+
+					await notificationService.sendNotification({
+						userId: userId,
+						phoneNumber: decryptedPhone,
+						templateName: 'signup02', // Guide signup template
+						templateData: {
+							SHOPNAME: '매치트립',
+							NAME: decryptedName || '가이드'
+						}
+					});
+					console.log('[API GUIDE PROFILE] AlimTalk notification sent successfully');
+				} catch (notificationError) {
+					// Don't fail the profile creation if notification fails
+					console.error('[API GUIDE PROFILE] Failed to send AlimTalk notification:', notificationError);
+				}
 			}
 		}
 

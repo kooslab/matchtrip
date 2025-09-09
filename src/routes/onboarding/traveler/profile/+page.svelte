@@ -202,6 +202,7 @@
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					phone: storeData.phone,
+					username: formData.nickname, // Save nickname as username in travelerProfiles
 					profileImageUrl: profileImageUrl || null
 				})
 			});

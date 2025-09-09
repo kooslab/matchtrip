@@ -32,10 +32,10 @@ export function generateProductDisplayId(): string {
 }
 
 /**
- * Generate a display ID for an offer-based order (payment)
+ * Generate an order ID for trip payments
  * Format: ORD-YYMM-XXXXX
  */
-export function generateOfferOrderId(): string {
+export function generateOrderId(): string {
 	return `ORD-${getYearMonth()}-${generateShortId()}`;
 }
 
@@ -90,3 +90,8 @@ export function formatDisplayId(displayId: string): string {
 	// Add spacing for better readability when displayed
 	return `${parts.prefix}-${parts.yearMonth}-${parts.shortId}`;
 }
+
+/**
+ * @deprecated Use generateOrderId() instead
+ */
+export const generateOfferOrderId = generateOrderId;

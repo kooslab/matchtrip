@@ -8,9 +8,11 @@ import {
 	type TemplateData
 } from '$lib/server/kakao/templateHelper';
 import { eq } from 'drizzle-orm';
-import { infobipSMS } from '$lib/server/sms/infobip';
-import { convertKakaoTemplateToSMS, formatSMSMessage } from '$lib/server/sms/smsTemplateConverter';
-import { formatPhoneForInternationalSMS } from '$lib/server/utils/phoneVerification';
+// import { infobipSMS } from '$lib/server/sms/infobip'; // Replaced with email
+// import { convertKakaoTemplateToSMS, formatSMSMessage } from '$lib/server/sms/smsTemplateConverter'; // Replaced with email
+// import { formatPhoneForInternationalSMS } from '$lib/server/utils/phoneVerification'; // Replaced with email
+import { sendEmail } from '$lib/server/email/emailService';
+import { convertKakaoTemplateToEmail } from '$lib/server/email/emailTemplateConverter';
 
 export interface NotificationOptions {
 	userId?: string;
@@ -96,6 +98,20 @@ export class NotificationService {
 	}
 
 	/**
+	 * Get user email from database
+	 */
+	private async getUserEmail(userId: string): Promise<string | null> {
+		const user = await db
+			.select({ email: users.email })
+			.from(users)
+			.where(eq(users.id, userId))
+			.limit(1);
+
+		// Email is NOT encrypted
+		return user[0]?.email || null;
+	}
+
+	/**
 	 * Check if notification is duplicate (sent within last 5 minutes)
 	 */
 	private async isDuplicateNotification(
@@ -128,61 +144,65 @@ export class NotificationService {
 	}
 
 	/**
-	 * Send SMS notification for international phone numbers
+	 * Send Email notification for international phone numbers
 	 */
-	private async sendSMSNotification(
+	private async sendEmailNotification(
+		userId: string | undefined,
 		phoneNumber: string,
 		templateName: string,
 		templateData: TemplateData
 	): Promise<{ success: boolean; messageId?: string; error?: string }> {
+		console.log('============= EMAIL FALLBACK START =============');
+		console.log('[Email Fallback] Phone number (international):', phoneNumber);
+		console.log('[Email Fallback] Template:', templateName);
+		console.log('[Email Fallback] Template data:', templateData);
+		
 		try {
-			// Convert Kakao template to SMS format
-			const isDev = process.env.NODE_ENV !== 'production';
-			let smsMessage = convertKakaoTemplateToSMS(templateName, templateData, isDev);
-			
-			// Format the message for SMS
-			smsMessage = formatSMSMessage(smsMessage);
-			
-			// Format phone number for international SMS
-			const formattedPhone = formatPhoneForInternationalSMS(phoneNumber);
-			
-			console.log(`Sending SMS to ${formattedPhone}:`, smsMessage);
-			
-			// Send SMS via Infobip
-			const response = await infobipSMS.sendSMS({
-				to: formattedPhone,
-				text: smsMessage
-			});
-			
-			// Check if SMS was sent successfully
-			if (response.messages && response.messages.length > 0) {
-				const message = response.messages[0];
-				
-				// Check status group (1 = Pending, 2 = Undeliverable, 3 = Delivered, etc.)
-				if (message.status.groupId === 1 || message.status.groupId === 3) {
-					console.log(`SMS sent successfully to ${formattedPhone}. Message ID: ${message.messageId}`);
-					return {
-						success: true,
-						messageId: message.messageId
-					};
-				} else {
-					console.error(`SMS failed for ${formattedPhone}. Status:`, message.status);
-					return {
-						success: false,
-						error: `SMS failed: ${message.status.description}`
-					};
-				}
+			// Get user email
+			let userEmail: string | null = null;
+			if (userId) {
+				userEmail = await this.getUserEmail(userId);
+				console.log('[Email Fallback] Email fetched from DB:', userEmail ? 'Found' : 'Not found');
 			}
 			
+			if (!userEmail) {
+				console.error('[Email Fallback] ❌ No email address available for user');
+				console.log('============= EMAIL FALLBACK FAILED =============');
+				return {
+					success: false,
+					error: 'No email address available for user'
+				};
+			}
+			
+			// Convert Kakao template to Email format
+			const isDev = process.env.NODE_ENV !== 'production';
+			const emailContent = convertKakaoTemplateToEmail(templateName, templateData, isDev);
+			console.log('[Email Fallback] Email subject:', emailContent.subject);
+			console.log('[Email Fallback] Sending email to:', userEmail);
+			
+			// Send email
+			const result = await sendEmail({
+				to: userEmail,
+				subject: emailContent.subject,
+				html: emailContent.html,
+				text: emailContent.text
+			});
+			
+			console.log('[Email Fallback] ✅ SUCCESS - Email sent to', userEmail);
+			console.log('[Email Fallback] Email ID:', result?.id);
+			console.log('============= EMAIL FALLBACK SUCCESS =============');
+			
 			return {
-				success: false,
-				error: 'No response from SMS service'
+				success: true,
+				messageId: result?.id
 			};
 		} catch (error) {
-			console.error('Error sending SMS notification:', error);
+			console.error('[Email Fallback] ❌ Exception:', error);
+			console.error('[Email Fallback] Error details:', error instanceof Error ? error.stack : error);
+			console.log('============= EMAIL FALLBACK FAILED =============');
 			return {
 				success: false,
-				error: error instanceof Error ? error.message : 'Failed to send SMS'
+				error: error instanceof Error ? error.message : 'Failed to send email'
 			};
 		}
 	}
@@ -222,6 +242,17 @@ export class NotificationService {
 		messageId?: string;
 		error?: string;
 	}> {
+		console.log('============= NOTIFICATION SERVICE START =============');
+		console.log('[NotificationService] Input options:', {
+			userId: options.userId,
+			hasPhoneNumber: !!options.phoneNumber,
+			phoneNumberLength: options.phoneNumber?.length,
+			templateName: options.templateName,
+			templateCode: options.templateCode,
+			templateData: options.templateData,
+			skipDuplicateCheck: options.skipDuplicateCheck
+		});
+		
 		try {
 			const { decrypt } = await import('$lib/server/encryption');
 
@@ -229,60 +260,16 @@ export class NotificationService {
 			let templateName: string;
 
 			if (options.templateName) {
-				// New way: Use template name (e.g., 'signup01')
+				// Use template name directly from templates.json
 				templateName = options.templateName;
+				console.log('[NotificationService] Using templateName:', templateName);
 			} else if (options.templateCode) {
-				// Backward compatibility: Map hard-coded template codes to template names
-				// Based on alimtalk_250825.csv data
-				const templateCodeMap: Record<string, string> = {
-					// Development codes (testcodeXX) - OLD ones still in use
-					testcode02: 'signup02', // 가이드 회원가입
-					testcode05: 'chat01', // 가이드 답변 도착
-					testcode07: 'remind01', // 여행자 리마인더
-					testcode08: 'cs01', // CS 문의 등록
-					testcode10: 'chat02', // 여행자 문의 도착
-					testcode11: 'myoffers02', // 제안 채택 알림
-					testcode12: 'remind02', // 가이드 리마인더
-					testcode13: 'rqcancel01', // 고객 취소요청 접수
-					testcode14: 'rqcancel02', // 가이드에게 고객 취소요청 알림
-					testcode15: 'rqcancel03', // 가이드 취소요청 접수
-					testcode16: 'rqcancel04', // 고객에게 가이드 취소요청 알림
-					testcode17: 'cpcancel01', // 고객 취소처리 완료
-					testcode18: 'cpcancel02', // 가이드에게 고객 취소완료 알림
-					testcode19: 'cpcancel03', // 가이드 취소처리 완료
-					testcode20: 'cpcancel04', // 고객에게 가이드 취소완료 알림
-					// New development codes replacing old ones
-					testcode21: 'signup05', // 여행자 회원가입 (replaces testcode01)
-					testcode23: 'mytrip05', // 여행 의뢰 등록 (replaces testcode03)
-					testcode24: 'mytrip06', // 가이드 제안 도착 (replaces testcode04)
-					testcode26: 'settlement03', // 결제 완료 (replaces testcode06)
-					testcode29: 'myoffers05', // 가이드 제안 등록 (replaces testcode09)
-					// Production codes (codeXX)
-					code01: 'signup03', // 여행자 회원가입
-					code02: 'signup04', // 가이드 회원가입
-					code05: 'chat03', // 가이드 답변 도착
-					code07: 'remind03', // 여행자 리마인더
-					code08: 'cs02', // CS 문의 등록
-					code10: 'chat04', // 여행자 문의 도착
-					code11: 'myoffers04', // 제안 채택 알림
-					code12: 'remind04', // 가이드 리마인더
-					code13: 'rqcancel05', // 고객 취소요청 접수
-					code14: 'rqcancel06', // 가이드에게 고객 취소요청 알림
-					code15: 'rqcancel07', // 가이드 취소요청 접수
-					code16: 'rqcancel08', // 고객에게 가이드 취소요청 알림
-					code17: 'cpcancel05', // 고객 취소처리 완료
-					code18: 'cpcancel06', // 가이드에게 고객 취소완료 알림
-					code19: 'cpcancel07', // 가이드 취소처리 완료
-					code20: 'cpcancel08', // 고객에게 가이드 취소완료 알림
-					// New production codes
-					code23: 'mytrip07', // 여행 의뢰 등록
-					code24: 'mytrip08', // 가이드 제안 도착
-					code26: 'settlement04', // 결제 완료
-					code29: 'myoffers06' // 가이드 제안 등록
-				};
-
-				templateName = templateCodeMap[options.templateCode] || options.templateCode;
+				// Legacy support - just use the code as-is
+				templateName = options.templateCode;
+				console.log('[NotificationService] Using legacy templateCode:', templateName);
 			} else {
+				console.error('[NotificationService] ❌ No template provided');
+				console.log('============= NOTIFICATION SERVICE END =============');
 				return {
 					success: false,
 					error: 'No template code or template name provided'
@@ -293,15 +280,24 @@ export class NotificationService {
 			let phoneNumber: string | null = options.phoneNumber || null;
 
 			if (!phoneNumber && options.userId) {
+				console.log('[NotificationService] No phone provided, fetching from userId:', options.userId);
 				phoneNumber = await this.getUserPhone(options.userId);
+				console.log('[NotificationService] Phone fetched from DB:', phoneNumber ? 'Found' : 'Not found');
 			}
 
 			if (!phoneNumber) {
+				console.error('[NotificationService] ❌ No phone number available');
+				console.log('============= NOTIFICATION SERVICE END =============');
 				return {
 					success: false,
 					error: 'No phone number provided or found for user'
 				};
 			}
+			
+			console.log('[NotificationService] Phone number:', {
+				length: phoneNumber.length,
+				prefix: phoneNumber.substring(0, 4) + '***'
+			});
 
 			// Check if phone number is Korean
 			const isKorean = this.isKoreanPhoneNumber(phoneNumber);
@@ -341,9 +337,13 @@ export class NotificationService {
 			}
 
 			// Validate template data
+			console.log('[NotificationService] Validating template data for:', templateName);
 			const validation = validateTemplateData(templateName, decryptedTemplateData);
 
 			if (!validation.valid) {
+				console.error('[NotificationService] ❌ Template validation failed');
+				console.error('[NotificationService] Missing variables:', validation.missing);
+				console.log('============= NOTIFICATION SERVICE END =============');
 				return {
 					success: false,
 					error: `Missing template variables: ${validation.missing.join(', ')}`
@@ -351,7 +351,14 @@ export class NotificationService {
 			}
 
 			// Prepare template with environment-specific code
+			console.log('[NotificationService] Preparing template...');
 			const template = prepareTemplate(templateName, decryptedTemplateData);
+			console.log('[NotificationService] Template prepared:', {
+				templateCode: template.templateCode,
+				hasText: !!template.text,
+				textLength: template.text?.length,
+				hasButton: !!template.button
+			});
 
 			// Check for duplicates unless skipped
 			if (!options.skipDuplicateCheck) {
@@ -394,20 +401,21 @@ export class NotificationService {
 				
 				console.log(`AlimTalk sent: ${template.templateCode} (${templateName}) to ${formattedPhone}`);
 			} else {
-				// Send SMS for international numbers
-				notificationType = 'sms';
-				const smsResult = await this.sendSMSNotification(
+				// Send Email for international numbers
+				notificationType = 'email';
+				const emailResult = await this.sendEmailNotification(
+					options.userId,
 					phoneNumber,
 					templateName,
 					decryptedTemplateData
 				);
 				
-				if (!smsResult.success) {
-					throw new Error(smsResult.error || 'Failed to send SMS');
+				if (!emailResult.success) {
+					throw new Error(emailResult.error || 'Failed to send email');
 				}
 				
-				messageId = smsResult.messageId;
-				console.log(`SMS sent: ${templateName} to ${phoneNumber}`);
+				messageId = emailResult.messageId;
+				console.log(`Email sent: ${templateName} to international user`);
 			}
 
 			// Log successful notification (use original phone for international, formatted for Korean)
@@ -422,12 +430,18 @@ export class NotificationService {
 				bulkId
 			);
 
+			console.log('[NotificationService] ✅ Success - returning result');
+			console.log('============= NOTIFICATION SERVICE END =============');
 			return {
 				success: true,
 				messageId
 			};
 		} catch (error) {
-			console.error('Failed to send AlimTalk:', error);
+			console.error('[NotificationService] ❌ Failed to send AlimTalk:', error);
+			console.error('[NotificationService] Error details:', {
+				message: error instanceof Error ? error.message : 'Unknown error',
+				stack: error instanceof Error ? error.stack : 'No stack'
+			});
 
 			// Log failed notification
 			if (options.userId || options.phoneNumber) {
@@ -448,6 +462,7 @@ export class NotificationService {
 				);
 			}
 
+			console.log('============= NOTIFICATION SERVICE END (ERROR) =============');
 			return {
 				success: false,
 				error: error instanceof Error ? error.message : 'Failed to send notification'

@@ -190,7 +190,7 @@
 				return;
 			}
 
-			const orderId = generateOrderId();
+			const orderId = generateProductOrderId();
 			const orderName = `${product.title} - ${guide.name || '가이드'} 서비스`;
 
 			// Store order info in session storage for later verification

@@ -4,19 +4,103 @@
 
 	let { data } = $props();
 
-	let nickname = $state(data.user?.nickname || '');
+	let nickname = $state(data.travelerProfile?.username || '');
 	let name = $state(data.user?.name || '');
 	let email = $state(data.user?.email || '');
-	let profileImageUrl = $state(data.user?.image || ''); // Use 'image' field from OAuth providers
+	let profileImageUrl = $state(data.user?.image || data.travelerProfile?.profileImageUrl || '');
+	let uploadingImage = $state(false);
+	let isSaving = $state(false);
 
 	const handleBack = () => {
 		goto('/profile/traveler');
 	};
 
+	const handleImageClick = () => {
+		const input = document.createElement('input');
+		input.type = 'file';
+		input.accept = 'image/jpeg,image/png,image/webp';
+		input.onchange = async (e) => {
+			const file = (e.target as HTMLInputElement).files?.[0];
+			if (file) {
+				// Validate file size (5MB limit)
+				if (file.size > 5 * 1024 * 1024) {
+					alert('파일 크기는 5MB를 초과할 수 없습니다.');
+					return;
+				}
+
+				uploadingImage = true;
+
+				try {
+					const formData = new FormData();
+					formData.append('file', file);
+					formData.append('type', 'traveler-profile');
+
+					const response = await fetch('/api/upload', {
+						method: 'POST',
+						body: formData
+					});
+
+					if (response.ok) {
+						const data = await response.json();
+						profileImageUrl = data.url;
+					} else {
+						const error = await response.json();
+						alert(error.error || '이미지 업로드에 실패했습니다.');
+					}
+				} catch (error) {
+					console.error('Upload error:', error);
+					alert('이미지 업로드 중 오류가 발생했습니다.');
+				} finally {
+					uploadingImage = false;
+				}
+			}
+		};
+		input.click();
+	};
+
 	const handleSubmit = async () => {
-		// TODO: Implement profile update logic
-		console.log('Profile update:', { nickname, name, email, profileImageUrl });
-		goto('/profile/traveler');
+		isSaving = true;
+		
+		try {
+			// Update user basic info
+			const userResponse = await fetch('/api/user/profile', {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					name: name,
+					image: profileImageUrl || null
+				})
+			});
+
+			if (!userResponse.ok) {
+				const error = await userResponse.json();
+				alert(error.error || '프로필 업데이트에 실패했습니다.');
+				return;
+			}
+
+			// Update traveler profile
+			const travelerResponse = await fetch('/api/profile/traveler', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					username: nickname,
+					profileImageUrl: profileImageUrl || null
+				})
+			});
+
+			if (!travelerResponse.ok) {
+				const error = await travelerResponse.json();
+				alert(error.error || '여행자 프로필 업데이트에 실패했습니다.');
+				return;
+			}
+
+			goto('/profile/traveler');
+		} catch (error) {
+			console.error('Error updating profile:', error);
+			alert('프로필 업데이트 중 오류가 발생했습니다.');
+		} finally {
+			isSaving = false;
+		}
 	};
 </script>
 
@@ -61,8 +145,13 @@
 						</svg>
 					</div>
 				{/if}
-				<button type="button" class="text-sm text-blue-500 hover:underline">
-					프로필 사진 변경
+				<button 
+					type="button" 
+					onclick={handleImageClick}
+					disabled={uploadingImage}
+					class="text-sm text-blue-500 hover:underline disabled:opacity-50"
+				>
+					{uploadingImage ? '업로드 중...' : '프로필 사진 변경'}
 				</button>
 			</div>
 
@@ -108,9 +197,10 @@
 			<!-- Submit Button -->
 			<button
 				type="submit"
-				class="w-full rounded-lg bg-blue-500 py-3 font-semibold text-white transition-colors hover:bg-blue-600"
+				disabled={isSaving}
+				class="w-full rounded-lg bg-blue-500 py-3 font-semibold text-white transition-colors hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
 			>
-				저장하기
+				{isSaving ? '저장 중...' : '저장하기'}
 			</button>
 		</form>
 	</div>

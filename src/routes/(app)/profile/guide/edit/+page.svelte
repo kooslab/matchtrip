@@ -3,6 +3,7 @@
 	import { enhance } from '$app/forms';
 	import { ChevronLeft, Camera, Plus, X } from 'lucide-svelte';
 	import RichTextEditor from '$lib/components/RichTextEditor.svelte';
+	import { countryCodesForDropdown } from '$lib/data/countryCodes';
 
 	const { data, form } = $props();
 
@@ -13,10 +14,44 @@
 
 	// Form fields
 	let name = $state(data.user?.name || '');
-	let bio = $state(data.guideProfile?.bio || '');
+	let bio = $state(data.guideProfile?.introduction || '');
 	let languages = $state(data.guideProfile?.languages?.join(', ') || '');
-	let specialties = $state(data.guideProfile?.specialties?.join(', ') || '');
+	let specialties = $state(data.guideProfile?.activityAreas?.join(', ') || '');
 	let experience = $state(data.guideProfile?.experience || '');
+
+	// Phone number fields
+	let countryCode = $state('+82'); // Default to Korea
+	let mobile = $state('');
+	let isDropdownOpen = $state(false);
+
+	// Initialize phone from user data - only on mount
+	let phoneInitialized = false;
+	$effect(() => {
+		if (!phoneInitialized && (data.user?.phone || data.user?.countryCode)) {
+			phoneInitialized = true;
+			
+			// Use separate fields if available
+			countryCode = data.user.countryCode || '+82';
+			mobile = data.user.phone || ''; // Phone is already decrypted in server load
+			
+			console.log('Loaded from DB - countryCode:', countryCode, 'mobile:', mobile);
+		}
+	});
+
+	// Get selected country object
+	const selectedCountry = $derived(
+		countryCodesForDropdown.find((c) => c.code === countryCode) || countryCodesForDropdown[0]
+	);
+
+	// Handle mobile input - only allow numbers
+	function handleMobileInput(e: Event) {
+		const input = e.target as HTMLInputElement;
+		const value = input.value;
+		// Remove all non-numeric characters
+		const numbersOnly = value.replace(/\D/g, '');
+		// Limit to 15 digits max
+		mobile = numbersOnly.slice(0, 15);
+	}
 
 	// Current profile image
 	let currentProfileImage = $derived(() => {
@@ -171,6 +206,7 @@
 				return () => {};
 			}
 
+			console.log('Form submission - countryCode:', countryCode, 'mobile:', mobile, 'combined:', countryCode.replace('+', '') + mobile);
 			isSubmitting = true;
 
 			return async ({ update, result }) => {
@@ -218,6 +254,96 @@
 				</div>
 
 				<div>
+					<label for="phone" class="block text-sm font-medium text-gray-700"> 휴대폰 번호 </label>
+					<div class="mt-1 flex gap-2">
+						<!-- Country Code Selector -->
+						<div class="relative">
+							<button
+								type="button"
+								onclick={() => (isDropdownOpen = !isDropdownOpen)}
+								class="flex h-[42px] items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium hover:bg-gray-50 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+							>
+								<span class="text-base">{selectedCountry.flag}</span>
+								<span class="text-gray-900">{selectedCountry.code}</span>
+								<svg
+									class="h-4 w-4 text-gray-400 transition-transform {isDropdownOpen
+										? 'rotate-180'
+										: ''}"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M19 9l-7 7-7-7"
+									/>
+								</svg>
+							</button>
+							{#if isDropdownOpen}
+								<div
+									class="absolute left-0 right-0 top-full z-10 mt-1 max-h-60 overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg"
+								>
+									{#each countryCodesForDropdown as country}
+										<button
+											type="button"
+											onclick={() => {
+												countryCode = country.code;
+												isDropdownOpen = false;
+											}}
+											class="flex w-full cursor-pointer items-center gap-2 border-b border-gray-100 px-3 py-2 text-left text-sm last:border-b-0 hover:bg-gray-50"
+										>
+											<span class="text-base">{country.flag}</span>
+											<span class="font-medium text-gray-900">{country.code}</span>
+										</button>
+									{/each}
+								</div>
+							{/if}
+						</div>
+						<!-- Phone Number Input -->
+						<input
+							type="tel"
+							id="phone"
+							name="phone"
+							inputmode="numeric"
+							pattern="[0-9]*"
+							bind:value={mobile}
+							maxlength="15"
+							oninput={handleMobileInput}
+							onkeydown={(e) => {
+								// Allow special keys
+								const allowedKeys = [
+									'Backspace',
+									'Delete',
+									'Tab',
+									'Escape',
+									'Enter',
+									'Home',
+									'End',
+									'ArrowLeft',
+									'ArrowRight',
+									'ArrowUp',
+									'ArrowDown'
+								];
+								if (allowedKeys.includes(e.key)) return;
+								// Allow Ctrl/Cmd combinations
+								if (e.ctrlKey || e.metaKey) return;
+								// Block if not a number
+								if (!/^[0-9]$/.test(e.key)) {
+									e.preventDefault();
+								}
+							}}
+							placeholder={countryCode === '+82' ? '01012345678' : '1234567890'}
+							class="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+						/>
+					</div>
+					<p class="mt-1 text-xs text-gray-500">
+						휴대폰 번호는 숫자만 입력해주세요 (7-15자리)
+					</p>
+				</div>
+
+				<div>
 					<label class="mb-2 block text-sm font-medium text-gray-700"> 자기소개 </label>
 					<RichTextEditor
 						value={bio}
@@ -229,6 +355,10 @@
 					/>
 					<input type="hidden" name="bio" value={bio} />
 				</div>
+
+				<!-- Hidden inputs for phone and country code separately -->
+				<input type="hidden" name="phone" value={mobile} />
+				<input type="hidden" name="countryCode" value={countryCode} />
 			</div>
 		</div>
 

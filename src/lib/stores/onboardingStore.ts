@@ -10,6 +10,7 @@ interface OnboardingData {
 	profileImageUrl?: string;
 	frequentArea?: string;
 	gender?: string;
+	bio?: string;
 	destinations?: string[];
 	uploadedFiles?: Record<string, File[]>;
 }

@@ -39,9 +39,9 @@
 			<div class="flex items-center gap-4">
 				<!-- Profile Image -->
 				<div class="flex-shrink-0">
-					{#if data.user?.image}
+					{#if data.user?.image || data.travelerProfile?.profileImageUrl}
 						<img
-							src={data.user.image}
+							src={data.user?.image || data.travelerProfile?.profileImageUrl}
 							alt="프로필 이미지"
 							class="h-16 w-16 rounded-full object-cover"
 						/>
@@ -59,7 +59,7 @@
 				<!-- User Info and Edit Button -->
 				<div class="flex flex-1 items-center justify-between">
 					<h2 class="text-lg font-semibold">
-						안녕하세요! {data.user?.nickname || data.user?.name || '홍길동'} 님
+						안녕하세요! {data.travelerProfile?.username || data.user?.name || '홍길동'} 님
 					</h2>
 					<button
 						onclick={() => goto('/profile/traveler/edit')}

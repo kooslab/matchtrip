@@ -21,9 +21,13 @@ const ALLOWED_DOMAINS = [
 	'http://localhost:5174'
 ];
 
-export const load: PageServerLoad = async ({ url }) => {
+export const load: PageServerLoad = async ({ url, request }) => {
 	// Get the target path from query parameter
 	const targetPath = url.searchParams.get('to');
+	
+	// Get User-Agent to detect Kakao in-app browser
+	const userAgent = request.headers.get('user-agent') || '';
+	const isKakaoInApp = userAgent.includes('KAKAOTALK');
 
 	// Validate the target path
 	if (!targetPath) {
@@ -53,9 +57,14 @@ export const load: PageServerLoad = async ({ url }) => {
 	const redirectUrl = `${currentDomain}${normalizedPath}`;
 
 	// Log for debugging
-	console.log(`External redirect from Kakao: ${redirectUrl}`);
+	console.log(`External redirect${isKakaoInApp ? ' from Kakao' : ''}: ${redirectUrl}`);
+	console.log(`User-Agent: ${userAgent}`);
 
-	// Perform the redirect with headers to encourage external browser
-	// Note: These headers might help but aren't guaranteed to force external browser
-	throw redirect(302, redirectUrl);
+	// Return data to the client component
+	// Let the client-side handle the actual redirect with appropriate methods
+	return {
+		targetUrl: redirectUrl,
+		targetPath: normalizedPath,
+		isKakaoInApp
+	};
 };

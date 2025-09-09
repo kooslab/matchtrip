@@ -28,6 +28,7 @@ export const users = pgTable(
 		image: text('image'),
 		role: userRoleEnum('role'),
 		phone: text('phone'),
+		countryCode: varchar('country_code', { length: 5 }).default('+82'),
 		phoneVerified: boolean('phone_verified').notNull().default(false),
 		birthDate: date('birth_date'),
 		onboardingCompleted: boolean('onboarding_completed').notNull().default(false),
@@ -410,7 +411,6 @@ export const payments = pgTable(
 	'payments',
 	{
 		id: uuid('id').primaryKey().defaultRandom(),
-		displayId: varchar('display_id', { length: 20 }).notNull().unique(),
 		// Trip payment fields (nullable for product payments)
 		tripId: uuid('trip_id').references(() => trips.id, { onDelete: 'restrict' }),
 		offerId: uuid('offer_id').references(() => offers.id, { onDelete: 'restrict' }),
@@ -446,8 +446,7 @@ export const payments = pgTable(
 		productIdIdx: index('payments_product_id_idx').on(table.productId),
 		productOfferIdIdx: index('payments_product_offer_id_idx').on(table.productOfferId),
 		statusIdx: index('payments_status_idx').on(table.status),
-		paymentKeyIdx: index('payments_payment_key_idx').on(table.paymentKey),
-		displayIdIdx: index('payments_display_id_idx').on(table.displayId)
+		paymentKeyIdx: index('payments_payment_key_idx').on(table.paymentKey)
 		// Note: Check constraint should be added manually to database if needed:
 		// ALTER TABLE payments ADD CONSTRAINT payment_type_check
 		// CHECK ((trip_id IS NOT NULL AND offer_id IS NOT NULL AND product_id IS NULL AND product_offer_id IS NULL)

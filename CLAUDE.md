@@ -441,15 +441,17 @@ The template selection is handled in `src/lib/server/kakao/templateHelper.ts` wh
 
 ### Template Code Updates (As of 2025-08-25)
 
-**Important:** Several template codes have been deprecated and replaced with new ones:
+**Important:** Several **DEVELOPMENT** template codes have been deprecated and replaced with new ones. **PRODUCTION codes remain unchanged!**
 
-#### Deprecated Template Codes (DO NOT USE):
+#### Deprecated DEVELOPMENT Template Codes (DO NOT USE):
 
-- `testcode01` → Use `testcode21` (traveler signup)
+- `testcode01` → Use `testcode21` (traveler signup) 
 - `testcode03` → Use `testcode23` (trip registration)
 - `testcode04` → Use `testcode24` (guide offer arrival)
 - `testcode06` → Use `testcode26` (payment completion)
 - `testcode09` → Use `testcode29` (guide offer registration)
+
+**NOTE: Production codes (`code01`, `code03`, `code04`, `code06`, `code09`) remain the same and should NOT be changed!**
 
 #### Active Template Codes:
 

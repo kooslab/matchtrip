@@ -16,20 +16,62 @@ export interface ProcessedTemplate {
  * Get current environment
  */
 function getEnvironment(): 'dev' | 'prod' {
+	// Check if we're using the test Kakao channel
+	// If KAKAO_TEST_MODE is set, always use dev templates regardless of NODE_ENV
+	const isTestMode = env.KAKAO_TEST_MODE === 'true' || env.KAKAO_TEST_MODE === '1';
+	
 	// Check NODE_ENV or other env variables to determine environment
 	// Default to 'dev' for safety
-	return env.NODE_ENV === 'production' ? 'prod' : 'dev';
+	const environment = isTestMode ? 'dev' : (env.NODE_ENV === 'production' ? 'prod' : 'dev');
+	console.log('[TemplateHelper] Environment detected:', {
+		NODE_ENV: env.NODE_ENV,
+		KAKAO_TEST_MODE: env.KAKAO_TEST_MODE,
+		resolved: environment
+	});
+	return environment;
 }
 
 /**
  * Get template by logical name (e.g., 'signup01', 'mytrip01')
  */
 export function getTemplate(templateName: string) {
-	const templates = templatesConfig.templates as Record<string, any>;
-	if (!templates[templateName]) {
-		throw new Error(`Template ${templateName} not found`);
+	const env = getEnvironment();
+	const templateSource = env === 'dev' ? templatesConfig.dev : templatesConfig.prod;
+	
+	console.log('[TemplateHelper] Looking for template:', templateName);
+	console.log('[TemplateHelper] Environment:', env);
+	
+	// Find template by name property in the current environment
+	let foundTemplate = null;
+	let foundCode = null;
+	
+	for (const [code, template] of Object.entries(templateSource || {})) {
+		if ((template as any).name === templateName) {
+			foundTemplate = template;
+			foundCode = code;
+			break;
+		}
 	}
-	return templates[templateName];
+	
+	if (!foundTemplate) {
+		console.error('[TemplateHelper] ❌ Template not found:', templateName);
+		console.error('[TemplateHelper] Available templates in', env + ':', 
+			Object.entries(templateSource || {}).map(([k, v]: [string, any]) => v.name)
+		);
+		throw new Error(`Template ${templateName} not found in ${env} environment`);
+	}
+	
+	console.log('[TemplateHelper] ✅ Template found:', {
+		name: templateName,
+		code: foundCode,
+		environment: env
+	});
+	
+	// Return template with the code embedded for easier access
+	return {
+		...foundTemplate,
+		[env]: foundCode
+	};
 }
 
 /**
@@ -57,33 +99,58 @@ export function processTemplateText(text: string, data: TemplateData): string {
  * Prepare a complete template for sending
  */
 export function prepareTemplate(templateName: string, data: TemplateData): ProcessedTemplate {
+	console.log('[TemplateHelper] prepareTemplate called:', {
+		templateName,
+		dataKeys: Object.keys(data)
+	});
+	
 	const template = getTemplate(templateName);
 	const env = getEnvironment();
-	const templateCode = template[env];
+	const templateCode = template[env]; // This was embedded by getTemplate
+	
+	console.log('[TemplateHelper] Template code selected:', {
+		environment: env,
+		templateCode: templateCode
+	});
 
 	// Process the text with variable replacement
 	const processedText = processTemplateText(template.text, data);
+	console.log('[TemplateHelper] Text processed:', {
+		originalLength: template.text.length,
+		processedLength: processedText.length,
+		preview: processedText.substring(0, 50) + '...'
+	});
 
-	// Get environment-specific button URLs
+	// Get button URLs - they're directly on the button object now, not nested in env
 	let processedButton: KakaoButton | undefined;
 	if (template.button) {
-		const buttonUrls = template.button[env];
-		if (buttonUrls) {
-			processedButton = {
-				type: template.button.type,
-				name: template.button.name,
-				urlMobile: buttonUrls.urlMobile,
-				urlPc: buttonUrls.urlPc
-			};
-		}
+		processedButton = {
+			type: template.button.type,
+			name: template.button.name,
+			urlMobile: template.button.urlMobile,
+			urlPc: template.button.urlPc
+		};
+		console.log('[TemplateHelper] Button configured:', {
+			name: processedButton.name,
+			hasMobileUrl: !!processedButton.urlMobile,
+			hasPcUrl: !!processedButton.urlPc
+		});
 	}
 
 	// Return processed template with button if exists
-	return {
+	const result = {
 		text: processedText,
 		button: processedButton,
 		templateCode
 	};
+	
+	console.log('[TemplateHelper] Final template prepared:', {
+		templateCode: result.templateCode,
+		hasText: !!result.text,
+		hasButton: !!result.button
+	});
+	
+	return result;
 }
 
 /**

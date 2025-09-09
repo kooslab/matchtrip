@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { products, destinations, countries, users, guideProfiles } from '$lib/server/db/schema';
-import { eq, and, sql, count } from 'drizzle-orm';
+import { products, destinations, countries, users, guideProfiles, reviews } from '$lib/server/db/schema';
+import { eq, and, sql, count, avg } from 'drizzle-orm';
 import { transformImageUrl } from '$lib/utils/imageUrl';
 
 export const load: PageServerLoad = async ({ url, locals }) => {
@@ -74,7 +74,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		conditions.push(eq(products.destinationId, parseInt(destinationId)));
 	}
 
-	// Get products with guide information
+	// Get products with guide information and review stats
 	const productsResult = await db
 		.select({
 			id: products.id,
@@ -84,8 +84,6 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 			currency: products.currency,
 			duration: products.duration,
 			imageUrl: products.imageUrl,
-			rating: products.rating,
-			reviewCount: products.reviewCount,
 			destination: {
 				id: destinations.id,
 				city: destinations.city,
@@ -113,23 +111,52 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		.where(and(...conditions))
 		.orderBy(sql`${products.createdAt} DESC`);
 
+	// Get review stats for each product
+	const productIds = productsResult.map(p => p.id);
+	const reviewStats = productIds.length > 0 ? await db
+		.select({
+			productId: reviews.productId,
+			reviewCount: count(reviews.id),
+			avgRating: avg(reviews.rating)
+		})
+		.from(reviews)
+		.where(and(
+			sql`${reviews.productId} IN ${sql`(${sql.join(productIds.map(id => sql`${id}`), sql`, `)})`}`,
+			sql`${reviews.content} != ''` // Only count reviews with actual content
+		))
+		.groupBy(reviews.productId) : [];
+
+	// Create a map of review stats for quick lookup
+	const reviewStatsMap = new Map(reviewStats.map(stat => [
+		stat.productId, 
+		{ 
+			reviewCount: Number(stat.reviewCount), 
+			rating: stat.avgRating ? Number(stat.avgRating) : null 
+		}
+	]));
+
 	// Transform image URLs for products and decrypt guide data
-	const productsList = productsResult.map((product) => ({
-		...product,
-		imageUrl: transformImageUrl(product.imageUrl),
-		guide: product.guide
-			? {
-					...decryptUserFields(product.guide),
-					image: transformImageUrl(product.guide.image)
-				}
-			: null,
-		guideProfile: product.guideProfile
-			? {
-					...product.guideProfile,
-					profileImageUrl: transformImageUrl(product.guideProfile.profileImageUrl)
-				}
-			: null
-	}));
+	const productsList = productsResult.map((product) => {
+		const stats = reviewStatsMap.get(product.id) || { reviewCount: 0, rating: null };
+		return {
+			...product,
+			imageUrl: transformImageUrl(product.imageUrl),
+			reviewCount: stats.reviewCount,
+			rating: stats.rating,
+			guide: product.guide
+				? {
+						...decryptUserFields(product.guide),
+						image: transformImageUrl(product.guide.image)
+					}
+				: null,
+			guideProfile: product.guideProfile
+				? {
+						...product.guideProfile,
+						profileImageUrl: transformImageUrl(product.guideProfile.profileImageUrl)
+					}
+				: null
+		};
+	});
 
 	return {
 		destinations: [],

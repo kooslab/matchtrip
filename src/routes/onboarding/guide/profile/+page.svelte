@@ -30,7 +30,8 @@
 		frequentArea: storeData.frequentArea || '',
 		email: data.user?.email || storeData.email || '',
 		birthDate: storeData.birthDate || '',
-		gender: storeData.gender || ''
+		gender: storeData.gender || '',
+		bio: storeData.bio || ''
 	});
 
 	// Also restore profile image if it exists
@@ -146,6 +147,7 @@
 				frequentArea: formData.frequentArea,
 				birthDate: formData.birthDate,
 				gender: formData.gender,
+				bio: formData.bio,
 				profileImageUrl: profileImageUrl
 			});
 
@@ -353,6 +355,25 @@
 						placeholder="베를린, 독일"
 						bind:value={formData.frequentArea}
 					/>
+				</div>
+			</div>
+
+			<!-- Bio/Introduction -->
+			<div class="flex flex-col gap-2">
+				<label for="bio" class="text-primary text-[11px] leading-4 font-medium">자기소개</label>
+				<div class="relative w-full">
+					<textarea
+						id="bio"
+						class="text-primary focus:border-color-primary min-h-24 w-full rounded-[9px] border border-gray-50 bg-gray-50 px-5 py-3 text-[13px] leading-5 font-normal transition-all duration-200 outline-none placeholder:text-gray-400 focus:bg-blue-50/40 resize-none {formData.bio
+							? 'border-color-primary'
+							: ''}"
+						placeholder="여행자들에게 자신을 소개해주세요. 자신의 경험, 전문 분야, 가이드 스타일 등을 자유롭게 작성해주세요."
+						bind:value={formData.bio}
+						maxlength="500"
+					></textarea>
+					<div class="mt-1 text-right text-[11px] text-gray-400">
+						{formData.bio.length}/500
+					</div>
 				</div>
 			</div>
 

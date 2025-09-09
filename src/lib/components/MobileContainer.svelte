@@ -54,7 +54,9 @@
 							style="border-radius: 38px 38px 0 0;"
 						>
 							<!-- Matchtrip logo on the left -->
-							<img src={logoUrl} alt="Matchtrip" class="h-5" />
+							<a href="/" class="flex items-center">
+								<img src={logoUrl} alt="Matchtrip" class="h-5" />
+							</a>
 
 							<!-- Status icons on the right -->
 							<div class="flex items-center gap-1.5">

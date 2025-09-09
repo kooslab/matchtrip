@@ -3,7 +3,7 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
 import { travelerProfiles, users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
-import { encrypt } from '$lib/server/encryption';
+import { encrypt, decryptUserFields } from '$lib/server/encryption';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
 	if (!locals.user || locals.user.role !== 'traveler') {
@@ -33,6 +33,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			.then((rows) => rows[0]);
 
 		const profileData = {
+			username: data.username || null, // Add username field to save nickname
 			nationality: data.nationality || null,
 			travelStyle: data.travelStyle || null,
 			budgetRange: data.budgetRange || null,
@@ -66,5 +67,36 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	} catch (error) {
 		console.error('Error updating traveler profile:', error);
 		return json({ error: 'Failed to update profile' }, { status: 500 });
+	}
+};
+
+export const GET: RequestHandler = async ({ locals }) => {
+	if (!locals.user || locals.user.role !== 'traveler') {
+		return json({ error: 'Unauthorized' }, { status: 401 });
+	}
+
+	try {
+		// Get user data with traveler profile
+		const userWithProfile = await db
+			.select()
+			.from(users)
+			.leftJoin(travelerProfiles, eq(users.id, travelerProfiles.userId))
+			.where(eq(users.id, locals.user.id))
+			.then((rows) => rows[0]);
+
+		if (!userWithProfile) {
+			return json({ error: 'User not found' }, { status: 404 });
+		}
+
+		// Decrypt user fields before sending to client
+		const decryptedUser = decryptUserFields(userWithProfile.users);
+
+		return json({
+			user: decryptedUser,
+			travelerProfile: userWithProfile.traveler_profiles
+		});
+	} catch (error) {
+		console.error('Error fetching traveler profile:', error);
+		return json({ error: 'Failed to fetch profile' }, { status: 500 });
 	}
 };
