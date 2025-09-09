@@ -1,13 +1,22 @@
 <script>
 	import { page } from '$app/stores';
+	import { browser } from '$app/environment';
 
 	// Navigate back to home
 	const backUrl = '/';
 	const backText = '홈으로 돌아가기';
 	
-	// Use derived to safely access page store
-	let errorMessage = $derived($page.error?.message || '알 수 없는 오류가 발생했습니다.');
-	let statusCode = $derived($page.status);
+	// Initialize with defaults for SSR
+	let errorMessage = $state('알 수 없는 오류가 발생했습니다.');
+	let statusCode = $state(null);
+	
+	// Update from page store on client
+	$effect(() => {
+		if (browser) {
+			errorMessage = $page.error?.message || '알 수 없는 오류가 발생했습니다.';
+			statusCode = $page.status;
+		}
+	});
 </script>
 
 <div class="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">

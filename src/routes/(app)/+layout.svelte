@@ -3,6 +3,7 @@
 	import BottomNav from '$lib/components/BottomNav.svelte';
 	import GuideBottomNav from '$lib/components/GuideBottomNav.svelte';
 	import { page } from '$app/stores';
+	import { browser } from '$app/environment';
 
 	let { data } = $props();
 
@@ -10,31 +11,36 @@
 	let isGuide = $derived(userRole === 'guide');
 	let isTraveler = $derived(userRole === 'traveler');
 
-	// Hide bottom nav for offers/create routes, trips detail pages, my-trips detail pages, my-offers detail pages, write-review pages, edit pages, guide order detail pages, order-confirmation pages, my-trips/create pages, products pages, product chat pages, and order-history detail pages
-	let hideBottomNav = $derived.by(() => {
-		const pathname = $page.url.pathname;
-		return pathname.startsWith('/offers/create') ||
-			pathname.match(/^\/trips\/[^\/]+$/) ||
-			pathname.match(/^\/my-trips\/[^\/]+$/) ||
-			pathname.match(/^\/my-trips\/[^\/]+\/edit/) ||
-			pathname.match(/^\/my-offers\/[^\/]+$/) ||
-			pathname.startsWith('/write-review/') ||
-			pathname.match(/^\/profile\/guide\/orders\/[^\/]+$/) ||
-			pathname.startsWith('/order-confirmation/') ||
-			pathname.startsWith('/my-trips/create/') ||
-			pathname.startsWith('/products') ||
-			pathname.startsWith('/profile/guide/products') ||
-			pathname.startsWith('/profile/guide/edit') ||
-			pathname.startsWith('/chat/product/') ||
-			pathname.startsWith('/order-history/details');
-	});
+	// Initialize with false for SSR, will be updated on client
+	let hideBottomNav = $state(false);
+	let hideTopNav = $state(false);
 
-	// Hide top nav for chat pages (both regular and product chat) and product creation pages
-	let hideTopNav = $derived.by(() => {
-		const pathname = $page.url.pathname;
-		return pathname.startsWith('/chat/product/') ||
-			pathname.match(/^\/chat\/[^\/]+$/) ||
-			pathname.startsWith('/products/create');
+	// Update navigation visibility based on current page
+	$effect(() => {
+		if (browser) {
+			const pathname = $page.url.pathname;
+			
+			// Update bottom nav visibility
+			hideBottomNav = pathname.startsWith('/offers/create') ||
+				pathname.match(/^\/trips\/[^\/]+$/) ||
+				pathname.match(/^\/my-trips\/[^\/]+$/) ||
+				pathname.match(/^\/my-trips\/[^\/]+\/edit/) ||
+				pathname.match(/^\/my-offers\/[^\/]+$/) ||
+				pathname.startsWith('/write-review/') ||
+				pathname.match(/^\/profile\/guide\/orders\/[^\/]+$/) ||
+				pathname.startsWith('/order-confirmation/') ||
+				pathname.startsWith('/my-trips/create/') ||
+				pathname.startsWith('/products') ||
+				pathname.startsWith('/profile/guide/products') ||
+				pathname.startsWith('/profile/guide/edit') ||
+				pathname.startsWith('/chat/product/') ||
+				pathname.startsWith('/order-history/details');
+			
+			// Update top nav visibility
+			hideTopNav = pathname.startsWith('/chat/product/') ||
+				pathname.match(/^\/chat\/[^\/]+$/) ||
+				pathname.startsWith('/products/create');
+		}
 	});
 </script>
 
