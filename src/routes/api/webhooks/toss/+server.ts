@@ -1,7 +1,7 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
-import { payments, paymentRefunds, webhookEvents, trips, offers } from '$lib/server/db/schema';
+import { payments, paymentRefunds, webhookEvents, trips, offers, settlements } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { env } from '$env/dynamic/private';
 
@@ -218,6 +218,35 @@ async function handlePaymentDone(payment: any, data: any) {
 						updatedAt: new Date()
 					})
 					.where(eq(offers.id, payment.offerId));
+			}
+
+			// Auto-create settlement record for completed payment
+			const existingSettlement = await tx
+				.select()
+				.from(settlements)
+				.where(eq(settlements.paymentId, payment.id))
+				.limit(1);
+
+			if (!existingSettlement[0]) {
+				const DEFAULT_COMMISSION_RATE = 1000; // 10%
+				const DEFAULT_TAX_RATE = 330; // 3.3%
+				
+				const paymentAmount = payment.amount;
+				const commissionAmount = Math.floor(paymentAmount * (DEFAULT_COMMISSION_RATE / 10000));
+				const taxAmount = Math.floor(paymentAmount * (DEFAULT_TAX_RATE / 10000));
+				const settlementAmount = paymentAmount - commissionAmount - taxAmount;
+
+				await tx.insert(settlements).values({
+					paymentId: payment.id,
+					commissionRate: DEFAULT_COMMISSION_RATE,
+					commissionAmount,
+					taxRate: DEFAULT_TAX_RATE,
+					taxAmount,
+					settlementAmount,
+					status: 'pending'
+				});
+
+				console.log('[Webhook] Settlement record created for payment');
 			}
 		});
 

@@ -16,7 +16,10 @@ import {
 	fileUploads,
 	userAgreements,
 	tripStatusHistory,
-	payments
+	payments,
+	products,
+	productOffers,
+	settlements
 } from './schema';
 
 // User relations
@@ -246,5 +249,29 @@ export const paymentsRelations = relations(payments, ({ one }) => ({
 	user: one(users, {
 		fields: [payments.userId],
 		references: [users.id]
+	}),
+	product: one(products, {
+		fields: [payments.productId],
+		references: [products.id]
+	}),
+	productOffer: one(productOffers, {
+		fields: [payments.productOfferId],
+		references: [productOffers.id]
+	}),
+	settlement: one(settlements, {
+		fields: [payments.id],
+		references: [settlements.paymentId]
+	})
+}));
+
+// Settlement relations
+export const settlementsRelations = relations(settlements, ({ one }) => ({
+	payment: one(payments, {
+		fields: [settlements.paymentId],
+		references: [payments.id]
+	}),
+	settledByAdmin: one(admins, {
+		fields: [settlements.settledBy],
+		references: [admins.id]
 	})
 }));

@@ -933,6 +933,40 @@ export const kakaoNotifications = pgTable(
 	})
 );
 
+// Define enum for settlement status
+export const settlementStatusEnum = pgEnum('settlement_status', ['pending', 'completed']);
+export type SettlementStatus = (typeof settlementStatusEnum.enumValues)[number];
+
+// Settlements table for tracking guide payouts
+export const settlements = pgTable(
+	'settlements',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		paymentId: uuid('payment_id')
+			.notNull()
+			.references(() => payments.id, { onDelete: 'restrict' })
+			.unique(),
+		commissionRate: integer('commission_rate').notNull(), // Rate * 100 (e.g., 1000 = 10%)
+		commissionAmount: integer('commission_amount').notNull(), // Amount in KRW
+		taxRate: integer('tax_rate').notNull(), // Rate * 100 (e.g., 330 = 3.3%)
+		taxAmount: integer('tax_amount').notNull(), // Amount in KRW
+		settlementAmount: integer('settlement_amount').notNull(), // Final payout amount in KRW
+		status: settlementStatusEnum('status').notNull().default('pending'),
+		settledAt: timestamp('settled_at'),
+		settledBy: uuid('settled_by').references(() => admins.id, { onDelete: 'set null' }),
+		bankTransferRef: text('bank_transfer_ref'),
+		notes: text('notes'),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at').defaultNow().notNull()
+	},
+	(table) => ({
+		paymentIdIdx: index('settlements_payment_id_idx').on(table.paymentId),
+		statusIdx: index('settlements_status_idx').on(table.status),
+		settledByIdx: index('settlements_settled_by_idx').on(table.settledBy),
+		createdAtIdx: index('settlements_created_at_idx').on(table.createdAt)
+	})
+);
+
 // Type exports for main tables
 export type User = typeof users.$inferSelect;
 export type Trip = typeof trips.$inferSelect;
@@ -945,3 +979,4 @@ export type ProductConversation = typeof productConversations.$inferSelect;
 export type ProductMessage = typeof productMessages.$inferSelect;
 export type KakaoNotification = typeof kakaoNotifications.$inferSelect;
 export type ProductOffer = typeof productOffers.$inferSelect;
+export type Settlement = typeof settlements.$inferSelect;
