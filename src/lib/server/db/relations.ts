@@ -19,7 +19,8 @@ import {
 	payments,
 	products,
 	productOffers,
-	settlements
+	settlements,
+	admins
 } from './schema';
 
 // User relations
