@@ -163,32 +163,17 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 			return json({ error: 'Not authorized to update this product' }, { status: 403 });
 		}
 
-		// Check restrictions before allowing update
-		const [conversations, completedPayments] = await Promise.all([
-			db
-				.select({ id: productConversations.id })
-				.from(productConversations)
-				.where(
-					and(
-						eq(productConversations.productId, productId),
-						eq(productConversations.status, 'active')
-					)
-				),
-			db
-				.select({ id: payments.id })
-				.from(payments)
-				.where(and(eq(payments.productId, productId), eq(payments.status, 'completed')))
-		]);
+		// Only check for completed payments restriction (allow editing with active conversations)
+		const completedPayments = await db
+			.select({ id: payments.id })
+			.from(payments)
+			.where(and(eq(payments.productId, productId), eq(payments.status, 'completed')));
 
-		const isRestricted = conversations.length > 0 || completedPayments.length > 0;
-		if (isRestricted) {
+		if (completedPayments.length > 0) {
 			return json(
 				{
 					error: 'Product cannot be modified',
-					reason:
-						completedPayments.length > 0
-							? 'Product has completed payments'
-							: 'Product has active conversations'
+					reason: 'Product has completed payments'
 				},
 				{ status: 409 }
 			);
@@ -253,7 +238,7 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 		console.error('Error updating product:', error);
 		return json({ error: 'Failed to update product' }, { status: 500 });
 	}
-};
+};;
 
 export const DELETE: RequestHandler = async ({ params, locals }) => {
 	const productId = params.id;

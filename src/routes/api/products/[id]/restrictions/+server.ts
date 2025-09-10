@@ -53,11 +53,12 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 
 		const hasActiveConversations = conversations.length > 0;
 		const hasCompletedPayments = completedPayments.length > 0;
-		const isRestricted = hasActiveConversations || hasCompletedPayments;
+		// Only restrict deletion/editing if there are completed payments
+		const isRestricted = hasCompletedPayments;
 
 		return json({
-			canEdit: !isRestricted,
-			canDelete: !isRestricted,
+			canEdit: !isRestricted,  // Allow editing even with conversations
+			canDelete: !isRestricted && !hasActiveConversations,  // Prevent deletion with conversations or payments
 			restrictions: {
 				hasActiveConversations,
 				hasCompletedPayments,
@@ -65,13 +66,13 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 				completedPaymentCount: completedPayments.length
 			},
 			reason: isRestricted
-				? hasCompletedPayments
-					? 'Product has completed payments and cannot be modified'
-					: 'Product has active conversations and cannot be modified'
+				? 'Product has completed payments and cannot be modified'
+				: hasActiveConversations
+				? 'Product has active conversations and cannot be deleted'
 				: null
 		});
 	} catch (error) {
 		console.error('Error checking product restrictions:', error);
 		return json({ error: 'Failed to check restrictions' }, { status: 500 });
 	}
-};
+};;
