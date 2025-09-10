@@ -149,20 +149,6 @@
 		}
 	};
 
-	// Extract first image from description HTML
-	const getFirstImageFromDescription = (html: string): string | null => {
-		if (!html || typeof window === 'undefined') return null;
-		const div = document.createElement('div');
-		div.innerHTML = html;
-		const firstImg = div.querySelector('img');
-		return firstImg ? firstImg.src : null;
-	};
-
-	// Get display image
-	const displayImage = $derived(
-		product?.imageUrl ||
-			(typeof window !== 'undefined' ? getFirstImageFromDescription(product?.description) : null)
-	);
 
 	// Handle escape key
 	onMount(() => {
@@ -325,30 +311,6 @@
 										</div>
 									{:else}
 										<p class="text-sm text-gray-500">상품 설명이 없습니다.</p>
-									{/if}
-
-									{#if displayImage}
-										<div class="mt-4 overflow-hidden rounded-lg bg-gray-100">
-											<img src={displayImage} alt={product.title} class="h-auto w-full" />
-										</div>
-									{:else}
-										<div
-											class="mt-4 flex aspect-square items-center justify-center overflow-hidden rounded-lg bg-gray-100"
-										>
-											<svg
-												class="h-20 w-20 text-gray-400"
-												fill="none"
-												viewBox="0 0 24 24"
-												stroke="currentColor"
-											>
-												<path
-													stroke-linecap="round"
-													stroke-linejoin="round"
-													stroke-width="1.5"
-													d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-												/>
-											</svg>
-										</div>
 									{/if}
 								</div>
 							{/if}
