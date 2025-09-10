@@ -1,4 +1,9 @@
 <script lang="ts">
+	import IconWifiMono from '$lib/icons/icon-wifi-mono.svg?raw';
+	import IconMobileSignal from '$lib/icons/icon-mobile-signal.svg?raw';
+	import IconBattery from '$lib/icons/icon-battery.svg?raw';
+	import MatchTripLogo from '$lib/images/Matchtrip.svg';
+	
 	let { children } = $props();
 </script>
 
@@ -34,6 +39,33 @@
 		<div class="phone-frame">
 			<div class="phone-container">
 				<div class="phone-screen">
+					<!-- Status bar -->
+					<div class="flex h-11 w-full items-center justify-between bg-white px-5 flex-shrink-0 pt-2 rounded-t-[38px]">
+						<!-- Left side - Logo -->
+						<a href="/" class="flex items-center relative z-10">
+							<img src={MatchTripLogo} alt="Matchtrip" class="h-5 w-auto" />
+						</a>
+						
+						<!-- Right side - Status icons -->
+						<div class="flex items-center gap-1.5">
+							<!-- Mobile signal icon -->
+							<div class="h-[15px] w-auto [&>svg]:h-full [&>svg]:w-auto">
+								{@html IconMobileSignal}
+							</div>
+							
+							<!-- Wifi icon -->
+							<div class="h-5 w-5 [&>svg]:h-full [&>svg]:w-full">
+								{@html IconWifiMono}
+							</div>
+							
+							<!-- Battery icon -->
+							<div class="h-4 w-auto [&>svg]:h-full [&>svg]:w-auto">
+								{@html IconBattery}
+							</div>
+						</div>
+					</div>
+					
+					<!-- Content -->
 					<div class="phone-content-wrapper">
 						{@render children()}
 					</div>
@@ -129,7 +161,7 @@
 		left: 50%;
 		top: 50%;
 		transform: translate(-50%, -50%);
-		z-index: 20;
+		z-index: 50;
 		height: 100vh;
 		width: calc(100vh * 393 / 852);
 	}
@@ -148,12 +180,23 @@
 		position: relative;
 		width: 100%;
 		height: 100%;
-		background-image: url('/layout.png');
-		background-size: cover;
-		background-position: center;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+	}
+	
+	.phone-container::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-image: url('/layout.png');
+		background-size: cover;
+		background-position: center;
+		z-index: 1;
+		pointer-events: none;
 	}
 	
 	.phone-screen {
@@ -164,11 +207,14 @@
 		border-radius: 38px;
 		overflow: hidden;
 		transform: translateY(-1%);
+		display: flex;
+		flex-direction: column;
+		z-index: 0;
 	}
 	
 	.phone-content-wrapper {
 		width: 100%;
-		height: 100%;
+		flex: 1;
 		overflow-x: hidden;
 		overflow-y: auto;
 		padding-bottom: 50px;
