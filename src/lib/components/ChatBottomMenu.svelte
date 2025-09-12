@@ -14,7 +14,8 @@
 	let showMenu = $state(false);
 	let menuElement: HTMLDivElement;
 
-	function toggleMenu() {
+	function toggleMenu(event: MouseEvent) {
+		event.stopPropagation();
 		showMenu = !showMenu;
 	}
 
@@ -46,7 +47,10 @@
 
 	$effect(() => {
 		if (showMenu) {
-			document.addEventListener('click', handleClickOutside);
+			// Add a small delay to prevent immediate closure
+			setTimeout(() => {
+				document.addEventListener('click', handleClickOutside);
+			}, 0);
 		} else {
 			document.removeEventListener('click', handleClickOutside);
 		}
@@ -57,7 +61,7 @@
 	<!-- Plus button to trigger menu -->
 	<button
 		type="button"
-		onclick={toggleMenu}
+		onclick={(e) => toggleMenu(e)}
 		class="flex items-center justify-center transition-all {showMenu ? 'rotate-45' : ''}"
 		aria-label="메뉴 열기"
 	>
