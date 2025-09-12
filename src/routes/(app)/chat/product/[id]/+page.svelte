@@ -8,6 +8,7 @@
 	import { formatDate, formatTime } from '$lib/utils/dateFormatter';
 	import { validateFile } from '$lib/utils/fileValidator';
 	import ChatActionMenu from '$lib/components/ChatActionMenu.svelte';
+	import ChatBottomMenu from '$lib/components/ChatBottomMenu.svelte';
 	import ReportModal from '$lib/components/ReportModal.svelte';
 	import OfferModal from './OfferModal.svelte';
 	import OfferMessage from './OfferMessage.svelte';
@@ -797,7 +798,19 @@
 		<!-- Message Input -->
 		<div class="px-4 py-2">
 			<form onsubmit={sendMessage} class="flex items-center gap-3">
-				{#if userRole === 'guide'}
+				{#if userRole === 'traveler'}
+					<!-- Bottom menu for travelers -->
+					<ChatBottomMenu
+						onExit={() => goto('/chat')}
+						onReport={() => (showReportModal = true)}
+					/>
+				{:else if userRole === 'guide'}
+					<!-- Bottom menu for guides (report/exit) -->
+					<ChatBottomMenu
+						onExit={() => goto('/chat')}
+						onReport={() => (showReportModal = true)}
+					/>
+					<!-- Plus button for guides (offer/image/file) -->
 					<button
 						type="button"
 						onclick={() => (showOptions = !showOptions)}

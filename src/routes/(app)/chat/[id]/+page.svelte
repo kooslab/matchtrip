@@ -6,6 +6,7 @@
 	import { Send } from 'lucide-svelte';
 	import SkeletonLoader from '$lib/components/SkeletonLoader.svelte';
 	import ChatActionMenu from '$lib/components/ChatActionMenu.svelte';
+	import ChatBottomMenu from '$lib/components/ChatBottomMenu.svelte';
 	import ReportModal from '$lib/components/ReportModal.svelte';
 	import { formatDate, formatTime, isToday, isYesterday } from '$lib/utils/dateFormatter';
 	import { userTimezone, userLocale } from '$lib/stores/location';
@@ -707,6 +708,11 @@
 								</div>
 							{:else}
 								<form onsubmit={sendMessage} class="flex items-end gap-3">
+									<!-- Bottom menu for both travelers and guides -->
+									<ChatBottomMenu
+										onExit={() => goto('/chat')}
+										onReport={() => (showReportModal = true)}
+									/>
 									<div class="flex-1 py-2">
 										<input
 											id="message-input"
