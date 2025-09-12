@@ -4,7 +4,7 @@ import { redirect } from '@sveltejs/kit';
 export const load: PageServerLoad = async ({ locals }) => {
 	// Check if user is logged in
 	if (!locals.user) {
-		redirect(302, '/');
+		redirect(302, '/login');
 	}
 
 	// Check if user has agreed to terms

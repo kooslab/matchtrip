@@ -59,12 +59,18 @@
 	};
 
 	// Check if we should open modal on mount (if URL has product ID in query)
+	// Also scroll to top when destination changes
 	onMount(() => {
 		if (typeof window !== 'undefined') {
 			const urlParams = new URLSearchParams(window.location.search);
 			const productId = urlParams.get('productId');
 			if (productId) {
 				handleProductClick(productId);
+			}
+			
+			// Scroll to top when page loads with destination
+			if (urlParams.get('destination')) {
+				window.scrollTo(0, 0);
 			}
 		}
 	});
@@ -75,7 +81,7 @@
 		<!-- Header -->
 		<header class="sticky top-0 z-50 border-b bg-white">
 			<div class="flex items-center px-4 py-4">
-				<button onclick={() => goto('/')} class="p-1">
+				<button onclick={() => selectedDestination ? goto('/products') : goto('/')} class="p-1">
 					<ArrowLeft class="h-6 w-6 text-blue-500" />
 				</button>
 				<h1 class="flex-1 text-center text-lg font-semibold">

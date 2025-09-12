@@ -1,12 +1,10 @@
 <script lang="ts">
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { ChevronDown, ChevronUp } from 'lucide-svelte';
 	import BottomNav from '$lib/components/BottomNav.svelte';
 	import GuideBottomNav from '$lib/components/GuideBottomNav.svelte';
 	import AgreementModal from '$lib/components/AgreementModal.svelte';
 	import Logo from '$lib/components/Logo.svelte';
-	import bgImage from '$lib/images/bg.png';
-	import beachImage from '$lib/images/beach.png';
 
 	// Props from load function
 	const { data } = $props();
@@ -20,9 +18,6 @@
 
 	// Agreement modal state
 	let showAgreementModal = $state(false);
-
-	// Loading states for social login
-	let loadingProvider = $state<'kakao' | 'google' | null>(null);
 
 	// Check if user needs to agree to terms when user data changes
 	$effect(() => {
@@ -72,20 +67,19 @@
 	}
 </script>
 
-{#if user}
-	<!-- Logged in user layout -->
-	<div class="min-h-screen bg-gray-50">
-		<div class="mx-auto min-h-screen max-w-[430px] bg-white">
-			<!-- Header - Hidden on desktop since MobileContainer handles it -->
-			<header class="sticky top-0 z-50 bg-white shadow-sm lg:hidden">
-				<div class="flex items-center px-4 py-4">
-					<Logo />
-				</div>
-			</header>
+<!-- Main layout - accessible to all users -->
+<div class="min-h-screen bg-gray-50">
+	<div class="mx-auto min-h-screen max-w-[430px] bg-white">
+		<!-- Header - Hidden on desktop since MobileContainer handles it -->
+		<header class="sticky top-0 z-50 bg-white shadow-sm lg:hidden">
+			<div class="flex items-center px-4 py-4">
+				<Logo />
+			</div>
+		</header>
 
-			<!-- Main Content -->
-			<main class="pb-24">
-				{#if isGuide}
+		<!-- Main Content -->
+		<main class="pb-24">
+			{#if user && isGuide}
 					<!-- Guide Specific Content -->
 					<section class="bg-white p-4">
 						<div class="flex items-center gap-2 text-xs text-gray-500">
@@ -162,8 +156,8 @@
 							<span class="h-1.5 w-1.5 rounded-full bg-gray-300"></span>
 						</div>
 					</section> -->
-				{:else if isTraveler}
-					<!-- Traveler Specific Content (Original) -->
+				{:else}
+				<!-- Traveler & Non-authenticated Content (treat non-logged users as travelers) -->
 					<!-- Recommendation Section -->
 					{#if randomDestination}
 						<section class="bg-white p-4">
@@ -198,10 +192,10 @@
 									placeholder="어디로 가고 싶으신가요?"
 									class="w-full cursor-pointer rounded-full bg-gray-50 py-3.5 pr-14 pl-5 text-base text-gray-700 placeholder-gray-400"
 									readonly
-									onclick={() => goto('/my-trips/create/destination')}
+									onclick={() => user ? goto('/my-trips/create/destination') : goto('/login')}
 								/>
 								<button
-									onclick={() => goto('/my-trips/create/destination')}
+									onclick={() => user ? goto('/my-trips/create/destination') : goto('/login')}
 									class="absolute top-1/2 right-1.5 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-blue-500 shadow-sm transition-colors hover:bg-blue-600"
 								>
 									<svg
@@ -225,7 +219,7 @@
 
 				<!-- Sample Destinations -->
 				<section class="mt-4 bg-white p-4">
-					{#if isGuide}
+					{#if user && isGuide}
 						<h3 class="mb-3 text-sm text-gray-500">내가 필요한 여행자를 찾고 계신가요?</h3>
 						<h2 class="mb-4 flex items-center justify-between text-lg font-bold text-gray-900">
 							여행자 찾기
@@ -482,136 +476,14 @@
 				</footer>
 			</main>
 
-			<!-- Bottom Navigation -->
-			{#if isTraveler}
-				<BottomNav />
-			{:else if isGuide}
-				<GuideBottomNav />
-			{/if}
-		</div>
+		<!-- Bottom Navigation -->
+		{#if user && isGuide}
+			<GuideBottomNav />
+		{:else}
+			<!-- Traveler bottom nav for both logged-in travelers and non-logged users -->
+			<BottomNav />
+		{/if}
 	</div>
-{:else}
-	<!-- Non-logged in user layout -->
-	<div class="relative mx-auto h-screen w-full max-w-[430px] overflow-hidden">
-		<!-- Background Image -->
-		<div
-			class="absolute inset-0 bg-cover bg-center bg-no-repeat"
-			style="background-image: url({bgImage})"
-		>
-			<!-- Dark overlay -->
-			<div class="absolute inset-0 bg-black/30"></div>
-		</div>
-
-		<!-- Content -->
-		<div class="relative z-10 flex h-full flex-col justify-center py-8">
-			<!-- Main content - compact on desktop -->
-			<div class="flex flex-col items-center px-8 text-center text-white">
-				<h1
-					class="mb-4 text-5xl font-bold text-white lg:mb-3 lg:text-4xl"
-					style="font-family: 'Pretendard', sans-serif;"
-				>
-					Matchtrip
-				</h1>
-				<p class="mb-8 text-lg text-gray-300 lg:mb-6 lg:text-base">
-					Match Your Trip, Make It Yours
-				</p>
-
-				<!-- Sign in text -->
-				<p class="mb-6 text-center text-white lg:mb-4">Sign in with Social Networks</p>
-
-				<!-- Social login buttons -->
-				<div class="mb-8 flex justify-center gap-4 lg:mb-4">
-					<button
-						onclick={async () => {
-							if (loadingProvider) return;
-							loadingProvider = 'kakao';
-							try {
-								const { signIn } = await import('$lib/authClient');
-								await signIn.social({
-									provider: 'kakao'
-								});
-							} catch (error) {
-								console.error('Kakao login error:', error);
-								window.alert('카카오 로그인에 실패했습니다.');
-								loadingProvider = null;
-							}
-						}}
-						class="relative flex h-12 w-12 items-center justify-center rounded-full bg-yellow-400 transition-colors hover:bg-yellow-500 disabled:cursor-not-allowed disabled:opacity-50"
-						disabled={loadingProvider !== null}
-					>
-						{#if loadingProvider === 'kakao'}
-							<div class="absolute inset-0 flex items-center justify-center">
-								<div
-									class="h-5 w-5 animate-spin rounded-full border-2 border-black border-t-transparent"
-								></div>
-							</div>
-						{:else}
-							<svg class="h-6 w-6" viewBox="0 0 24 24">
-								<path
-									fill="#000000"
-									d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.557 1.707 4.8 4.27 6.054-.188.702-.682 2.545-.78 2.939-.123.49.18.483.376.351.155-.103 2.466-1.675 3.464-2.353.541.08 1.1.12 1.67.12 4.97 0 9-3.186 9-7.116C21 6.185 16.97 3 12 3z"
-								/>
-							</svg>
-						{/if}
-					</button>
-					<button
-						onclick={async () => {
-							if (loadingProvider) return;
-							loadingProvider = 'google';
-							try {
-								const { signIn } = await import('$lib/authClient');
-								await signIn.social({
-									provider: 'google'
-								});
-							} catch (error) {
-								console.error('Google login error:', error);
-								window.alert('구글 로그인에 실패했습니다.');
-								loadingProvider = null;
-							}
-						}}
-						class="relative flex h-12 w-12 items-center justify-center rounded-full bg-white transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
-						disabled={loadingProvider !== null}
-					>
-						{#if loadingProvider === 'google'}
-							<div class="absolute inset-0 flex items-center justify-center">
-								<div
-									class="h-5 w-5 animate-spin rounded-full border-2 border-gray-600 border-t-transparent"
-								></div>
-							</div>
-						{:else}
-							<svg class="h-6 w-6" viewBox="0 0 24 24">
-								<path
-									fill="#4285F4"
-									d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-								/>
-								<path
-									fill="#34A853"
-									d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-								/>
-								<path
-									fill="#FBBC05"
-									d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-								/>
-								<path
-									fill="#EA4335"
-									d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-								/>
-							</svg>
-						{/if}
-					</button>
-				</div>
-
-				<!-- Bottom text -->
-				<p class="text-center text-sm text-white/80">@Matchtrip.corp.</p>
-
-				<!-- Bottom bar indicator - mobile only -->
-				<div class="mt-8 flex justify-center lg:hidden">
-					<div class="h-1 w-32 rounded-full bg-white"></div>
-				</div>
-			</div>
-		</div>
-	</div>
-{/if}
-
+</div>
 <!-- Agreement Modal -->
 <AgreementModal isOpen={showAgreementModal} {user} />

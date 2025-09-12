@@ -7,7 +7,7 @@ import { eq, desc } from 'drizzle-orm';
 export const load: PageServerLoad = async ({ locals }) => {
 	const userId = locals.user?.id;
 	if (!userId) {
-		throw redirect(302, '/');
+		throw redirect(302, '/login');
 	}
 
 	// Fetch guide's products with full details

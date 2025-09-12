@@ -258,7 +258,7 @@ const authHandler = (async ({ event, resolve }) => {
 	// Handle protected app routes that require authentication
 	const isAppRoute = routeId?.startsWith('/(app)');
 	if (isAppRoute && !session?.user) {
-		redirect(302, '/');
+		redirect(302, '/login');
 	}
 
 	// Handle protected routes that require specific roles (guide-only routes)
@@ -291,7 +291,7 @@ const authHandler = (async ({ event, resolve }) => {
 		(!event.locals.user || event.locals.user.role !== 'guide')
 	) {
 		console.log('Hooks - Access denied to guide-only route. User role:', event.locals.user?.role);
-		redirect(302, '/');
+		redirect(302, '/login');
 	}
 
 	// Admin routes removed

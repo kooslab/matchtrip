@@ -7,12 +7,12 @@ import { decryptUserFields } from '$lib/server/encryption';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
-		throw redirect(302, '/');
+		throw redirect(302, '/login');
 	}
 
 	// Check if user is a traveler
 	if (locals.user.role !== 'traveler') {
-		throw redirect(302, '/');
+		throw redirect(302, '/login');
 	}
 
 	// Get user data with traveler profile
@@ -24,7 +24,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.then((rows) => rows[0]);
 
 	if (!userWithProfile) {
-		throw redirect(302, '/');
+		throw redirect(302, '/login');
 	}
 
 	// Decrypt user fields before sending to client

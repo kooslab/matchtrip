@@ -33,7 +33,7 @@ export const load = async ({ url, request, locals }) => {
 	// Redirect if not logged in
 	if (!session?.user) {
 		console.log('Order details page - No session, redirecting to signin');
-		throw redirect(302, '/');
+		throw redirect(302, '/login');
 	}
 
 	const paymentId = url.searchParams.get('id');

@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ params, request, locals }) => {
 
 	// Redirect if not logged in
 	if (!session?.user) {
-		throw redirect(302, '/');
+		throw redirect(302, '/login');
 	}
 
 	// Get offer with guide details
