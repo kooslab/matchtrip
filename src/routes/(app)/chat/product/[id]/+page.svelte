@@ -3,14 +3,17 @@
 	import { goto } from '$app/navigation';
 	import { onMount, onDestroy } from 'svelte';
 	import { tick } from 'svelte';
-	import { Send, MoreHorizontal, Package, Plus } from 'lucide-svelte';
+	import { Send, Package, Plus } from 'lucide-svelte';
 	import ArrowBack from '$lib/icons/icon-arrow-back-android-mono.svg';
 	import { formatDate, formatTime } from '$lib/utils/dateFormatter';
 	import { validateFile } from '$lib/utils/fileValidator';
+	import ChatActionMenu from '$lib/components/ChatActionMenu.svelte';
+	import ReportModal from '$lib/components/ReportModal.svelte';
 	import OfferModal from './OfferModal.svelte';
 	import OfferMessage from './OfferMessage.svelte';
 	import ImageMessage from './ImageMessage.svelte';
 	import FileMessage from './FileMessage.svelte';
+	import type { ReportType } from '$lib/server/db/schema';
 	import MoneyIcon from '$lib/images/money.png';
 	import AlbumIcon from '$lib/images/album.png';
 	import FileIcon from '$lib/images/file.png';
@@ -31,6 +34,7 @@
 	let showOfferModal = $state(false);
 	let showOptions = $state(false);
 	let showCancelModal = $state(false);
+	let showReportModal = $state(false);
 	let selectedCancelRequest = $state<any>(null);
 	let messagesContainer: HTMLDivElement;
 	let pollingInterval: ReturnType<typeof setInterval>;
@@ -117,6 +121,33 @@
 		} catch (err) {
 			console.error('Error sending cancel response:', err);
 			alert('응답 전송 중 오류가 발생했습니다.');
+		}
+	}
+
+	async function handleReport(reportType: ReportType) {
+		if (!conversation || !otherUser) return;
+
+		try {
+			const response = await fetch('/api/reports', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					reportedUserId: otherUser.id,
+					productConversationId: conversation.id,
+					productId: product?.id,
+					reportType
+				})
+			});
+
+			if (!response.ok) {
+				throw new Error('Failed to submit report');
+			}
+
+			// Show success message
+			alert('신고가 접수되었습니다. 관리자가 검토 후 조치하겠습니다.');
+		} catch (error) {
+			console.error('Failed to submit report:', error);
+			throw error;
 		}
 	}
 
@@ -538,9 +569,10 @@
 			</div>
 
 			<!-- More Options Button -->
-			<button class="flex items-center justify-center p-0">
-				<MoreHorizontal class="h-6 w-6 text-gray-400" />
-			</button>
+			<ChatActionMenu
+				onExit={() => goto('/chat')}
+				onReport={() => (showReportModal = true)}
+			/>
 		</div>
 	</div>
 
@@ -832,6 +864,13 @@
 		</div>
 	</div>
 {/if}
+
+<!-- Report Modal -->
+<ReportModal
+	bind:show={showReportModal}
+	onClose={() => (showReportModal = false)}
+	onSubmit={handleReport}
+/>
 
 <style>
 	/* Handle safe areas for devices with notches/home indicators */

@@ -966,6 +966,64 @@ export const settlements = pgTable(
 	})
 );
 
+// Define enum for report types
+export const reportTypeEnum = pgEnum('report_type', [
+	'scam',
+	'inappropriate_ads',
+	'fraud',
+	'harassment',
+	'contact_info_leak'
+]);
+export type ReportType = (typeof reportTypeEnum.enumValues)[number];
+
+// Define enum for report status
+export const reportStatusEnum = pgEnum('report_status', [
+	'pending',
+	'reviewing',
+	'resolved',
+	'dismissed'
+]);
+export type ReportStatus = (typeof reportStatusEnum.enumValues)[number];
+
+// Reports table for tracking user reports
+export const reports = pgTable(
+	'reports',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		reporterId: uuid('reporter_id')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
+		reportedUserId: uuid('reported_user_id')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
+		conversationId: uuid('conversation_id').references(() => conversations.id, {
+			onDelete: 'cascade'
+		}),
+		productConversationId: uuid('product_conversation_id').references(
+			() => productConversations.id,
+			{ onDelete: 'cascade' }
+		),
+		productId: uuid('product_id').references(() => products.id, { onDelete: 'cascade' }),
+		offerId: uuid('offer_id').references(() => offers.id, { onDelete: 'cascade' }),
+		reportType: reportTypeEnum('report_type').notNull(),
+		description: text('description'),
+		status: reportStatusEnum('status').notNull().default('pending'),
+		resolvedBy: uuid('resolved_by').references(() => admins.id, { onDelete: 'set null' }),
+		resolvedAt: timestamp('resolved_at'),
+		resolutionNotes: text('resolution_notes'),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at').defaultNow().notNull()
+	},
+	(table) => ({
+		// Add indexes for frequently queried columns
+		reporterIdIdx: index('reports_reporter_id_idx').on(table.reporterId),
+		reportedUserIdIdx: index('reports_reported_user_id_idx').on(table.reportedUserId),
+		statusIdx: index('reports_status_idx').on(table.status),
+		reportTypeIdx: index('reports_report_type_idx').on(table.reportType),
+		createdAtIdx: index('reports_created_at_idx').on(table.createdAt)
+	})
+);
+
 // Type exports for main tables
 export type User = typeof users.$inferSelect;
 export type Trip = typeof trips.$inferSelect;
@@ -979,3 +1037,4 @@ export type ProductMessage = typeof productMessages.$inferSelect;
 export type KakaoNotification = typeof kakaoNotifications.$inferSelect;
 export type ProductOffer = typeof productOffers.$inferSelect;
 export type Settlement = typeof settlements.$inferSelect;
+export type Report = typeof reports.$inferSelect;
