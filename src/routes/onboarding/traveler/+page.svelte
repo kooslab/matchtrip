@@ -524,9 +524,10 @@
 				{#if nameCompleted && showPhoneStep}
 					<div class="rounded-lg bg-white p-6 opacity-75 shadow-sm">
 						<div>
-							<label class="mb-2 block text-sm font-medium text-gray-700"> 이름 </label>
+							<label for="traveler-name" class="mb-2 block text-sm font-medium text-gray-700"> 이름 </label>
 							<div class="flex gap-2">
 								<input
+									id="traveler-name"
 									type="text"
 									value={formData.name}
 									disabled

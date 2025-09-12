@@ -20,6 +20,7 @@
 		showReviewTab?: boolean;
 		showContactButton?: boolean;
 		showEditDelete?: boolean;
+		isLoggedIn?: boolean;
 		onEdit?: () => void;
 		onDelete?: () => void;
 	}
@@ -32,6 +33,7 @@
 		showReviewTab = true,
 		showContactButton = true,
 		showEditDelete = false,
+		isLoggedIn = true,
 		onEdit,
 		onDelete
 	}: Props = $props();
@@ -42,6 +44,12 @@
 	// Handle contact button click
 	const handleContactClick = async () => {
 		if (!product || isContactLoading) return;
+
+		// If user is not logged in, redirect to login page
+		if (!isLoggedIn) {
+			await goto('/login');
+			return;
+		}
 
 		isContactLoading = true;
 

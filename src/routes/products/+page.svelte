@@ -228,4 +228,5 @@
 	product={selectedProduct}
 	bind:isOpen={isModalOpen}
 	onClose={handleModalClose}
+	isLoggedIn={!!user}
 />
