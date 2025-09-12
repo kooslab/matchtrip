@@ -87,21 +87,44 @@ bun run dev
 │   │   ├── server/      # Server-only code
 │   │   │   └── db/      # Database schema and connection
 │   ├── routes/          # SvelteKit routes
-│   │   ├── app/         # Protected application routes
-│   │   └── (auth)/      # Authentication routes
-│   ├── hooks.server.ts  # SvelteKit hooks for auth and more
+│   │   ├── (app)/       # Protected application routes (requires authentication)
+│   │   ├── products/    # Public product pages
+│   │   ├── login/       # Authentication page
+│   │   └── (auth)/      # OAuth callback routes
+│   ├── hooks.server.ts  # SvelteKit hooks for auth and route protection
 ├── static/              # Static assets
 ├── drizzle.config.ts    # Drizzle ORM configuration
 └── svelte.config.js     # SvelteKit configuration
 ```
 
-## Authentication
+## Authentication & Route Access
 
 This boilerplate includes a pre-configured authentication system using better-auth. It provides:
 
 - User registration and login
 - Session management
 - Protected routes
+
+### Public Routes (공개 페이지 - 로그인 불필요)
+- `/` - Main homepage (traveler view)
+- `/products` - Browse all travel products
+- `/products?destination=[id]` - Products filtered by destination
+- `/products/[id]` - Individual product detail pages
+- `/login` - Login page
+- `/auth/*` - OAuth callback routes
+
+### Protected Routes (보호된 페이지 - 로그인 필요)
+All routes under `/(app)/` directory require authentication:
+- `/my-trips` - User's trips
+- `/chat` - Messaging system
+- `/profile` - User profiles
+- `/offers` - Guide offers
+- `/search` - Search functionality
+- `/onboarding` - User onboarding
+- `/settings` - Application settings
+
+### Admin Routes (관리자 페이지)
+- `/admin/*` - All admin panel routes (requires admin role)
 
 ## Toss Payments Webhooks
 

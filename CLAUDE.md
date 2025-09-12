@@ -140,11 +140,13 @@ const decryptedUser = {
 - `src/lib/server/db` - Database connection and schema
 - `src/lib/auth.ts` - Better-auth configuration
 - `src/routes` - SvelteKit routes
-- `src/routes/(auth)` - Authentication routes
-- `src/routes/(app)` - Protected app routes with layout
-- `src/routes/admin` - Admin panel routes
+- `src/routes/(auth)` - OAuth callback routes
+- `src/routes/(app)` - Protected app routes requiring authentication
+- `src/routes/products` - Public product browsing pages
+- `src/routes/login` - Public login page
+- `src/routes/admin` - Admin panel routes (requires admin role)
 - `src/routes/api` - API endpoints
-- `src/hooks.server.ts` - Server-side hooks for auth and request handling
+- `src/hooks.server.ts` - Server-side hooks for auth and route protection
 - `src/lib/components` - Reusable UI components
 - `src/lib/utils` - Utility functions and helpers
 - `src/lib/stores` - Svelte stores for state management
@@ -172,10 +174,34 @@ The app uses better-auth with Google OAuth. Authentication state is managed thro
 
 ### Route Protection
 
-- Public routes: Landing, auth pages, public profiles
-- Protected routes: Under `(app)` layout, requires authentication
-- Admin routes: Requires admin role, separate layout
-- API routes: Use better-auth session validation
+#### Public Routes (로그인 불필요)
+- `/` - Main homepage with destination browsing
+- `/products` - All travel products listing
+- `/products?destination=[id]` - Products filtered by destination
+- `/products/[id]` - Individual product detail pages
+- `/login` - Authentication page
+- `/auth/*` - OAuth callback routes
+
+#### Protected Routes (로그인 필요)
+All routes under `/(app)` layout require authentication:
+- `/my-trips` - User's trips management
+- `/chat` - Messaging between users
+- `/profile` - User profile pages
+- `/offers` - Guide offer management
+- `/search` - Search functionality
+- `/onboarding` - New user onboarding
+- `/settings` - Application settings
+- Any other routes under `/(app)/` directory
+
+#### Admin Routes (관리자 권한 필요)
+- `/admin/*` - All admin panel routes require admin role
+
+#### Route Protection Implementation
+- Handled in `src/hooks.server.ts`
+- Routes starting with `/(app)` check for session
+- Non-authenticated users redirected to `/login`
+- Admin routes check for admin role
+- API routes use better-auth session validation
 
 ### File Storage
 
