@@ -33,6 +33,7 @@
 				pathname.startsWith('/products') ||
 				pathname.startsWith('/profile/guide/products') ||
 				pathname.startsWith('/profile/guide/edit') ||
+				pathname.startsWith('/profile/guide/revenue') ||
 				pathname.startsWith('/chat/product/') ||
 				pathname.startsWith('/order-history/details');
 			
