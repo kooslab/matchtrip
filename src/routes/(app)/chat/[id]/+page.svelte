@@ -3,10 +3,14 @@
 	import { goto } from '$app/navigation';
 	import { onMount, onDestroy } from 'svelte';
 	import { tick } from 'svelte';
-	import { Send, MoreHorizontal } from 'lucide-svelte';
+	import { Send } from 'lucide-svelte';
 	import SkeletonLoader from '$lib/components/SkeletonLoader.svelte';
+	import ChatActionMenu from '$lib/components/ChatActionMenu.svelte';
+	import ChatBottomMenu from '$lib/components/ChatBottomMenu.svelte';
+	import ReportModal from '$lib/components/ReportModal.svelte';
 	import { formatDate, formatTime, isToday, isYesterday } from '$lib/utils/dateFormatter';
 	import { userTimezone, userLocale } from '$lib/stores/location';
+	import type { ReportType } from '$lib/server/db/schema';
 
 	// Import custom icons
 	import ArrowBackIcon from '$lib/icons/icon-arrow-back-android-mono.svg?raw';
@@ -67,6 +71,7 @@
 	let warningMessage = $state('');
 	let showCancelModal = $state(false);
 	let selectedCancelRequest = $state<Message | null>(null);
+	let showReportModal = $state(false);
 	let currentUserId = $derived(data?.session?.user?.id || $page.data.session?.user?.id);
 	let canSendMessage = $state(true);
 	let messagesContainer: HTMLDivElement;
@@ -411,6 +416,33 @@
 			alert('응답 전송 중 오류가 발생했습니다.');
 		}
 	}
+
+	async function handleReport(reportType: ReportType) {
+		if (!conversation || !otherPerson) return;
+
+		try {
+			const response = await fetch('/api/reports', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					reportedUserId: otherPerson.id,
+					conversationId: conversation.id,
+					offerId: offer?.id,
+					reportType
+				})
+			});
+
+			if (!response.ok) {
+				throw new Error('Failed to submit report');
+			}
+
+			// Show success message
+			alert('신고가 접수되었습니다. 관리자가 검토 후 조치하겠습니다.');
+		} catch (error) {
+			console.error('Failed to submit report:', error);
+			throw error;
+		}
+	}
 </script>
 
 <div class="min-h-screen bg-white">
@@ -453,9 +485,10 @@
 					</div>
 
 					<!-- More Options Button -->
-					<button class="flex items-center justify-center p-0">
-						<MoreHorizontal class="h-6 w-6 text-gray-400" />
-					</button>
+					<ChatActionMenu
+						onExit={() => goto('/chat')}
+						onReport={() => (showReportModal = true)}
+					/>
 				</div>
 			</div>
 
@@ -675,6 +708,11 @@
 								</div>
 							{:else}
 								<form onsubmit={sendMessage} class="flex items-end gap-3">
+									<!-- Bottom menu for both travelers and guides -->
+									<ChatBottomMenu
+										onExit={() => goto('/chat')}
+										onReport={() => (showReportModal = true)}
+									/>
 									<div class="flex-1 py-2">
 										<input
 											id="message-input"
@@ -743,6 +781,13 @@
 				</div>
 			</div>
 		{/if}
+
+		<!-- Report Modal -->
+		<ReportModal
+			bind:show={showReportModal}
+			onClose={() => (showReportModal = false)}
+			onSubmit={handleReport}
+		/>
 	</div>
 </div>
 
