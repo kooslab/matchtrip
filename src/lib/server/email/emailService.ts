@@ -5,7 +5,7 @@ import { env } from '$env/dynamic/private';
 const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null;
 
 export interface SendEmailOptions {
-	to: string;
+	to: string | string[];
 	subject: string;
 	html: string;
 	text?: string;
@@ -34,15 +34,18 @@ export async function sendEmail({ to, subject, html, text }: SendEmailOptions) {
 			fromEmail = `MatchTrip <${fromEmail}>`;
 		}
 
+		// Ensure 'to' is always an array for Resend API
+		const recipients = Array.isArray(to) ? to : [to];
+		
 		console.log('[EmailService] Sending email:', {
 			from: fromEmail,
-			to,
+			to: recipients,
 			subject
 		});
 
 		const { data, error } = await resend.emails.send({
 			from: fromEmail,
-			to,
+			to: recipients,
 			subject,
 			html,
 			text: text || html.replace(/<[^>]*>/g, '') // Strip HTML tags for text version if not provided

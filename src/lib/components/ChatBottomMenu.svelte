@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount } from 'svelte';
 	import { Plus } from 'lucide-svelte';
 	import IconOutMono from '$lib/icons/icon-out-mono.svg?raw';
 	import IconWarningTriangleMono from '$lib/icons/icon-warning-triangle-mono.svg?raw';
@@ -36,24 +36,38 @@
 	}
 
 	onMount(() => {
-		if (showMenu) {
+		if (typeof document !== 'undefined' && showMenu) {
 			document.addEventListener('click', handleClickOutside);
 		}
-	});
-
-	onDestroy(() => {
-		document.removeEventListener('click', handleClickOutside);
+		
+		return () => {
+			if (typeof document !== 'undefined') {
+				document.removeEventListener('click', handleClickOutside);
+			}
+		};
 	});
 
 	$effect(() => {
-		if (showMenu) {
-			// Add a small delay to prevent immediate closure
-			setTimeout(() => {
-				document.addEventListener('click', handleClickOutside);
-			}, 0);
-		} else {
-			document.removeEventListener('click', handleClickOutside);
+		if (typeof document !== 'undefined') {
+			if (showMenu) {
+				// Add a small delay to prevent immediate closure
+				setTimeout(() => {
+					if (typeof document !== 'undefined') {
+						document.addEventListener('click', handleClickOutside);
+					}
+				}, 0);
+			} else {
+				if (typeof document !== 'undefined') {
+					document.removeEventListener('click', handleClickOutside);
+				}
+			}
 		}
+		
+		return () => {
+			if (typeof document !== 'undefined') {
+				document.removeEventListener('click', handleClickOutside);
+			}
+		};
 	});
 </script>
 

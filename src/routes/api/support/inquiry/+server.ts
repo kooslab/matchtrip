@@ -5,6 +5,8 @@ import { users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { notificationService } from '$lib/server/services/notificationService';
 import { decrypt } from '$lib/server/encryption';
+import { sendEmail } from '$lib/server/email/emailService';
+import { env } from '$env/dynamic/private';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
 	try {
@@ -62,8 +64,64 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			}
 		}
 
-		// TODO: Send email notification to support team
-		// This would typically send an email to the support team with the inquiry details
+		// Send email notification to support team
+		try {
+			const decryptedEmail = userDetails[0].email ? decrypt(userDetails[0].email) : null;
+			const decryptedName = userDetails[0].name ? decrypt(userDetails[0].name) : null;
+			
+			// Only send email if the user is a traveler
+			if (session.user.role === 'traveler') {
+				const emailHtml = `
+					<h2>새로운 여행자 문의가 접수되었습니다</h2>
+					<hr>
+					<h3>문의자 정보</h3>
+					<ul>
+						<li><strong>이름:</strong> ${decryptedName || '알 수 없음'}</li>
+						<li><strong>이메일:</strong> ${decryptedEmail || '알 수 없음'}</li>
+						<li><strong>사용자 ID:</strong> ${session.user.id}</li>
+						<li><strong>역할:</strong> 여행자</li>
+					</ul>
+					<hr>
+					<h3>문의 내용</h3>
+					<p><strong>카테고리:</strong> ${category || '일반 문의'}</p>
+					<p><strong>제목:</strong> ${subject}</p>
+					<p><strong>내용:</strong></p>
+					<div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; white-space: pre-wrap;">${content}</div>
+					<hr>
+					<p style="color: #666; font-size: 12px;">접수 시간: ${new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}</p>
+				`;
+
+				const emailText = `
+새로운 여행자 문의가 접수되었습니다
+
+문의자 정보:
+- 이름: ${decryptedName || '알 수 없음'}
+- 이메일: ${decryptedEmail || '알 수 없음'}
+- 사용자 ID: ${session.user.id}
+- 역할: 여행자
+
+문의 내용:
+카테고리: ${category || '일반 문의'}
+제목: ${subject}
+내용:
+${content}
+
+접수 시간: ${new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}
+				`;
+
+				await sendEmail({
+					to: ['help@agentt.kr', 'johnnykoo@kooslab.net'],
+					subject: `[매치트립 여행자 문의] ${subject}`,
+					html: emailHtml,
+					text: emailText
+				});
+				
+				console.log('[SUPPORT API] Email notification sent to help@agentt.kr and johnnykoo@kooslab.net');
+			}
+		} catch (emailError) {
+			console.error('[SUPPORT API] Failed to send email notification:', emailError);
+			// Don't fail the whole request if email fails
+		}
 
 		return json({
 			success: true,

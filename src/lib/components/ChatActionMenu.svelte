@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount } from 'svelte';
 	import IconOutMono from '$lib/icons/icon-out-mono.svg?raw';
 	import IconWarningTriangleMono from '$lib/icons/icon-warning-triangle-mono.svg?raw';
 
@@ -34,21 +34,31 @@
 	}
 
 	onMount(() => {
-		if (showMenu) {
+		if (typeof document !== 'undefined' && showMenu) {
 			document.addEventListener('click', handleClickOutside);
 		}
-	});
-
-	onDestroy(() => {
-		document.removeEventListener('click', handleClickOutside);
+		
+		return () => {
+			if (typeof document !== 'undefined') {
+				document.removeEventListener('click', handleClickOutside);
+			}
+		};
 	});
 
 	$effect(() => {
-		if (showMenu) {
-			document.addEventListener('click', handleClickOutside);
-		} else {
-			document.removeEventListener('click', handleClickOutside);
+		if (typeof document !== 'undefined') {
+			if (showMenu) {
+				document.addEventListener('click', handleClickOutside);
+			} else {
+				document.removeEventListener('click', handleClickOutside);
+			}
 		}
+		
+		return () => {
+			if (typeof document !== 'undefined') {
+				document.removeEventListener('click', handleClickOutside);
+			}
+		};
 	});
 </script>
 
