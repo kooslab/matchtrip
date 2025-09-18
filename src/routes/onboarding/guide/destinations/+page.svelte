@@ -1,16 +1,25 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, afterNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { onboardingStore } from '$lib/stores/onboardingStore';
 	import iconArrowBack from '$lib/icons/icon-arrow-back-android-mono.svg';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
+	
+	// Use afterNavigate for reliable scroll reset
+	afterNavigate(() => {
+		window.scrollTo(0, 0);
+	});
 
 	// Get initial data from store
 	let storeData = onboardingStore.get();
 
 	onMount(() => {
+		// Additional scroll reset in onMount as backup
+		window.scrollTo(0, 0);
+		document.documentElement.scrollTop = 0;
+		
 		// Check if required data exists
 		if (!storeData.name || !storeData.phone || !storeData.nickname) {
 			goto('/onboarding/guide');
@@ -26,9 +35,7 @@
 	// Get destinations from server
 	const destinationRegions = data.destinationRegions;
 
-	let expandedRegions = $state<string[]>(
-		destinationRegions.length > 0 ? [destinationRegions[0].name] : []
-	); // Start with first region expanded
+	let expandedRegions = $state<string[]>([]); // Start with all regions collapsed
 	let selectedDestinations = $state<number[]>([]);
 	let isLoading = $state(false);
 	let searchQuery = $state('');
@@ -91,7 +98,7 @@
 			});
 
 			// Navigate to documents page
-			await goto('/onboarding/guide/documents');
+			await goto('/onboarding/guide/documents', { replaceState: false, noScroll: false });
 		} catch (error) {
 			console.error('Error:', error);
 			alert('오류가 발생했습니다.');
@@ -107,7 +114,7 @@
 			destinations: selectedDestinations
 		});
 
-		goto('/onboarding/guide/profile');
+		goto('/onboarding/guide/profile', { replaceState: false, noScroll: false });
 	}
 
 	// Handle Enter key press

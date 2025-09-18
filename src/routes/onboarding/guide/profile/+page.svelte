@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, afterNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { onboardingStore } from '$lib/stores/onboardingStore';
 	import {
@@ -20,6 +20,11 @@
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
+	
+	// Use afterNavigate for reliable scroll reset
+	afterNavigate(() => {
+		window.scrollTo(0, 0);
+	});
 
 	// Get initial data from store
 	let storeData = onboardingStore.get();
@@ -39,6 +44,10 @@
 	let uploadingImage = $state(false);
 
 	onMount(() => {
+		// Additional scroll reset in onMount as backup
+		window.scrollTo(0, 0);
+		document.documentElement.scrollTop = 0;
+		
 		// Check if required data exists
 		if (!storeData.name || !storeData.phone) {
 			goto('/onboarding/guide');
@@ -152,7 +161,7 @@
 			});
 
 			// Navigate to next step
-			await goto('/onboarding/guide/destinations');
+			await goto('/onboarding/guide/destinations', { replaceState: false, noScroll: false });
 		} catch (error) {
 			console.error('Error:', error);
 			alert('오류가 발생했습니다.');
@@ -271,24 +280,33 @@
 		<!-- Profile Image -->
 		<div class="mb-[40px] flex justify-center">
 			<div
-				class="relative h-[124px] w-[124px] cursor-pointer transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
-				onclick={handleImageClick}
+				class="relative h-[124px] w-[124px] transition-transform duration-200 {uploadingImage ? 'cursor-wait' : 'cursor-pointer hover:scale-[1.02] active:scale-[0.98]'}"
+				onclick={uploadingImage ? undefined : handleImageClick}
 				role="button"
 				tabindex="0"
 				onkeydown={(e) => {
-					if (e.key === 'Enter' || e.key === ' ') {
+					if (!uploadingImage && (e.key === 'Enter' || e.key === ' ')) {
 						e.preventDefault();
 						handleImageClick();
 					}
 				}}
 			>
 				<div
-					class="flex h-[124px] w-[124px] items-center justify-center overflow-hidden rounded-[62px] bg-gray-100 transition-colors duration-200 hover:bg-gray-200"
+					class="relative flex h-[124px] w-[124px] items-center justify-center overflow-hidden rounded-[62px] bg-gray-100 transition-colors duration-200 hover:bg-gray-200"
 				>
 					{#if profileImageUrl}
 						<img src={profileImageUrl} alt="프로필 이미지" class="h-full w-full object-cover" />
 					{:else}
 						<img src={iconUser} alt="프로필 이미지" class="h-[68px] w-[68px]" />
+					{/if}
+					
+					{#if uploadingImage}
+						<div class="absolute inset-0 flex items-center justify-center rounded-[62px] bg-white/80 backdrop-blur-sm">
+							<div class="flex flex-col items-center gap-2">
+								<div class="h-8 w-8 animate-spin rounded-full border-3 border-gray-300 border-t-blue-500"></div>
+								<span class="text-xs text-gray-600">업로드 중...</span>
+							</div>
+						</div>
 					{/if}
 				</div>
 				<button

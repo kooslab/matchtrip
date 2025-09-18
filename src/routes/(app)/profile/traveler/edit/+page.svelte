@@ -130,26 +130,37 @@
 		>
 			<!-- Profile Image -->
 			<div class="flex flex-col items-center">
-				{#if profileImageUrl}
-					<img
-						src={profileImageUrl}
-						alt="프로필 이미지"
-						class="mb-4 h-24 w-24 rounded-full object-cover"
-					/>
-				{:else}
-					<div class="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gray-200">
-						<svg class="h-12 w-12 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-							<path
-								d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
-							/>
-						</svg>
-					</div>
-				{/if}
+				<div class="relative mb-4">
+					{#if profileImageUrl}
+						<img
+							src={profileImageUrl}
+							alt="프로필 이미지"
+							class="h-24 w-24 rounded-full object-cover"
+						/>
+					{:else}
+						<div class="flex h-24 w-24 items-center justify-center rounded-full bg-gray-200">
+							<svg class="h-12 w-12 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+								<path
+									d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+								/>
+							</svg>
+						</div>
+					{/if}
+					
+					{#if uploadingImage}
+						<div class="absolute inset-0 flex h-24 w-24 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm">
+							<div class="flex flex-col items-center gap-1">
+								<div class="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
+								<span class="text-[10px] text-gray-600">업로드 중</span>
+							</div>
+						</div>
+					{/if}
+				</div>
 				<button 
 					type="button" 
 					onclick={handleImageClick}
 					disabled={uploadingImage}
-					class="text-sm text-blue-500 hover:underline disabled:opacity-50"
+					class="text-sm {uploadingImage ? 'cursor-wait text-gray-400' : 'text-blue-500 hover:underline'}"
 				>
 					{uploadingImage ? '업로드 중...' : '프로필 사진 변경'}
 				</button>

@@ -43,6 +43,36 @@
 	let nameCompleted = $state(false);
 	let phoneCompleted = $state(false);
 
+	// Track previous states to detect actual changes
+	let prevStates = $state({
+		showPhoneStep: false,
+		showVerificationStep: false,
+		nameCompleted: false,
+		phoneCompleted: false
+	});
+
+	// Auto-scroll to top when step changes
+	$effect(() => {
+		// Check if any state actually changed
+		const stateChanged = 
+			prevStates.showPhoneStep !== showPhoneStep ||
+			prevStates.showVerificationStep !== showVerificationStep ||
+			prevStates.nameCompleted !== nameCompleted ||
+			prevStates.phoneCompleted !== phoneCompleted;
+		
+		if (stateChanged) {
+			window.scrollTo({ top: 0, behavior: 'instant' });
+			
+			// Update previous states
+			prevStates = {
+				showPhoneStep,
+				showVerificationStep,
+				nameCompleted,
+				phoneCompleted
+			};
+		}
+	});
+
 	// Form validation
 	function canProceedName(): boolean {
 		return formData.name.trim().length >= 2;
@@ -69,11 +99,16 @@
 			birthDay: formData.birthDay
 		});
 
-		nameCompleted = true;
-		showPhoneStep = true;
-		// Focus on phone input after a short delay
+		// Add a small delay to prevent UI flickering during loading
 		setTimeout(() => {
-			document.getElementById('phone')?.focus();
+			nameCompleted = true;
+			showPhoneStep = true;
+			// Scroll to top
+			window.scrollTo({ top: 0, behavior: 'instant' });
+			// Focus on phone input after a short delay
+			setTimeout(() => {
+				document.getElementById('phone')?.focus();
+			}, 100);
 		}, 100);
 	}
 
@@ -107,6 +142,8 @@
 			if (response.ok) {
 				isVerificationSent = true;
 				showVerificationStep = true;
+				// Scroll to top
+				window.scrollTo({ top: 0, behavior: 'instant' });
 				startTimer();
 				// Focus on verification input
 				setTimeout(() => {
@@ -290,6 +327,8 @@
 			clearInterval(timerInterval);
 			timerInterval = null;
 		}
+		// Scroll to top
+		window.scrollTo({ top: 0, behavior: 'instant' });
 		setTimeout(() => {
 			document.getElementById('name')?.focus();
 		}, 100);
@@ -316,6 +355,8 @@
 			clearInterval(timerInterval);
 			timerInterval = null;
 		}
+		// Scroll to top
+		window.scrollTo({ top: 0, behavior: 'instant' });
 		setTimeout(() => {
 			document.getElementById('phone')?.focus();
 		}, 100);
@@ -420,7 +461,7 @@
 				{/if}
 
 				<!-- Phone Step (Shows at top when active, moves down when verification shows) -->
-				{#if showPhoneStep && nameCompleted}
+				{#if showPhoneStep && nameCompleted && !phoneCompleted}
 					<div class="rounded-lg bg-white p-6 shadow-sm">
 						<div>
 							<label for="phone" class="mb-2 block text-sm font-medium text-gray-700">

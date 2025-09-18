@@ -83,6 +83,13 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		const destinationsStr = formData.get('destinations')?.toString();
 		const profileImageUrl = formData.get('profileImageUrl')?.toString();
 		const bio = formData.get('bio')?.toString() || ''; // Handle bio/introduction field
+		
+		// Contract agreement fields
+		const contractAgreedAtStr = formData.get('contractAgreedAt')?.toString();
+		const contractVersion = formData.get('contractVersion')?.toString();
+		const contractScrollCompleted = formData.get('contractScrollCompleted')?.toString() === 'true';
+		const contractAddress = formData.get('contractAddress')?.toString();
+		const businessRegistrationNumber = formData.get('businessRegistrationNumber')?.toString();
 
 		console.log('[API GUIDE PROFILE] Form data received:', {
 			hasName: !!name,
@@ -91,7 +98,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			hasFrequentArea: !!frequentArea,
 			hasBirthDate: !!birthDate,
 			hasDestinations: !!destinationsStr,
-			hasProfileImage: !!profileImageUrl
+			hasProfileImage: !!profileImageUrl,
+			hasContractAgreement: !!contractAgreedAtStr,
+			contractVersion: contractVersion,
+			contractScrollCompleted: contractScrollCompleted
 		});
 
 		let destinations: string[] = [];
@@ -236,7 +246,13 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			profileImageUrl: profileImageUrl,
 			idDocumentUrl: idDocumentUrl,
 			certificationUrls: certificationUrls,
-			introduction: bio // Save bio as introduction field
+			introduction: bio, // Save bio as introduction field
+			// Contract agreement fields
+			contractAgreedAt: contractAgreedAtStr ? new Date(contractAgreedAtStr) : null,
+			contractVersion: contractVersion || null,
+			contractScrollCompleted: contractScrollCompleted,
+			contractAddress: contractAddress || null,
+			businessRegistrationNumber: businessRegistrationNumber || null
 		};
 
 		if (existingProfile.length > 0) {

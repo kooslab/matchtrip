@@ -76,6 +76,18 @@
 	// Custom dropdown state (fallback if Bits UI doesn't work)
 	let isDropdownOpen = $state(false);
 
+	// Track previous step to detect actual changes
+	let previousStep = $state<Step | null>(null);
+	
+	// Auto-scroll to top when step changes
+	$effect(() => {
+		// Only scroll if step actually changed (not on initial render)
+		if (previousStep !== null && previousStep !== currentStep) {
+			window.scrollTo({ top: 0, behavior: 'instant' });
+		}
+		previousStep = currentStep;
+	});
+
 	// Load data from store on mount
 	onMount(() => {
 		const storeData = onboardingStore.get();
@@ -169,21 +181,14 @@
 			// Move to next step
 			switch (currentStep) {
 				case 'name':
-					currentStep = 'mobile';
-					// Auto-focus on mobile input after DOM update
-					setTimeout(() => {
-						const mobileInput = document.getElementById('mobile-input');
-						if (mobileInput) {
-							mobileInput.focus();
-						}
-					}, 100);
+					// Don't change step immediately - wait for loading to complete
 					break;
 				case 'mobile':
 					// Navigate to separate profile page
-					await goto('/onboarding/guide/profile');
+					await goto('/onboarding/guide/profile', { replaceState: false, noScroll: false });
 					return;
 				case 'destinations':
-					currentStep = 'documents';
+					// Don't change step immediately - wait for loading to complete
 					break;
 				case 'documents':
 					// Save all data
@@ -194,7 +199,32 @@
 			console.error('Error:', error);
 			alert('오류가 발생했습니다.');
 		} finally {
+			// Set loading to false first
+			const wasLoading = isLoading;
 			isLoading = false;
+			
+			// Only change the step after loading is complete if we were actually loading
+			if (wasLoading) {
+				switch (currentStep) {
+					case 'name':
+						currentStep = 'mobile';
+						// Scroll to top
+						window.scrollTo({ top: 0, behavior: 'instant' });
+						// Auto-focus on mobile input after DOM update
+						setTimeout(() => {
+							const mobileInput = document.getElementById('mobile-input');
+							if (mobileInput) {
+								mobileInput.focus();
+							}
+						}, 100);
+						break;
+					case 'destinations':
+						currentStep = 'documents';
+						// Scroll to top
+						window.scrollTo({ top: 0, behavior: 'instant' });
+						break;
+				}
+			}
 		}
 	}
 
@@ -212,6 +242,8 @@
 				currentStep = 'name';
 				// Remove mobile from completed steps
 				completedSteps = completedSteps.filter((s) => s !== 'name');
+				// Scroll to top
+				window.scrollTo({ top: 0, behavior: 'instant' });
 				// Auto-focus on name input after DOM update
 				setTimeout(() => {
 					const nameInput = document.getElementById('name');
@@ -226,6 +258,8 @@
 			case 'documents':
 				currentStep = 'destinations';
 				completedSteps = completedSteps.filter((s) => s !== 'destinations');
+				// Scroll to top
+				window.scrollTo({ top: 0, behavior: 'instant' });
 				break;
 		}
 	}
@@ -365,7 +399,7 @@
 	</header>
 
 	<!-- Content -->
-	<div class="pb-32">
+	<div class="pb-32 pt-6">
 		<div class="mx-auto max-w-sm space-y-4 px-4">
 			<!-- Current Step -->
 			{#if currentStep === 'name'}
@@ -390,7 +424,7 @@
 						/>
 					</div>
 				</div>
-			{:else if currentStep === 'mobile'}
+			{:else if currentStep === 'mobile' && !completedSteps.includes('mobile')}
 				<div class="rounded-lg bg-white p-4 shadow-sm">
 					<h2 class="mb-6 text-lg font-semibold text-gray-900">휴대폰 번호를 입력해주세요</h2>
 
@@ -689,6 +723,8 @@
 							const sIndex = ['name', 'mobile', 'profile', 'destinations', 'documents'].indexOf(s);
 							return sIndex < stepIndex;
 						});
+						// Scroll to top
+						window.scrollTo({ top: 0, behavior: 'instant' });
 					}}
 				>
 					{#if step === 'name'}

@@ -1,13 +1,22 @@
 <script lang="ts">
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto, invalidateAll, afterNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { onboardingStore } from '$lib/stores/onboardingStore';
 	import iconArrowBack from '$lib/icons/icon-arrow-back-android-mono.svg';
+	
+	// Use afterNavigate for reliable scroll reset
+	afterNavigate(() => {
+		window.scrollTo(0, 0);
+	});
 
 	// Get initial data from store
 	let storeData = onboardingStore.get();
 
 	onMount(() => {
+		// Additional scroll reset in onMount as backup
+		window.scrollTo(0, 0);
+		document.documentElement.scrollTop = 0;
+		
 		// Check if required data exists
 		if (
 			!storeData.name ||
@@ -79,154 +88,29 @@
 		input?.click();
 	}
 
-	// Handle next (complete profile)
+	// Handle next - navigate to contract agreement page
 	async function handleNext() {
 		isLoading = true;
-		const startTime = Date.now();
-		console.log('[GUIDE ONBOARDING] Starting profile completion at', new Date().toISOString());
-		console.log('[GUIDE ONBOARDING] Store data:', {
-			hasName: !!storeData.name,
-			hasPhone: !!storeData.phone,
-			hasNickname: !!storeData.nickname,
-			destinationsCount: storeData.destinations?.length || 0,
-			hasProfileImage: !!storeData.profileImageUrl,
-			uploadedFilesCount: Object.keys(uploadedFiles).reduce(
-				(acc, key) => acc + uploadedFiles[key].length,
-				0
-			)
-		});
+		console.log('[GUIDE DOCUMENTS] Saving uploaded files to store');
 
 		try {
-			// Create FormData for file upload
-			const profileData = new FormData();
-			profileData.append('name', storeData.name);
-			profileData.append('phone', storeData.phone);
-			profileData.append('nickname', storeData.nickname);
-			profileData.append('frequentArea', storeData.frequentArea);
-			profileData.append('birthDate', storeData.birthDate);
-			profileData.append('bio', storeData.bio || '');
-			profileData.append('destinations', JSON.stringify(storeData.destinations));
-			if (storeData.profileImageUrl) {
-				profileData.append('profileImageUrl', storeData.profileImageUrl);
-			}
-
-			// Add certification files by category
-			Object.entries(uploadedFiles).forEach(([categoryId, files]) => {
-				files.forEach((file) => {
-					profileData.append(`documents_${categoryId}`, file);
-				});
+			// Save uploaded files to store for later use
+			onboardingStore.setData({
+				uploadedFiles: uploadedFiles
 			});
 
-			// First, set the user role to guide
-			console.log('[GUIDE ONBOARDING] Setting user role to guide');
-			const roleResponse = await fetch('/api/user/role', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ role: 'guide' })
+			console.log('[GUIDE DOCUMENTS] Uploaded files saved:', {
+				filesCount: Object.keys(uploadedFiles).reduce(
+					(acc, key) => acc + uploadedFiles[key].length,
+					0
+				)
 			});
 
-			if (!roleResponse.ok) {
-				console.error('[GUIDE ONBOARDING] Failed to set user role:', await roleResponse.text());
-			} else {
-				console.log('[GUIDE ONBOARDING] User role set to guide successfully');
-			}
-
-			// Update user profile data
-			console.log('[GUIDE ONBOARDING] Updating user profile');
-			const userResponse = await fetch('/api/user/profile', {
-				method: 'PATCH',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					name: storeData.name,
-					phone: storeData.phone,
-					birthDate: storeData.birthDate
-				})
-			});
-
-			if (!userResponse.ok) {
-				const error = await userResponse.json();
-				console.error('[GUIDE ONBOARDING] Failed to update user profile:', error);
-				alert(error.error || '프로필 저장에 실패했습니다.');
-				return;
-			}
-			console.log('[GUIDE ONBOARDING] User profile updated successfully');
-
-			// Create guide profile
-			console.log('[GUIDE ONBOARDING] Creating guide profile');
-			const guideStartTime = Date.now();
-			const guideResponse = await fetch('/api/profile/guide', {
-				method: 'POST',
-				body: profileData
-			});
-			console.log('[GUIDE ONBOARDING] Guide profile API response:', {
-				status: guideResponse.status,
-				statusText: guideResponse.statusText,
-				time: Date.now() - guideStartTime + 'ms'
-			});
-
-			if (guideResponse.ok) {
-				const guideResult = await guideResponse.json();
-				console.log('[GUIDE ONBOARDING] Guide profile created successfully:', guideResult);
-
-				// Mark onboarding as completed
-				console.log('[GUIDE ONBOARDING] Marking onboarding as completed');
-				const completeStartTime = Date.now();
-				const completeResponse = await fetch('/api/user/complete-onboarding', {
-					method: 'POST'
-				});
-				console.log('[GUIDE ONBOARDING] Complete onboarding API response:', {
-					status: completeResponse.status,
-					statusText: completeResponse.statusText,
-					time: Date.now() - completeStartTime + 'ms'
-				});
-
-				if (!completeResponse.ok) {
-					console.error(
-						'[GUIDE ONBOARDING] Failed to mark onboarding as complete:',
-						await completeResponse.text()
-					);
-					// Don't return here - try to proceed anyway
-				} else {
-					const result = await completeResponse.json();
-					console.log('[GUIDE ONBOARDING] Onboarding marked as completed:', result);
-				}
-
-				// Invalidate all cached data to ensure session is refreshed
-				console.log('[GUIDE ONBOARDING] Invalidating all cached data');
-				await invalidateAll();
-
-				// Clear store
-				console.log('[GUIDE ONBOARDING] Clearing store');
-				onboardingStore.reset();
-
-				// Remove artificial delay - not needed with proper session handling
-
-				// Use hard navigation to ensure fresh session data
-				console.log('[GUIDE ONBOARDING] Total time:', Date.now() - startTime + 'ms');
-				console.log('[GUIDE ONBOARDING] Navigating to completion page with hard refresh');
-				window.location.href = '/onboarding/guide/complete';
-			} else {
-				const errorText = await guideResponse.text();
-				let error;
-				try {
-					error = JSON.parse(errorText);
-				} catch {
-					error = { error: errorText };
-				}
-				console.error('[GUIDE ONBOARDING] Failed to create guide profile:', {
-					status: guideResponse.status,
-					error: error,
-					time: Date.now() - startTime + 'ms'
-				});
-				alert(error.error || '가이드 프로필 생성에 실패했습니다.');
-				isLoading = false;
-			}
+			// Navigate to contract agreement page
+			console.log('[GUIDE DOCUMENTS] Navigating to contract agreement page');
+			goto('/onboarding/guide/contract', { replaceState: false, noScroll: false });
 		} catch (error) {
-			console.error('[GUIDE ONBOARDING] Caught error:', {
-				message: error.message,
-				stack: error.stack,
-				time: Date.now() - startTime + 'ms'
-			});
+			console.error('[GUIDE DOCUMENTS] Error:', error);
 			alert('오류가 발생했습니다.');
 			isLoading = false;
 		}
@@ -245,7 +129,7 @@
 			uploadedFiles: uploadedFiles
 		});
 
-		goto('/onboarding/guide/destinations');
+		goto('/onboarding/guide/destinations', { replaceState: false, noScroll: false });
 	}
 
 	// Handle Enter key press

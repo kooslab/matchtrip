@@ -168,10 +168,23 @@
 					</div>
 				{/if}
 
+				{#if uploadingImage}
+					<div class="absolute inset-0 flex h-24 w-24 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm">
+						<div class="flex flex-col items-center gap-1">
+							<div class="h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
+							<span class="text-[10px] text-gray-600">업로드 중</span>
+						</div>
+					</div>
+				{/if}
+
 				<label
-					class="absolute right-0 bottom-0 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700"
+					class="absolute right-0 bottom-0 flex h-8 w-8 items-center justify-center rounded-full shadow-lg {uploadingImage ? 'cursor-wait bg-gray-400' : 'cursor-pointer bg-blue-600 hover:bg-blue-700'} text-white"
 				>
-					<Camera class="h-4 w-4" />
+					{#if uploadingImage}
+						<div class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+					{:else}
+						<Camera class="h-4 w-4" />
+					{/if}
 					<input
 						type="file"
 						accept="image/*"
