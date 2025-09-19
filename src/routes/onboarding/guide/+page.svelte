@@ -271,7 +271,7 @@
 		// Create FormData for file upload
 		const profileData = new FormData();
 		profileData.append('name', formData.name);
-		profileData.append('phone', formData.mobile);
+		profileData.append('phone', formData.countryCode + formData.mobile);
 		profileData.append('countryCode', formData.countryCode);
 		profileData.append('birthDate', birthDate);
 		profileData.append('gender', formData.gender);
