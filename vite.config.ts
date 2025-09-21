@@ -2,10 +2,6 @@ import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
-import dotenv from 'dotenv';
-
-// Load environment variables
-dotenv.config();
 
 export default defineConfig({
 	server: {

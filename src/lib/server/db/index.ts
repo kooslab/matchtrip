@@ -2,6 +2,12 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema';
 import * as relations from './relations';
+import dns from 'node:dns';
+
+// Force IPv4 for M1 Macs with Node.js
+if (typeof Bun === 'undefined') {
+	dns.setDefaultResultOrder('ipv4first');
+}
 
 let databaseUrl: string | undefined;
 
