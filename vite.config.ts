@@ -8,6 +8,10 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export default defineConfig({
+	server: {
+		port: 5173,
+		strictPort: false // Will use next available port if 5173 is in use
+	},
 	plugins: [
 		sveltekit(),
 		tailwindcss(),
