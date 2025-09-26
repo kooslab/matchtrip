@@ -313,15 +313,6 @@
 							/>
 						</svg>
 					</a>
-					<div class="flex items-center justify-between px-4 py-4">
-						<span class="text-gray-800">알람(PUSH) 설정</span>
-						<label class="relative inline-flex cursor-pointer items-center">
-							<input type="checkbox" class="peer sr-only" checked />
-							<div
-								class="peer h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-blue-500 peer-focus:outline-none after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"
-							></div>
-						</label>
-					</div>
 				</div>
 			</div>
 
