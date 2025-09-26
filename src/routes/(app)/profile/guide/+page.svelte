@@ -1,58 +1,45 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
-	import { ChevronRight, Package } from 'lucide-svelte';
-	import BottomNav from '$lib/components/BottomNav.svelte';
+	import { ChevronRight } from 'lucide-svelte';
+	import { onMount } from 'svelte';
 	import GuideBottomNav from '$lib/components/GuideBottomNav.svelte';
-	import ProductDetailModal from '$lib/components/ProductDetailModal.svelte';
 	import { authClient } from '$lib/authClient';
 
 	const { data } = $props();
 
 	// Get user data
 	const user = $derived(data?.user);
-	const guideProfile = $derived(data?.guideProfile);
 	const userName = $derived(user?.name || '사용자');
 	const myProducts = $derived(data?.myProducts || []);
 
-	// Stats
-	const completedTrips = $derived(guideProfile?.completedTrips || 3);
-	const acceptedOffers = $derived(guideProfile?.acceptedOffers || 0);
-	const rating = $derived(guideProfile?.rating || 4.9);
+	// Stats state
+	let stats = $state({
+		completedTrips: 0,
+		activeProducts: 0,
+		rating: 0,
+		reviewCount: 0
+	});
 
-	// Modal state for product detail
-	let selectedProduct = $state<any>(null);
-	let isModalOpen = $state(false);
-
-	// Handle product click
-	const handleProductClick = async (productId: string) => {
-		const product = myProducts.find((p) => p.id === productId);
-		if (product) {
-			// Fetch full product details
+	// Fetch dynamic stats on mount
+	onMount(async () => {
+		if (user?.id) {
 			try {
-				const response = await fetch(`/api/products/${productId}`);
+				const response = await fetch(`/api/guide/${user.id}/stats`);
 				if (response.ok) {
-					selectedProduct = await response.json();
-					isModalOpen = true;
+					stats = await response.json();
 				}
-			} catch (error) {
-				console.error('Failed to fetch product:', error);
-				// Fall back to basic product info
-				selectedProduct = product;
-				isModalOpen = true;
+			} catch (err) {
+				console.error('Failed to fetch stats:', err);
 			}
 		}
-	};
+	});
 
-	// Handle modal close
-	const handleModalClose = () => {
-		isModalOpen = false;
-		selectedProduct = null;
-	};
+	// Derived stats values
+	const completedTrips = $derived(stats.completedTrips);
+	const activeProducts = $derived(stats.activeProducts);
+	const rating = $derived(stats.rating);
+	const reviewCount = $derived(stats.reviewCount);
 
-	// Format price with commas
-	const formatPrice = (price: number) => {
-		return new Intl.NumberFormat('ko-KR').format(price);
-	};
 
 	// Logout handler
 	async function handleLogout() {
@@ -88,16 +75,16 @@
 		<!-- Stats -->
 		<div class="grid grid-cols-3 gap-4 border-t border-gray-100 py-4">
 			<div class="text-center">
-				<div class="text-2xl font-bold text-blue-600">{completedTrips}</div>
-				<div class="text-xs text-gray-500">진행중인 여행</div>
+				<div class="text-2xl font-bold text-blue-600">{activeProducts}</div>
+				<div class="text-xs text-gray-500">여행상품</div>
 			</div>
 			<div class="text-center">
-				<div class="text-2xl font-bold">{acceptedOffers}</div>
+				<div class="text-2xl font-bold">{completedTrips}</div>
 				<div class="text-xs text-gray-500">완료한 여행</div>
 			</div>
 			<div class="text-center">
-				<div class="text-2xl font-bold">{rating}</div>
-				<div class="text-xs text-gray-500">나의 리뷰</div>
+				<div class="text-2xl font-bold">{rating || '-'}</div>
+				<div class="text-xs text-gray-500">평점 {reviewCount > 0 ? `(${reviewCount})` : ''}</div>
 			</div>
 		</div>
 	</section>
@@ -148,7 +135,7 @@
 			</button>
 			<button
 				class="flex w-full items-center justify-between px-4 py-3 hover:bg-gray-50"
-				onclick={() => window.alert('여행 리뷰 준비중')}
+				onclick={() => goto('/profile/guide/reviews')}
 			>
 				<span class="text-gray-700">여행 리뷰</span>
 				<ChevronRight class="h-5 w-5 text-gray-400" />
@@ -162,14 +149,14 @@
 		<div class="divide-y divide-gray-100">
 			<button
 				class="flex w-full items-center justify-between px-4 py-3 hover:bg-gray-50"
-				onclick={() => window.alert('회원 정보 수정 준비중')}
+				onclick={() => goto('/profile/guide/account-edit')}
 			>
 				<span class="text-gray-700">회원 정보 수정</span>
 				<ChevronRight class="h-5 w-5 text-gray-400" />
 			</button>
 			<button
 				class="flex w-full items-center justify-between px-4 py-3 hover:bg-gray-50"
-				onclick={() => window.alert('가이드 소개 준비중')}
+				onclick={() => goto(`/guide/${user?.id}`)}
 			>
 				<span class="text-gray-700">가이드 소개</span>
 				<ChevronRight class="h-5 w-5 text-gray-400" />
@@ -260,9 +247,3 @@
 	<GuideBottomNav />
 </div>
 
-<!-- Product Detail Modal -->
-<ProductDetailModal
-	product={selectedProduct}
-	bind:isOpen={isModalOpen}
-	onClose={handleModalClose}
-/>
