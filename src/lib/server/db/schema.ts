@@ -718,25 +718,32 @@ export const adminSessions = pgTable('admin_sessions', {
 	userAgent: text('user_agent')
 });
 // Banners table for advertisement management
-export const banners = pgTable(
-	'banners',
+export const events = pgTable(
+	'events',
 	{
 		id: serial('id').primaryKey(),
+		slug: text('slug').notNull().unique(),
+		title: text('title').notNull(),
+		subtitle: text('subtitle').notNull(),
 		bannerImageUrl: text('banner_image_url').notNull(),
 		fullImageUrl: text('full_image_url').notNull(),
-		linkUrl: text('link_url').notNull(),
+		linkUrl: text('link_url'),
 		description: text('description').notNull(),
+		startDate: timestamp('start_date'),
+		endDate: timestamp('end_date'),
+		gift: text('gift'),
+		referenceText: text('reference_text'),
 		isActive: boolean('is_active').notNull().default(false),
 		createdBy: uuid('created_by').references(() => admins.id, { onDelete: 'set null' }),
 		createdAt: timestamp('created_at').defaultNow().notNull(),
 		updatedAt: timestamp('updated_at').defaultNow().notNull()
 	},
 	(table) => ({
-		// Index on isActive for faster queries
-		isActiveIdx: index('banners_is_active_idx').on(table.isActive),
-		createdByIdx: index('banners_created_by_idx').on(table.createdBy)
+		slugIdx: index('events_slug_idx').on(table.slug),
+		isActiveIdx: index('events_is_active_idx').on(table.isActive),
+		createdByIdx: index('events_created_by_idx').on(table.createdBy)
 	})
-);
+);;;
 
 // Phone verifications table for storing temporary verification codes
 export const phoneVerifications = pgTable(
@@ -759,7 +766,7 @@ export const phoneVerifications = pgTable(
 // Type exports for admin tables
 export type Admin = typeof admins.$inferSelect;
 export type AdminSession = typeof adminSessions.$inferSelect;
-export type Banner = typeof banners.$inferSelect;
+export type Event = typeof events.$inferSelect;
 
 // Define enum for product status
 export const productStatusEnum = pgEnum('product_status', [
