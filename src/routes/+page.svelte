@@ -5,6 +5,7 @@
 	import GuideBottomNav from '$lib/components/GuideBottomNav.svelte';
 	import AgreementModal from '$lib/components/AgreementModal.svelte';
 	import Logo from '$lib/components/Logo.svelte';
+	import BannerAd from '$lib/components/BannerAd.svelte';
 
 	// Props from load function
 	const { data } = $props();
@@ -136,6 +137,9 @@
 						</div>
 					</section>
 
+					<!-- Banner Ad -->
+					<BannerAd />
+
 					<!-- Guide Banner Section -->
 					<!-- <section class="mt-3 bg-white p-4">
 						<div
@@ -214,6 +218,9 @@
 								</button>
 							</div>
 						</section>
+
+						<!-- Banner Ad -->
+						<BannerAd />
 					{/if}
 				{/if}
 

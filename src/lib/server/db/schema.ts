@@ -717,6 +717,26 @@ export const adminSessions = pgTable('admin_sessions', {
 	ipAddress: text('ip_address'),
 	userAgent: text('user_agent')
 });
+// Banners table for advertisement management
+export const banners = pgTable(
+	'banners',
+	{
+		id: serial('id').primaryKey(),
+		bannerImageUrl: text('banner_image_url').notNull(),
+		fullImageUrl: text('full_image_url').notNull(),
+		linkUrl: text('link_url').notNull(),
+		description: text('description').notNull(),
+		isActive: boolean('is_active').notNull().default(false),
+		createdBy: uuid('created_by').references(() => admins.id, { onDelete: 'set null' }),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at').defaultNow().notNull()
+	},
+	(table) => ({
+		// Index on isActive for faster queries
+		isActiveIdx: index('banners_is_active_idx').on(table.isActive),
+		createdByIdx: index('banners_created_by_idx').on(table.createdBy)
+	})
+);
 
 // Phone verifications table for storing temporary verification codes
 export const phoneVerifications = pgTable(
@@ -739,6 +759,7 @@ export const phoneVerifications = pgTable(
 // Type exports for admin tables
 export type Admin = typeof admins.$inferSelect;
 export type AdminSession = typeof adminSessions.$inferSelect;
+export type Banner = typeof banners.$inferSelect;
 
 // Define enum for product status
 export const productStatusEnum = pgEnum('product_status', [
