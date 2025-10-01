@@ -1,3 +1,4 @@
+// Version: 2025-10-01-v2 - Force cache clear
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
