@@ -73,15 +73,15 @@
 			<!-- Stats -->
 			<div class="mt-6 grid grid-cols-3 gap-4 text-center">
 				<div>
-					<div class="text-2xl font-bold text-blue-500">3</div>
+					<div class="text-2xl font-bold text-blue-500">{data.metrics.totalTrips}</div>
 					<div class="mt-1 text-sm text-gray-500">내 여행</div>
 				</div>
 				<div>
-					<div class="text-2xl font-bold">0</div>
+					<div class="text-2xl font-bold">{data.metrics.completedTrips}</div>
 					<div class="mt-1 text-sm text-gray-500">완료한 여행</div>
 				</div>
 				<div>
-					<div class="text-2xl font-bold">0</div>
+					<div class="text-2xl font-bold">{data.metrics.favoriteGuides}</div>
 					<div class="mt-1 text-sm text-gray-500">관심 가이드</div>
 				</div>
 			</div>

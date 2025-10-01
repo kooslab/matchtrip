@@ -1,8 +1,8 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { travelerProfiles, users } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { travelerProfiles, users, trips, favoriteGuides } from '$lib/server/db/schema';
+import { eq, and, count } from 'drizzle-orm';
 import { decryptUserFields } from '$lib/server/encryption';
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -30,8 +30,37 @@ export const load: PageServerLoad = async ({ locals }) => {
 	// Decrypt user fields before sending to client
 	const decryptedUser = decryptUserFields(userWithProfile.users);
 
+	// Get metrics
+	const [totalTrips, completedTrips, favoriteGuidesCount] = await Promise.all([
+		// Total trips count
+		db.select({ count: count() })
+			.from(trips)
+			.where(eq(trips.userId, locals.user.id))
+			.then(rows => rows[0]?.count || 0),
+
+		// Completed trips count
+		db.select({ count: count() })
+			.from(trips)
+			.where(and(
+				eq(trips.userId, locals.user.id),
+				eq(trips.status, 'completed')
+			))
+			.then(rows => rows[0]?.count || 0),
+
+		// Favorite guides count
+		db.select({ count: count() })
+			.from(favoriteGuides)
+			.where(eq(favoriteGuides.travelerId, locals.user.id))
+			.then(rows => rows[0]?.count || 0)
+	]);
+
 	return {
 		user: decryptedUser,
-		travelerProfile: userWithProfile.traveler_profiles
+		travelerProfile: userWithProfile.traveler_profiles,
+		metrics: {
+			totalTrips,
+			completedTrips,
+			favoriteGuides: favoriteGuidesCount
+		}
 	};
 };
