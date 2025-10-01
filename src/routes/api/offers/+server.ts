@@ -115,7 +115,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				await notificationService.sendNotification({
 					userId: session.user.id,
 					phoneNumber: decryptedGuidePhone,
-					templateName: 'myoffers01', // Correct template for guide offer registration
+					templateName: 'myoffers06', // Guide offer registration completion
 					templateData: {
 						SHOPNAME: '매치트립',
 						NAME: decryptedGuideName || '가이드'
@@ -132,7 +132,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				await notificationService.sendNotification({
 					userId: tripDetails[0].userId,
 					phoneNumber: decryptedTravelerPhone,
-					templateName: 'mytrip02', // Correct template for offer arrival to traveler
+					templateName: 'mytrip08', // Guide offer arrival notification
 					templateData: {
 						SHOPNAME: '매치트립',
 						가이드: decryptedGuideName || '가이드',

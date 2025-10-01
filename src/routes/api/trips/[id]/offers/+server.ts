@@ -36,17 +36,13 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 				validUntil: offers.validUntil,
 				createdAt: offers.createdAt,
 				updatedAt: offers.updatedAt,
-				guide: {
-					id: users.id,
-					name: users.name,
-					email: users.email,
-					image: users.image
-				},
-				guideProfile: {
-					profileImageUrl: guideProfiles.profileImageUrl,
-					totalReviews: guideProfiles.totalReviews,
-					rating: guideProfiles.rating
-				}
+				guideUserId: users.id,
+				guideName: users.name,
+				guideEmail: users.email,
+				guideImage: users.image,
+				guideProfileImageUrl: guideProfiles.profileImageUrl,
+				guideTotalReviews: guideProfiles.totalReviews,
+				guideRating: guideProfiles.rating
 			})
 			.from(offers)
 			.innerJoin(users, eq(offers.guideId, users.id))
@@ -54,11 +50,32 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 			.where(eq(offers.tripId, tripId))
 			.orderBy(desc(offers.createdAt));
 
-		// Decrypt guide names
-		const decryptedOffers = tripOffers.map((offer) => ({
-			...offer,
-			guide: offer.guide ? decryptUserFields(offer.guide) : null
-		}));
+		// Decrypt guide names and restructure data
+		const decryptedOffers = tripOffers.map((offer) => {
+			const guide = {
+				id: offer.guideUserId,
+				name: offer.guideName,
+				email: offer.guideEmail,
+				image: offer.guideImage
+			};
+
+			const guideProfile = offer.guideProfileImageUrl || offer.guideTotalReviews || offer.guideRating
+				? {
+					profileImageUrl: offer.guideProfileImageUrl,
+					totalReviews: offer.guideTotalReviews,
+					rating: offer.guideRating
+				}
+				: null;
+
+			// Remove guide fields from offer object
+			const { guideUserId, guideName, guideEmail, guideImage, guideProfileImageUrl, guideTotalReviews, guideRating, ...offerData } = offer;
+
+			return {
+				...offerData,
+				guide: decryptUserFields(guide),
+				guideProfile
+			};
+		});
 
 		// Get metadata
 		const lastUpdated = new Date().toISOString();

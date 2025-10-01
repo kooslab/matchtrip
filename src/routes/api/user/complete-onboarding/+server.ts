@@ -105,7 +105,7 @@ export const POST: RequestHandler = async ({ locals }) => {
 				});
 
 				// Determine template based on user role
-				const templateName = freshUser.role === 'guide' ? 'signup02' : 'signup01';
+				const templateName = freshUser.role === 'guide' ? 'signup_guide' : 'signup_traveler';
 				const defaultName = freshUser.role === 'guide' ? '가이드' : '고객';
 
 				console.log('[API COMPLETE ONBOARDING] Template selection:', {
