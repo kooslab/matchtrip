@@ -51,7 +51,10 @@ async function applyMigration() {
 
 		console.log('\n🎉 Migration applied successfully!');
 	} catch (error) {
-		console.error('\n❌ Migration failed:', error.message);
+		console.error('\n❌ Migration failed:');
+		console.error('Error message:', error.message);
+		console.error('Error code:', error.code);
+		console.error('Full error:', error);
 		process.exit(1);
 	} finally {
 		await sql.end();

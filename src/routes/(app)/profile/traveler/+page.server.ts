@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { travelerProfiles, users, trips, favoriteGuides } from '$lib/server/db/schema';
+import { travelerProfiles, users, trips } from '$lib/server/db/schema';
 import { eq, and, count } from 'drizzle-orm';
 import { decryptUserFields } from '$lib/server/encryption';
 
@@ -31,7 +31,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const decryptedUser = decryptUserFields(userWithProfile.users);
 
 	// Get metrics
-	const [totalTrips, completedTrips, favoriteGuidesCount] = await Promise.all([
+	const [totalTrips, completedTrips] = await Promise.all([
 		// Total trips count
 		db.select({ count: count() })
 			.from(trips)
@@ -45,12 +45,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 				eq(trips.userId, locals.user.id),
 				eq(trips.status, 'completed')
 			))
-			.then(rows => rows[0]?.count || 0),
-
-		// Favorite guides count
-		db.select({ count: count() })
-			.from(favoriteGuides)
-			.where(eq(favoriteGuides.travelerId, locals.user.id))
 			.then(rows => rows[0]?.count || 0)
 	]);
 
@@ -60,7 +54,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		metrics: {
 			totalTrips,
 			completedTrips,
-			favoriteGuides: favoriteGuidesCount
+			favoriteGuides: 0 // Feature not implemented yet
 		}
 	};
 };
