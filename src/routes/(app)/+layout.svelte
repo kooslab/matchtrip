@@ -35,12 +35,14 @@
 				pathname.startsWith('/profile/guide/edit') ||
 				pathname.startsWith('/profile/guide/revenue') ||
 				pathname.startsWith('/chat/product/') ||
-				pathname.startsWith('/order-history/details');
+				pathname.startsWith('/order-history/details') ||
+				pathname === '/guide/pending-approval';
 			
 			// Update top nav visibility
 			hideTopNav = pathname.startsWith('/chat/product/') ||
 				pathname.match(/^\/chat\/[^\/]+$/) ||
-				pathname.startsWith('/products/create');
+				pathname.startsWith('/products/create') ||
+				pathname === '/guide/pending-approval';
 		}
 	});
 </script>
@@ -50,7 +52,7 @@
 	<TopNav />
 {/if}
 
-<div class="flex min-h-screen flex-col {(isTraveler || isGuide) && !hideBottomNav ? 'pb-20' : ''}">
+<div class="flex min-h-screen flex-col {(isTraveler || isGuide) && !hideBottomNav ? 'pb-20' : ''} {$page.url.pathname === '/guide/pending-approval' ? 'h-screen overflow-hidden' : ''}">
 	<slot />
 
 	<!-- Bottom Navigation for Travelers -->

@@ -7,7 +7,7 @@
 	onMount(() => {
 		// Scroll to top when page loads
 		window.scrollTo({ top: 0, behavior: 'instant' });
-		
+
 		// Redirect to pending approval page after 1 second
 		setTimeout(() => {
 			// Use window.location for a hard refresh to ensure session is updated

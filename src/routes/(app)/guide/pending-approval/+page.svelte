@@ -1,7 +1,12 @@
 <script lang="ts">
-	import { CheckCircle, Clock, Mail, Phone } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { invalidate } from '$app/navigation';
+	import image01 from '$lib/images/after_onboarding_guide_01.png';
+	import image02 from '$lib/images/after_onboarding_guide_02.png';
+	import image03 from '$lib/images/after_onboarding_guide_03.png';
+	import penImage from '$lib/images/pen.png';
+	import magnifyGlassImage from '$lib/images/magnify_glass.png';
+	import moneyImage from '$lib/images/money.png';
 
 	interface Props {
 		data: {
@@ -18,6 +23,46 @@
 	}
 
 	let { data }: Props = $props();
+	let currentSlide = $state(0);
+
+	const slides = [
+		{
+			bgImage: image01,
+			overlayImage: penImage,
+			title: '가이드 등록 전에,\n먼저 자격을 확인해요',
+			description: '서류에 문제가 없는지 검토가 필요하며,\n영업일 기준 3일 정도 소요될 수 있어요.'
+		},
+		{
+			bgImage: image02,
+			overlayImage: magnifyGlassImage,
+			title: '나에게 맞는 여행을 찾아\n일정을 제안해 보세요',
+			description:
+				'활동 지역과 가능한 일정, 관심 분야에 따라\n딱 맞는 여행 제안만 선별해서 확인할 수 있어요.'
+		},
+		{
+			bgImage: image03,
+			overlayImage: moneyImage,
+			title: '복잡한 서류 없이,\n간편하게!',
+			description:
+				'정산에 필요한 정보는 미리 등록해두면 편!\n매번 서류를 제출할 필요 없이 간편하게 받을 수 있어요.'
+		}
+	];
+
+	const nextSlide = () => {
+		if (currentSlide < slides.length - 1) {
+			currentSlide++;
+		}
+	};
+
+	const prevSlide = () => {
+		if (currentSlide > 0) {
+			currentSlide--;
+		}
+	};
+
+	const goToSlide = (index: number) => {
+		currentSlide = index;
+	};
 
 	// Check verification status every 30 seconds
 	onMount(() => {
@@ -29,117 +74,102 @@
 	});
 </script>
 
-<div class="min-h-screen bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-	<div class="mx-auto max-w-3xl">
-		<div class="overflow-hidden rounded-lg bg-white shadow-lg">
-			<!-- Header -->
-			<div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-8 text-white">
-				<div class="mb-4 flex items-center justify-center">
-					<Clock class="h-16 w-16" />
-				</div>
-				<h1 class="text-center text-3xl font-bold">가이드 승인 대기 중</h1>
-				<p class="mt-2 text-center text-blue-100">가이드 신청이 성공적으로 접수되었습니다</p>
-			</div>
-
-			<!-- Content -->
-			<div class="p-6 sm:p-8">
-				<div class="mb-8 text-center">
-					<p class="mb-4 text-lg text-gray-700">
-						안녕하세요, <span class="font-semibold">{data.user.name}</span>님!
-					</p>
-					<p class="text-gray-600">
-						가이드 프로필이 검토 중입니다. 보통 24-48시간 내에 승인 여부가 결정됩니다.
-					</p>
-				</div>
-
-				<!-- Status Timeline -->
-				<div class="mb-8">
-					<div class="relative">
-						<div class="mb-4 flex items-center">
-							<div class="flex h-10 w-10 items-center justify-center rounded-full bg-green-500">
-								<CheckCircle class="h-6 w-6 text-white" />
+<div class="fixed inset-0 z-50 bg-white">
+	<div class="relative h-full w-full max-w-md mx-auto">
+		<!-- Carousel Container -->
+		<div class="h-full">
+			<div class="relative h-full overflow-hidden">
+				{#each slides as slide, index}
+					<div
+						class="absolute inset-0 transition-all duration-300 ease-in-out"
+						style="transform: translateX({(index - currentSlide) * 100}%); opacity: {index === currentSlide ? 1 : 0};"
+					>
+						<div class="flex h-full flex-col">
+							<!-- Top 60% - Background Image Area -->
+							<div class="relative h-[60%] flex items-end justify-center overflow-hidden px-2 pt-8">
+								<!-- Background Image - show 3/4 of height -->
+								<img src={slide.bgImage} alt="" class="w-full object-contain" style="height: 75%; object-position: bottom;" />
+								<!-- Overlay Image (pen, magnifying glass, money) - z-50 to be on top -->
+								<img
+									src={slide.overlayImage}
+									alt=""
+									class="absolute w-16 h-auto object-contain z-50"
+									style="bottom: -5%; right: 10%;"
+								/>
 							</div>
-							<div class="ml-4">
-								<p class="font-semibold text-gray-900">프로필 제출 완료</p>
-								<p class="text-sm text-gray-500">
-									{new Date(data.guideProfile.createdAt).toLocaleDateString('ko-KR')}
+
+							<!-- Bottom 40% - White Background with Text -->
+							<div class="flex-1 bg-white flex flex-col items-center justify-start px-8 pt-12 pb-32">
+								<!-- Title -->
+								<h2 class="mb-4 whitespace-pre-line text-center text-2xl font-bold text-gray-900 leading-tight">
+									{slide.title}
+								</h2>
+
+								<!-- Description -->
+								<p class="whitespace-pre-line text-center text-base text-gray-600 leading-relaxed">
+									{slide.description}
 								</p>
 							</div>
 						</div>
-
-						<div class="mb-4 ml-5 flex items-center border-l-2 border-gray-300 pb-4 pl-5">
-							<div
-								class="flex h-10 w-10 animate-pulse items-center justify-center rounded-full bg-yellow-500"
-							>
-								<Clock class="h-6 w-6 text-white" />
-							</div>
-							<div class="ml-4">
-								<p class="font-semibold text-gray-900">관리자 검토 중</p>
-								<p class="text-sm text-gray-500">현재 진행 중</p>
-							</div>
-						</div>
-
-						<div class="ml-5 flex items-center opacity-50">
-							<div class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300">
-								<CheckCircle class="h-6 w-6 text-white" />
-							</div>
-							<div class="ml-4">
-								<p class="font-semibold text-gray-500">승인 완료</p>
-								<p class="text-sm text-gray-400">대기 중</p>
-							</div>
-						</div>
 					</div>
-				</div>
+				{/each}
+			</div>
+		</div>
 
-				<!-- What happens next -->
-				<div class="mb-8 rounded-lg bg-blue-50 p-6">
-					<h2 class="mb-3 text-lg font-semibold text-gray-900">승인 후 가능한 활동</h2>
-					<ul class="space-y-2 text-gray-700">
-						<li class="flex items-start">
-							<span class="mr-2 text-blue-500">•</span>
-							<span>여행자들의 여행 요청 확인 및 제안서 작성</span>
-						</li>
-						<li class="flex items-start">
-							<span class="mr-2 text-blue-500">•</span>
-							<span>여행자와의 메시지 교환</span>
-						</li>
-						<li class="flex items-start">
-							<span class="mr-2 text-blue-500">•</span>
-							<span>가이드 투어 진행 및 수익 창출</span>
-						</li>
-						<li class="flex items-start">
-							<span class="mr-2 text-blue-500">•</span>
-							<span>프로필에 인증 마크 표시</span>
-						</li>
-					</ul>
-				</div>
+		<!-- Navigation Dots and Buttons -->
+		<div class="absolute bottom-8 left-0 right-0 px-6">
+			<!-- Dots Indicator -->
+			<div class="mb-8 flex items-center justify-center gap-2">
+				{#each slides as _, index}
+					<button
+						onclick={() => goToSlide(index)}
+						class="h-2 rounded-full transition-all duration-300 {index === currentSlide
+							? 'w-8 bg-blue-500'
+							: 'w-2 bg-gray-300'}"
+						aria-label={`Go to slide ${index + 1}`}
+					></button>
+				{/each}
+			</div>
 
-				<!-- Contact Information -->
-				<div class="border-t pt-6">
-					<h3 class="mb-3 text-sm font-semibold text-gray-900">승인 알림을 받을 연락처</h3>
-					<div class="space-y-2">
-						<div class="flex items-center text-gray-600">
-							<Mail class="mr-2 h-4 w-4" />
-							<span class="text-sm">{data.user.email}</span>
-						</div>
-						{#if data.user.phone}
-							<div class="flex items-center text-gray-600">
-								<Phone class="mr-2 h-4 w-4" />
-								<span class="text-sm">{data.user.phone}</span>
-							</div>
-						{/if}
-					</div>
-				</div>
+			<!-- Navigation Buttons -->
+			<div class="flex items-center justify-between">
+				<!-- Previous Button -->
+				{#if currentSlide > 0}
+					<button
+						onclick={prevSlide}
+						class="flex h-14 w-14 items-center justify-center rounded-full bg-blue-500 text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
+						aria-label="Previous slide"
+					>
+						<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M15 19l-7-7 7-7"
+							/>
+						</svg>
+					</button>
+				{:else}
+					<div class="h-14 w-14"></div>
+				{/if}
 
-				<!-- Support -->
-				<div class="mt-8 text-center">
-					<p class="text-sm text-gray-500">
-						문의사항이 있으신가요?
-						<a href="/support" class="font-medium text-blue-600 hover:text-blue-700">
-							고객센터 문의하기
-						</a>
-					</p>
-				</div>
+				<!-- Spacer -->
+				<div class="flex-1"></div>
+
+				<!-- Next Button -->
+				{#if currentSlide < slides.length - 1}
+					<button
+						onclick={nextSlide}
+						class="flex h-14 w-14 items-center justify-center rounded-full bg-blue-500 text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
+						aria-label="Next slide"
+					>
+						<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+						</svg>
+					</button>
+				{:else}
+					<div class="h-14 w-14"></div>
+				{/if}
 			</div>
 		</div>
 	</div>

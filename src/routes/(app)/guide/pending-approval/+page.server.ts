@@ -28,7 +28,6 @@ export const load: PageServerLoad = async ({ locals, depends }) => {
 		throw redirect(302, '/onboarding/guide');
 	}
 
-	// If already verified, redirect to main guide page
 	if (guideProfile.isVerified) {
 		throw redirect(302, '/trips');
 	}
