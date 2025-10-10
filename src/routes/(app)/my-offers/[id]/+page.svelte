@@ -252,9 +252,9 @@
 					<img src={arrowRightIcon} alt="" class="h-3 w-3 rotate-90 transition-transform" />
 				</summary>
 				<div class="px-4 pb-4">
-					<p class="text-sm whitespace-pre-wrap text-gray-700">
-						{offer.description || '제안 내용이 없습니다.'}
-					</p>
+					<div class="prose prose-sm max-w-none text-sm text-gray-700">
+						{@html offer.description || '<p>제안 내용이 없습니다.</p>'}
+					</div>
 				</div>
 			</details>
 
