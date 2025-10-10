@@ -382,7 +382,7 @@
 									<div
 										class="relative max-h-[100px] w-full overflow-hidden text-left text-[13px] leading-[20px] font-normal text-[#536b7c] not-italic"
 									>
-										{@html offer.itinerary || ''}
+										{@html offer.description || '<p>제안 내용이 없습니다.</p>'}
 									</div>
 									<!-- Gradient overlay -->
 									<div
@@ -406,7 +406,7 @@
 								<div
 									class="w-full text-left text-[13px] leading-[20px] font-normal text-[#536b7c] not-italic"
 								>
-									{@html offer.itinerary || ''}
+									{@html offer.description || '<p>제안 내용이 없습니다.</p>'}
 								</div>
 								<div class="relative mt-4 w-full">
 									<button
