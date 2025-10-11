@@ -61,8 +61,11 @@
 					</div>
 				{:else}
 					<!-- Inactive state -->
-					<a
-						href={item.href}
+					<button
+						onclick={() => {
+							window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+							goto(item.href);
+						}}
 						class="flex flex-1 flex-col items-center gap-1 py-0 opacity-60 transition-all hover:opacity-80"
 					>
 						<div class="p-1">
@@ -73,7 +76,7 @@
 						<span class="text-center text-[10px] leading-3 font-medium text-[#536b7c]"
 							>{item.label}</span
 						>
-					</a>
+					</button>
 				{/if}
 			{/each}
 		</div>

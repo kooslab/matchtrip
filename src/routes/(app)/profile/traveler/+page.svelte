@@ -2,6 +2,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import BottomNav from '$lib/components/BottomNav.svelte';
 	import { authClient } from '$lib/authClient';
+	import { transformImageUrl } from '$lib/utils/imageUrl';
 	import { onMount } from 'svelte';
 
 	let { data } = $props();
@@ -41,7 +42,7 @@
 				<div class="flex-shrink-0">
 					{#if data.user?.image || data.travelerProfile?.profileImageUrl}
 						<img
-							src={data.user?.image || data.travelerProfile?.profileImageUrl}
+							src={transformImageUrl(data.user?.image || data.travelerProfile?.profileImageUrl)}
 							alt="프로필 이미지"
 							class="h-16 w-16 rounded-full object-cover"
 						/>
