@@ -21,10 +21,10 @@ const ALLOWED_DOMAINS = [
 	'http://localhost:5174'
 ];
 
-export const load: PageServerLoad = async ({ url, request }) => {
+export const load: PageServerLoad = async ({ url, request, locals }) => {
 	// Get the target path from query parameter
 	const targetPath = url.searchParams.get('to');
-	
+
 	// Get User-Agent to detect Kakao in-app browser
 	const userAgent = request.headers.get('user-agent') || '';
 	const isKakaoInApp = userAgent.includes('KAKAOTALK');
@@ -46,6 +46,18 @@ export const load: PageServerLoad = async ({ url, request }) => {
 	if (!isAllowedPath) {
 		console.warn(`Attempted redirect to non-whitelisted path: ${normalizedPath}`);
 		throw redirect(302, '/');
+	}
+
+	// Check if path requires authentication
+	const authRequiredPaths = ['/my-trips', '/my-offers', '/chat', '/settlement', '/profile'];
+	const requiresAuth = authRequiredPaths.some(
+		(path) => normalizedPath === path || normalizedPath.startsWith(`${path}/`)
+	);
+
+	// If authentication is required but user is not logged in, redirect to login
+	if (requiresAuth && !locals.session?.user) {
+		console.log(`User not authenticated, redirecting to login from: ${normalizedPath}`);
+		throw redirect(302, `/login?redirect=${encodeURIComponent(normalizedPath)}`);
 	}
 
 	// Get the current domain

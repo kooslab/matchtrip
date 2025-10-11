@@ -1,7 +1,7 @@
 import { auth } from '$lib/auth';
 import { sequence } from '@sveltejs/kit/hooks';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
-import { redirect, type Handle } from '@sveltejs/kit';
+import { redirect, type Handle, type HandleServerError } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { users, userAgreements, guideProfiles, sessions } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
@@ -300,4 +300,39 @@ const authHandler = (async ({ event, resolve }) => {
 	return response;
 }) satisfies Handle;
 
-export const handle = sequence(corsHandler, authHandler);
+// Global error/redirect handler to catch unauthorized access attempts
+const unauthorizedHandler = (async ({ event, resolve }) => {
+	try {
+		const response = await resolve(event);
+
+		// Check if this is a redirect to /my-offers, /my-trips etc from an [id] page
+		// This likely means unauthorized access
+		if (response.status === 302) {
+			const location = response.headers.get('location');
+			const fromPath = event.url.pathname;
+
+			// If redirecting from a detail page to its list page, it's likely unauthorized
+			// Example: /my-offers/abc-123 -> /my-offers
+			if (location) {
+				const isDetailPageRedirect =
+					(fromPath.startsWith('/my-offers/') && location === '/my-offers') ||
+					(fromPath.startsWith('/my-trips/') && !fromPath.includes('/edit') && !fromPath.includes('/create') && location === '/my-trips');
+
+				if (isDetailPageRedirect) {
+					console.log('[UNAUTHORIZED HANDLER] Detected unauthorized detail page access:', fromPath, '-> redirecting to /unauthorized');
+					throw redirect(302, `/unauthorized?path=${encodeURIComponent(fromPath)}`);
+				}
+			}
+		}
+
+		return response;
+	} catch (error) {
+		// If it's a redirect, let it through
+		if (error instanceof Response && error.status === 302) {
+			return error;
+		}
+		throw error;
+	}
+}) satisfies Handle;
+
+export const handle = sequence(corsHandler, authHandler, unauthorizedHandler);

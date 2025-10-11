@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 import { auth } from '$lib/auth';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ params, request, locals }) => {
+export const load: PageServerLoad = async ({ params, request, locals, url }) => {
 	// Try to get session from locals first, fallback to direct auth call
 	let session = locals.session;
 
@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ params, request, locals }) => {
 
 	// Redirect if not logged in
 	if (!session?.user) {
-		throw redirect(302, '/login');
+		throw redirect(302, `/login?redirect=${encodeURIComponent(url.pathname)}`);
 	}
 
 	// Get offer with guide details
@@ -44,7 +44,7 @@ export const load: PageServerLoad = async ({ params, request, locals }) => {
 
 	// Verify that the current user is the trip owner
 	if (offerData.trip?.userId !== session.user.id) {
-		throw error(403, 'You do not have permission to view this offer');
+		throw redirect(302, `/unauthorized?path=${encodeURIComponent(url.pathname)}`);
 	}
 
 	console.log('offer data', offerData);

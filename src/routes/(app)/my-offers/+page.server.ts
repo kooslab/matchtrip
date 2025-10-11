@@ -3,8 +3,9 @@ import { trips, destinations, users, offers, countries, payments } from '$lib/se
 import { eq, and } from 'drizzle-orm';
 import { transformImageUrl } from '$lib/utils/imageUrl';
 import { decryptUserFields } from '$lib/server/encryption';
+import { redirect } from '@sveltejs/kit';
 
-export const load = async ({ locals }) => {
+export const load = async ({ locals, url }) => {
 	// Session and user are guaranteed to exist and be valid due to auth guard in hooks.server.ts
 	const session = locals.session;
 	const user = locals.user;
@@ -12,6 +13,16 @@ export const load = async ({ locals }) => {
 	console.log('My-offers page - Session from locals:', !!session, 'User from locals:', !!user);
 	console.log('My-offers page - User role:', user?.role);
 	console.log('My-offers page - Access granted for guide:', user?.email);
+
+	// Check if user is logged in
+	if (!session?.user?.id) {
+		throw redirect(302, `/login?redirect=${encodeURIComponent(url.pathname)}`);
+	}
+
+	// Check if user has guide role
+	if (user?.role !== 'guide') {
+		throw redirect(302, `/unauthorized?path=${encodeURIComponent(url.pathname)}`);
+	}
 
 	// Fetch all offers made by the current guide
 	const myOffers = await db

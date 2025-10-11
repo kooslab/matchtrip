@@ -38,7 +38,27 @@ export const load = async ({ params, request, locals }) => {
 		throw redirect(302, '/my-trips');
 	}
 
-	// Fetch trip details with destination info
+	// First, check if the trip exists at all (without user filter)
+	const tripCheck = await db
+		.select({
+			id: trips.id,
+			userId: trips.userId
+		})
+		.from(trips)
+		.where(eq(trips.id, tripId))
+		.limit(1);
+
+	// If trip doesn't exist at all, redirect to my-trips
+	if (tripCheck.length === 0) {
+		throw redirect(302, '/my-trips');
+	}
+
+	// If trip exists but belongs to a different user, show unauthorized
+	if (tripCheck[0].userId !== session.user.id) {
+		throw redirect(302, `/unauthorized?path=${encodeURIComponent(`/my-trips/${tripId}`)}`);
+	}
+
+	// Fetch trip details with destination info (now we know it exists and belongs to this user)
 	const trip = await db
 		.select({
 			id: trips.id,
@@ -77,12 +97,8 @@ export const load = async ({ params, request, locals }) => {
 		.leftJoin(destinations, eq(trips.destinationId, destinations.id))
 		.leftJoin(countries, eq(destinations.countryId, countries.id))
 		.leftJoin(continents, eq(countries.continentId, continents.id))
-		.where(and(eq(trips.id, tripId), eq(trips.userId, session.user.id)))
+		.where(eq(trips.id, tripId))
 		.limit(1);
-
-	if (trip.length === 0) {
-		throw redirect(302, '/my-trips');
-	}
 
 	// Fetch offers for this trip with guide information
 	const tripOffers = await db

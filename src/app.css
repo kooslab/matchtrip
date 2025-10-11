@@ -147,12 +147,20 @@
 	}
 
 	/* Base styles */
+	html,
+	body {
+		height: 100%;
+		overflow-x: hidden; /* Prevent horizontal scroll */
+	}
+
 	body {
 		font-family: var(--font-pretendard);
 		font-size: var(--font-size-body-medium);
 		line-height: var(--line-height-body-medium);
 		font-weight: var(--font-weight-regular);
 		color: var(--color-text-primary);
+		margin: 0;
+		padding: 0;
 	}
 
 	/* Heading styles */

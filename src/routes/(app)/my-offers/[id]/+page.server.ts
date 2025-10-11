@@ -15,7 +15,7 @@ import { eq, and, sql } from 'drizzle-orm';
 import { redirect } from '@sveltejs/kit';
 import { decryptUserFields } from '$lib/server/encryption';
 
-export const load = async ({ params, locals }) => {
+export const load = async ({ params, locals, url }) => {
 	// Session and user are guaranteed to exist and be valid due to auth guard in hooks.server.ts
 	const session = locals.session;
 	const user = locals.user;
@@ -24,13 +24,53 @@ export const load = async ({ params, locals }) => {
 	console.log('Offer detail page - User role:', user?.role);
 	console.log('Offer detail page - Access granted for guide:', user?.email);
 
+	// Check if user is logged in
+	if (!session?.user?.id || !user?.id) {
+		throw redirect(302, `/login?redirect=${encodeURIComponent(url.pathname)}`);
+	}
+
+	// Check if user has guide role
+	if (user.role !== 'guide') {
+		throw redirect(302, `/unauthorized?path=${encodeURIComponent(url.pathname)}`);
+	}
+
 	const offerId = params.id;
 
 	if (!offerId) {
 		throw redirect(302, '/my-offers');
 	}
 
-	// Fetch detailed offer information
+	// First, check if the offer exists at all (without guide filter)
+	const offerCheck = await db
+		.select({
+			id: offers.id,
+			guideId: offers.guideId
+		})
+		.from(offers)
+		.where(eq(offers.id, offerId))
+		.limit(1);
+
+	console.log('[OFFER AUTH] Offer check result:', offerCheck);
+	console.log('[OFFER AUTH] Current user ID:', user.id);
+
+	// If offer doesn't exist at all, redirect to my-offers
+	if (offerCheck.length === 0) {
+		console.log('[OFFER AUTH] Offer not found, redirecting to /my-offers');
+		throw redirect(302, '/my-offers');
+	}
+
+	console.log('[OFFER AUTH] Offer guide ID:', offerCheck[0].guideId);
+	console.log('[OFFER AUTH] Ownership check:', offerCheck[0].guideId !== user.id);
+
+	// If offer exists but belongs to a different guide, show unauthorized
+	if (offerCheck[0].guideId !== user.id) {
+		console.log('[OFFER AUTH] Unauthorized access detected! Redirecting to /unauthorized');
+		throw redirect(302, `/unauthorized?path=${encodeURIComponent(url.pathname)}`);
+	}
+
+	console.log('[OFFER AUTH] Access granted, fetching full offer details');
+
+	// Fetch detailed offer information (now we know it exists and belongs to this guide)
 	const offerDetails = await db
 		.select({
 			// Offer info
@@ -91,12 +131,8 @@ export const load = async ({ params, locals }) => {
 		.innerJoin(countries, eq(destinations.countryId, countries.id))
 		.innerJoin(continents, eq(countries.continentId, continents.id))
 		.innerJoin(users, eq(trips.userId, users.id))
-		.where(and(eq(offers.id, offerId), eq(offers.guideId, user?.id || '')))
+		.where(eq(offers.id, offerId))
 		.limit(1);
-
-	if (offerDetails.length === 0) {
-		throw redirect(302, '/my-offers');
-	}
 
 	// Check if review request exists for this offer
 	const reviewData = await db
@@ -107,7 +143,7 @@ export const load = async ({ params, locals }) => {
 			rating: reviews.rating
 		})
 		.from(reviews)
-		.where(and(eq(reviews.offerId, offerId), eq(reviews.guideId, user?.id || '')))
+		.where(and(eq(reviews.offerId, offerId), eq(reviews.guideId, user.id)))
 		.limit(1);
 
 	// Check if payment is completed

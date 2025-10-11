@@ -2,8 +2,9 @@ import { db } from '$lib/server/db';
 import { trips, destinations, offers, countries, continents } from '$lib/server/db/schema';
 import { eq, count } from 'drizzle-orm';
 import { transformImageUrl } from '$lib/utils/imageUrl';
+import { redirect } from '@sveltejs/kit';
 
-export const load = async ({ locals, depends, setHeaders }) => {
+export const load = async ({ locals, depends, setHeaders, url }) => {
 	// Add dependency for cache invalidation
 	depends('app:trips');
 
@@ -15,10 +16,8 @@ export const load = async ({ locals, depends, setHeaders }) => {
 	console.log('My-trips page - Session from locals:', !!session);
 
 	if (!session?.user?.id) {
-		return {
-			trips: [],
-			session
-		};
+		// User not logged in - redirect to login with return path
+		throw redirect(302, `/login?redirect=${encodeURIComponent(url.pathname)}`);
 	}
 
 	try {
