@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { trips, destinations, offers, users } from '$lib/server/db/schema';
+import { trips, destinations, offers, users, countries } from '$lib/server/db/schema';
 import { eq, desc, count } from 'drizzle-orm';
 import { auth } from '$lib/auth';
 import { notificationService } from '$lib/server/services/notificationService';
@@ -112,18 +112,17 @@ export async function GET({ request }) {
 				statusUpdatedAt: trips.statusUpdatedAt,
 				createdAt: trips.createdAt,
 				updatedAt: trips.updatedAt,
-				destination: {
-					id: destinations.id,
-					city: destinations.city,
-					country: destinations.country
-				}
+				destinationId: destinations.id,
+				destinationCity: destinations.city,
+				countryName: countries.name
 			})
 			.from(trips)
 			.leftJoin(destinations, eq(trips.destinationId, destinations.id))
+			.leftJoin(countries, eq(destinations.countryId, countries.id))
 			.where(eq(trips.userId, session.user.id))
 			.orderBy(desc(trips.createdAt));
 
-		// Add offer count separately for each trip
+		// Add offer count and restructure data
 		const tripsWithOfferCount = await Promise.all(
 			userTrips.map(async (trip) => {
 				const offerCountResult = await db
@@ -132,7 +131,25 @@ export async function GET({ request }) {
 					.where(eq(offers.tripId, trip.id));
 
 				return {
-					...trip,
+					id: trip.id,
+					userId: trip.userId,
+					adultsCount: trip.adultsCount,
+					childrenCount: trip.childrenCount,
+					startDate: trip.startDate,
+					endDate: trip.endDate,
+					travelMethod: trip.travelMethod,
+					customRequest: trip.customRequest,
+					status: trip.status,
+					statusUpdatedAt: trip.statusUpdatedAt,
+					createdAt: trip.createdAt,
+					updatedAt: trip.updatedAt,
+					destination: trip.destinationId
+						? {
+								id: trip.destinationId,
+								city: trip.destinationCity,
+								country: trip.countryName
+							}
+						: null,
 					offerCount: offerCountResult[0]?.count || 0
 				};
 			})

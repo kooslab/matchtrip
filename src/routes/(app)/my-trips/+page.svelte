@@ -25,7 +25,7 @@
 	// Use $state for trips to enable reactive updates
 	let trips = $state(data.trips || []);
 	let serverError = $derived(data.error);
-	let loading = $derived(!data.trips && !data.error);
+	let loading = $derived(data.trips === undefined && !data.error);
 
 	// Loading state for detail navigation
 	let navigatingTripId = $state<string | null>(null);
@@ -109,8 +109,8 @@
 				return;
 			}
 
-			// Check if tab is visible
-			if (document.hidden) {
+			// Check if tab is visible (browser only)
+			if (typeof document !== 'undefined' && document.hidden) {
 				return; // Skip fetch if tab is not visible
 			}
 
@@ -130,14 +130,16 @@
 
 	// Handle visibility change
 	function handleVisibilityChange() {
-		if (document.hidden) {
-			// Tab is hidden, pause polling
-			console.log('Tab hidden, pausing polling');
-		} else {
-			// Tab is visible, resume polling if we were polling
-			if (isPolling) {
-				console.log('Tab visible, resuming polling');
-				fetchTrips(); // Immediate fetch when tab becomes visible
+		if (typeof document !== 'undefined') {
+			if (document.hidden) {
+				// Tab is hidden, pause polling
+				console.log('Tab hidden, pausing polling');
+			} else {
+				// Tab is visible, resume polling if we were polling
+				if (isPolling) {
+					console.log('Tab visible, resuming polling');
+					fetchTrips(); // Immediate fetch when tab becomes visible
+				}
 			}
 		}
 	}
@@ -153,13 +155,17 @@
 			startPolling();
 		}
 
-		// Listen for visibility changes
-		document.addEventListener('visibilitychange', handleVisibilityChange);
+		// Listen for visibility changes (browser only)
+		if (typeof document !== 'undefined') {
+			document.addEventListener('visibilitychange', handleVisibilityChange);
+		}
 	});
 
 	onDestroy(() => {
 		stopPolling();
-		document.removeEventListener('visibilitychange', handleVisibilityChange);
+		if (typeof document !== 'undefined') {
+			document.removeEventListener('visibilitychange', handleVisibilityChange);
+		}
 	});
 
 	// Refresh trips data

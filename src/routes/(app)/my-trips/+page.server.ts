@@ -34,21 +34,15 @@ export const load = async ({ locals, depends, setHeaders }) => {
 				customRequest: trips.customRequest,
 				status: trips.status,
 				createdAt: trips.createdAt,
-				destination: {
-					id: destinations.id,
-					city: destinations.city,
-					imageUrl: destinations.imageUrl
-				},
-				country: {
-					id: countries.id,
-					name: countries.name,
-					code: countries.code
-				},
-				continent: {
-					id: continents.id,
-					name: continents.name,
-					code: continents.code
-				},
+				destinationId: destinations.id,
+				destinationCity: destinations.city,
+				destinationImageUrl: destinations.imageUrl,
+				countryId: countries.id,
+				countryName: countries.name,
+				countryCode: countries.code,
+				continentId: continents.id,
+				continentName: continents.name,
+				continentCode: continents.code,
 				offerCount: count(offers.id)
 			})
 			.from(trips)
@@ -62,15 +56,39 @@ export const load = async ({ locals, depends, setHeaders }) => {
 
 		console.log('My-trips page - Fetched trips from DB:', userTrips.length);
 
-		// Transform image URLs for destinations
+		// Transform image URLs and restructure data
 		const transformedTrips = userTrips.map((trip) => ({
-			...trip,
-			destination: trip.destination
+			id: trip.id,
+			startDate: trip.startDate,
+			endDate: trip.endDate,
+			adultsCount: trip.adultsCount,
+			childrenCount: trip.childrenCount,
+			travelMethod: trip.travelMethod,
+			customRequest: trip.customRequest,
+			status: trip.status,
+			createdAt: trip.createdAt,
+			offerCount: trip.offerCount,
+			destination: trip.destinationId
 				? {
-						...trip.destination,
-						imageUrl: transformImageUrl(trip.destination.imageUrl)
+						id: trip.destinationId,
+						city: trip.destinationCity,
+						imageUrl: transformImageUrl(trip.destinationImageUrl)
 					}
-				: trip.destination
+				: null,
+			country: trip.countryId
+				? {
+						id: trip.countryId,
+						name: trip.countryName,
+						code: trip.countryCode
+					}
+				: null,
+			continent: trip.continentId
+				? {
+						id: trip.continentId,
+						name: trip.continentName,
+						code: trip.continentCode
+					}
+				: null
 		}));
 
 		return {

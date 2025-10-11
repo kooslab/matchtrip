@@ -19,7 +19,9 @@
 		offer: {
 			id: string;
 			price: number;
-			itinerary: string;
+			title?: string;
+			description?: string;
+			itinerary?: string;
 			status: string;
 			createdAt: string;
 			guide?: {
@@ -274,7 +276,7 @@
 						<!-- Divider -->
 						<div class="mx-5 h-px bg-gray-200"></div>
 
-						<!-- Itinerary Section -->
+						<!-- Description and Itinerary Section -->
 						<div class="px-5 py-6">
 							<button
 								class="flex w-full items-center justify-between"
@@ -300,8 +302,20 @@
 								</div>
 							</button>
 							{#if itineraryExpanded}
-								<div class="mt-4 space-y-3 text-sm leading-relaxed text-gray-700">
-									{@html offer.itinerary}
+								<div class="mt-4 space-y-4">
+									{#if offer.description}
+										<div class="prose prose-sm max-w-none text-sm leading-relaxed text-gray-700">
+											{@html offer.description}
+										</div>
+									{/if}
+									{#if offer.itinerary}
+										<div class="prose prose-sm max-w-none text-sm leading-relaxed text-gray-700">
+											{@html offer.itinerary}
+										</div>
+									{/if}
+									{#if !offer.description && !offer.itinerary}
+										<p class="text-sm text-gray-500">제안 내용이 없습니다.</p>
+									{/if}
 								</div>
 							{/if}
 						</div>

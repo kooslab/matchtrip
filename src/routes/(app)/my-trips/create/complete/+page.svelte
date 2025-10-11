@@ -123,50 +123,54 @@
 	}
 </script>
 
-<div class="flex min-h-screen flex-col bg-white">
-	<!-- Content -->
-	<div class="flex flex-1 flex-col items-center justify-center px-4">
-		<!-- Complete image -->
-		<div class="mb-8">
-			<img src={completeImage} alt="여행 등록 완료" class="h-48 w-48 object-contain" />
-		</div>
-
-		<!-- Success message -->
-		<h1 class="mb-3 text-2xl font-bold text-gray-900">여행 등록이 완료되었습니다!</h1>
-		<p class="text-center text-gray-600">곧 가이드님들의 제안을 받아보실 수 있어요.</p>
-
-		<!-- Loading indicator -->
-		{#if isSubmitting}
-			<div class="mt-8 flex items-center gap-2 text-gray-500">
-				<svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24">
-					<circle
-						class="opacity-25"
-						cx="12"
-						cy="12"
-						r="10"
-						stroke="currentColor"
-						stroke-width="4"
-						fill="none"
-					></circle>
-					<path
-						class="opacity-75"
-						fill="currentColor"
-						d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-					></path>
-				</svg>
-				<span class="text-sm">처리 중...</span>
+<div class="min-h-screen bg-white">
+	<div class="mx-auto max-w-md">
+		<!-- Content -->
+		<div class="flex min-h-screen flex-col items-center justify-center px-4 pb-32">
+			<!-- Complete image -->
+			<div class="mb-8">
+				<img src={completeImage} alt="여행 등록 완료" class="h-48 w-48 object-contain" />
 			</div>
-		{/if}
-	</div>
 
-	<!-- Bottom button -->
-	<div class="p-4 pb-24">
-		<button
-			onclick={goToHome}
-			disabled={!isSubmitted}
-			class="w-full rounded-lg bg-blue-600 px-4 py-3 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-		>
-			홈으로 이동
-		</button>
+			<!-- Success message -->
+			<h1 class="mb-3 text-2xl font-bold text-gray-900">여행 등록이 완료되었습니다!</h1>
+			<p class="mb-12 text-center text-gray-600">곧 가이드님들의 제안을 받아보실 수 있어요.</p>
+
+			<!-- Loading indicator -->
+			{#if isSubmitting}
+				<div class="flex items-center gap-2 text-gray-500">
+					<svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24">
+						<circle
+							class="opacity-25"
+							cx="12"
+							cy="12"
+							r="10"
+							stroke="currentColor"
+							stroke-width="4"
+							fill="none"
+						></circle>
+						<path
+							class="opacity-75"
+							fill="currentColor"
+							d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+						></path>
+					</svg>
+					<span class="text-sm">처리 중...</span>
+				</div>
+			{/if}
+
+			<!-- Bottom button -->
+			<div class="fixed bottom-0 left-0 right-0 p-4 pb-24">
+				<div class="mx-auto max-w-md">
+					<button
+						onclick={goToHome}
+						disabled={!isSubmitted}
+						class="w-full rounded-lg bg-blue-600 px-4 py-3 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+					>
+						홈으로 이동
+					</button>
+				</div>
+			</div>
+		</div>
 	</div>
 </div>

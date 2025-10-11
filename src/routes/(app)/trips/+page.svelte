@@ -12,9 +12,12 @@
 	import type { City } from '$lib/components/CitySelector.svelte';
 	import { CalendarDate } from '@internationalized/date';
 	import DateRangePickerModal from '$lib/components/DateRangePickerModal.svelte';
+	import TripCardSkeleton from '$lib/components/TripCardSkeleton.svelte';
 	import { page } from '$app/stores';
 
 	let { data } = $props();
+
+	let isLoading = $state(false);
 
 	let trips = $derived(data.trips);
 	let userRole = $derived(data.userRole);
@@ -398,6 +401,17 @@
 		return () => {
 			document.body.classList.remove('modal-open');
 		};
+	});
+
+	// Track loading state when data is being fetched
+	$effect(() => {
+		// Show loading briefly when trips data changes
+		isLoading = true;
+		const timer = setTimeout(() => {
+			isLoading = false;
+		}, 100);
+
+		return () => clearTimeout(timer);
 	});
 </script>
 
@@ -847,7 +861,14 @@
 			</div>
 		</div>
 
-		{#if trips.length === 0}
+		{#if isLoading}
+			<!-- Skeleton loaders -->
+			<div class="space-y-3">
+				{#each Array(3) as _}
+					<TripCardSkeleton />
+				{/each}
+			</div>
+		{:else if trips.length === 0}
 			<div class="py-12 text-center">
 				<div class="mx-auto mb-4 h-24 w-24 text-gray-400">
 					<svg fill="none" viewBox="0 0 24 24" stroke="currentColor">

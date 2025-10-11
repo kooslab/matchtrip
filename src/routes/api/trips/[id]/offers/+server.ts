@@ -40,9 +40,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 				guideName: users.name,
 				guideEmail: users.email,
 				guideImage: users.image,
-				guideProfileImageUrl: guideProfiles.profileImageUrl,
-				guideTotalReviews: guideProfiles.totalReviews,
-				guideRating: guideProfiles.rating
+				guideProfileImageUrl: guideProfiles.profileImageUrl
 			})
 			.from(offers)
 			.innerJoin(users, eq(offers.guideId, users.id))
@@ -59,16 +57,14 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 				image: offer.guideImage
 			};
 
-			const guideProfile = offer.guideProfileImageUrl || offer.guideTotalReviews || offer.guideRating
+			const guideProfile = offer.guideProfileImageUrl
 				? {
-					profileImageUrl: offer.guideProfileImageUrl,
-					totalReviews: offer.guideTotalReviews,
-					rating: offer.guideRating
+					profileImageUrl: offer.guideProfileImageUrl
 				}
 				: null;
 
 			// Remove guide fields from offer object
-			const { guideUserId, guideName, guideEmail, guideImage, guideProfileImageUrl, guideTotalReviews, guideRating, ...offerData } = offer;
+			const { guideUserId, guideName, guideEmail, guideImage, guideProfileImageUrl, ...offerData } = offer;
 
 			return {
 				...offerData,

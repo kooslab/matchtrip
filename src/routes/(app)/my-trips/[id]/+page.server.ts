@@ -89,6 +89,8 @@ export const load = async ({ params, request, locals }) => {
 		.select({
 			id: offers.id,
 			price: offers.price,
+			title: offers.title,
+			description: offers.description,
 			itinerary: offers.itinerary,
 			status: offers.status,
 			createdAt: offers.createdAt,

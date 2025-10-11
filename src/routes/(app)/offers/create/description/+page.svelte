@@ -17,7 +17,7 @@
 
 	let tripId = $derived($page.url.searchParams.get('tripId'));
 	let element: HTMLDivElement;
-	let editor: Editor;
+	let editor = $state<Editor | null>(null);
 	let isUploading = $state(false);
 	let showTemplateBrowser = $state(false);
 	let showSaveTemplateModal = $state(false);
@@ -200,15 +200,17 @@
 			<label for="description" class="block text-sm font-medium text-gray-700"> 제안 내용 </label>
 
 			<!-- Editor Toolbar -->
-			{#if browser}
+			{#if browser && editor}
 				<div
 					class="flex flex-wrap items-center gap-1 rounded-t-lg border border-gray-300 bg-gray-50 p-2"
 				>
 					<button
 						type="button"
-						onclick={() => editor?.chain().focus().toggleBold().run()}
+						onclick={(e) => {
+							e.preventDefault();
+							editor?.chain().focus().toggleBold().run();
+						}}
 						class="rounded p-2 hover:bg-gray-200 {editor?.isActive('bold') ? 'bg-gray-200' : ''}"
-						disabled={!editor}
 					>
 						<svg
 							class="h-4 w-4"
@@ -224,9 +226,11 @@
 
 					<button
 						type="button"
-						onclick={() => editor?.chain().focus().toggleItalic().run()}
+						onclick={(e) => {
+							e.preventDefault();
+							editor?.chain().focus().toggleItalic().run();
+						}}
 						class="rounded p-2 hover:bg-gray-200 {editor?.isActive('italic') ? 'bg-gray-200' : ''}"
-						disabled={!editor}
 					>
 						<svg
 							class="h-4 w-4"
@@ -245,11 +249,13 @@
 
 					<button
 						type="button"
-						onclick={() => editor?.chain().focus().toggleBulletList().run()}
+						onclick={(e) => {
+							e.preventDefault();
+							editor?.chain().focus().toggleBulletList().run();
+						}}
 						class="rounded p-2 hover:bg-gray-200 {editor?.isActive('bulletList')
 							? 'bg-gray-200'
 							: ''}"
-						disabled={!editor}
 					>
 						<svg
 							class="h-4 w-4"
@@ -269,11 +275,13 @@
 
 					<button
 						type="button"
-						onclick={() => editor?.chain().focus().toggleOrderedList().run()}
+						onclick={(e) => {
+							e.preventDefault();
+							editor?.chain().focus().toggleOrderedList().run();
+						}}
 						class="rounded p-2 hover:bg-gray-200 {editor?.isActive('orderedList')
 							? 'bg-gray-200'
 							: ''}"
-						disabled={!editor}
 					>
 						<svg
 							class="h-4 w-4"
@@ -295,9 +303,12 @@
 
 					<button
 						type="button"
-						onclick={handleImageUpload}
+						onclick={(e) => {
+							e.preventDefault();
+							handleImageUpload();
+						}}
 						disabled={isUploading}
-						class="flex items-center gap-1 rounded border border-gray-300 bg-white px-3 py-2 hover:bg-gray-200"
+						class="flex items-center gap-1 rounded border border-gray-300 bg-white px-3 py-2 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
 						title="이미지 업로드 (최대 5MB)"
 					>
 						{#if isUploading}
@@ -313,7 +324,10 @@
 
 					<button
 						type="button"
-						onclick={() => (showTemplateBrowser = true)}
+						onclick={(e) => {
+							e.preventDefault();
+							showTemplateBrowser = true;
+						}}
 						class="flex items-center gap-1 rounded border border-gray-300 bg-white px-3 py-2 hover:bg-gray-200"
 						title="템플릿 불러오기"
 					>
