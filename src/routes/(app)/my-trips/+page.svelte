@@ -52,7 +52,14 @@
 				throw new Error('Failed to fetch trips');
 			}
 
-			const newTrips = await response.json();
+			const data = await response.json();
+
+			// API returns { success: true, trips: [...] }
+			if (!data.success || !Array.isArray(data.trips)) {
+				throw new Error('Invalid response format from API');
+			}
+
+			const newTrips = data.trips;
 
 			// Check for updated trips (compare offer counts)
 			const currentTripsMap = new Map(trips.map((t) => [t.id, t]));
