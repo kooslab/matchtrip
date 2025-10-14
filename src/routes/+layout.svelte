@@ -9,6 +9,7 @@
 	import { pwaStore } from '$lib/stores/pwaStore';
 	import { afterNavigate, beforeNavigate, disableScrollHandling } from '$app/navigation';
 	import { browser } from '$app/environment';
+	import { trackPageView, setUserProperties } from '$lib/utils/analytics';
 
 	let { data } = $props();
 
@@ -33,9 +34,26 @@
 	});
 
 	// Also scroll to top after navigation completes (belt and suspenders)
-	afterNavigate(() => {
+	afterNavigate((navigation) => {
 		if (browser) {
 			window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+
+			// Track pageview
+			trackPageView(navigation.to?.url.pathname || '/');
+		}
+	});
+
+	// Set user properties when user data changes
+	$effect(() => {
+		if (browser && user) {
+			setUserProperties({
+				user_role: user.role as 'traveler' | 'guide' | 'admin',
+				is_authenticated: true
+			});
+		} else if (browser && !user) {
+			setUserProperties({
+				is_authenticated: false
+			});
 		}
 	});
 

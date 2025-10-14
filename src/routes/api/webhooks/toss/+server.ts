@@ -4,6 +4,23 @@ import { db } from '$lib/server/db';
 import { payments, paymentRefunds, webhookEvents, trips, offers, settlements } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { env } from '$env/dynamic/private';
+import { PUBLIC_GA_MEASUREMENT_ID } from '$env/static/public';
+
+// Server-side analytics tracking using GA Measurement Protocol
+async function trackServerEvent(eventName: string, parameters?: Record<string, string | number>) {
+	if (!PUBLIC_GA_MEASUREMENT_ID) return;
+
+	try {
+		const measurementId = PUBLIC_GA_MEASUREMENT_ID;
+		const apiSecret = env.GA_API_SECRET; // Optional: Add this to .env if you want enhanced server-side tracking
+
+		// For now, we'll skip server-side tracking as it requires API secret
+		// Events will be tracked client-side when users interact with the app
+		console.log('[Analytics] Server event (client-side only):', eventName, parameters);
+	} catch (error) {
+		console.error('[Analytics] Failed to track event:', error);
+	}
+}
 
 // Webhook event types from Toss Payments
 type WebhookEventType =
@@ -250,6 +267,13 @@ async function handlePaymentDone(payment: any, data: any) {
 			}
 		});
 
+		// Track payment completion
+		await trackServerEvent('payment_complete', {
+			value: payment.amount,
+			currency: 'KRW',
+			transaction_id: data.paymentKey
+		});
+
 		console.log('[Webhook] Payment marked as completed');
 	}
 }
@@ -309,6 +333,13 @@ async function handlePaymentCanceled(payment: any, data: any) {
 		}
 	});
 
+	// Track refund completion
+	await trackServerEvent('refund_complete', {
+		value: cancelInfo.cancelAmount,
+		currency: 'KRW',
+		transaction_id: cancelInfo.transactionKey || data.paymentKey
+	});
+
 	console.log('[Webhook] Payment cancellation processed');
 }
 
@@ -358,6 +389,14 @@ async function handlePaymentPartialCanceled(payment: any, data: any) {
 		}
 	});
 
+	// Track partial refund completion
+	await trackServerEvent('refund_complete', {
+		value: latestCancel.cancelAmount,
+		currency: 'KRW',
+		transaction_id: latestCancel.transactionKey || data.paymentKey,
+		refund_type: 'partial'
+	});
+
 	console.log('[Webhook] Partial refund processed');
 }
 
@@ -373,6 +412,12 @@ async function handlePaymentFailed(payment: any, data: any) {
 			updatedAt: new Date()
 		})
 		.where(eq(payments.id, payment.id));
+
+	// Track payment failure
+	await trackServerEvent('payment_failed', {
+		reason: data.failure?.message || 'unknown',
+		payment_key: data.paymentKey
+	});
 
 	console.log('[Webhook] Payment marked as failed');
 }

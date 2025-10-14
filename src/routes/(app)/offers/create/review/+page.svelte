@@ -4,6 +4,7 @@
 	import { offerFormStore, offerFormValidation } from '$lib/stores/offerForm';
 	import { colors } from '$lib/constants/colors';
 	import checkUrl from '$lib/icons/icon-check-circle-mono.svg';
+	import { trackOfferSubmitted } from '$lib/utils/analytics';
 
 	let { data } = $props();
 	let trip = $derived(data.trip);
@@ -57,6 +58,9 @@
 			});
 
 			if (response.ok) {
+				// Track offer submission
+				trackOfferSubmitted(totalPrice);
+
 				// Navigate to success page
 				goto('/offers/create/success');
 			} else {

@@ -3,8 +3,12 @@
 	import { onMount } from 'svelte';
 	import { colors } from '$lib/constants/colors';
 	import iconCheck from '$lib/icons/icon-check-circle-mono.svg';
+	import { trackSignup } from '$lib/utils/analytics';
 
 	onMount(() => {
+		// Track guide signup completion
+		trackSignup('guide');
+
 		// Scroll to top when page loads
 		window.scrollTo({ top: 0, behavior: 'instant' });
 

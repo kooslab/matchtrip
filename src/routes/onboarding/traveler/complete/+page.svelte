@@ -4,6 +4,12 @@
 	import walkImage from '$lib/images/walk.png';
 	import iconInfo from '$lib/icons/icon-info-circle-mono.svg';
 	import logoUrl from '$lib/images/Matchtrip.svg';
+	import { trackSignup } from '$lib/utils/analytics';
+
+	// Track signup completion on mount
+	onMount(() => {
+		trackSignup('traveler');
+	});
 
 	function handleStart() {
 		goto('/my-trips');

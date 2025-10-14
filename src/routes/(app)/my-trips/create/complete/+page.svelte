@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { tripCreateForm } from '$lib/stores/tripCreateForm';
 	import completeImage from '$lib/images/complete.png';
+	import { trackTripCreated } from '$lib/utils/analytics';
 
 	let isSubmitting = $state(false);
 	let isSubmitted = $state(false);
@@ -96,6 +97,13 @@
 				// TODO: Implement file upload
 				console.log('File upload pending:', formData.file.name);
 			}
+
+			// Track trip creation
+			trackTripCreated(
+				formData.destinationId || 'unknown',
+				typeof startDate === 'string' ? startDate : '',
+				typeof endDate === 'string' ? endDate : ''
+			);
 
 			// Clear form data
 			tripCreateForm.reset();

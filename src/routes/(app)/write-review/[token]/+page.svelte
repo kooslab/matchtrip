@@ -5,6 +5,7 @@
 	import starIcon from '$lib/icons/icon-star-mono.svg';
 	import cameraIcon from '$lib/icons/icon-camera-mono.svg';
 	import closeIcon from '$lib/icons/icon-x-mono.svg';
+	import { trackReviewSubmitted } from '$lib/utils/analytics';
 
 	let { data } = $props();
 
@@ -127,6 +128,9 @@
 			});
 
 			if (response.ok) {
+				// Track review submission
+				trackReviewSubmitted(rating);
+
 				goto(`/write-review/${$page.params.token}/complete`);
 			} else {
 				const data = await response.json();
