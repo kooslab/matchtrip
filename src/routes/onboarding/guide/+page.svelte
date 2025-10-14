@@ -171,9 +171,11 @@
 
 		try {
 			// Store data in onboarding store before moving to next step
+			// Store phone WITHOUT country code, and countryCode separately
 			onboardingStore.setData({
 				name: formData.name,
-				phone: formData.countryCode + formData.mobile
+				phone: formData.mobile,  // Just the number without country code
+				countryCode: formData.countryCode
 			});
 
 			completedSteps = [...completedSteps, currentStep];

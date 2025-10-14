@@ -3,6 +3,7 @@ import { writable } from 'svelte/store';
 interface OnboardingData {
 	name: string;
 	phone: string;
+	countryCode: string;  // Country code stored separately (e.g., "+49", "+82")
 	nickname?: string;
 	email?: string;
 	birthDate?: string;
@@ -18,10 +19,11 @@ interface OnboardingData {
 function createOnboardingStore() {
 	const { subscribe, set, update } = writable<OnboardingData>({
 		name: '',
-		phone: ''
+		phone: '',
+		countryCode: ''  // No default - must be set during onboarding
 	});
 
-	let currentValue: OnboardingData = { name: '', phone: '' };
+	let currentValue: OnboardingData = { name: '', phone: '', countryCode: '' };
 
 	// Subscribe to store changes to keep currentValue updated
 	subscribe((value) => {
@@ -37,7 +39,7 @@ function createOnboardingStore() {
 		setData: (data: Partial<OnboardingData>) => {
 			update((current) => ({ ...current, ...data }));
 		},
-		reset: () => set({ name: '', phone: '' })
+		reset: () => set({ name: '', phone: '', countryCode: '' })
 	};
 }
 

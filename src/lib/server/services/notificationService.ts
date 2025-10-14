@@ -83,18 +83,25 @@ export class NotificationService {
 	/**
 	 * Get user phone number from database
 	 */
-	private async getUserPhone(userId: string): Promise<string | null> {
+	private async getUserPhone(userId: string): Promise<{ phone: string; countryCode: string } | null> {
 		const { decrypt } = await import('$lib/server/encryption');
 
 		const user = await db
-			.select({ phone: users.phone })
+			.select({ phone: users.phone, countryCode: users.countryCode })
 			.from(users)
 			.where(eq(users.id, userId))
 			.limit(1);
 
-		// Decrypt phone number before returning
-		const encryptedPhone = user[0]?.phone || null;
-		return encryptedPhone ? decrypt(encryptedPhone) : null;
+		if (!user[0]?.phone || !user[0]?.countryCode) {
+			return null;
+		}
+
+		// Decrypt phone number and return with countryCode
+		const decryptedPhone = decrypt(user[0].phone);
+		return {
+			phone: decryptedPhone,
+			countryCode: user[0].countryCode
+		};
 	}
 
 	/**
@@ -276,37 +283,59 @@ export class NotificationService {
 				};
 			}
 
-			// Get phone number
-			let phoneNumber: string | null = options.phoneNumber || null;
+			// Get phone number and country code
+			let phoneNumber: string | null = null;
+			let countryCode: string | null = null;
 
-			if (!phoneNumber && options.userId) {
+			if (options.phoneNumber) {
+				// Phone number provided directly (legacy - assume it's full international format)
+				phoneNumber = options.phoneNumber;
+				// Try to extract country code from phone number
+				if (phoneNumber.startsWith('+82') || phoneNumber.startsWith('82')) {
+					countryCode = '+82';
+				} else {
+					// For other numbers, we'll treat as international
+					countryCode = phoneNumber.substring(0, 3); // Best guess
+				}
+			} else if (options.userId) {
 				console.log('[NotificationService] No phone provided, fetching from userId:', options.userId);
-				phoneNumber = await this.getUserPhone(options.userId);
-				console.log('[NotificationService] Phone fetched from DB:', phoneNumber ? 'Found' : 'Not found');
+				const userData = await this.getUserPhone(options.userId);
+				console.log('[NotificationService] User data fetched from DB:', userData ? 'Found' : 'Not found');
+				
+				if (userData) {
+					phoneNumber = userData.phone;
+					countryCode = userData.countryCode;
+				}
 			}
 
-			if (!phoneNumber) {
-				console.error('[NotificationService] ❌ No phone number available');
+			if (!phoneNumber || !countryCode) {
+				console.error('[NotificationService] ❌ No phone number or country code available');
 				console.log('============= NOTIFICATION SERVICE END =============');
 				return {
 					success: false,
-					error: 'No phone number provided or found for user'
+					error: 'No phone number or country code provided or found for user'
 				};
 			}
 			
-			console.log('[NotificationService] Phone number:', {
-				length: phoneNumber.length,
-				prefix: phoneNumber.substring(0, 4) + '***'
+			console.log('[NotificationService] Phone data:', {
+				phoneLength: phoneNumber.length,
+				countryCode: countryCode,
+				phonePrefix: phoneNumber.substring(0, 4) + '***'
 			});
 
-			// Check if phone number is Korean
-			const isKorean = this.isKoreanPhoneNumber(phoneNumber);
-			console.log(`Phone number ${phoneNumber} is ${isKorean ? 'Korean' : 'International'}`);
+			// Check if phone number is Korean based on countryCode
+			const isKorean = countryCode === '+82' || countryCode === '82';
+			console.log(`Country code ${countryCode} is ${isKorean ? 'Korean' : 'International'}`);
 			
 			// For Korean numbers, format for Kakao AlimTalk
 			let formattedPhone = '';
 			if (isKorean) {
-				formattedPhone = this.formatPhoneNumber(phoneNumber);
+				// Format phone number: countryCode + phone (remove leading 0 if present)
+				let cleanPhone = phoneNumber.replace(/\D/g, '');
+				if (cleanPhone.startsWith('0')) {
+					cleanPhone = cleanPhone.substring(1);
+				}
+				formattedPhone = '82' + cleanPhone;
 				
 				// Validate Korean phone format
 				const phoneRegex = /^82\d{9,11}$/;
@@ -316,6 +345,11 @@ export class NotificationService {
 						error: `Invalid Korean phone number format: ${formattedPhone}`
 					};
 				}
+			} else {
+				// For international numbers, combine countryCode + phone
+				let cleanCountryCode = countryCode.replace(/\+/g, '');
+				let cleanPhone = phoneNumber.replace(/\D/g, '');
+				formattedPhone = '+' + cleanCountryCode + cleanPhone;
 			}
 
 			// Decrypt template data if it contains personal information
@@ -362,8 +396,7 @@ export class NotificationService {
 
 			// Check for duplicates unless skipped
 			if (!options.skipDuplicateCheck) {
-				// Use original phone for international, formatted for Korean
-				const checkPhone = isKorean ? formattedPhone : phoneNumber;
+				const checkPhone = formattedPhone;
 				const isDuplicate = await this.isDuplicateNotification(
 					checkPhone,
 					template.templateCode,
@@ -381,11 +414,11 @@ export class NotificationService {
 				}
 			}
 
-			// Send notification based on phone type
+			// Send notification based on country code
 			let result: any;
 			let messageId: string | undefined;
 			let bulkId: string | undefined;
-			let notificationType: 'kakao' | 'sms' = 'kakao';
+			let notificationType: 'kakao' | 'email' = 'kakao';
 			
 			if (isKorean) {
 				// Send Kakao AlimTalk for Korean numbers
@@ -405,7 +438,7 @@ export class NotificationService {
 				notificationType = 'email';
 				const emailResult = await this.sendEmailNotification(
 					options.userId,
-					phoneNumber,
+					formattedPhone,
 					templateName,
 					decryptedTemplateData
 				);
@@ -418,11 +451,10 @@ export class NotificationService {
 				console.log(`Email sent: ${templateName} to international user`);
 			}
 
-			// Log successful notification (use original phone for international, formatted for Korean)
-			const logPhone = isKorean ? formattedPhone : phoneNumber;
+			// Log successful notification
 			await this.logNotification(
 				options.userId,
-				logPhone,
+				formattedPhone,
 				template.templateCode,
 				decryptedTemplateData,
 				'sent',
@@ -437,7 +469,7 @@ export class NotificationService {
 				messageId
 			};
 		} catch (error) {
-			console.error('[NotificationService] ❌ Failed to send AlimTalk:', error);
+			console.error('[NotificationService] ❌ Failed to send notification:', error);
 			console.error('[NotificationService] Error details:', {
 				message: error instanceof Error ? error.message : 'Unknown error',
 				stack: error instanceof Error ? error.stack : 'No stack'
@@ -452,7 +484,7 @@ export class NotificationService {
 
 				await this.logNotification(
 					options.userId,
-					options.phoneNumber ? this.formatPhoneNumber(options.phoneNumber) : '',
+					options.phoneNumber || '',
 					actualCode,
 					options.templateData,
 					'failed',

@@ -28,7 +28,7 @@ export const users = pgTable(
 		image: text('image'),
 		role: userRoleEnum('role'),
 		phone: text('phone'),
-		countryCode: varchar('country_code', { length: 5 }).default('+82'),
+		countryCode: varchar('country_code', { length: 5 }).notNull(),
 		phoneVerified: boolean('phone_verified').notNull().default(false),
 		birthDate: date('birth_date'),
 		onboardingCompleted: boolean('onboarding_completed').notNull().default(false),

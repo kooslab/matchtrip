@@ -107,10 +107,18 @@
 		console.log('[CONTRACT AGREEMENT] Starting profile completion at', new Date().toISOString());
 
 		try {
+			// Validate required fields
+			if (!storeData.countryCode) {
+				alert('국가 코드가 누락되었습니다. 처음부터 다시 시작해주세요.');
+				goto('/onboarding/guide');
+				return;
+			}
+
 			// Create FormData for profile creation
 			const profileData = new FormData();
 			profileData.append('name', storeData.name);
 			profileData.append('phone', storeData.phone);
+			profileData.append('countryCode', storeData.countryCode);  // Send countryCode separately
 			profileData.append('nickname', storeData.nickname);
 			profileData.append('frequentArea', storeData.frequentArea);
 			profileData.append('birthDate', storeData.birthDate);
@@ -157,6 +165,7 @@
 				body: JSON.stringify({
 					name: storeData.name,
 					phone: storeData.phone,
+					countryCode: storeData.countryCode,
 					birthDate: storeData.birthDate
 				})
 			});

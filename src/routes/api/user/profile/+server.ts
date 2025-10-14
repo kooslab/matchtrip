@@ -13,7 +13,7 @@ export const PATCH: RequestHandler = async ({ request, locals }) => {
 
 	try {
 		const updates = await request.json();
-		const allowedFields = ['name', 'phone', 'birthDate', 'image'];
+		const allowedFields = ['name', 'phone', 'countryCode', 'birthDate', 'image'];
 
 		// Filter out any fields that aren't allowed
 		const filteredUpdates: Record<string, any> = {};
@@ -33,28 +33,30 @@ export const PATCH: RequestHandler = async ({ request, locals }) => {
 			filteredUpdates.name = encrypt(name);
 		}
 
-		// Validate phone if provided
+		// Validate phone if provided (phone should NOT include country code)
 		if ('phone' in filteredUpdates) {
 			const phone = filteredUpdates.phone?.trim();
+			const digitsOnly = phone?.replace(/\D/g, '');
 
-			// Check if it starts with + (international format)
-			if (phone && phone.startsWith('+')) {
-				// For international numbers, just ensure it has country code + number
-				const digitsOnly = phone.substring(1).replace(/\D/g, ''); // Remove + and non-digits
-				if (digitsOnly.length < 7 || digitsOnly.length > 20) {
-					return json({ error: 'Invalid phone number format' }, { status: 400 });
-				}
-				// Encrypt phone before storing
-				filteredUpdates.phone = encrypt('+' + digitsOnly);
-			} else {
-				// For local numbers (legacy support)
-				const digitsOnly = phone?.replace(/\D/g, '');
-				if (!digitsOnly || digitsOnly.length < 10 || digitsOnly.length > 11) {
-					return json({ error: 'Invalid phone number format' }, { status: 400 });
-				}
-				// Encrypt phone before storing
-				filteredUpdates.phone = encrypt(digitsOnly);
+			// Phone number validation (7-15 digits, ITU-T E.164 standard)
+			if (!digitsOnly || digitsOnly.length < 7 || digitsOnly.length > 15) {
+				return json({ error: 'Invalid phone number format' }, { status: 400 });
 			}
+
+			// Encrypt phone before storing
+			filteredUpdates.phone = encrypt(digitsOnly);
+		}
+
+		// Validate countryCode if provided
+		if ('countryCode' in filteredUpdates) {
+			const countryCode = filteredUpdates.countryCode?.trim();
+
+			// Country code must start with + and have 1-4 digits
+			if (!countryCode || !countryCode.match(/^\+\d{1,4}$/)) {
+				return json({ error: 'Invalid country code format' }, { status: 400 });
+			}
+
+			filteredUpdates.countryCode = countryCode;
 		}
 
 		// Validate birthDate if provided
@@ -113,6 +115,7 @@ export const GET: RequestHandler = async ({ locals }) => {
 				name: true,
 				email: true,
 				phone: true,
+				countryCode: true,
 				role: true,
 				image: true,
 				emailVerified: true
