@@ -21,7 +21,7 @@ const ALLOWED_DOMAINS = [
 	'http://localhost:5174'
 ];
 
-export const load: PageServerLoad = async ({ url, request, locals }) => {
+export const load: PageServerLoad = async ({ url, request }) => {
 	// Get the target path from query parameter
 	const targetPath = url.searchParams.get('to');
 
@@ -48,17 +48,10 @@ export const load: PageServerLoad = async ({ url, request, locals }) => {
 		throw redirect(302, '/');
 	}
 
-	// Check if path requires authentication
-	const authRequiredPaths = ['/my-trips', '/my-offers', '/chat', '/settlement', '/profile'];
-	const requiresAuth = authRequiredPaths.some(
-		(path) => normalizedPath === path || normalizedPath.startsWith(`${path}/`)
-	);
-
-	// If authentication is required but user is not logged in, redirect to login
-	if (requiresAuth && !locals.session?.user) {
-		console.log(`User not authenticated, redirecting to login from: ${normalizedPath}`);
-		throw redirect(302, `/login?redirect=${encodeURIComponent(normalizedPath)}`);
-	}
+	// NOTE: We don't check authentication here anymore!
+	// The client-side JavaScript needs to run first to open external browser
+	// After the external browser opens, the target page will handle auth checks
+	// This prevents the redirect to login from happening in KakaoTalk's in-app browser
 
 	// Get the current domain
 	const currentProtocol = url.protocol;
