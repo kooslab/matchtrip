@@ -106,9 +106,10 @@ export const load = async ({ locals, url }) => {
 				ne(trips.userId, session.user.id), // Don't show guide's own trips
 				// Destination filter
 				destinationIds.length > 0 ? inArray(trips.destinationId, destinationIds) : undefined,
-				// Date filters
-				startDate ? gte(trips.startDate, new Date(startDate)) : undefined,
-				endDate ? lte(trips.endDate, new Date(endDate)) : undefined,
+				// Date filters - find trips that overlap with the search date range
+				// A trip overlaps if: trip.end >= search.start AND trip.start <= search.end
+				startDate ? gte(trips.endDate, new Date(startDate)) : undefined,
+				endDate ? lte(trips.startDate, new Date(endDate)) : undefined,
 				// People filters
 				adults ? eq(trips.adultsCount, parseInt(adults)) : undefined,
 				children ? eq(trips.childrenCount, parseInt(children)) : undefined,
