@@ -84,7 +84,7 @@
 	</div>
 
 	<!-- Languages List -->
-	<div class="flex-1 overflow-y-auto pb-20">
+	<div class="pb-20">
 		<div class="divide-y divide-gray-100">
 			{#each availableLanguages as language}
 				<button

@@ -33,7 +33,7 @@
 
 <div class="flex min-h-screen flex-col bg-gray-50 pb-20">
 	<!-- Profile Content -->
-	<div class="flex-1 overflow-y-auto">
+	<div>
 		<!-- Profile Section -->
 		<div class="border-b border-gray-200 bg-white px-4 py-6">
 			<div class="mb-2 text-sm text-gray-500">Match Your Trip, Make It Yours</div>

@@ -69,7 +69,7 @@
 	);
 </script>
 
-<div class="flex-1 overflow-y-auto pb-32">
+<div class="pb-32">
 	{#if formData.destination !== undefined}
 		<DestinationServerStep
 			bind:this={destinationStep}

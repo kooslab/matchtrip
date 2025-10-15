@@ -25,7 +25,7 @@
 	}
 </script>
 
-<div class="flex-1 overflow-y-auto pb-32">
+<div class="pb-32">
 	<ActivityStep bind:this={activityStep} {formData} onUpdate={handleUpdate} />
 </div>
 

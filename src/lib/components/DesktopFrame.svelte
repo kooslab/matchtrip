@@ -3,8 +3,18 @@
 	import IconMobileSignal from '$lib/icons/icon-mobile-signal.svg?raw';
 	import IconBattery from '$lib/icons/icon-battery.svg?raw';
 	import MatchTripLogo from '$lib/images/Matchtrip.svg';
-	
+	import { afterNavigate } from '$app/navigation';
+	import { browser } from '$app/environment';
+
 	let { children } = $props();
+	let phoneContentWrapper: HTMLDivElement;
+
+	// Reset scroll position on navigation
+	afterNavigate(() => {
+		if (browser && phoneContentWrapper) {
+			phoneContentWrapper.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+		}
+	});
 </script>
 
 <div class="desktop-container">
@@ -66,7 +76,7 @@
 					</div>
 					
 					<!-- Content -->
-					<div class="phone-content-wrapper">
+					<div class="phone-content-wrapper" bind:this={phoneContentWrapper}>
 						{@render children()}
 					</div>
 				</div>

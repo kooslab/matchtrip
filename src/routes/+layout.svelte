@@ -7,7 +7,7 @@
 	import PWAInstallBanner from '$lib/components/PWAInstallBanner.svelte';
 	import { onMount } from 'svelte';
 	import { pwaStore } from '$lib/stores/pwaStore';
-	import { afterNavigate, beforeNavigate, disableScrollHandling } from '$app/navigation';
+	import { afterNavigate } from '$app/navigation';
 	import { browser } from '$app/environment';
 	import { trackPageView, setUserProperties } from '$lib/utils/analytics';
 
@@ -16,30 +16,30 @@
 	let user = $derived(data?.user);
 	let isLoggedIn = $derived(!!user);
 
-	// Disable SvelteKit's scroll handling at module level (before any navigation)
-	if (browser) {
-		disableScrollHandling();
-	}
-
-	// Initialize PWA functionality
+	// Initialize PWA functionality and enable scroll restoration
 	onMount(() => {
 		pwaStore.init();
-	});
 
-	// Scroll to top before navigation starts
-	beforeNavigate(() => {
-		if (browser) {
-			window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+		// Ensure browser scroll restoration is enabled
+		if (browser && 'scrollRestoration' in history) {
+			history.scrollRestoration = 'auto';
 		}
 	});
 
-	// Also scroll to top after navigation completes (belt and suspenders)
+	// Track pageview and handle scroll after navigation completes
 	afterNavigate((navigation) => {
 		if (browser) {
-			window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-
 			// Track pageview
 			trackPageView(navigation.to?.url.pathname || '/');
+
+			// Scroll to top on navigation (SvelteKit default behavior)
+			// This ensures all scroll containers are reset
+			requestAnimationFrame(() => {
+				window.scrollTo(0, 0);
+				// Also scroll document element and body to be thorough
+				document.documentElement.scrollTop = 0;
+				document.body.scrollTop = 0;
+			});
 		}
 	});
 
