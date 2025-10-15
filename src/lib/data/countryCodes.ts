@@ -19,11 +19,10 @@ const allCountries = [
 	flag: country.flag
 }));
 
-// Sort by numeric dial code (ascending)
+// Sort by dial code as string (lexicographic order)
+// This groups codes by their starting digits (e.g., +41, +420, +43 all together)
 export const countryCodes: CountryCode[] = allCountries.sort((a, b) => {
-	const aNum = parseInt(a.dialCode.replace('+', ''));
-	const bNum = parseInt(b.dialCode.replace('+', ''));
-	return aNum - bNum;
+	return a.dialCode.localeCompare(b.dialCode);
 });
 
 export function getCountryByDialCode(dialCode: string): CountryCode | undefined {
