@@ -146,7 +146,7 @@
 					onclick={dismissToday}
 					class="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
 				>
-					오늘 하루 보지 않기
+					오늘 하루<br />보지 않기
 				</button>
 				<button
 					onclick={showNextAnnouncement}
