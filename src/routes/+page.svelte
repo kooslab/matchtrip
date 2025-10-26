@@ -430,14 +430,14 @@
 				<!-- Footer -->
 				<footer class="mt-8 bg-gray-100 p-4 text-center">
 					<div class="space-y-4">
-						<div class="flex justify-center gap-3 text-xs text-gray-500">
-							<a href="/terms/service" class="hover:text-gray-700">이용약관</a>
+						<div class="flex flex-wrap justify-center gap-x-3 gap-y-2 text-xs text-gray-500">
+							<a href="/terms/service" class="whitespace-nowrap hover:text-gray-700">이용약관</a>
 							<span>|</span>
-							<a href="/terms/privacy" class="hover:text-gray-700">개인정보처리방침</a>
+							<a href="/terms/privacy" class="whitespace-nowrap hover:text-gray-700">개인정보처리방침</a>
 							<span>|</span>
-							<a href="/terms/refund-policy" class="hover:text-gray-700">취소 및 환불 정책</a>
+							<a href="/terms/refund-policy" class="whitespace-nowrap hover:text-gray-700">취소 및 환불 정책</a>
 							<span>|</span>
-							<a href="/terms/service-guide" class="hover:text-gray-700">가이드 이용약관</a>
+							<a href="/terms/service-guide" class="whitespace-nowrap hover:text-gray-700">가이드 이용약관</a>
 						</div>
 						<!-- Business Info with Chevron -->
 						<button
