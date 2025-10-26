@@ -430,7 +430,7 @@
 				<!-- Footer -->
 				<footer class="mt-8 bg-gray-100 p-4 text-center">
 					<div class="space-y-4">
-						<div class="flex flex-wrap justify-center gap-x-3 gap-y-2 text-xs text-gray-500">
+						<div class="flex justify-center gap-x-1.5 text-xs text-gray-500">
 							<a href="/terms/service" class="whitespace-nowrap hover:text-gray-700">이용약관</a>
 							<span>|</span>
 							<a href="/terms/privacy" class="whitespace-nowrap hover:text-gray-700">개인정보처리방침</a>
