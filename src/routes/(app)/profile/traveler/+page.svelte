@@ -191,10 +191,12 @@
 						</svg>
 					</a>
 					<a
-						href="/support"
+						href="http://pf.kakao.com/_Rxcxfxin/chat"
+						target="_blank"
+						rel="noopener noreferrer"
 						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50"
 					>
-						<span class="text-gray-800">1:1문의</span>
+						<span class="text-gray-800">1:1 상담</span>
 						<svg
 							class="h-5 w-5 text-gray-400"
 							fill="none"

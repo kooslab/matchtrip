@@ -257,7 +257,7 @@
 			left: 60px;
 		}
 	}
-	
+
 	@media (max-width: 1280px) {
 		.desktop-container {
 			display: none;

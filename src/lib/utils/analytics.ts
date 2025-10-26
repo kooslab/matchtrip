@@ -1,5 +1,7 @@
 import { browser } from '$app/environment';
-import { PUBLIC_GA_MEASUREMENT_ID } from '$env/static/public';
+import { env } from '$env/dynamic/public';
+
+const PUBLIC_GA_MEASUREMENT_ID = env.PUBLIC_GA_MEASUREMENT_ID;
 
 // Type definitions for Google Analytics gtag
 declare global {

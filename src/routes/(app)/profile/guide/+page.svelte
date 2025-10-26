@@ -175,13 +175,15 @@
 				<span class="text-gray-700">공지사항</span>
 				<ChevronRight class="h-5 w-5 text-gray-400" />
 			</button>
-			<button
+			<a
+				href="http://pf.kakao.com/_Rxcxfxin/chat"
+				target="_blank"
+				rel="noopener noreferrer"
 				class="flex w-full items-center justify-between px-4 py-3 hover:bg-gray-50"
-				onclick={() => window.alert('1:1문의 준비중')}
 			>
-				<span class="text-gray-700">1:1문의</span>
+				<span class="text-gray-700">1:1 상담</span>
 				<ChevronRight class="h-5 w-5 text-gray-400" />
-			</button>
+			</a>
 			<button
 				class="flex w-full items-center justify-between px-4 py-3 hover:bg-gray-50"
 				onclick={() => window.alert('FAQ 준비중')}
