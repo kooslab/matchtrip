@@ -745,6 +745,28 @@ export const events = pgTable(
 	})
 );;;
 
+// Announcements table for popup announcements on main page
+export const announcements = pgTable(
+	'announcements',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		title: text('title').notNull(),
+		content: text('content').notNull(), // Rich HTML content
+		imageUrl: text('image_url'), // Optional announcement image
+		isActive: boolean('is_active').notNull().default(false),
+		startDate: timestamp('start_date'), // Optional start date
+		endDate: timestamp('end_date'), // Optional end date
+		createdBy: uuid('created_by').references(() => admins.id, { onDelete: 'set null' }),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at').defaultNow().notNull()
+	},
+	(table) => ({
+		isActiveIdx: index('announcements_is_active_idx').on(table.isActive),
+		createdAtIdx: index('announcements_created_at_idx').on(table.createdAt),
+		createdByIdx: index('announcements_created_by_idx').on(table.createdBy)
+	})
+);
+
 // Phone verifications table for storing temporary verification codes
 export const phoneVerifications = pgTable(
 	'phone_verifications',
@@ -767,6 +789,7 @@ export const phoneVerifications = pgTable(
 export type Admin = typeof admins.$inferSelect;
 export type AdminSession = typeof adminSessions.$inferSelect;
 export type Event = typeof events.$inferSelect;
+export type Announcement = typeof announcements.$inferSelect;
 
 // Define enum for product status
 export const productStatusEnum = pgEnum('product_status', [

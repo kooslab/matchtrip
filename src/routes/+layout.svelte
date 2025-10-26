@@ -5,6 +5,7 @@
 	import NavigationProgress from '$lib/components/NavigationProgress.svelte';
 	import MobileContainer from '$lib/components/MobileContainer.svelte';
 	import PWAInstallBanner from '$lib/components/PWAInstallBanner.svelte';
+	import AnnouncementModal from '$lib/components/AnnouncementModal.svelte';
 	import { onMount } from 'svelte';
 	import { pwaStore } from '$lib/stores/pwaStore';
 	import { afterNavigate } from '$app/navigation';
@@ -75,4 +76,7 @@
 
 	<!-- PWA Install Banner -->
 	<PWAInstallBanner />
+
+	<!-- Announcement Modal -->
+	<AnnouncementModal />
 </MobileContainer>
