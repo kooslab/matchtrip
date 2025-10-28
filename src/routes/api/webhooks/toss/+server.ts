@@ -4,10 +4,11 @@ import { db } from '$lib/server/db';
 import { payments, paymentRefunds, webhookEvents, trips, offers, settlements } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { env } from '$env/dynamic/private';
-import { PUBLIC_GA_MEASUREMENT_ID } from '$env/static/public';
+import { env as publicEnv } from '$env/dynamic/public';
 
 // Server-side analytics tracking using GA Measurement Protocol
 async function trackServerEvent(eventName: string, parameters?: Record<string, string | number>) {
+	const PUBLIC_GA_MEASUREMENT_ID = publicEnv.PUBLIC_GA_MEASUREMENT_ID;
 	if (!PUBLIC_GA_MEASUREMENT_ID) return;
 
 	try {
