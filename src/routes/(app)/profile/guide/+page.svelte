@@ -3,6 +3,7 @@
 	import { ChevronRight } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import GuideBottomNav from '$lib/components/GuideBottomNav.svelte';
+	import TermsModal from '$lib/components/TermsModal.svelte';
 	import { authClient } from '$lib/authClient';
 
 	const { data } = $props();
@@ -19,6 +20,11 @@
 		rating: 0,
 		reviewCount: 0
 	});
+
+	// Terms modal state
+	let showTermsModal = $state(false);
+	let termsModalType: 'terms' | 'privacy' | 'marketing' = $state('terms');
+	let termsModalTitle = $state('');
 
 	// Fetch dynamic stats on mount
 	onMount(async () => {
@@ -40,6 +46,12 @@
 	const rating = $derived(stats.rating);
 	const reviewCount = $derived(stats.reviewCount);
 
+	// Open terms modal
+	function openTermsModal(type: 'terms' | 'privacy' | 'marketing', title: string) {
+		termsModalType = type;
+		termsModalTitle = title;
+		showTermsModal = true;
+	}
 
 	// Logout handler
 	async function handleLogout() {
@@ -198,20 +210,16 @@
 	<section class="mt-2 bg-white">
 		<h3 class="px-4 py-3 font-semibold text-gray-900">설정</h3>
 		<div class="divide-y divide-gray-100">
-			<div class="flex items-center justify-between px-4 py-3">
-				<span class="text-gray-700">현재 버전</span>
-				<span class="text-blue-600">v 0.1</span>
-			</div>
 			<button
 				class="flex w-full items-center justify-between px-4 py-3 hover:bg-gray-50"
-				onclick={() => window.alert('개인정보처리방침 준비중')}
+				onclick={() => openTermsModal('privacy', '개인정보처리방침')}
 			>
 				<span class="text-gray-700">개인정보처리방침</span>
 				<ChevronRight class="h-5 w-5 text-gray-400" />
 			</button>
 			<button
 				class="flex w-full items-center justify-between px-4 py-3 hover:bg-gray-50"
-				onclick={() => window.alert('이용약관 준비중')}
+				onclick={() => openTermsModal('terms', '이용약관')}
 			>
 				<span class="text-gray-700">이용약관</span>
 				<ChevronRight class="h-5 w-5 text-gray-400" />
@@ -239,4 +247,12 @@
 	<!-- Bottom Navigation -->
 	<GuideBottomNav />
 </div>
+
+<!-- Terms Modal -->
+<TermsModal
+	isOpen={showTermsModal}
+	onClose={() => (showTermsModal = false)}
+	title={termsModalTitle}
+	type={termsModalType}
+/>
 

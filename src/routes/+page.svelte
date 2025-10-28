@@ -4,6 +4,7 @@
 	import BottomNav from '$lib/components/BottomNav.svelte';
 	import GuideBottomNav from '$lib/components/GuideBottomNav.svelte';
 	import AgreementModal from '$lib/components/AgreementModal.svelte';
+	import AnnouncementModal from '$lib/components/AnnouncementModal.svelte';
 	import Logo from '$lib/components/Logo.svelte';
 	import EventSection from '$lib/components/EventSection.svelte';
 
@@ -492,5 +493,9 @@
 		{/if}
 	</div>
 </div>
+
 <!-- Agreement Modal -->
 <AgreementModal isOpen={showAgreementModal} {user} />
+
+<!-- Announcement Modal -->
+<AnnouncementModal />

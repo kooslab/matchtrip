@@ -1,11 +1,24 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 	import BottomNav from '$lib/components/BottomNav.svelte';
+	import TermsModal from '$lib/components/TermsModal.svelte';
 	import { authClient } from '$lib/authClient';
 	import { transformImageUrl } from '$lib/utils/imageUrl';
 	import { onMount } from 'svelte';
 
 	let { data } = $props();
+
+	// Terms modal state
+	let showTermsModal = $state(false);
+	let termsModalType: 'terms' | 'privacy' | 'marketing' = $state('terms');
+	let termsModalTitle = $state('');
+
+	// Open terms modal
+	function openTermsModal(type: 'terms' | 'privacy' | 'marketing', title: string) {
+		termsModalType = type;
+		termsModalTitle = title;
+		showTermsModal = true;
+	}
 
 	const handleLogout = async () => {
 		try {
@@ -237,31 +250,9 @@
 			<div class="bg-white">
 				<h3 class="border-b border-gray-100 px-4 py-3 text-sm font-semibold text-gray-700">설정</h3>
 				<div class="divide-y divide-gray-100">
-					<a
-						href="/settings/app-version"
-						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50"
-					>
-						<span class="text-gray-800">앱제 버전</span>
-						<div class="flex items-center space-x-2">
-							<span class="text-sm text-gray-500">v 0.1</span>
-							<svg
-								class="h-5 w-5 text-gray-400"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M9 5l7 7-7 7"
-								/>
-							</svg>
-						</div>
-					</a>
-					<a
-						href="/settings/privacy"
-						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50"
+					<button
+						onclick={() => openTermsModal('privacy', '개인정보처리방침')}
+						class="flex w-full items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50"
 					>
 						<span class="text-gray-800">개인정보처리방침</span>
 						<svg
@@ -277,10 +268,10 @@
 								d="M9 5l7 7-7 7"
 							/>
 						</svg>
-					</a>
-					<a
-						href="/terms/service"
-						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50"
+					</button>
+					<button
+						onclick={() => openTermsModal('terms', '이용약관')}
+						class="flex w-full items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50"
 					>
 						<span class="text-gray-800">이용약관</span>
 						<svg
@@ -296,7 +287,7 @@
 								d="M9 5l7 7-7 7"
 							/>
 						</svg>
-					</a>
+					</button>
 					<a
 						href="/settings/deactivate"
 						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50"
@@ -331,3 +322,11 @@
 		</div>
 	</div>
 </div>
+
+<!-- Terms Modal -->
+<TermsModal
+	isOpen={showTermsModal}
+	onClose={() => (showTermsModal = false)}
+	title={termsModalTitle}
+	type={termsModalType}
+/>
