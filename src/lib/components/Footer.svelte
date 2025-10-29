@@ -13,15 +13,16 @@
 </script>
 
 <footer class="mt-auto pt-8 pb-4 text-center text-sm text-gray-500">
-	<div class="mb-4 flex justify-center space-x-4">
-		<a href="/terms/service" class="hover:text-gray-700 hover:underline">이용약관</a>
-		<a href="/terms/privacy" class="hover:text-gray-700 hover:underline">개인정보처리방침</a>
-		<a href="/terms/refund-policy" class="hover:text-gray-700 hover:underline">취소 및 환불 정책</a>
-		<a href="/contact" class="hover:text-gray-700 hover:underline">앱 다운로드</a>
-	</div>
+	<div class="mx-auto max-w-md px-4">
+		<div class="mb-4 flex flex-wrap justify-center gap-x-4 gap-y-2">
+			<a href="/terms/service" class="hover:text-gray-700 hover:underline">이용약관</a>
+			<a href="/terms/privacy" class="hover:text-gray-700 hover:underline">개인정보처리방침</a>
+			<a href="/terms/refund-policy" class="hover:text-gray-700 hover:underline">취소 및 환불 정책</a>
+			<a href="/contact" class="hover:text-gray-700 hover:underline">앱 다운로드</a>
+		</div>
 
-	<!-- Business Info Section with Collapsible -->
-	<div class="mx-auto mb-4 max-w-4xl px-4">
+		<!-- Business Info Section with Collapsible -->
+		<div class="mb-4">
 		<button
 			onclick={toggleBusinessInfo}
 			class="mx-auto mb-3 flex items-center justify-center gap-2 text-sm text-gray-600 transition-colors hover:text-gray-800"
@@ -35,21 +36,22 @@
 		</button>
 
 		{#if businessInfoOpen}
-			<div class="animate-in slide-in-from-top-2 space-y-1 text-xs text-gray-500 duration-200">
+			<div class="animate-in slide-in-from-top-2 space-y-1 break-keep text-xs text-gray-500 duration-200">
 				<div>대표자 : 진민수 E-mail : j@agentt.kr</div>
 				<div>전화 : 010-8200-4994 (독일 +49 174 4360256)</div>
 				<div>주소 : 경기도 화성시 메타폴리스로 42 9층 901호 A13호 (반송동, 디앤씨빌딩)</div>
 				<div>사업자등록번호 : 126-56-00745 통신판매번호 : 2024-화성동탄-1329호</div>
 			</div>
 		{/if}
-	</div>
+		</div>
 
-	<div class="mb-2 text-xs text-gray-400">
-		매치트립은 통신판매중개자이며, 통신판매의 당사자가 아닙니다.<br />
-		상품, 상품정보, 거래에 관한 의무와 책임은 판매회원에게 있습니다.
-	</div>
+		<div class="mb-2 break-keep text-xs text-gray-400">
+			매치트립은 통신판매중개자이며, 통신판매의 당사자가 아닙니다.<br />
+			상품, 상품정보, 거래에 관한 의무와 책임은 판매회원에게 있습니다.
+		</div>
 
-	<p class="text-sm">© {currentYear} MatchTrip. All rights reserved.</p>
+		<p class="text-sm">© {currentYear} MatchTrip. All rights reserved.</p>
+	</div>
 </footer>
 
 <style>
