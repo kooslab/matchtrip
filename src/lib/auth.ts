@@ -215,30 +215,47 @@ export const auth = betterAuth({
 	rateLimit: {
 		storage: 'memory'
 	},
-	// Add hooks to handle email hashing
-	hooks: {
+	// Add database hooks to handle email hashing and country code
+	databaseHooks: {
 		user: {
 			create: {
 				before: async (user) => {
-					console.log('[AUTH HOOK] Before user create - adding email hash');
+					console.log('[AUTH HOOK] Before user create - adding email hash and country code');
+					const modifiedUser = { ...user };
 					if (user.email) {
-						(user as any).emailHash = hashEmail(user.email);
+						(modifiedUser as any).emailHash = hashEmail(user.email);
 					}
-					return user;
+					// Add default country code if not provided (needed for OAuth signups)
+					if (!(modifiedUser as any).countryCode) {
+						(modifiedUser as any).countryCode = '82'; // Default to Korea
+						console.log('[AUTH HOOK] Added default countryCode: 82');
+					}
+					return { data: modifiedUser };
 				}
 			},
 			update: {
-				before: async ({ data }) => {
+				before: async (data) => {
 					console.log('[AUTH HOOK] Before user update - checking email change');
+					const modifiedData = { ...data };
 					if (data.email) {
-						(data as any).emailHash = hashEmail(data.email);
+						(modifiedData as any).emailHash = hashEmail(data.email);
 					}
-					return data;
+					return { data: modifiedData };
 				}
 			}
 		}
 	},
-	user: { modelName: 'users' },
+	user: {
+		modelName: 'users',
+		additionalFields: {
+			countryCode: {
+				type: 'string',
+				required: true,
+				defaultValue: '82',
+				input: false // Don't allow users to set this directly
+			}
+		}
+	},
 	session: {
 		modelName: 'sessions',
 		expiresIn: 60 * 60 * 24 * 30, // 30 days
