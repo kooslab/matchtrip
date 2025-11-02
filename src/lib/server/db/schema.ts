@@ -1080,6 +1080,31 @@ export const reports = pgTable(
 	})
 );
 
+// Define enum for FAQ target roles
+export const faqTargetRoleEnum = pgEnum('faq_target_role', ['guide', 'traveler', 'both']);
+export type FaqTargetRole = (typeof faqTargetRoleEnum.enumValues)[number];
+
+// FAQs table for managing frequently asked questions
+export const faqs = pgTable(
+	'faqs',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		title: text('title').notNull(),
+		content: text('content').notNull(),
+		targetRole: faqTargetRoleEnum('target_role').notNull(),
+		displayOrder: integer('display_order').notNull().default(0),
+		isActive: boolean('is_active').notNull().default(false),
+		createdBy: uuid('created_by').references(() => admins.id, { onDelete: 'set null' }),
+		createdAt: timestamp('created_at').defaultNow().notNull(),
+		updatedAt: timestamp('updated_at').defaultNow().notNull()
+	},
+	(table) => ({
+		targetRoleIdx: index('faqs_target_role_idx').on(table.targetRole),
+		isActiveIdx: index('faqs_is_active_idx').on(table.isActive),
+		displayOrderIdx: index('faqs_display_order_idx').on(table.displayOrder)
+	})
+);
+
 // Type exports for main tables
 export type User = typeof users.$inferSelect;
 export type Trip = typeof trips.$inferSelect;
@@ -1094,3 +1119,4 @@ export type KakaoNotification = typeof kakaoNotifications.$inferSelect;
 export type ProductOffer = typeof productOffers.$inferSelect;
 export type Settlement = typeof settlements.$inferSelect;
 export type Report = typeof reports.$inferSelect;
+export type Faq = typeof faqs.$inferSelect;

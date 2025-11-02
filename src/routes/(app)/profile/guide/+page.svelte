@@ -4,6 +4,7 @@
 	import { onMount } from 'svelte';
 	import GuideBottomNav from '$lib/components/GuideBottomNav.svelte';
 	import TermsModal from '$lib/components/TermsModal.svelte';
+	import FaqModal from '$lib/components/FaqModal.svelte';
 	import { authClient } from '$lib/authClient';
 
 	const { data } = $props();
@@ -25,6 +26,9 @@
 	let showTermsModal = $state(false);
 	let termsModalType: 'terms' | 'privacy' | 'marketing' = $state('terms');
 	let termsModalTitle = $state('');
+
+	// FAQ modal state
+	let showFaqModal = $state(false);
 
 	// Fetch dynamic stats on mount
 	onMount(async () => {
@@ -198,7 +202,7 @@
 			</a>
 			<button
 				class="flex w-full items-center justify-between px-4 py-3 hover:bg-gray-50"
-				onclick={() => window.alert('FAQ 준비중')}
+				onclick={() => (showFaqModal = true)}
 			>
 				<span class="text-gray-700">FAQ</span>
 				<ChevronRight class="h-5 w-5 text-gray-400" />
@@ -255,4 +259,7 @@
 	title={termsModalTitle}
 	type={termsModalType}
 />
+
+<!-- FAQ Modal -->
+<FaqModal isOpen={showFaqModal} onClose={() => (showFaqModal = false)} userRole="guide" />
 

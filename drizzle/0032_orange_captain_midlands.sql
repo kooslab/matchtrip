@@ -1,6 +1,18 @@
-CREATE TYPE "public"."report_status" AS ENUM('pending', 'reviewing', 'resolved', 'dismissed');--> statement-breakpoint
-CREATE TYPE "public"."report_type" AS ENUM('scam', 'inappropriate_ads', 'fraud', 'harassment', 'contact_info_leak');--> statement-breakpoint
-CREATE TABLE "banners" (
+-- Create report_status enum safely
+DO $$ BEGIN
+ CREATE TYPE "public"."report_status" AS ENUM('pending', 'reviewing', 'resolved', 'dismissed');
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+-- Create report_type enum safely
+DO $$ BEGIN
+ CREATE TYPE "public"."report_type" AS ENUM('scam', 'inappropriate_ads', 'fraud', 'harassment', 'contact_info_leak');
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "banners" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"banner_image_url" text NOT NULL,
 	"full_image_url" text NOT NULL,
@@ -12,7 +24,7 @@ CREATE TABLE "banners" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "reports" (
+CREATE TABLE IF NOT EXISTS "reports" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"reporter_id" uuid NOT NULL,
 	"reported_user_id" uuid NOT NULL,
@@ -30,11 +42,36 @@ CREATE TABLE "reports" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "guide_profiles" ADD COLUMN "contract_agreed_at" timestamp;--> statement-breakpoint
-ALTER TABLE "guide_profiles" ADD COLUMN "contract_version" text;--> statement-breakpoint
-ALTER TABLE "guide_profiles" ADD COLUMN "contract_scroll_completed" boolean DEFAULT false;--> statement-breakpoint
-ALTER TABLE "guide_profiles" ADD COLUMN "contract_address" text;--> statement-breakpoint
-ALTER TABLE "guide_profiles" ADD COLUMN "business_registration_number" text;--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "guide_profiles" ADD COLUMN "contract_agreed_at" timestamp;
+EXCEPTION
+ WHEN duplicate_column THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "guide_profiles" ADD COLUMN "contract_version" text;
+EXCEPTION
+ WHEN duplicate_column THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "guide_profiles" ADD COLUMN "contract_scroll_completed" boolean DEFAULT false;
+EXCEPTION
+ WHEN duplicate_column THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "guide_profiles" ADD COLUMN "contract_address" text;
+EXCEPTION
+ WHEN duplicate_column THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "guide_profiles" ADD COLUMN "business_registration_number" text;
+EXCEPTION
+ WHEN duplicate_column THEN null;
+END $$;
+--> statement-breakpoint
 ALTER TABLE "banners" ADD CONSTRAINT "banners_created_by_admins_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."admins"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "reports" ADD CONSTRAINT "reports_reporter_id_users_id_fk" FOREIGN KEY ("reporter_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "reports" ADD CONSTRAINT "reports_reported_user_id_users_id_fk" FOREIGN KEY ("reported_user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

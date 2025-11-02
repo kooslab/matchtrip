@@ -1,5 +1,11 @@
-CREATE TYPE "public"."settlement_status" AS ENUM('pending', 'completed');--> statement-breakpoint
-CREATE TABLE "offer_description_templates" (
+-- Create settlement_status enum safely
+DO $$ BEGIN
+ CREATE TYPE "public"."settlement_status" AS ENUM('pending', 'completed');
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "offer_description_templates" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"guide_id" uuid NOT NULL,
 	"title" varchar(255) NOT NULL,
@@ -9,7 +15,7 @@ CREATE TABLE "offer_description_templates" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "settlements" (
+CREATE TABLE IF NOT EXISTS "settlements" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"payment_id" uuid NOT NULL,
 	"commission_rate" integer NOT NULL,
@@ -27,9 +33,14 @@ CREATE TABLE "settlements" (
 	CONSTRAINT "settlements_payment_id_unique" UNIQUE("payment_id")
 );
 --> statement-breakpoint
-ALTER TABLE "payments" DROP CONSTRAINT "payments_display_id_unique";--> statement-breakpoint
-DROP INDEX "payments_display_id_idx";--> statement-breakpoint
-ALTER TABLE "users" ADD COLUMN "country_code" varchar(5) DEFAULT '+82';--> statement-breakpoint
+ALTER TABLE "payments" DROP CONSTRAINT IF EXISTS "payments_display_id_unique";--> statement-breakpoint
+DROP INDEX IF EXISTS "payments_display_id_idx";--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "users" ADD COLUMN "country_code" varchar(5) DEFAULT '+82';
+EXCEPTION
+ WHEN duplicate_column THEN null;
+END $$;
+--> statement-breakpoint
 ALTER TABLE "offer_description_templates" ADD CONSTRAINT "offer_description_templates_guide_id_users_id_fk" FOREIGN KEY ("guide_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "settlements" ADD CONSTRAINT "settlements_payment_id_payments_id_fk" FOREIGN KEY ("payment_id") REFERENCES "public"."payments"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "settlements" ADD CONSTRAINT "settlements_settled_by_admins_id_fk" FOREIGN KEY ("settled_by") REFERENCES "public"."admins"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
@@ -39,4 +50,4 @@ CREATE INDEX "settlements_payment_id_idx" ON "settlements" USING btree ("payment
 CREATE INDEX "settlements_status_idx" ON "settlements" USING btree ("status");--> statement-breakpoint
 CREATE INDEX "settlements_settled_by_idx" ON "settlements" USING btree ("settled_by");--> statement-breakpoint
 CREATE INDEX "settlements_created_at_idx" ON "settlements" USING btree ("created_at");--> statement-breakpoint
-ALTER TABLE "payments" DROP COLUMN "display_id";
+ALTER TABLE "payments" DROP COLUMN IF EXISTS "display_id";

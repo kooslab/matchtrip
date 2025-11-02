@@ -1,5 +1,5 @@
 -- Create events table
-CREATE TABLE "events" (
+CREATE TABLE IF NOT EXISTS "events" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"slug" text NOT NULL UNIQUE,
 	"title" text NOT NULL,
@@ -26,12 +26,12 @@ ALTER TABLE "events" ADD CONSTRAINT "events_created_by_admins_id_fk" FOREIGN KEY
 --> statement-breakpoint
 
 -- Create indexes
-CREATE INDEX "events_slug_idx" ON "events" USING btree ("slug");
+CREATE INDEX IF NOT EXISTS "events_slug_idx" ON "events" USING btree ("slug");
 
 --> statement-breakpoint
 
-CREATE INDEX "events_is_active_idx" ON "events" USING btree ("is_active");
+CREATE INDEX IF NOT EXISTS "events_is_active_idx" ON "events" USING btree ("is_active");
 
 --> statement-breakpoint
 
-CREATE INDEX "events_created_by_idx" ON "events" USING btree ("created_by");
+CREATE INDEX IF NOT EXISTS "events_created_by_idx" ON "events" USING btree ("created_by");

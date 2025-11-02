@@ -2,6 +2,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import BottomNav from '$lib/components/BottomNav.svelte';
 	import TermsModal from '$lib/components/TermsModal.svelte';
+	import FaqModal from '$lib/components/FaqModal.svelte';
 	import { authClient } from '$lib/authClient';
 	import { transformImageUrl } from '$lib/utils/imageUrl';
 	import { onMount } from 'svelte';
@@ -12,6 +13,9 @@
 	let showTermsModal = $state(false);
 	let termsModalType: 'terms' | 'privacy' | 'marketing' = $state('terms');
 	let termsModalTitle = $state('');
+
+	// FAQ modal state
+	let showFaqModal = $state(false);
 
 	// Open terms modal
 	function openTermsModal(type: 'terms' | 'privacy' | 'marketing', title: string) {
@@ -224,9 +228,9 @@
 							/>
 						</svg>
 					</a>
-					<a
-						href="/faq"
-						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50"
+					<button
+						onclick={() => (showFaqModal = true)}
+						class="flex w-full items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50"
 					>
 						<span class="text-gray-800">FAQ</span>
 						<svg
@@ -242,7 +246,7 @@
 								d="M9 5l7 7-7 7"
 							/>
 						</svg>
-					</a>
+					</button>
 				</div>
 			</div>
 
@@ -330,3 +334,6 @@
 	title={termsModalTitle}
 	type={termsModalType}
 />
+
+<!-- FAQ Modal -->
+<FaqModal isOpen={showFaqModal} onClose={() => (showFaqModal = false)} userRole="traveler" />
