@@ -3,6 +3,7 @@
 	import BottomNav from '$lib/components/BottomNav.svelte';
 	import TermsModal from '$lib/components/TermsModal.svelte';
 	import FaqModal from '$lib/components/FaqModal.svelte';
+	import DeleteAccountModal from '$lib/components/DeleteAccountModal.svelte';
 	import { authClient } from '$lib/authClient';
 	import { transformImageUrl } from '$lib/utils/imageUrl';
 	import { onMount } from 'svelte';
@@ -16,6 +17,9 @@
 
 	// FAQ modal state
 	let showFaqModal = $state(false);
+
+	// Delete account modal state
+	let showDeleteModal = $state(false);
 
 	// Open terms modal
 	function openTermsModal(type: 'terms' | 'privacy' | 'marketing', title: string) {
@@ -292,9 +296,9 @@
 							/>
 						</svg>
 					</button>
-					<a
-						href="/settings/deactivate"
-						class="flex items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50"
+					<button
+						onclick={() => (showDeleteModal = true)}
+						class="flex w-full items-center justify-between px-4 py-4 transition-colors hover:bg-gray-50"
 					>
 						<span class="text-gray-800">탈퇴하기</span>
 						<svg
@@ -310,7 +314,7 @@
 								d="M9 5l7 7-7 7"
 							/>
 						</svg>
-					</a>
+					</button>
 				</div>
 			</div>
 
@@ -337,3 +341,10 @@
 
 <!-- FAQ Modal -->
 <FaqModal isOpen={showFaqModal} onClose={() => (showFaqModal = false)} userRole="traveler" />
+
+<!-- Delete Account Modal -->
+<DeleteAccountModal
+	isOpen={showDeleteModal}
+	onClose={() => (showDeleteModal = false)}
+	userRole="traveler"
+/>

@@ -19,6 +19,7 @@
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "bun --env-file=.env run drizzle-kit migrate",
 		"db:migrate:prod": "bun --env-file=.env.prod run drizzle-kit migrate",
+		"db:sync:prod": "bun --env-file=.env.prod run scripts/sync-prod-migrations.ts",
 		"db:studio": "bun --env-file=.env run drizzle-kit studio",
 		"db:studio:prod": "bun --env-file=.env.prod run drizzle-kit studio",
 		"migrate:images": "tsx scripts/migrate-image-urls.ts",

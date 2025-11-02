@@ -46,6 +46,31 @@ export const users = pgTable(
 	})
 );
 
+// User deletions table to track account deletions
+export const userDeletions = pgTable(
+	'user_deletions',
+	{
+		id: uuid('id').primaryKey().defaultRandom(),
+		userId: uuid('user_id').notNull(),
+		originalEmail: text('original_email').notNull(),
+		originalName: text('original_name'),
+		originalPhone: text('original_phone'),
+		userRole: text('user_role'),
+		reason: text('reason'),
+		details: text('details'),
+		deletedAt: timestamp('deleted_at').defaultNow().notNull(),
+		createdAt: timestamp('created_at').defaultNow().notNull()
+	},
+	(table) => ({
+		deletedAtIdx: index('user_deletions_deleted_at_idx').on(table.deletedAt),
+		userIdIdx: index('user_deletions_user_id_idx').on(table.userId),
+		userRoleIdx: index('user_deletions_user_role_idx').on(table.userRole)
+	})
+);
+
+export type UserDeletion = typeof userDeletions.$inferSelect;
+export type NewUserDeletion = typeof userDeletions.$inferInsert;
+
 // User agreements table to track consent
 export const userAgreements = pgTable('user_agreements', {
 	id: uuid('id').primaryKey().defaultRandom(),
