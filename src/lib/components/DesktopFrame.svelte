@@ -28,8 +28,10 @@
 		
 		<div class="hero-content">
 			<h1 class="hero-title">
-				<span class="font-light">가이드와 여행자를 연결하는</span><br/>
-				<span class="font-bold">가장 스마트한 방법</span>
+				<span class="font-light" style="white-space: nowrap;">해외가이드, 입장권을</span><br/>
+				<span class="font-light">가장 똑똑하게</span><br/>
+				<span class="font-light">선택하는 방법</span><br/>
+				<span class="font-bold">매치트립</span>
 			</h1>
 			
 			<div class="app-download">
