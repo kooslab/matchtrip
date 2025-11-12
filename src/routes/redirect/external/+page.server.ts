@@ -3,9 +3,13 @@ import type { PageServerLoad } from './$types';
 
 // Whitelist of allowed paths to prevent open redirect vulnerability
 const ALLOWED_PATHS = [
+	'/profile', // All profile pages
 	'/profile/traveler',
 	'/profile/guide',
 	'/profile/guide/products', // Guide product pages with query params
+	'/profile/traveler/products', // Traveler product pages
+	'/products', // Product listing and detail pages
+	'/offers', // Offers page
 	'/my-trips',
 	'/my-offers',
 	'/chat',
