@@ -11,13 +11,19 @@
 		if (targetPath) {
 			// Build the full URL
 			targetUrl = `${$page.url.origin}${targetPath}`;
-			
+
+			// Store target URL in sessionStorage for post-login redirect
+			// This ensures that if authentication is required, the login page
+			// can redirect back to the original target after successful login
+			sessionStorage.setItem('redirectAfterLogin', targetPath);
+			console.log('[REDIRECT] Stored redirectAfterLogin:', targetPath);
+
 			// Check if we're in Kakao in-app browser
 			const userAgent = navigator.userAgent;
 			const isKakaoInApp = userAgent.includes('KAKAOTALK');
 			const isAndroid = /android/i.test(userAgent);
 			const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
-			
+
 			console.log('User Agent:', userAgent);
 			console.log('Is Kakao:', isKakaoInApp);
 			console.log('Target URL:', targetUrl);
