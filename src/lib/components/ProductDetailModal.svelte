@@ -6,7 +6,8 @@
 		Download,
 		MessageCircle,
 		Edit,
-		Trash2
+		Trash2,
+		Share2
 	} from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
@@ -40,6 +41,37 @@
 
 	// Loading state for contact button
 	let isContactLoading = $state(false);
+
+	// Share button state
+	let shareButtonText = $state('링크 복사');
+	let isShareCopied = $state(false);
+
+	// Handle share button click
+	const handleShareClick = async () => {
+		if (!product?.id) return;
+
+		// Generate public product URL
+		const publicUrl = `${window.location.origin}/products?productId=${product.id}`;
+
+		try {
+			await navigator.clipboard.writeText(publicUrl);
+			console.log('[SHARE] Copied public URL to clipboard:', publicUrl);
+
+			// Show success feedback
+			isShareCopied = true;
+			shareButtonText = '복사 완료!';
+
+			// Reset after 2 seconds
+			setTimeout(() => {
+				isShareCopied = false;
+				shareButtonText = '링크 복사';
+			}, 2000);
+		} catch (error) {
+			console.error('[SHARE] Failed to copy to clipboard:', error);
+			// Fallback: show alert with URL
+			alert(`링크를 복사하지 못했습니다. 수동으로 복사해주세요:\n\n${publicUrl}`);
+		}
+	};
 
 	// Handle contact button click
 	const handleContactClick = async () => {
@@ -205,6 +237,13 @@
 					</h2>
 					{#if showEditDelete}
 						<div class="flex items-center gap-2">
+							<button
+								onclick={handleShareClick}
+								class="p-1 text-gray-600 transition-colors hover:text-green-600 {isShareCopied ? 'text-green-600' : ''}"
+								title={shareButtonText}
+							>
+								<Share2 class="h-5 w-5" />
+							</button>
 							{#if onEdit}
 								<button
 									onclick={onEdit}
