@@ -45,13 +45,19 @@
 	// Share button state
 	let shareButtonText = $state('링크 복사');
 	let isShareCopied = $state(false);
+	let showCopyToast = $state(false);
 
 	// Handle share button click
 	const handleShareClick = async () => {
 		if (!product?.id) return;
 
-		// Generate public product URL
-		const publicUrl = `${window.location.origin}/products?productId=${product.id}`;
+		// Generate public product URL with destination parameter
+		const url = new URL(`${window.location.origin}/products`);
+		if (product.destination?.id) {
+			url.searchParams.set('destination', product.destination.id.toString());
+		}
+		url.searchParams.set('productId', product.id);
+		const publicUrl = url.toString();
 
 		try {
 			await navigator.clipboard.writeText(publicUrl);
@@ -60,11 +66,13 @@
 			// Show success feedback
 			isShareCopied = true;
 			shareButtonText = '복사 완료!';
+			showCopyToast = true;
 
 			// Reset after 2 seconds
 			setTimeout(() => {
 				isShareCopied = false;
 				shareButtonText = '링크 복사';
+				showCopyToast = false;
 			}, 2000);
 		} catch (error) {
 			console.error('[SHARE] Failed to copy to clipboard:', error);
@@ -617,6 +625,26 @@
 			{/if}
 		</div>
 	</div>
+
+	<!-- Copy Success Toast -->
+	{#if showCopyToast}
+		<div
+			class="fixed top-20 left-1/2 z-[110] -translate-x-1/2 animate-fade-in rounded-lg bg-green-600 px-4 py-3 text-white shadow-lg"
+		>
+			<div class="flex items-center gap-2">
+				<svg
+					class="h-5 w-5"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+					stroke-width="2"
+				>
+					<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+				</svg>
+				<span class="font-medium">공유 링크가 복사되었습니다!</span>
+			</div>
+		</div>
+	{/if}
 {/if}
 
 <style>
@@ -629,7 +657,20 @@
 		}
 	}
 
+	@keyframes fade-in {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+
 	.animate-slide-up {
 		animation: slide-up 0.3s ease-out;
+	}
+
+	.animate-fade-in {
+		animation: fade-in 0.3s ease-out;
 	}
 </style>
