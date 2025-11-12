@@ -40,25 +40,44 @@
 
 	// Handle product click to view details
 	const handleProductClick = async (productId: string) => {
+		console.log('[PRODUCT PAGE] handleProductClick called with ID:', productId);
 		const product = myProducts.find((p) => p.id === productId);
+		console.log('[PRODUCT PAGE] Product found in list:', !!product);
+
 		if (product) {
 			// Update URL with query parameter
 			const url = new URL(window.location.href);
 			url.searchParams.set('productId', productId);
 			window.history.pushState({}, '', url.toString());
+			console.log('[PRODUCT PAGE] Updated URL to:', url.toString());
 
 			// Fetch full product details
 			try {
+				console.log('[PRODUCT PAGE] Fetching product details from API...');
 				const response = await fetch(`/api/products/${productId}`);
+				console.log('[PRODUCT PAGE] API response status:', response.status);
+
 				if (response.ok) {
 					selectedProduct = await response.json();
+					console.log('[PRODUCT PAGE] Product loaded, opening modal');
+					isModalOpen = true;
+				} else {
+					console.error('[PRODUCT PAGE] API returned error:', response.status, response.statusText);
+					const errorText = await response.text();
+					console.error('[PRODUCT PAGE] Error details:', errorText);
+					// Fallback to using product from list
+					selectedProduct = product;
 					isModalOpen = true;
 				}
 			} catch (error) {
-				console.error('Failed to fetch product:', error);
+				console.error('[PRODUCT PAGE] Failed to fetch product:', error);
 				selectedProduct = product;
 				isModalOpen = true;
 			}
+		} else {
+			console.error('[PRODUCT PAGE] Product NOT found in myProducts list! Cannot open modal.');
+			console.error('[PRODUCT PAGE] Requested ID:', productId);
+			console.error('[PRODUCT PAGE] Available IDs:', myProducts.map(p => p.id));
 		}
 	};
 
@@ -140,8 +159,22 @@
 		if (typeof window !== 'undefined') {
 			const urlParams = new URLSearchParams(window.location.search);
 			const productId = urlParams.get('productId');
+			console.log('[PRODUCT PAGE] URL search params:', window.location.search);
+			console.log('[PRODUCT PAGE] Product ID from URL:', productId);
+			console.log('[PRODUCT PAGE] Available products:', myProducts.map(p => p.id));
+
 			if (productId) {
+				const productExists = myProducts.find(p => p.id === productId);
+				console.log('[PRODUCT PAGE] Product exists in list:', !!productExists);
+
+				if (!productExists) {
+					console.error('[PRODUCT PAGE] Product not found! ID:', productId);
+					console.error('[PRODUCT PAGE] This might be someone else\'s product or an invalid ID');
+				}
+
 				handleProductClick(productId);
+			} else {
+				console.log('[PRODUCT PAGE] No productId in URL');
 			}
 		}
 
