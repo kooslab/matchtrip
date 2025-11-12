@@ -36,10 +36,15 @@
 					// Android KakaoTalk: Use direct intent approach (more reliable than kakaotalk:// scheme)
 					console.log('[ANDROID KAKAO] Using intent URL for external browser');
 
-					// Try intent URL directly without the kakaotalk:// scheme
-					// This works better on Android KakaoTalk
-					const intentUrl = `intent:${targetUrl.replace(/^https?:\/\//, '')}#Intent;scheme=https;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end`;
+					// Parse the target URL to properly construct intent URL
+					const urlObj = new URL(targetUrl);
+					const path = urlObj.pathname + urlObj.search + urlObj.hash;
 
+					// Construct proper intent URL format with URL-encoded path
+					// Format: intent://HOST/PATH#Intent;scheme=https;...;end
+					const intentUrl = `intent://${urlObj.host}${path}#Intent;scheme=https;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end`;
+
+					console.log('[ANDROID KAKAO] Target URL:', targetUrl);
 					console.log('[ANDROID KAKAO] Intent URL:', intentUrl);
 					window.location.href = intentUrl;
 
