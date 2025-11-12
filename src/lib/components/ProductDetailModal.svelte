@@ -235,8 +235,8 @@
 			onclick={(e) => e.stopPropagation()}
 		>
 			<!-- Header -->
-			<div class="flex-shrink-0 border-b bg-white">
-				<div class="flex items-center justify-between px-4 py-4">
+			<div class="flex-shrink-0 border-b bg-white rounded-t-2xl">
+				<div class="flex items-center justify-between px-4 pb-4 pt-8">
 					<button onclick={onClose} class="p-1">
 						<ChevronDown class="h-6 w-6" />
 					</button>
@@ -629,7 +629,7 @@
 	<!-- Copy Success Toast -->
 	{#if showCopyToast}
 		<div
-			class="fixed top-20 left-1/2 z-[110] -translate-x-1/2 animate-fade-in rounded-lg bg-green-600 px-4 py-3 text-white shadow-lg"
+			class="fixed top-24 left-1/2 z-[110] -translate-x-1/2 animate-fade-in rounded-lg bg-green-600 px-4 py-3 text-white shadow-lg"
 		>
 			<div class="flex items-center gap-2">
 				<svg
