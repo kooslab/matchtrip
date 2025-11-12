@@ -5,6 +5,7 @@ import type { PageServerLoad } from './$types';
 const ALLOWED_PATHS = [
 	'/profile/traveler',
 	'/profile/guide',
+	'/profile/guide/products', // Guide product pages with query params
 	'/my-trips',
 	'/my-offers',
 	'/chat',
