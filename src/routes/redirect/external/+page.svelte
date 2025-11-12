@@ -32,34 +32,48 @@
 
 			// Method 1: Kakao-specific redirect
 			if (isKakaoInApp) {
-				// Use Kakao's official method to open external browser
-				const kakaoScheme = `kakaotalk://web/openExternal?url=${encodeURIComponent(targetUrl)}`;
-				console.log('Attempting Kakao scheme:', kakaoScheme);
-				
-				// Try the Kakao scheme first
-				window.location.href = kakaoScheme;
-				
-				// Fallback after a short delay
-				setTimeout(() => {
-					// Try alternative methods for Kakao
-					if (isIOS) {
-						// For iOS Kakao, try using a different approach
-						window.location.href = `googlechrome://${targetUrl.replace(/^https?:\/\//, '')}`;
+				if (isAndroid) {
+					// Android KakaoTalk: Use direct intent approach (more reliable than kakaotalk:// scheme)
+					console.log('[ANDROID KAKAO] Using intent URL for external browser');
+
+					// Try intent URL directly without the kakaotalk:// scheme
+					// This works better on Android KakaoTalk
+					const intentUrl = `intent:${targetUrl.replace(/^https?:\/\//, '')}#Intent;scheme=https;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end`;
+
+					console.log('[ANDROID KAKAO] Intent URL:', intentUrl);
+					window.location.href = intentUrl;
+
+					// Fallback for devices that don't support intent URLs
+					setTimeout(() => {
+						// Try kakaotalk scheme as secondary option
+						window.location.href = `kakaotalk://web/openExternal?url=${encodeURIComponent(targetUrl)}`;
+
+						// Final fallback - direct navigation
 						setTimeout(() => {
 							window.location.href = targetUrl;
 						}, 500);
-					} else if (isAndroid) {
-						// For Android Kakao, try intent URL
-						const intentUrl = `intent:${targetUrl}#Intent;scheme=https;action=android.intent.action.VIEW;end`;
-						window.location.href = intentUrl;
-						setTimeout(() => {
-							window.location.href = targetUrl;
-						}, 500);
-					} else {
-						// Final fallback
+					}, 1000);
+				} else if (isIOS) {
+					// iOS KakaoTalk: kakaotalk:// scheme works better
+					console.log('[iOS KAKAO] Using kakaotalk scheme for external browser');
+					const kakaoScheme = `kakaotalk://web/openExternal?url=${encodeURIComponent(targetUrl)}`;
+					console.log('[iOS KAKAO] Kakao scheme:', kakaoScheme);
+
+					window.location.href = kakaoScheme;
+
+					// Fallback for iOS
+					setTimeout(() => {
 						window.location.href = targetUrl;
-					}
-				}, 1000);
+					}, 1000);
+				} else {
+					// Other platforms - try kakaotalk scheme
+					const kakaoScheme = `kakaotalk://web/openExternal?url=${encodeURIComponent(targetUrl)}`;
+					window.location.href = kakaoScheme;
+
+					setTimeout(() => {
+						window.location.href = targetUrl;
+					}, 1000);
+				}
 			}
 			// Method 2: Regular Android browser
 			else if (isAndroid && !isKakaoInApp) {
