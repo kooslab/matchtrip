@@ -1,0 +1,24 @@
+# robots.txt for matchtrip.net
+
+User-agent: *
+
+# Allow public pages
+Allow: /
+Allow: /products
+Allow: /products/*
+Allow: /login
+
+# Disallow protected/private areas
+Disallow: /my-trips
+Disallow: /chat
+Disallow: /profile
+Disallow: /offers
+Disallow: /search
+Disallow: /onboarding
+Disallow: /settings
+Disallow: /admin
+Disallow: /api
+Disallow: /auth
+
+# Sitemap
+Sitemap: https://matchtrip.net/sitemap.xml
