@@ -59,6 +59,7 @@
 		"@aws-sdk/client-s3": "^3.817.0",
 		"@aws-sdk/s3-request-presigner": "^3.832.0",
 		"@internationalized/date": "^3.8.2",
+		"@sentry/sveltekit": "^10.30.0",
 		"@tiptap/core": "^3.0.7",
 		"@tiptap/extension-image": "^3.0.7",
 		"@tiptap/extension-link": "^3.0.7",

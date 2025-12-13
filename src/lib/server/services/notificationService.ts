@@ -100,7 +100,7 @@ export class NotificationService {
 		const decryptedPhone = decrypt(user[0].phone);
 		return {
 			phone: decryptedPhone,
-			countryCode: user[0].countryCode
+			countryCode: user[0].countryCode!
 		};
 	}
 

@@ -125,15 +125,15 @@ export function prepareTemplate(templateName: string, data: TemplateData): Proce
 	let processedButton: KakaoButton | undefined;
 	if (template.button) {
 		processedButton = {
-			type: template.button.type,
+			type: template.button.type as 'URL',
 			name: template.button.name,
 			urlMobile: template.button.urlMobile,
 			urlPc: template.button.urlPc
 		};
 		console.log('[TemplateHelper] Button configured:', {
-			name: processedButton.name,
-			hasMobileUrl: !!processedButton.urlMobile,
-			hasPcUrl: !!processedButton.urlPc
+			name: processedButton?.name,
+			hasMobileUrl: !!processedButton?.urlMobile,
+			hasPcUrl: !!processedButton?.urlPc
 		});
 	}
 
@@ -179,7 +179,9 @@ export function validateTemplateData(
  * Get all available template names
  */
 export function getAvailableTemplates(): string[] {
-	return Object.keys(templatesConfig.templates);
+	const env = getEnvironment();
+	const templateSource = env === 'dev' ? templatesConfig.dev : templatesConfig.prod;
+	return Object.values(templateSource).map((t: any) => t.name);
 }
 
 /**
@@ -203,9 +205,16 @@ export function getTemplateInfo(templateName: string) {
  * Helper to get template by old code (for backward compatibility)
  */
 export function getTemplateByCode(templateCode: string): string | null {
-	for (const [name, template] of Object.entries(templatesConfig.templates)) {
-		if (template.dev === templateCode || template.prod === templateCode) {
-			return name;
+	// Check dev templates
+	for (const [code, template] of Object.entries(templatesConfig.dev)) {
+		if (code === templateCode) {
+			return (template as any).name;
+		}
+	}
+	// Check prod templates
+	for (const [code, template] of Object.entries(templatesConfig.prod)) {
+		if (code === templateCode) {
+			return (template as any).name;
 		}
 	}
 	return null;

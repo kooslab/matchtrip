@@ -73,7 +73,7 @@ export const load = async ({ url, request, locals }) => {
 			id: decryptedUser?.id || session.user.id,
 			name: decryptedUser?.name || session.user.name || '알 수 없음',
 			email: decryptedUser?.email || session.user.email,
-			phone: decryptedUser?.phone || profileResults[0]?.phone || null
+			phone: decryptedUser?.phone || null
 		};
 
 		// Initialize order data

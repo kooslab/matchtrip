@@ -1,14 +1,25 @@
 import tailwindcss from '@tailwindcss/vite';
+import { sentrySvelteKit } from '@sentry/sveltekit';
 import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
-export default defineConfig({
-	server: {
-		port: 5173,
-		strictPort: false // Will use next available port if 5173 is in use
-	},
-	plugins: [
+export default defineConfig(({ mode }) => {
+	const env = loadEnv(mode, process.cwd(), '');
+
+	return {
+		server: {
+			port: 5173,
+			strictPort: false // Will use next available port if 5173 is in use
+		},
+		plugins: [
+			sentrySvelteKit({
+				sourceMapsUploadOptions: {
+					org: 'kooslab',
+					project: 'matchtrip',
+					authToken: env.SENTRY_AUTH_TOKEN
+				}
+			}),
 		sveltekit(),
 		tailwindcss(),
 		VitePWA({
@@ -116,5 +127,6 @@ export default defineConfig({
 				type: 'module'
 			}
 		})
-	]
+		]
+	};
 });

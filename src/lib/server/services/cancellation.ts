@@ -236,7 +236,7 @@ export class CancellationService {
 				.update(productOffers)
 				.set({
 					status: 'rejected',
-					updatedAt: new Date()
+					rejectedAt: new Date()
 				})
 				.where(eq(productOffers.id, paymentData.payment.productOfferId));
 		}

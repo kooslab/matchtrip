@@ -208,7 +208,12 @@ function generateEmailSubject(templateName: string, templateData: TemplateData):
 /**
  * Get template information for email
  */
-export function getEmailTemplateInfo(templateName: string): any {
-	const template = templates.templates[templateName as keyof typeof templates.templates];
-	return template || null;
+export function getEmailTemplateInfo(templateName: string, isDev: boolean = process.env.NODE_ENV !== 'production'): any {
+	const templateSource = isDev ? templates.dev : templates.prod;
+	for (const template of Object.values(templateSource)) {
+		if ((template as any).name === templateName) {
+			return template;
+		}
+	}
+	return null;
 }

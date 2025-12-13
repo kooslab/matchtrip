@@ -134,8 +134,6 @@ export const load = async ({ locals, url }) => {
 	const availableDestinations = allDestinations.map((row) => ({
 		id: row.destination.id,
 		city: row.destination.city,
-		nameEn: row.destination.nameEn,
-		nameLocal: row.destination.nameLocal,
 		countryId: row.destination.countryId,
 		country: {
 			id: row.country.id,

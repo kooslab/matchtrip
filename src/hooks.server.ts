@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/sveltekit';
 import { auth } from '$lib/auth';
 import { sequence } from '@sveltejs/kit/hooks';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
@@ -8,6 +9,24 @@ import { eq } from 'drizzle-orm';
 import { dev, building } from '$app/environment';
 import { authErrorLogger } from '$lib/utils/authErrorLogger';
 import { decryptUserFields } from '$lib/server/encryption';
+import { SENTRY_DSN } from '$env/static/private';
+
+// Initialize Sentry for server-side error tracking
+Sentry.init({
+	dsn: SENTRY_DSN,
+
+	// Only enable in production
+	enabled: !dev,
+
+	// Set environment
+	environment: dev ? 'development' : 'production',
+
+	// Adjust this value in production
+	tracesSampleRate: 0,
+
+	// Setting this option to true will print useful information to the console while you're setting up Sentry.
+	debug: false
+});
 
 const corsHandler = (async ({ event, resolve }) => {
 	// Handle CORS for API routes
@@ -335,4 +354,19 @@ const unauthorizedHandler = (async ({ event, resolve }) => {
 	}
 }) satisfies Handle;
 
-export const handle = sequence(corsHandler, authHandler, unauthorizedHandler);
+export const handle = sequence(Sentry.sentryHandle(), corsHandler, authHandler, unauthorizedHandler);
+
+// Handle errors and report to Sentry
+export const handleError: HandleServerError = Sentry.handleErrorWithSentry(({ error, event }) => {
+	// Log error details for debugging
+	console.error('[Server Error]', {
+		url: event.url.pathname,
+		method: event.request.method,
+		error: error instanceof Error ? error.message : String(error)
+	});
+
+	return {
+		message: 'An unexpected error occurred',
+		code: 'INTERNAL_ERROR'
+	};
+});

@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { payments, products, offers, trips, users, productOffers, settlements } from '$lib/server/db/schema';
+import { payments, products, offers, trips, users, productOffers, settlements, type PaymentStatus, type SettlementStatus } from '$lib/server/db/schema';
 import { eq, desc, sql, isNotNull, and, gte, lte } from 'drizzle-orm';
 import { redirect } from '@sveltejs/kit';
 
@@ -48,7 +48,7 @@ export const load = async ({ locals, url }) => {
 		const paymentConditions = [eq(products.guideId, user.id)];
 		
 		if (paymentStatus !== 'all') {
-			paymentConditions.push(eq(payments.status, paymentStatus));
+			paymentConditions.push(eq(payments.status, paymentStatus as PaymentStatus));
 		}
 		
 		if (startDate) {
@@ -105,7 +105,7 @@ export const load = async ({ locals, url }) => {
 		const tripPaymentConditions = [eq(offers.guideId, user.id)];
 		
 		if (paymentStatus !== 'all') {
-			tripPaymentConditions.push(eq(payments.status, paymentStatus));
+			tripPaymentConditions.push(eq(payments.status, paymentStatus as PaymentStatus));
 		}
 		
 		if (startDate) {
@@ -215,7 +215,7 @@ export const load = async ({ locals, url }) => {
 		);
 		
 		if (settlementStatus !== 'all') {
-			settlementConditions.push(eq(settlements.status, settlementStatus));
+			settlementConditions.push(eq(settlements.status, settlementStatus as SettlementStatus));
 		}
 		
 		if (startDate) {

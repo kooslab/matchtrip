@@ -98,7 +98,7 @@ export const auth = betterAuth({
 					tokenUrl: 'https://kauth.kakao.com/oauth/token',
 					userInfoUrl: 'https://kapi.kakao.com/v2/user/me',
 					redirectURI: `${getAuthUrl()}/api/auth/callback/kakao`,
-					scope: ['account_email', 'profile_nickname', 'profile_image'],
+					scopes: ['account_email', 'profile_nickname', 'profile_image'],
 					// Add property_keys to specifically request email and prompt for consent
 					additionalParams: {
 						prompt: 'login' // Forces the consent screen to appear

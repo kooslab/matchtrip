@@ -106,7 +106,7 @@ export function transformImageUrlsInObject<T extends Record<string, any>>(obj: T
 		}
 		// Handle arrays
 		else if (Array.isArray(value)) {
-			transformed[key] = value.map((item) =>
+			transformed[key] = value.map((item: unknown) =>
 				typeof item === 'object' ? transformImageUrlsInObject(item) : item
 			) as any;
 		}

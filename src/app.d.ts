@@ -11,6 +11,7 @@ declare global {
 				email: string;
 				emailVerified: boolean;
 				phone?: string | null;
+				countryCode?: string | null;
 				birthDate?: string | null;
 				onboardingCompleted?: boolean;
 				guideProfile?: {

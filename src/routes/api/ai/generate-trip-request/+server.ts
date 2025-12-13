@@ -70,7 +70,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		// Format travel style
 		const travelStyleName = travelStyle
-			? TRAVEL_STYLES[travelStyle.id] || travelStyle.name || '미정'
+			? TRAVEL_STYLES[travelStyle.id as keyof typeof TRAVEL_STYLES] || travelStyle.name || '미정'
 			: '미정';
 
 		// Format activities with Korean names

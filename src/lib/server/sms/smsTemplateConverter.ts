@@ -10,33 +10,40 @@ export function convertKakaoTemplateToSMS(
 	templateData: TemplateData,
 	isDev: boolean = process.env.NODE_ENV !== 'production'
 ): string {
-	// Get template from templates.json
-	const template = templates.templates[templateName as keyof typeof templates.templates];
-	
-	if (!template) {
+	// Get template from templates.json - find by name in the correct environment
+	const templateSource = isDev ? templates.dev : templates.prod;
+	let foundTemplate: any = null;
+
+	for (const template of Object.values(templateSource)) {
+		if ((template as any).name === templateName) {
+			foundTemplate = template;
+			break;
+		}
+	}
+
+	if (!foundTemplate) {
 		throw new Error(`Template ${templateName} not found`);
 	}
-	
+
 	// Start with the template text
-	let smsText = template.text;
-	
+	let smsText = foundTemplate.text;
+
 	// Replace variables in the text
 	for (const [key, value] of Object.entries(templateData)) {
 		const placeholder = `#{${key}}`;
 		smsText = smsText.replace(new RegExp(placeholder, 'g'), value);
 	}
-	
-	// Add button URL if exists
-	if (template.button) {
-		const buttonUrls = isDev ? template.button.dev : template.button.prod;
-		const buttonUrl = buttonUrls.urlMobile || buttonUrls.urlPc;
-		
+
+	// Add button URL if exists - button URLs are now directly on the button object
+	if (foundTemplate.button) {
+		const buttonUrl = foundTemplate.button.urlMobile || foundTemplate.button.urlPc;
+
 		if (buttonUrl) {
 			// Add line breaks and the button as a text link
-			smsText += `\n\n${template.button.name}: ${buttonUrl}`;
+			smsText += `\n\n${foundTemplate.button.name}: ${buttonUrl}`;
 		}
 	}
-	
+
 	return smsText;
 }
 
@@ -66,12 +73,21 @@ export function formatSMSMessage(message: string): string {
  * Get SMS-friendly version of template
  * Some templates might be too long for SMS, this provides shorter versions
  */
-export function getSMSTemplate(templateName: string): any {
-	const template = templates.templates[templateName as keyof typeof templates.templates];
-	
-	if (!template) {
+export function getSMSTemplate(templateName: string, isDev: boolean = process.env.NODE_ENV !== 'production'): any {
+	const templateSource = isDev ? templates.dev : templates.prod;
+	let foundTemplate: any = null;
+
+	for (const template of Object.values(templateSource)) {
+		if ((template as any).name === templateName) {
+			foundTemplate = template;
+			break;
+		}
+	}
+
+	if (!foundTemplate) {
 		return null;
 	}
+	const template = foundTemplate;
 	
 	// For some templates, we might want to provide shorter versions for SMS
 	// This can be expanded based on needs
